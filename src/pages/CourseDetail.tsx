@@ -77,7 +77,7 @@ const CourseDetail = () => {
   const addLesson = async () => {
     if (!activeSectionId) return;
     const currentLessons = lessons[activeSectionId] || [];
-    await supabase.from('lessons').insert({ ...lessonForm, section_id: activeSectionId, sort_order: currentLessons.length });
+    await supabase.from('lessons').insert([{ title: lessonForm.title, title_ar: lessonForm.title_ar, lesson_type: lessonForm.lesson_type as any, section_id: activeSectionId, sort_order: currentLessons.length }]);
     setLessonDialog(false);
     setLessonForm({ title: '', title_ar: '', lesson_type: 'read_listen' });
     fetchSections();
