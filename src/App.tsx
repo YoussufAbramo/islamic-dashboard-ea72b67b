@@ -28,6 +28,7 @@ import Certificates from "./pages/Certificates";
 import Reports from "./pages/Reports";
 import Announcements from "./pages/Announcements";
 import Notifications from "./pages/Notifications";
+import Invoices from "./pages/Invoices";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
