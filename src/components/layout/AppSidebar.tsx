@@ -15,6 +15,7 @@ const AppSidebar = () => {
   const { t, language } = useLanguage();
   const { appName, appLogo } = useAppSettings();
   const navigate = useNavigate();
+  const isAr = language === 'ar';
   const location = useLocation();
 
   const allItems = [
