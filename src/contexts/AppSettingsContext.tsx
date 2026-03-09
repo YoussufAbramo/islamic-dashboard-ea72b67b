@@ -111,6 +111,9 @@ function loadSaved(): PendingSettings {
     ltrFont: localStorage.getItem('app_ltr_font') || 'Inter',
     rtlFont: localStorage.getItem('app_rtl_font') || 'Cairo',
     buttonShape: (localStorage.getItem('app_button_shape') as ButtonShape) || 'rounded',
+    currencyDecimals: parseInt(localStorage.getItem('app_currency_decimals') || '2', 10),
+    paymentGateway: localStorage.getItem('app_payment_gateway') || '',
+    paymentGatewayKey: localStorage.getItem('app_payment_gateway_key') || '',
   };
 }
 
