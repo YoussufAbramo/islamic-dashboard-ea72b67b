@@ -381,6 +381,7 @@ export type Database = {
           course_id: string
           created_at: string
           id: string
+          price: number | null
           renewal_date: string | null
           start_date: string
           status: string
@@ -393,6 +394,7 @@ export type Database = {
           course_id: string
           created_at?: string
           id?: string
+          price?: number | null
           renewal_date?: string | null
           start_date?: string
           status?: string
@@ -405,6 +407,7 @@ export type Database = {
           course_id?: string
           created_at?: string
           id?: string
+          price?: number | null
           renewal_date?: string | null
           start_date?: string
           status?: string

@@ -2,6 +2,7 @@ import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, M
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { APP_VERSION, COPYRIGHT } from '@/lib/version';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
@@ -27,7 +28,7 @@ const AppSidebar = () => {
   const items = allItems.filter((item) => role && item.roles.includes(role));
 
   return (
-    <Sidebar>
+    <Sidebar side={language === 'ar' ? 'right' : 'left'}>
       <SidebarHeader className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-2">
           <BookOpen className="h-6 w-6 text-gold" />
@@ -57,6 +58,12 @@ const AppSidebar = () => {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="p-3 border-t border-sidebar-border">
+        <div className="text-center space-y-1">
+          <p className="text-[10px] text-sidebar-foreground/50">{COPYRIGHT}</p>
+          <p className="text-[10px] text-sidebar-foreground/40">v{APP_VERSION}</p>
+        </div>
+      </SidebarFooter>
     </Sidebar>
   );
 };
