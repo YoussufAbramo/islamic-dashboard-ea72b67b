@@ -204,6 +204,9 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       ltrFont: saved.ltrFont, setLtrFont,
       rtlFont: saved.rtlFont, setRtlFont,
       buttonShape: saved.buttonShape, setButtonShape,
+      currencyDecimals: saved.currencyDecimals, setCurrencyDecimals,
+      paymentGateway: saved.paymentGateway, setPaymentGateway,
+      paymentGatewayKey: saved.paymentGatewayKey, setPaymentGatewayKey,
       pending, updatePending, saveSettings, hasPendingChanges, discardChanges,
     }}>
       {children}
