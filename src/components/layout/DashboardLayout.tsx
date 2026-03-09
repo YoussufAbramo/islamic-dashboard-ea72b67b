@@ -28,7 +28,10 @@ const DashboardLayout = () => {
             <Outlet />
           </main>
           <footer className="p-3 text-center border-t border-border">
-            <CopyrightText className="text-[11px] text-muted-foreground/60" />
+            <CopyrightText
+              className="text-[11px] text-muted-foreground/60"
+              linkClassName="underline hover:text-foreground transition-colors"
+            />
           </footer>
         </SidebarInset>
       </div>

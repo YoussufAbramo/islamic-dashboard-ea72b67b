@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Eye } from 'lucide-react';
+import { Search, Eye, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Students = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { role } = useAuth();
   const [students, setStudents] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [detailOpen, setDetailOpen] = useState(false);
@@ -22,6 +22,11 @@ const Students = () => {
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
+
+  // Add student dialog
+  const [addOpen, setAddOpen] = useState(false);
+  const [addForm, setAddForm] = useState({ full_name: '', email: '', password: '', phone: '' });
+  const [addLoading, setAddLoading] = useState(false);
 
   const fetchStudents = async () => {
     const { data } = await supabase.from('students').select('*, profiles:user_id(full_name, phone, email)');
@@ -42,9 +47,29 @@ const Students = () => {
 
   const saveEdit = async () => {
     await supabase.from('students').update(editForm).eq('id', selected.id);
-    toast.success('Student updated');
+    toast.success(language === 'ar' ? 'تم تحديث الطالب' : 'Student updated');
     setEditing(false);
     fetchStudents();
+  };
+
+  const handleAddStudent = async () => {
+    if (!addForm.email || !addForm.password || !addForm.full_name) {
+      toast.error(language === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields');
+      return;
+    }
+    setAddLoading(true);
+    const { error } = await supabase.functions.invoke('manage-users', {
+      body: { action: 'create', role: 'student', email: addForm.email, password: addForm.password, full_name: addForm.full_name, phone: addForm.phone },
+    });
+    setAddLoading(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success(language === 'ar' ? 'تم إضافة الطالب' : 'Student added successfully');
+      setAddOpen(false);
+      setAddForm({ full_name: '', email: '', password: '', phone: '' });
+      fetchStudents();
+    }
   };
 
   const filtered = students.filter((s) => {
@@ -55,7 +80,15 @@ const Students = () => {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">{t('students.title')}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{t('students.title')}</h1>
+        {role === 'admin' && (
+          <Button onClick={() => setAddOpen(true)}>
+            <Plus className="h-4 w-4 me-2" />
+            {language === 'ar' ? 'إضافة طالب' : 'Add Student'}
+          </Button>
+        )}
+      </div>
 
       <div className="relative max-w-sm">
         <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -90,6 +123,7 @@ const Students = () => {
         </Table>
       </div>
 
+      {/* Detail dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{t('students.details')}</DialogTitle></DialogHeader>
@@ -100,7 +134,6 @@ const Students = () => {
                 <div><Label>{t('students.email')}</Label><p>{profile.email}</p></div>
                 <div><Label>{t('students.phone')}</Label><p>{profile.phone}</p></div>
               </div>
-
               {editing ? (
                 <div className="space-y-3 border-t pt-3">
                   <div><Label>{t('students.lessonDuration')} ({t('common.minutes')})</Label>
@@ -121,7 +154,6 @@ const Students = () => {
                   <Button variant="outline" size="sm" className="mt-3" onClick={() => setEditing(true)}>{t('common.edit')}</Button>
                 </div>
               )}
-
               <div className="border-t pt-3">
                 <h3 className="font-semibold mb-2">{t('students.subscribedCourses')}</h3>
                 {subscriptions.length > 0 ? (
@@ -138,6 +170,22 @@ const Students = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add student dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>{language === 'ar' ? 'إضافة طالب جديد' : 'Add New Student'}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div><Label>{t('auth.fullName')} *</Label><Input value={addForm.full_name} onChange={(e) => setAddForm({ ...addForm, full_name: e.target.value })} /></div>
+            <div><Label>{t('auth.email')} *</Label><Input type="email" value={addForm.email} onChange={(e) => setAddForm({ ...addForm, email: e.target.value })} /></div>
+            <div><Label>{t('auth.password')} *</Label><Input type="password" value={addForm.password} onChange={(e) => setAddForm({ ...addForm, password: e.target.value })} placeholder={language === 'ar' ? '6 أحرف على الأقل' : 'Min 6 characters'} /></div>
+            <div><Label>{t('auth.phone')}</Label><Input value={addForm.phone} onChange={(e) => setAddForm({ ...addForm, phone: e.target.value })} /></div>
+            <Button onClick={handleAddStudent} disabled={addLoading} className="w-full">
+              {addLoading ? t('common.loading') : (language === 'ar' ? 'إضافة الطالب' : 'Add Student')}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

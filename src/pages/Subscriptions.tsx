@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,11 +10,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Search, Eye, Edit } from 'lucide-react';
+import { Search, Eye, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Subscriptions = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { role } = useAuth();
+  const { currency } = useAppSettings();
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [detailOpen, setDetailOpen] = useState(false);
@@ -20,12 +24,31 @@ const Subscriptions = () => {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ subscription_type: 'monthly', status: 'active', renewal_date: '' });
 
+  // Create subscription
+  const [createOpen, setCreateOpen] = useState(false);
+  const [students, setStudentsList] = useState<any[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [teachers, setTeachersList] = useState<any[]>([]);
+  const [createForm, setCreateForm] = useState({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '' });
+  const [createLoading, setCreateLoading] = useState(false);
+
   const fetchSubscriptions = async () => {
     const { data } = await supabase
       .from('subscriptions')
       .select('*, courses:course_id(title), students:student_id(user_id, profiles:user_id(full_name)), teachers_rel:teacher_id(user_id, profiles:user_id(full_name))')
       .order('created_at', { ascending: false });
     setSubscriptions(data || []);
+  };
+
+  const fetchFormData = async () => {
+    const [s, c, te] = await Promise.all([
+      supabase.from('students').select('id, profiles:user_id(full_name)'),
+      supabase.from('courses').select('id, title'),
+      supabase.from('teachers').select('id, profiles:user_id(full_name)'),
+    ]);
+    setStudentsList(s.data || []);
+    setCourses(c.data || []);
+    setTeachersList(te.data || []);
   };
 
   useEffect(() => { fetchSubscriptions(); }, []);
@@ -39,9 +62,35 @@ const Subscriptions = () => {
 
   const saveEdit = async () => {
     await supabase.from('subscriptions').update(editForm).eq('id', selected.id);
-    toast.success('Subscription updated');
+    toast.success(language === 'ar' ? 'تم تحديث الاشتراك' : 'Subscription updated');
     setEditing(false);
     fetchSubscriptions();
+  };
+
+  const handleCreate = async () => {
+    if (!createForm.student_id || !createForm.course_id) {
+      toast.error(language === 'ar' ? 'يرجى اختيار الطالب والدورة' : 'Please select student and course');
+      return;
+    }
+    setCreateLoading(true);
+    const { error } = await supabase.from('subscriptions').insert({
+      student_id: createForm.student_id,
+      course_id: createForm.course_id,
+      teacher_id: createForm.teacher_id || null,
+      subscription_type: createForm.subscription_type,
+      price: parseFloat(createForm.price) || 0,
+      start_date: createForm.start_date,
+      renewal_date: createForm.renewal_date || null,
+    });
+    setCreateLoading(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success(language === 'ar' ? 'تم إنشاء الاشتراك' : 'Subscription created');
+      setCreateOpen(false);
+      setCreateForm({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '' });
+      fetchSubscriptions();
+    }
   };
 
   const statusColors: Record<string, string> = { active: 'default', expired: 'secondary', cancelled: 'destructive' };
@@ -54,7 +103,15 @@ const Subscriptions = () => {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">{t('subscriptions.title')}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{t('subscriptions.title')}</h1>
+        {role === 'admin' && (
+          <Button onClick={() => { setCreateOpen(true); fetchFormData(); }}>
+            <Plus className="h-4 w-4 me-2" />
+            {language === 'ar' ? 'إنشاء اشتراك' : 'Create Subscription'}
+          </Button>
+        )}
+      </div>
 
       <div className="relative max-w-sm">
         <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -91,6 +148,7 @@ const Subscriptions = () => {
         </Table>
       </div>
 
+      {/* Detail dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{t('subscriptions.title')}</DialogTitle></DialogHeader>
@@ -137,12 +195,71 @@ const Subscriptions = () => {
                     <div><Label>{t('subscriptions.type')}</Label><p>{selected.subscription_type}</p></div>
                     <div><Label>{t('subscriptions.renewalDate')}</Label><p>{selected.renewal_date || '-'}</p></div>
                     <div><Label>{t('subscriptions.status')}</Label><Badge variant={statusColors[selected.status] as any}>{selected.status}</Badge></div>
+                    <div><Label>{language === 'ar' ? 'السعر' : 'Price'}</Label><p>{currency.symbol}{selected.price}</p></div>
                   </div>
                   <Button variant="outline" size="sm" onClick={() => setEditing(true)}>{t('common.edit')}</Button>
                 </div>
               )}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Create subscription dialog */}
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>{language === 'ar' ? 'إنشاء اشتراك جديد' : 'Create New Subscription'}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>{t('subscriptions.student')} *</Label>
+              <Select value={createForm.student_id} onValueChange={(v) => setCreateForm({ ...createForm, student_id: v })}>
+                <SelectTrigger><SelectValue placeholder={language === 'ar' ? 'اختر طالب' : 'Select student'} /></SelectTrigger>
+                <SelectContent>
+                  {students.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.profiles?.full_name || s.id}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>{t('subscriptions.course')} *</Label>
+              <Select value={createForm.course_id} onValueChange={(v) => setCreateForm({ ...createForm, course_id: v })}>
+                <SelectTrigger><SelectValue placeholder={language === 'ar' ? 'اختر دورة' : 'Select course'} /></SelectTrigger>
+                <SelectContent>
+                  {courses.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>{t('subscriptions.teacher')}</Label>
+              <Select value={createForm.teacher_id} onValueChange={(v) => setCreateForm({ ...createForm, teacher_id: v })}>
+                <SelectTrigger><SelectValue placeholder={language === 'ar' ? 'اختر معلم (اختياري)' : 'Select teacher (optional)'} /></SelectTrigger>
+                <SelectContent>
+                  {teachers.map((te) => (
+                    <SelectItem key={te.id} value={te.id}>{te.profiles?.full_name || te.id}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>{t('subscriptions.type')}</Label>
+              <Select value={createForm.subscription_type} onValueChange={(v) => setCreateForm({ ...createForm, subscription_type: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="monthly">{t('students.monthly')}</SelectItem>
+                  <SelectItem value="yearly">{t('students.yearly')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label>{language === 'ar' ? 'السعر' : 'Price'} ({currency.symbol})</Label><Input type="number" value={createForm.price} onChange={(e) => setCreateForm({ ...createForm, price: e.target.value })} /></div>
+            <div><Label>{t('subscriptions.startDate')}</Label><Input type="date" value={createForm.start_date} onChange={(e) => setCreateForm({ ...createForm, start_date: e.target.value })} /></div>
+            <div><Label>{t('subscriptions.renewalDate')}</Label><Input type="date" value={createForm.renewal_date} onChange={(e) => setCreateForm({ ...createForm, renewal_date: e.target.value })} /></div>
+            <Button onClick={handleCreate} disabled={createLoading} className="w-full">
+              {createLoading ? t('common.loading') : (language === 'ar' ? 'إنشاء الاشتراك' : 'Create Subscription')}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
