@@ -50,9 +50,9 @@ const Chats = () => {
 
   const fetchFormData = async () => {
     const [s, te, subs] = await Promise.all([
-      supabase.from('students').select('id, profiles:user_id(full_name)'),
-      supabase.from('teachers').select('id, profiles:user_id(full_name)'),
-      supabase.from('subscriptions').select('id, courses:course_id(title), students:student_id(user_id, profiles:user_id(full_name))').eq('status', 'active'),
+      supabase.from('students').select('id, profiles:students_user_id_profiles_fkey(full_name)'),
+      supabase.from('teachers').select('id, profiles:teachers_user_id_profiles_fkey(full_name)'),
+      supabase.from('subscriptions').select('id, courses:course_id(title), students:student_id(user_id, profiles:students_user_id_profiles_fkey(full_name))').eq('status', 'active'),
     ]);
     setStudentsList(s.data || []);
     setTeachersList(te.data || []);

@@ -42,9 +42,9 @@ const Subscriptions = () => {
 
   const fetchFormData = async () => {
     const [s, c, te] = await Promise.all([
-      supabase.from('students').select('id, profiles:user_id(full_name)'),
+      supabase.from('students').select('id, profiles:students_user_id_profiles_fkey(full_name)'),
       supabase.from('courses').select('id, title'),
-      supabase.from('teachers').select('id, profiles:user_id(full_name)'),
+      supabase.from('teachers').select('id, profiles:teachers_user_id_profiles_fkey(full_name)'),
     ]);
     setStudentsList(s.data || []);
     setCourses(c.data || []);

@@ -29,7 +29,7 @@ const Students = () => {
   const [addLoading, setAddLoading] = useState(false);
 
   const fetchStudents = async () => {
-    const { data } = await supabase.from('students').select('*, profiles:user_id(full_name, phone, email)');
+    const { data } = await supabase.from('students').select('*, profiles:students_user_id_profiles_fkey(full_name, phone, email)');
     setStudents(data || []);
   };
 
