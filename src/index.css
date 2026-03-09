@@ -327,6 +327,27 @@
   [dir="rtl"] body {
     font-family: var(--font-rtl);
   }
+
+  /* Button shape system */
+  .btn-rounded { --radius: 0.5rem; }
+  .btn-circular { --radius: 9999px; }
+  .btn-square { --radius: 0px; }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
 }
 
 @layer utilities {

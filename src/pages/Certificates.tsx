@@ -12,9 +12,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Award, Plus, Printer } from 'lucide-react';
+import { Award, Plus, Printer, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+
+type CertDesign = 'classic' | 'modern' | 'elegant';
 
 const Certificates = () => {
   const { role, user } = useAuth();
@@ -28,8 +30,8 @@ const Certificates = () => {
   const [courses, setCourses] = useState<any[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [previewCert, setPreviewCert] = useState<any>(null);
-  const [form, setForm] = useState({ recipient_id: '', recipient_type: 'student', title: '', title_ar: '', description: '', course_id: '' });
-  const printRef = useRef<HTMLDivElement>(null);
+  const [selectedDesign, setSelectedDesign] = useState<CertDesign>('classic');
+  const [form, setForm] = useState({ recipient_id: '', recipient_type: 'student', title: '', title_ar: '', description: '', course_id: '', design: 'classic' as CertDesign });
 
   const fetchData = async () => {
     const [certsRes, profilesRes, coursesRes] = await Promise.all([
@@ -54,7 +56,7 @@ const Certificates = () => {
     if (error) { toast.error(error.message); return; }
     toast.success(isAr ? 'تم إنشاء الشهادة' : 'Certificate created');
     setDialogOpen(false);
-    setForm({ recipient_id: '', recipient_type: 'student', title: '', title_ar: '', description: '', course_id: '' });
+    setForm({ recipient_id: '', recipient_type: 'student', title: '', title_ar: '', description: '', course_id: '', design: 'classic' });
     fetchData();
   };
 
@@ -64,10 +66,65 @@ const Certificates = () => {
     return c ? (isAr && c.title_ar ? c.title_ar : c.title) : '';
   };
 
-  const handlePrint = (cert: any) => {
+  const handlePrint = (cert: any, design: CertDesign = 'classic') => {
     setPreviewCert(cert);
-    setTimeout(() => window.print(), 300);
+    setSelectedDesign(design);
+    // Use a new window for printing to isolate certificate
+    setTimeout(() => {
+      const printWindow = window.open('', '_blank', 'width=800,height=600');
+      if (!printWindow) { window.print(); return; }
+      const certTitle = isAr && cert.title_ar ? cert.title_ar : cert.title;
+      const recipientName = getProfileName(cert.recipient_id);
+      const courseName = cert.course_id ? getCourseName(cert.course_id) : '';
+
+      const designStyles: Record<CertDesign, { border: string; bg: string; accent: string }> = {
+        classic: { border: '4px double #c8a84e', bg: '#fffef7', accent: '#287a5e' },
+        modern: { border: '3px solid #2563eb', bg: '#f8fafc', accent: '#2563eb' },
+        elegant: { border: '5px double #7c3aed', bg: '#faf5ff', accent: '#7c3aed' },
+      };
+      const ds = designStyles[design];
+
+      printWindow.document.write(`
+        <html><head><title>Certificate</title>
+        <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+        <style>
+          body { margin: 0; padding: 40px; font-family: 'Inter', 'Cairo', sans-serif; }
+          .cert { border: ${ds.border}; background: ${ds.bg}; padding: 60px; text-align: center; max-width: 700px; margin: auto; }
+          .cert h1 { color: ${ds.accent}; font-size: 28px; margin: 0; }
+          .cert .sub { color: #666; font-size: 16px; margin: 10px 0 30px; }
+          .cert .title { font-size: 22px; font-weight: 600; margin: 20px 0; }
+          .cert .name { font-size: 26px; font-weight: 700; color: ${ds.accent}; margin: 15px 0; }
+          .cert .divider { border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 20px 0; margin: 20px 0; }
+          .cert .footer { display: flex; justify-content: space-between; color: #999; font-size: 12px; margin-top: 30px; }
+          @media print { body { padding: 0; } }
+        </style></head><body>
+        <div class="cert">
+          <h1>${appName}</h1>
+          <p class="sub">${isAr ? 'شهادة تقدير' : 'Certificate of Achievement'}</p>
+          <div class="divider">
+            <p class="title">${certTitle}</p>
+            <p>${isAr ? 'مقدمة إلى' : 'Presented to'}</p>
+            <p class="name">${recipientName}</p>
+            ${cert.description ? `<p style="color:#666">${cert.description}</p>` : ''}
+            ${courseName ? `<p style="font-size:14px;color:#888">${isAr ? 'الدورة:' : 'Course:'} ${courseName}</p>` : ''}
+          </div>
+          <div class="footer">
+            <span>${isAr ? 'التاريخ:' : 'Date:'} ${format(new Date(cert.issued_at), 'PP')}</span>
+            <span>${cert.certificate_number}</span>
+          </div>
+        </div>
+        <script>window.onload=function(){window.print();window.close();}</script>
+        </body></html>
+      `);
+      printWindow.document.close();
+    }, 100);
   };
+
+  const designOptions: { value: CertDesign; label: string; labelAr: string; color: string }[] = [
+    { value: 'classic', label: 'Classic', labelAr: 'كلاسيكي', color: '#c8a84e' },
+    { value: 'modern', label: 'Modern', labelAr: 'حديث', color: '#2563eb' },
+    { value: 'elegant', label: 'Elegant', labelAr: 'أنيق', color: '#7c3aed' },
+  ];
 
   return (
     <div className="space-y-6">
@@ -112,6 +169,23 @@ const Certificates = () => {
                 <div><Label>{isAr ? 'العنوان' : 'Title'}</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} /></div>
                 <div><Label>{isAr ? 'العنوان بالعربية' : 'Title (AR)'}</Label><Input value={form.title_ar} onChange={e => setForm({ ...form, title_ar: e.target.value })} dir="rtl" /></div>
                 <div><Label>{isAr ? 'الوصف' : 'Description'}</Label><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} /></div>
+                <div>
+                  <Label>{isAr ? 'تصميم الشهادة' : 'Certificate Design'}</Label>
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    {designOptions.map(d => (
+                      <button
+                        key={d.value}
+                        type="button"
+                        onClick={() => setForm({ ...form, design: d.value })}
+                        className={`relative p-3 rounded-lg border-2 text-center transition-all ${form.design === d.value ? 'border-primary shadow-md' : 'border-border'}`}
+                      >
+                        <div className="w-6 h-6 rounded-full mx-auto mb-1" style={{ backgroundColor: d.color }} />
+                        <span className="text-xs">{isAr ? d.labelAr : d.label}</span>
+                        {form.design === d.value && <Check className="absolute top-1 end-1 h-3 w-3 text-primary" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <Button onClick={handleCreate} className="w-full">{isAr ? 'إنشاء' : 'Create'}</Button>
               </div>
             </DialogContent>
@@ -144,9 +218,13 @@ const Certificates = () => {
                     <TableCell>{cert.course_id ? getCourseName(cert.course_id) : '—'}</TableCell>
                     <TableCell>{format(new Date(cert.issued_at), 'PP')}</TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="icon" onClick={() => handlePrint(cert)}>
-                        <Printer className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-1">
+                        {designOptions.map(d => (
+                          <Button key={d.value} variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={() => handlePrint(cert, d.value)} title={isAr ? d.labelAr : d.label}>
+                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: d.color }} />
+                          </Button>
+                        ))}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -154,30 +232,6 @@ const Certificates = () => {
             </Table>
           </CardContent>
         </Card>
-      )}
-
-      {/* Printable certificate */}
-      {previewCert && (
-        <div className="fixed inset-0 z-50 bg-background/80 flex items-center justify-center no-print" onClick={() => setPreviewCert(null)}>
-          <div ref={printRef} className="bg-card border-4 border-double border-primary p-12 max-w-2xl w-full text-center space-y-6 print-only" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-center">
-              <Award className="h-16 w-16 text-primary" />
-            </div>
-            <h1 className="text-3xl font-bold text-primary font-amiri">{appName}</h1>
-            <p className="text-muted-foreground text-lg">{isAr ? 'شهادة تقدير' : 'Certificate of Achievement'}</p>
-            <div className="border-t border-b border-border py-6 space-y-2">
-              <p className="text-xl font-semibold">{isAr && previewCert.title_ar ? previewCert.title_ar : previewCert.title}</p>
-              <p className="text-lg">{isAr ? 'مقدمة إلى' : 'Presented to'}</p>
-              <p className="text-2xl font-bold text-primary">{getProfileName(previewCert.recipient_id)}</p>
-              {previewCert.description && <p className="text-muted-foreground">{previewCert.description}</p>}
-              {previewCert.course_id && <p className="text-sm">{isAr ? 'الدورة:' : 'Course:'} {getCourseName(previewCert.course_id)}</p>}
-            </div>
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span>{isAr ? 'التاريخ:' : 'Date:'} {format(new Date(previewCert.issued_at), 'PP')}</span>
-              <span>{previewCert.certificate_number}</span>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

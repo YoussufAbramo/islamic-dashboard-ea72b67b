@@ -1,15 +1,15 @@
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAppSettings, LTR_FONTS, RTL_FONTS } from '@/contexts/AppSettingsContext';
+import { useAppSettings, LTR_FONTS, RTL_FONTS, type ButtonShape } from '@/contexts/AppSettingsContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Palette, Building2, Coins, Upload, Check, Type, Save, Undo2 } from 'lucide-react';
+import { Palette, Building2, Coins, Upload, Check, Type, Save, Undo2, RectangleHorizontal, Circle, Square } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 
 const Settings = () => {
   const { language } = useLanguage();
@@ -19,6 +19,24 @@ const Settings = () => {
   } = useAppSettings();
   const isAr = language === 'ar';
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Dynamically load all preview fonts only on this page
+  useEffect(() => {
+    const allFonts = [...LTR_FONTS, ...RTL_FONTS].map(f => f.value.replace(/ /g, '+')).join('&family=');
+    const linkId = 'settings-preview-fonts';
+    let link = document.getElementById(linkId) as HTMLLinkElement;
+    if (!link) {
+      link = document.createElement('link');
+      link.id = linkId;
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+    }
+    link.href = `https://fonts.googleapis.com/css2?${allFonts.split('&family=').map(f => `family=${f}`).join('&family=')}:wght@400;600&display=swap`;
+    return () => {
+      const el = document.getElementById(linkId);
+      if (el) el.remove();
+    };
+  }, []);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -36,6 +54,12 @@ const Settings = () => {
     saveSettings();
     toast.success(isAr ? 'تم حفظ الإعدادات' : 'Settings saved successfully');
   };
+
+  const shapeOptions: { value: ButtonShape; label: string; labelAr: string; icon: any }[] = [
+    { value: 'rounded', label: 'Rounded', labelAr: 'مستدير', icon: RectangleHorizontal },
+    { value: 'circular', label: 'Circular', labelAr: 'دائري', icon: Circle },
+    { value: 'square', label: 'Square', labelAr: 'مربع', icon: Square },
+  ];
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -87,6 +111,46 @@ const Settings = () => {
         </CardContent>
       </Card>
 
+      {/* Button Shape */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <RectangleHorizontal className="h-5 w-5 text-primary" />
+            {isAr ? 'شكل الأزرار' : 'Button Shape'}
+          </CardTitle>
+          <CardDescription>{isAr ? 'اختر شكل الأزرار في التطبيق' : 'Choose the button shape style'}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-3 gap-3">
+            {shapeOptions.map((opt) => {
+              const Icon = opt.icon;
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => updatePending({ buttonShape: opt.value })}
+                  className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                    pending.buttonShape === opt.value
+                      ? 'border-primary shadow-md scale-[1.02]'
+                      : 'border-border hover:border-muted-foreground/30'
+                  }`}
+                >
+                  <Icon className="h-8 w-8 text-muted-foreground" />
+                  <span className="text-xs font-medium">{isAr ? opt.labelAr : opt.label}</span>
+                  {pending.buttonShape === opt.value && (
+                    <Check className="absolute top-2 end-2 h-4 w-4 text-primary" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-4 flex gap-3">
+            <Button size="sm">Preview</Button>
+            <Button size="sm" variant="outline">Preview</Button>
+            <Button size="sm" variant="secondary">Preview</Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Fonts */}
       <Card>
         <CardHeader>
@@ -105,14 +169,16 @@ const Settings = () => {
                 <SelectContent>
                   {LTR_FONTS.map((f) => (
                     <SelectItem key={f.value} value={f.value}>
-                      <span style={{ fontFamily: f.value }}>{f.label}</span>
+                      <span style={{ fontFamily: `'${f.value}', sans-serif` }}>{f.label}</span>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground" style={{ fontFamily: pending.ltrFont }}>
-                Preview: The quick brown fox jumps over the lazy dog.
-              </p>
+              <div className="p-3 rounded-lg border border-border bg-muted/30">
+                <p className="text-sm" style={{ fontFamily: `'${pending.ltrFont}', sans-serif` }}>
+                  The quick brown fox jumps over the lazy dog. 0123456789
+                </p>
+              </div>
             </div>
             <div className="space-y-2">
               <Label>{isAr ? 'خط RTL (العربية)' : 'RTL Font (Arabic)'}</Label>
@@ -121,14 +187,16 @@ const Settings = () => {
                 <SelectContent>
                   {RTL_FONTS.map((f) => (
                     <SelectItem key={f.value} value={f.value}>
-                      <span style={{ fontFamily: f.value }}>{f.label}</span>
+                      <span style={{ fontFamily: `'${f.value}', sans-serif` }}>{f.label}</span>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground" dir="rtl" style={{ fontFamily: pending.rtlFont }}>
-                معاينة: هذا نص تجريبي لمعاينة الخط العربي المختار.
-              </p>
+              <div className="p-3 rounded-lg border border-border bg-muted/30">
+                <p className="text-sm" dir="rtl" style={{ fontFamily: `'${pending.rtlFont}', sans-serif` }}>
+                  هذا نص تجريبي لمعاينة الخط العربي المختار. ٠١٢٣٤٥٦٧٨٩
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -195,14 +263,10 @@ const Settings = () => {
               if (c) updatePending({ currency: c });
             }}
           >
-            <SelectTrigger className="max-w-xs">
-              <SelectValue />
-            </SelectTrigger>
+            <SelectTrigger className="max-w-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
               {currencies.map((c) => (
-                <SelectItem key={c.name} value={c.name}>
-                  {c.symbol} — {c.name}
-                </SelectItem>
+                <SelectItem key={c.name} value={c.name}>{c.symbol} — {c.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -215,13 +279,8 @@ const Settings = () => {
           <span className="text-sm text-muted-foreground flex items-center me-auto">
             {isAr ? 'لديك تغييرات غير محفوظة' : 'You have unsaved changes'}
           </span>
-          <Button variant="outline" size="sm" onClick={discardChanges}>
-            {isAr ? 'تراجع' : 'Discard'}
-          </Button>
-          <Button size="sm" onClick={handleSave}>
-            <Save className="h-4 w-4 me-1" />
-            {isAr ? 'حفظ' : 'Save'}
-          </Button>
+          <Button variant="outline" size="sm" onClick={discardChanges}>{isAr ? 'تراجع' : 'Discard'}</Button>
+          <Button size="sm" onClick={handleSave}><Save className="h-4 w-4 me-1" />{isAr ? 'حفظ' : 'Save'}</Button>
         </div>
       )}
     </div>
