@@ -9,7 +9,7 @@ import {
 
 const AppSidebar = () => {
   const { role } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
