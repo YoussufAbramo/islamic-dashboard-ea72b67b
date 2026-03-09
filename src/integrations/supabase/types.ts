@@ -511,6 +511,13 @@ export type Database = {
             referencedRelation: "teachers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "students_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       subscriptions: {
@@ -653,7 +660,15 @@ export type Database = {
           user_id?: string
           weekly_schedule?: Json | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "teachers_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       timetable_entries: {
         Row: {
