@@ -21,6 +21,7 @@ import Timetable from "./pages/Timetable";
 import Subscriptions from "./pages/Subscriptions";
 import Chats from "./pages/Chats";
 import Profile from "./pages/Profile";
+import Attendance from "./pages/Attendance";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
