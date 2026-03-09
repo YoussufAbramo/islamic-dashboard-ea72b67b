@@ -195,6 +195,8 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
 export const useAppSettings = () => {
   const context = useContext(AppSettingsContext);
-  if (!context) throw new Error('useAppSettings must be used within AppSettingsProvider');
+  if (!context) {
+    throw new Error('useAppSettings must be used within AppSettingsProvider');
+  }
   return context;
 };
