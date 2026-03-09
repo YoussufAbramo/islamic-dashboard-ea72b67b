@@ -260,50 +260,52 @@ const Settings = () => {
           </CardTitle>
           <CardDescription>{isAr ? 'اختر العملة الافتراضية وعدد الأرقام العشرية' : 'Choose the default currency and decimal places'}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>{isAr ? 'العملة' : 'Currency'}</Label>
-            <Select
-              value={pending.currency.name}
-              onValueChange={(v) => {
-                const c = currencies.find((c) => c.name === v);
-                if (c) updatePending({ currency: c });
-              }}
-            >
-              <SelectTrigger className="max-w-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {currencies.map((c) => (
-                  <SelectItem key={c.name} value={c.name}>{c.symbol} — {c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>{isAr ? 'عدد الأرقام العشرية' : 'Decimal Places'}</Label>
-            <div className="flex gap-2">
-              {[0, 1, 2].map((d) => (
-                <button
-                  key={d}
-                  onClick={() => updatePending({ currencyDecimals: d })}
-                  className={`flex flex-col items-center gap-1 px-4 py-3 rounded-xl border-2 transition-all ${
-                    pending.currencyDecimals === d
-                      ? 'border-primary shadow-md scale-[1.02]'
-                      : 'border-border hover:border-muted-foreground/30'
-                  }`}
-                >
-                  <span className="text-sm font-mono font-bold">
-                    {d === 0 ? '1' : d === 1 ? '1.0' : '1.00'}
-                  </span>
-                  <span className="text-xs text-muted-foreground">{d} {isAr ? 'أرقام' : 'digits'}</span>
-                  {pending.currencyDecimals === d && (
-                    <Check className="h-3 w-3 text-primary" />
-                  )}
-                </button>
-              ))}
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label>{isAr ? 'العملة' : 'Currency'}</Label>
+              <Select
+                value={pending.currency.name}
+                onValueChange={(v) => {
+                  const c = currencies.find((c) => c.name === v);
+                  if (c) updatePending({ currency: c });
+                }}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {currencies.map((c) => (
+                    <SelectItem key={c.name} value={c.name}>{c.symbol} — {c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {isAr ? 'مثال' : 'Example'}: {pending.currency.symbol}{(1234.56).toFixed(pending.currencyDecimals)}
-            </p>
+            <div className="space-y-2">
+              <Label>{isAr ? 'عدد الأرقام العشرية' : 'Decimal Places'}</Label>
+              <div className="flex gap-2">
+                {[0, 1, 2].map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => updatePending({ currencyDecimals: d })}
+                    className={`flex flex-col items-center gap-1 px-4 py-3 rounded-xl border-2 transition-all ${
+                      pending.currencyDecimals === d
+                        ? 'border-primary shadow-md scale-[1.02]'
+                        : 'border-border hover:border-muted-foreground/30'
+                    }`}
+                  >
+                    <span className="text-sm font-mono font-bold">
+                      {d === 0 ? '1' : d === 1 ? '1.0' : '1.00'}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{d} {isAr ? 'أرقام' : 'digits'}</span>
+                    {pending.currencyDecimals === d && (
+                      <Check className="h-3 w-3 text-primary" />
+                    )}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {isAr ? 'مثال' : 'Example'}: {pending.currency.symbol}{(1234.56).toFixed(pending.currencyDecimals)}
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
