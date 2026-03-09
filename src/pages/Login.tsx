@@ -19,11 +19,6 @@ const roleConfig = {
   admin: { icon: ShieldCheck, color: 'text-rose-600 dark:text-rose-400' },
 };
 
-const TEST_ACCOUNTS = {
-  student: { email: 'student@codecom.dev', password: 'test123456' },
-  teacher: { email: 'teacher@codecom.dev', password: 'test123456' },
-  admin: { email: 'admin@codecom.dev', password: 'test12345678' },
-};
 
 const WhatsAppIcon = () => (
   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
@@ -76,19 +71,6 @@ const Login = () => {
     navigate('/dashboard');
   };
 
-  const handleQuickLogin = async (role: LoginRole) => {
-    const creds = TEST_ACCOUNTS[role];
-    setLoading(true);
-    setSelectedRole(role);
-    const { error } = await signIn(creds.email, creds.password);
-    if (error) {
-      toast.error(language === 'ar' ? `فشل تسجيل الدخول كـ ${t(`auth.${role}`)}` : `Failed to login as ${role}. Make sure test account exists.`);
-      setLoading(false);
-      return;
-    }
-    setLoading(false);
-    navigate('/dashboard');
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-background">
@@ -247,27 +229,6 @@ const Login = () => {
                 >
                   {loading ? t('common.loading') : t('auth.login')}
                 </Button>
-
-                {/* Quick Login Buttons */}
-                <div className="w-full space-y-2">
-                  <p className="text-xs text-muted-foreground text-center">
-                    {language === 'ar' ? 'تسجيل دخول سريع للاختبار' : 'Quick test login'}
-                  </p>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Button type="button" variant="outline" size="sm" className="text-xs" onClick={() => handleQuickLogin('student')} disabled={loading}>
-                      <GraduationCap className="h-3 w-3 me-1" />
-                      {language === 'ar' ? 'طالب' : 'Student'}
-                    </Button>
-                    <Button type="button" variant="outline" size="sm" className="text-xs" onClick={() => handleQuickLogin('teacher')} disabled={loading}>
-                      <Users className="h-3 w-3 me-1" />
-                      {language === 'ar' ? 'معلم' : 'Teacher'}
-                    </Button>
-                    <Button type="button" variant="outline" size="sm" className="text-xs" onClick={() => handleQuickLogin('admin')} disabled={loading}>
-                      <ShieldCheck className="h-3 w-3 me-1" />
-                      {language === 'ar' ? 'مدير' : 'Admin'}
-                    </Button>
-                  </div>
-                </div>
 
                 <p className="text-sm text-muted-foreground text-center">
                   {t('auth.noAccount')}{' '}
