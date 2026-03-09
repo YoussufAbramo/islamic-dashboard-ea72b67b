@@ -2,7 +2,7 @@ import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
-import { COPYRIGHT } from '@/lib/version';
+import CopyrightText from '@/components/CopyrightText';
 import AppSidebar from './AppSidebar';
 import TopBar from './TopBar';
 
@@ -28,7 +28,7 @@ const DashboardLayout = () => {
             <Outlet />
           </main>
           <footer className="p-3 text-center border-t border-border">
-            <p className="text-[11px] text-muted-foreground/60">{COPYRIGHT}</p>
+            <CopyrightText className="text-[11px] text-muted-foreground/60" />
           </footer>
         </SidebarInset>
       </div>

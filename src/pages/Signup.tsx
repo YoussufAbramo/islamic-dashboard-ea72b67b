@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { COPYRIGHT } from '@/lib/version';
+import CopyrightText from '@/components/CopyrightText';
 import { toast } from 'sonner';
 import { GraduationCap, Users, Eye, EyeOff, BookOpen } from 'lucide-react';
+import islamicBg from '@/assets/islamic-bg.jpg';
 
 const Signup = () => {
   const [email, setEmail] = useState('');
@@ -51,20 +52,25 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-background">
-      {/* Layered Islamic patterns */}
-      <div className="absolute inset-0 islamic-pattern opacity-30" />
-      <div className="absolute inset-0 islamic-star-pattern opacity-20" />
-      <div className="absolute inset-0 islamic-arabesque opacity-10" />
+      {/* Islamic background image - fixed direction */}
+      <div
+        className="absolute inset-0 opacity-15 dark:opacity-10"
+        style={{
+          backgroundImage: `url(${islamicBg})`,
+          backgroundSize: '400px 400px',
+          backgroundRepeat: 'repeat',
+          direction: 'ltr',
+        }}
+      />
       
-      <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--emerald))]/10 via-background/95 to-[hsl(var(--gold))]/10 animate-pulse" style={{ animationDuration: '8s' }} />
-      <div className="absolute inset-0 bg-gradient-to-br from-background via-background/90 to-background" />
+      <div className="absolute inset-0 bg-gradient-to-br from-background/90 via-background/80 to-background/90" />
 
-      {/* Corner ornaments */}
-      <svg className="absolute top-0 start-0 w-32 h-32 text-gold/20" viewBox="0 0 100 100">
+      {/* Corner ornaments - use left/right not start/end */}
+      <svg className="absolute top-0 left-0 w-32 h-32 text-gold/20" viewBox="0 0 100 100">
         <path d="M0 0 L50 0 A50 50 0 0 0 0 50 Z" fill="currentColor" />
         <path d="M10 10 L40 10 A30 30 0 0 0 10 40 Z" fill="none" stroke="currentColor" strokeWidth="0.5" />
       </svg>
-      <svg className="absolute bottom-0 end-0 w-32 h-32 text-gold/20 rotate-180" viewBox="0 0 100 100">
+      <svg className="absolute bottom-0 right-0 w-32 h-32 text-gold/20 rotate-180" viewBox="0 0 100 100">
         <path d="M0 0 L50 0 A50 50 0 0 0 0 50 Z" fill="currentColor" />
         <path d="M10 10 L40 10 A30 30 0 0 0 10 40 Z" fill="none" stroke="currentColor" strokeWidth="0.5" />
       </svg>
@@ -201,7 +207,7 @@ const Signup = () => {
             <div className="w-1 h-1 rounded-full bg-gold/40" />
             <div className="w-8 h-[1px] bg-gradient-to-l from-transparent to-[hsl(var(--gold))]/40" />
           </div>
-          <p className="text-[10px] text-muted-foreground/60">{COPYRIGHT}</p>
+          <CopyrightText />
         </div>
       </div>
     </div>

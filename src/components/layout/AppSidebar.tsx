@@ -2,7 +2,8 @@ import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, M
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { APP_VERSION, COPYRIGHT } from '@/lib/version';
+import { APP_VERSION } from '@/lib/version';
+import CopyrightText from '@/components/CopyrightText';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
@@ -60,7 +61,7 @@ const AppSidebar = () => {
       </SidebarContent>
       <SidebarFooter className="p-3 border-t border-sidebar-border">
         <div className="text-center space-y-1">
-          <p className="text-[10px] text-sidebar-foreground/50">{COPYRIGHT}</p>
+          <CopyrightText className="text-[10px] text-sidebar-foreground/50" />
           <p className="text-[10px] text-sidebar-foreground/40">v{APP_VERSION}</p>
         </div>
       </SidebarFooter>
