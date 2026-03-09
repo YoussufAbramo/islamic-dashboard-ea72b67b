@@ -162,7 +162,6 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     localStorage.setItem('app_button_shape', pending.buttonShape);
     localStorage.setItem('app_currency_decimals', String(pending.currencyDecimals));
     localStorage.setItem('app_payment_gateway', pending.paymentGateway);
-    localStorage.setItem('app_payment_gateway_key', pending.paymentGatewayKey);
     setSaved({ ...pending });
   }, [pending]);
 
