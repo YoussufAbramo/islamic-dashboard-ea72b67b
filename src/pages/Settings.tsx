@@ -48,10 +48,10 @@ const Settings = () => {
     if (!file) return;
     const ext = file.name.split('.').pop();
     const path = `branding/logo-${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
-    if (error) { toast.error(error.message); return; }
-    const { data } = supabase.storage.from('avatars').getPublicUrl(path);
-    setAppLogo(data.publicUrl);
+    const { uploadAndGetSignedUrl } = await import('@/lib/storage');
+    const { signedUrl, error: uploadErr } = await uploadAndGetSignedUrl(path, file);
+    if (uploadErr) { toast.error(uploadErr); return; }
+    setAppLogo(signedUrl);
     toast.success(isAr ? 'تم رفع الشعار' : 'Logo uploaded');
   };
 

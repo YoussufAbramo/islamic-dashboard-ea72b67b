@@ -50,16 +50,16 @@ const Profile = () => {
     const filePath = `${user.id}/avatar.${ext}`;
 
     setUploading(true);
-    const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file, { upsert: true });
-    if (uploadError) {
-      toast.error(uploadError.message);
+    const { signedUrl, error: uploadErr } = await uploadAndGetSignedUrl(filePath, file);
+    if (uploadErr) {
+      toast.error(uploadErr);
       setUploading(false);
       return;
     }
 
-    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
-    await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id);
-    setAvatarUrl(publicUrl);
+    // Store the storage path (not a URL) so we can always generate fresh signed URLs
+    await supabase.from('profiles').update({ avatar_url: filePath }).eq('id', user.id);
+    setAvatarUrl(signedUrl);
     setUploading(false);
     toast.success(language === 'ar' ? 'تم تحديث الصورة' : 'Avatar updated');
   };
