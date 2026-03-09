@@ -71,19 +71,6 @@ const Login = () => {
     navigate('/dashboard');
   };
 
-  const handleQuickLogin = async (role: LoginRole) => {
-    const creds = TEST_ACCOUNTS[role];
-    setLoading(true);
-    setSelectedRole(role);
-    const { error } = await signIn(creds.email, creds.password);
-    if (error) {
-      toast.error(language === 'ar' ? `فشل تسجيل الدخول كـ ${t(`auth.${role}`)}` : `Failed to login as ${role}. Make sure test account exists.`);
-      setLoading(false);
-      return;
-    }
-    setLoading(false);
-    navigate('/dashboard');
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-background">
