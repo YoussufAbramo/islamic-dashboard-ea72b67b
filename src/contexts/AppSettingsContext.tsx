@@ -187,7 +187,6 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const setButtonShape = useCallback((s: ButtonShape) => { setPending(p => ({ ...p, buttonShape: s })); }, []);
   const setCurrencyDecimals = useCallback((d: number) => { setPending(p => ({ ...p, currencyDecimals: d })); }, []);
   const setPaymentGateway = useCallback((g: string) => { setPending(p => ({ ...p, paymentGateway: g })); }, []);
-  const setPaymentGatewayKey = useCallback((k: string) => { setPending(p => ({ ...p, paymentGatewayKey: k })); }, []);
 
   return (
     <AppSettingsContext.Provider value={{
