@@ -1,9 +1,11 @@
+import { useState, useEffect } from 'react';
 import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getAvatarSignedUrl } from '@/lib/storage';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
@@ -30,6 +32,13 @@ const AppSidebar = () => {
   const navigate = useNavigate();
   const isAr = language === 'ar';
   const location = useLocation();
+  const [resolvedAvatarUrl, setResolvedAvatarUrl] = useState('');
+
+  useEffect(() => {
+    if (profile?.avatar_url) {
+      getAvatarSignedUrl(profile.avatar_url).then(setResolvedAvatarUrl);
+    }
+  }, [profile?.avatar_url]);
 
   const categories: MenuCategory[] = [
     {
@@ -136,7 +145,7 @@ const AppSidebar = () => {
             onClick={() => navigate('/dashboard/profile')}
           >
             <Avatar className="h-9 w-9">
-              <AvatarImage src={profile?.avatar_url || ''} />
+              <AvatarImage src={resolvedAvatarUrl} />
               <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
                 {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
               </AvatarFallback>

@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import { Camera, Lock } from 'lucide-react';
+import { getAvatarSignedUrl, uploadAndGetSignedUrl } from '@/lib/storage';
+import { useEffect } from 'react';
 
 const Profile = () => {
   const { user, profile, role } = useAuth();
@@ -19,8 +21,15 @@ const Profile = () => {
     email: profile?.email || '',
   });
   const [loading, setLoading] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || '');
+  const [avatarUrl, setAvatarUrl] = useState('');
   const [uploading, setUploading] = useState(false);
+
+  // Resolve avatar signed URL on mount / profile change
+  useEffect(() => {
+    if (profile?.avatar_url) {
+      getAvatarSignedUrl(profile.avatar_url).then(setAvatarUrl);
+    }
+  }, [profile?.avatar_url]);
 
   // Password change
   const [passwords, setPasswords] = useState({ newPassword: '', confirmPassword: '' });
@@ -41,16 +50,16 @@ const Profile = () => {
     const filePath = `${user.id}/avatar.${ext}`;
 
     setUploading(true);
-    const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file, { upsert: true });
-    if (uploadError) {
-      toast.error(uploadError.message);
+    const { signedUrl, error: uploadErr } = await uploadAndGetSignedUrl(filePath, file);
+    if (uploadErr) {
+      toast.error(uploadErr);
       setUploading(false);
       return;
     }
 
-    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
-    await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id);
-    setAvatarUrl(publicUrl);
+    // Store the storage path (not a URL) so we can always generate fresh signed URLs
+    await supabase.from('profiles').update({ avatar_url: filePath }).eq('id', user.id);
+    setAvatarUrl(signedUrl);
     setUploading(false);
     toast.success(language === 'ar' ? 'تم تحديث الصورة' : 'Avatar updated');
   };
