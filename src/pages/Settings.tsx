@@ -1,12 +1,12 @@
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAppSettings, ColorTheme } from '@/contexts/AppSettingsContext';
+import { useAppSettings, LTR_FONTS, RTL_FONTS } from '@/contexts/AppSettingsContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Palette, Building2, Coins, Upload, Check } from 'lucide-react';
+import { Palette, Building2, Coins, Upload, Check, Type, Save, Undo2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useRef } from 'react';
@@ -14,11 +14,8 @@ import { useRef } from 'react';
 const Settings = () => {
   const { language } = useLanguage();
   const {
-    colorTheme, setColorTheme, themes,
-    currency, setCurrency, currencies,
-    appName, setAppName,
-    appDescription, setAppDescription,
-    appLogo, setAppLogo,
+    pending, updatePending, saveSettings, hasPendingChanges, discardChanges,
+    themes, currencies, setAppLogo, appLogo,
   } = useAppSettings();
   const isAr = language === 'ar';
   const fileRef = useRef<HTMLInputElement>(null);
@@ -35,9 +32,28 @@ const Settings = () => {
     toast.success(isAr ? 'تم رفع الشعار' : 'Logo uploaded');
   };
 
+  const handleSave = () => {
+    saveSettings();
+    toast.success(isAr ? 'تم حفظ الإعدادات' : 'Settings saved successfully');
+  };
+
   return (
     <div className="space-y-6 max-w-3xl">
-      <h1 className="text-3xl font-bold">{isAr ? 'إعدادات التطبيق' : 'App Settings'}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">{isAr ? 'إعدادات التطبيق' : 'App Settings'}</h1>
+        <div className="flex gap-2">
+          {hasPendingChanges && (
+            <Button variant="outline" onClick={discardChanges} size="sm">
+              <Undo2 className="h-4 w-4 me-1" />
+              {isAr ? 'تراجع' : 'Discard'}
+            </Button>
+          )}
+          <Button onClick={handleSave} disabled={!hasPendingChanges} size="sm">
+            <Save className="h-4 w-4 me-1" />
+            {isAr ? 'حفظ التغييرات' : 'Save Changes'}
+          </Button>
+        </div>
+      </div>
 
       {/* Color Theme */}
       <Card>
@@ -53,20 +69,67 @@ const Settings = () => {
             {themes.map((t) => (
               <button
                 key={t.value}
-                onClick={() => setColorTheme(t.value)}
+                onClick={() => updatePending({ colorTheme: t.value })}
                 className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
-                  colorTheme === t.value
+                  pending.colorTheme === t.value
                     ? 'border-primary shadow-md scale-[1.02]'
                     : 'border-border hover:border-muted-foreground/30'
                 }`}
               >
                 <div className="w-10 h-10 rounded-full" style={{ background: t.color }} />
                 <span className="text-xs font-medium">{isAr ? t.labelAr : t.label}</span>
-                {colorTheme === t.value && (
+                {pending.colorTheme === t.value && (
                   <Check className="absolute top-2 end-2 h-4 w-4 text-primary" />
                 )}
               </button>
             ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Fonts */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Type className="h-5 w-5 text-primary" />
+            {isAr ? 'الخطوط' : 'Fonts'}
+          </CardTitle>
+          <CardDescription>{isAr ? 'اختر خطوط التطبيق للغة العربية والإنجليزية' : 'Choose app fonts for LTR and RTL languages'}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>{isAr ? 'خط LTR (الإنجليزية)' : 'LTR Font (English)'}</Label>
+              <Select value={pending.ltrFont} onValueChange={(v) => updatePending({ ltrFont: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {LTR_FONTS.map((f) => (
+                    <SelectItem key={f.value} value={f.value}>
+                      <span style={{ fontFamily: f.value }}>{f.label}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground" style={{ fontFamily: pending.ltrFont }}>
+                Preview: The quick brown fox jumps over the lazy dog.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label>{isAr ? 'خط RTL (العربية)' : 'RTL Font (Arabic)'}</Label>
+              <Select value={pending.rtlFont} onValueChange={(v) => updatePending({ rtlFont: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {RTL_FONTS.map((f) => (
+                    <SelectItem key={f.value} value={f.value}>
+                      <span style={{ fontFamily: f.value }}>{f.label}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground" dir="rtl" style={{ fontFamily: pending.rtlFont }}>
+                معاينة: هذا نص تجريبي لمعاينة الخط العربي المختار.
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -83,11 +146,11 @@ const Settings = () => {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label>{isAr ? 'اسم التطبيق' : 'App Name'}</Label>
-            <Input value={appName} onChange={(e) => setAppName(e.target.value)} />
+            <Input value={pending.appName} onChange={(e) => updatePending({ appName: e.target.value })} />
           </div>
           <div className="space-y-2">
             <Label>{isAr ? 'وصف التطبيق' : 'App Description'}</Label>
-            <Textarea value={appDescription} onChange={(e) => setAppDescription(e.target.value)} rows={2} />
+            <Textarea value={pending.appDescription} onChange={(e) => updatePending({ appDescription: e.target.value })} rows={2} />
           </div>
           <div className="space-y-2">
             <Label>{isAr ? 'شعار التطبيق' : 'App Logo'}</Label>
@@ -126,10 +189,10 @@ const Settings = () => {
         </CardHeader>
         <CardContent>
           <Select
-            value={currency.name}
+            value={pending.currency.name}
             onValueChange={(v) => {
               const c = currencies.find((c) => c.name === v);
-              if (c) setCurrency(c);
+              if (c) updatePending({ currency: c });
             }}
           >
             <SelectTrigger className="max-w-xs">
@@ -145,6 +208,22 @@ const Settings = () => {
           </Select>
         </CardContent>
       </Card>
+
+      {/* Sticky save bar */}
+      {hasPendingChanges && (
+        <div className="sticky bottom-4 flex justify-end gap-2 p-3 rounded-lg border bg-card shadow-lg">
+          <span className="text-sm text-muted-foreground flex items-center me-auto">
+            {isAr ? 'لديك تغييرات غير محفوظة' : 'You have unsaved changes'}
+          </span>
+          <Button variant="outline" size="sm" onClick={discardChanges}>
+            {isAr ? 'تراجع' : 'Discard'}
+          </Button>
+          <Button size="sm" onClick={handleSave}>
+            <Save className="h-4 w-4 me-1" />
+            {isAr ? 'حفظ' : 'Save'}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

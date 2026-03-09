@@ -55,6 +55,10 @@
     --cream: 40 33% 96%;
     --islamic-pattern-opacity: 0.04;
 
+    /* Fonts */
+    --font-ltr: 'Inter', sans-serif;
+    --font-rtl: 'Cairo', sans-serif;
+
     /* Chart colors */
     --chart-1: 160 45% 28%;
     --chart-2: 38 65% 55%;
@@ -116,6 +120,8 @@
   }
 
   /* ===== Color Themes ===== */
+
+  /* Ocean - Light */
   .theme-ocean:root, :root.theme-ocean {
     --primary: 210 65% 38%;
     --primary-foreground: 210 20% 98%;
@@ -132,20 +138,38 @@
     --sidebar-border: 210 30% 20%;
     --sidebar-ring: 190 60% 50%;
   }
+  /* Ocean - Dark */
   .dark.theme-ocean {
+    --background: 210 30% 6%;
+    --foreground: 210 20% 92%;
+    --card: 210 25% 9%;
+    --card-foreground: 210 20% 92%;
+    --popover: 210 25% 9%;
+    --popover-foreground: 210 20% 92%;
     --primary: 190 60% 50%;
     --primary-foreground: 210 30% 6%;
+    --secondary: 210 25% 14%;
+    --secondary-foreground: 210 20% 92%;
+    --muted: 210 20% 14%;
+    --muted-foreground: 210 15% 60%;
     --accent: 190 45% 38%;
+    --accent-foreground: 210 20% 92%;
+    --border: 210 20% 16%;
+    --input: 210 20% 16%;
     --ring: 190 60% 50%;
     --gold: 190 60% 50%;
     --emerald: 210 50% 50%;
     --sidebar-background: 210 35% 5%;
+    --sidebar-foreground: 210 20% 90%;
     --sidebar-primary: 190 60% 50%;
+    --sidebar-primary-foreground: 210 30% 6%;
     --sidebar-accent: 210 30% 10%;
+    --sidebar-accent-foreground: 210 20% 90%;
     --sidebar-border: 210 25% 12%;
     --sidebar-ring: 190 60% 50%;
   }
 
+  /* Purple - Light */
   .theme-purple:root, :root.theme-purple {
     --primary: 270 50% 40%;
     --primary-foreground: 270 20% 98%;
@@ -162,20 +186,38 @@
     --sidebar-border: 270 25% 20%;
     --sidebar-ring: 290 55% 55%;
   }
+  /* Purple - Dark */
   .dark.theme-purple {
+    --background: 270 30% 6%;
+    --foreground: 270 15% 92%;
+    --card: 270 25% 9%;
+    --card-foreground: 270 15% 92%;
+    --popover: 270 25% 9%;
+    --popover-foreground: 270 15% 92%;
     --primary: 290 55% 55%;
     --primary-foreground: 270 30% 6%;
+    --secondary: 270 25% 14%;
+    --secondary-foreground: 270 15% 92%;
+    --muted: 270 20% 14%;
+    --muted-foreground: 270 15% 60%;
     --accent: 290 40% 40%;
+    --accent-foreground: 270 15% 92%;
+    --border: 270 20% 16%;
+    --input: 270 20% 16%;
     --ring: 290 55% 55%;
     --gold: 290 55% 55%;
     --emerald: 270 40% 52%;
     --sidebar-background: 270 30% 5%;
+    --sidebar-foreground: 270 15% 90%;
     --sidebar-primary: 290 55% 55%;
+    --sidebar-primary-foreground: 270 30% 6%;
     --sidebar-accent: 270 25% 10%;
+    --sidebar-accent-foreground: 270 15% 90%;
     --sidebar-border: 270 20% 12%;
     --sidebar-ring: 290 55% 55%;
   }
 
+  /* Desert - Light */
   .theme-desert:root, :root.theme-desert {
     --primary: 25 60% 42%;
     --primary-foreground: 35 30% 98%;
@@ -192,20 +234,38 @@
     --sidebar-border: 25 30% 20%;
     --sidebar-ring: 35 70% 55%;
   }
+  /* Desert - Dark */
   .dark.theme-desert {
+    --background: 25 30% 6%;
+    --foreground: 35 20% 92%;
+    --card: 25 25% 9%;
+    --card-foreground: 35 20% 92%;
+    --popover: 25 25% 9%;
+    --popover-foreground: 35 20% 92%;
     --primary: 35 70% 55%;
     --primary-foreground: 25 40% 6%;
+    --secondary: 25 25% 14%;
+    --secondary-foreground: 35 20% 92%;
+    --muted: 25 20% 14%;
+    --muted-foreground: 25 15% 60%;
     --accent: 35 55% 40%;
+    --accent-foreground: 35 20% 92%;
+    --border: 25 20% 16%;
+    --input: 25 20% 16%;
     --ring: 35 70% 55%;
     --gold: 35 70% 55%;
     --emerald: 25 50% 52%;
     --sidebar-background: 25 35% 5%;
+    --sidebar-foreground: 35 20% 90%;
     --sidebar-primary: 35 70% 55%;
+    --sidebar-primary-foreground: 25 40% 6%;
     --sidebar-accent: 25 30% 10%;
+    --sidebar-accent-foreground: 35 20% 90%;
     --sidebar-border: 25 25% 12%;
     --sidebar-ring: 35 70% 55%;
   }
 
+  /* Midnight - Light */
   .theme-midnight:root, :root.theme-midnight {
     --primary: 220 55% 35%;
     --primary-foreground: 220 20% 98%;
@@ -222,16 +282,33 @@
     --sidebar-border: 220 30% 18%;
     --sidebar-ring: 240 50% 55%;
   }
+  /* Midnight - Dark */
   .dark.theme-midnight {
+    --background: 220 30% 6%;
+    --foreground: 220 15% 92%;
+    --card: 220 25% 9%;
+    --card-foreground: 220 15% 92%;
+    --popover: 220 25% 9%;
+    --popover-foreground: 220 15% 92%;
     --primary: 240 50% 55%;
     --primary-foreground: 220 30% 6%;
+    --secondary: 220 25% 14%;
+    --secondary-foreground: 220 15% 92%;
+    --muted: 220 20% 14%;
+    --muted-foreground: 220 15% 60%;
     --accent: 240 38% 42%;
+    --accent-foreground: 220 15% 92%;
+    --border: 220 20% 16%;
+    --input: 220 20% 16%;
     --ring: 240 50% 55%;
     --gold: 240 50% 55%;
     --emerald: 220 45% 48%;
     --sidebar-background: 220 35% 5%;
+    --sidebar-foreground: 220 15% 90%;
     --sidebar-primary: 240 50% 55%;
+    --sidebar-primary-foreground: 220 30% 6%;
     --sidebar-accent: 220 30% 8%;
+    --sidebar-accent-foreground: 220 15% 90%;
     --sidebar-border: 220 25% 10%;
     --sidebar-ring: 240 50% 55%;
   }
@@ -244,11 +321,11 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-ltr);
   }
 
   [dir="rtl"] body {
-    font-family: 'Cairo', 'Inter', sans-serif;
+    font-family: var(--font-rtl);
   }
 }
 
@@ -277,7 +354,7 @@
   }
 
   .font-amiri {
-    font-family: 'Cairo', serif;
+    font-family: var(--font-rtl);
   }
 
   .islamic-star-pattern {
