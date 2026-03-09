@@ -19,11 +19,6 @@ const roleConfig = {
   admin: { icon: ShieldCheck, color: 'text-rose-600 dark:text-rose-400' },
 };
 
-const TEST_ACCOUNTS = {
-  student: { email: 'student@codecom.dev', password: 'test123456' },
-  teacher: { email: 'teacher@codecom.dev', password: 'test123456' },
-  admin: { email: 'admin@codecom.dev', password: 'test12345678' },
-};
 
 const WhatsAppIcon = () => (
   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
