@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import { Camera, Lock } from 'lucide-react';
+import { getAvatarSignedUrl, uploadAndGetSignedUrl } from '@/lib/storage';
+import { useEffect } from 'react';
 
 const Profile = () => {
   const { user, profile, role } = useAuth();
@@ -19,8 +21,15 @@ const Profile = () => {
     email: profile?.email || '',
   });
   const [loading, setLoading] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || '');
+  const [avatarUrl, setAvatarUrl] = useState('');
   const [uploading, setUploading] = useState(false);
+
+  // Resolve avatar signed URL on mount / profile change
+  useEffect(() => {
+    if (profile?.avatar_url) {
+      getAvatarSignedUrl(profile.avatar_url).then(setAvatarUrl);
+    }
+  }, [profile?.avatar_url]);
 
   // Password change
   const [passwords, setPasswords] = useState({ newPassword: '', confirmPassword: '' });
