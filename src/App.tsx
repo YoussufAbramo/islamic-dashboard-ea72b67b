@@ -51,6 +51,7 @@ const App = () => (
                     <Route path="timetable" element={<Timetable />} />
                     <Route path="subscriptions" element={<Subscriptions />} />
                     <Route path="chats" element={<Chats />} />
+                    <Route path="attendance" element={<Attendance />} />
                     <Route path="profile" element={<Profile />} />
                   </Route>
                   <Route path="*" element={<NotFound />} />
