@@ -128,23 +128,32 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_group: boolean
           is_suspended: boolean
-          student_id: string
-          teacher_id: string
+          name: string | null
+          student_id: string | null
+          subscription_id: string | null
+          teacher_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
+          is_group?: boolean
           is_suspended?: boolean
-          student_id: string
-          teacher_id: string
+          name?: string | null
+          student_id?: string | null
+          subscription_id?: string | null
+          teacher_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
+          is_group?: boolean
           is_suspended?: boolean
-          student_id?: string
-          teacher_id?: string
+          name?: string | null
+          student_id?: string | null
+          subscription_id?: string | null
+          teacher_id?: string | null
         }
         Relationships: [
           {
@@ -152,6 +161,13 @@ export type Database = {
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chats_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
             referencedColumns: ["id"]
           },
           {
