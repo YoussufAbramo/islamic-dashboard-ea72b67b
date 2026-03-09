@@ -11,6 +11,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ResetPassword from "./pages/ResetPassword";
+import ForgotPassword from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import Courses from "./pages/Courses";
 import CourseDetail from "./pages/CourseDetail";
@@ -25,6 +26,8 @@ import Attendance from "./pages/Attendance";
 import Settings from "./pages/Settings";
 import Certificates from "./pages/Certificates";
 import Reports from "./pages/Reports";
+import Announcements from "./pages/Announcements";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +47,7 @@ const App = () => (
                   <Route path="/login" element={<Login />} />
                   <Route path="/signup" element={<Signup />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/dashboard" element={<DashboardLayout />}>
                     <Route index element={<Dashboard />} />
                     <Route path="courses" element={<Courses />} />
@@ -58,6 +62,8 @@ const App = () => (
                     <Route path="settings" element={<Settings />} />
                     <Route path="certificates" element={<Certificates />} />
                     <Route path="reports" element={<Reports />} />
+                    <Route path="announcements" element={<Announcements />} />
+                    <Route path="notifications" element={<Notifications />} />
                     <Route path="profile" element={<Profile />} />
                   </Route>
                   <Route path="*" element={<NotFound />} />

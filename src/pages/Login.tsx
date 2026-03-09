@@ -20,14 +20,26 @@ const roleConfig = {
 };
 
 const TEST_ACCOUNTS = {
-  student: { email: 'student@test.com', password: 'test123456' },
-  teacher: { email: 'teacher@test.com', password: 'test123456' },
-  admin: { email: 'admin@codecom.dev', password: 'admin123456' },
+  student: { email: 'student@codecom.dev', password: 'test123456' },
+  teacher: { email: 'teacher@codecom.dev', password: 'test123456' },
+  admin: { email: 'admin@codecom.dev', password: 'test12345678' },
 };
 
 const WhatsAppIcon = () => (
   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+);
+
+const IslamicCorner = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 120 120" fill="none">
+    <path d="M0 0h60v60H0z" fill="currentColor" opacity="0.08"/>
+    <path d="M30 5L35 15L45 10L40 20L50 25L40 30L45 40L35 35L30 45L25 35L15 40L20 30L10 25L20 20L15 10L25 15Z" stroke="currentColor" strokeWidth="0.5" opacity="0.2"/>
+    <circle cx="30" cy="25" r="8" stroke="currentColor" strokeWidth="0.3" opacity="0.15"/>
+    <circle cx="30" cy="25" r="15" stroke="currentColor" strokeWidth="0.3" opacity="0.1"/>
+    <path d="M5 5L55 5L55 55L5 55Z" stroke="currentColor" strokeWidth="0.3" opacity="0.08"/>
+    <path d="M15 5L15 55M25 5L25 55M35 5L35 55M45 5L45 55" stroke="currentColor" strokeWidth="0.15" opacity="0.06"/>
+    <path d="M5 15L55 15M5 25L55 25M5 35L55 35M5 45L55 45" stroke="currentColor" strokeWidth="0.15" opacity="0.06"/>
   </svg>
 );
 
@@ -70,28 +82,12 @@ const Login = () => {
     setSelectedRole(role);
     const { error } = await signIn(creds.email, creds.password);
     if (error) {
-      toast.error(language === 'ar' ? `فشل تسجيل الدخول كـ ${t(`auth.${role}`)}. تأكد من وجود حساب تجريبي.` : `Failed to login as ${role}. Make sure test account exists.`);
+      toast.error(language === 'ar' ? `فشل تسجيل الدخول كـ ${t(`auth.${role}`)}` : `Failed to login as ${role}. Make sure test account exists.`);
       setLoading(false);
       return;
     }
     setLoading(false);
     navigate('/dashboard');
-  };
-
-  const handleForgotPassword = async () => {
-    if (!email) {
-      toast.error(language === 'ar' ? 'يرجى إدخال بريدك الإلكتروني أولاً' : 'Please enter your email first');
-      return;
-    }
-    const { supabase } = await import('@/integrations/supabase/client');
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success(language === 'ar' ? 'تم إرسال رابط إعادة تعيين كلمة المرور' : 'Password reset link sent to your email');
-    }
   };
 
   return (
@@ -107,14 +103,10 @@ const Login = () => {
       />
       <div className="absolute inset-0 bg-gradient-to-br from-background/90 via-background/80 to-background/90" />
 
-      <svg className="absolute top-0 left-0 w-32 h-32 text-gold/20" viewBox="0 0 100 100">
-        <path d="M0 0 L50 0 A50 50 0 0 0 0 50 Z" fill="currentColor" />
-        <path d="M10 10 L40 10 A30 30 0 0 0 10 40 Z" fill="none" stroke="currentColor" strokeWidth="0.5" />
-      </svg>
-      <svg className="absolute bottom-0 right-0 w-32 h-32 text-gold/20 rotate-180" viewBox="0 0 100 100">
-        <path d="M0 0 L50 0 A50 50 0 0 0 0 50 Z" fill="currentColor" />
-        <path d="M10 10 L40 10 A30 30 0 0 0 10 40 Z" fill="none" stroke="currentColor" strokeWidth="0.5" />
-      </svg>
+      <IslamicCorner className="absolute top-0 left-0 w-28 h-28 text-gold/30" />
+      <IslamicCorner className="absolute bottom-0 right-0 w-28 h-28 text-gold/30 rotate-180" />
+      <IslamicCorner className="absolute top-0 right-0 w-20 h-20 text-gold/20 -scale-x-100" />
+      <IslamicCorner className="absolute bottom-0 left-0 w-20 h-20 text-gold/20 scale-x-100 rotate-180 -scale-x-100" />
 
       {/* Top controls */}
       <div className="absolute top-4 end-4 z-10 flex items-center gap-2">
@@ -219,13 +211,12 @@ const Login = () => {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">{t('auth.password')}</Label>
-                    <button
-                      type="button"
-                      onClick={handleForgotPassword}
+                    <Link
+                      to="/forgot-password"
                       className="text-xs text-primary hover:underline transition-colors"
                     >
                       {language === 'ar' ? 'نسيت كلمة المرور؟' : 'Forgot password?'}
-                    </button>
+                    </Link>
                   </div>
                   <div className="relative">
                     <Input
@@ -291,32 +282,14 @@ const Login = () => {
 
         {/* Contact Developer Section */}
         <div className="mt-4 flex items-center justify-center gap-3">
-          <a
-            href="https://wa.me/201558612808"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card/80 backdrop-blur-sm text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <WhatsAppIcon />
-            WhatsApp
+          <a href="https://wa.me/201558612808" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card/80 backdrop-blur-sm text-xs text-muted-foreground hover:text-foreground transition-colors">
+            <WhatsAppIcon /> WhatsApp
           </a>
-          <a
-            href="mailto:contact@codecom.dev"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card/80 backdrop-blur-sm text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <Mail className="h-3.5 w-3.5" />
-            Email
+          <a href="mailto:contact@codecom.dev" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card/80 backdrop-blur-sm text-xs text-muted-foreground hover:text-foreground transition-colors">
+            <Mail className="h-3.5 w-3.5" /> Email
           </a>
-          <a
-            href="https://codecom.dev/request-estimate/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card/80 backdrop-blur-sm text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-            {language === 'ar' ? 'طلب تقدير' : 'Get Estimate'}
+          <a href="https://codecom.dev/request-estimate/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card/80 backdrop-blur-sm text-xs text-muted-foreground hover:text-foreground transition-colors">
+            <ExternalLink className="h-3.5 w-3.5" /> {language === 'ar' ? 'طلب تقدير' : 'Get Estimate'}
           </a>
         </div>
 

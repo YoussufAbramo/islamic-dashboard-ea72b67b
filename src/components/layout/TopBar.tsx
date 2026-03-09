@@ -1,4 +1,4 @@
-import { Moon, Sun, Bell, Megaphone, Globe, LogOut, User, Plus, CheckCheck } from 'lucide-react';
+import { Moon, Sun, Bell, Megaphone, Globe, LogOut, User, Plus, CheckCheck, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -23,6 +23,8 @@ const TopBar = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [addAnnouncementOpen, setAddAnnouncementOpen] = useState(false);
+  const [announcementDetailOpen, setAnnouncementDetailOpen] = useState(false);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState<any>(null);
   const [announcementForm, setAnnouncementForm] = useState({ title: '', title_ar: '', content: '', content_ar: '', target_audience: 'all', scheduled_at: '' });
   const isAr = language === 'ar';
   const isAdmin = role === 'admin';
@@ -67,6 +69,20 @@ const TopBar = () => {
     fetchData();
   };
 
+  const handleNotificationClick = (n: any) => {
+    if (n.link) {
+      supabase.from('notifications').update({ is_read: true }).eq('id', n.id).then(() => {
+        setNotifications(prev => prev.filter(x => x.id !== n.id));
+      });
+      navigate(n.link);
+    }
+  };
+
+  const handleAnnouncementClick = (a: any) => {
+    setSelectedAnnouncement(a);
+    setAnnouncementDetailOpen(true);
+  };
+
   const iconBtnClass = "rounded-full h-9 w-9";
 
   return (
@@ -88,7 +104,7 @@ const TopBar = () => {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className={`${iconBtnClass} relative`}>
               <Megaphone className="h-4 w-4" />
-              {announcements.length > 0 && <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 text-[10px] flex items-center justify-center">{announcements.length}</Badge>}
+              {announcements.length > 0 && <Badge className="absolute top-0 -end-0.5 h-4 min-w-[16px] p-0 text-[10px] flex items-center justify-center">{announcements.length}</Badge>}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
@@ -105,13 +121,16 @@ const TopBar = () => {
             <DropdownMenuSeparator />
             {announcements.length === 0 ? (
               <DropdownMenuItem disabled>{t('common.noData')}</DropdownMenuItem>
-            ) : announcements.map((a) => (
-              <DropdownMenuItem key={a.id} className="flex flex-col items-start">
+            ) : announcements.slice(0, 5).map((a) => (
+              <DropdownMenuItem key={a.id} className="flex flex-col items-start cursor-pointer" onClick={() => handleAnnouncementClick(a)}>
                 <span className="font-medium text-sm">{isAr && a.title_ar ? a.title_ar : a.title}</span>
-                <span className="text-xs text-muted-foreground line-clamp-2">{isAr && a.content_ar ? a.content_ar : a.content}</span>
-                {a.target_audience !== 'all' && <Badge variant="outline" className="mt-1 text-[10px]">{a.target_audience}</Badge>}
+                <span className="text-xs text-muted-foreground line-clamp-1">{isAr && a.content_ar ? a.content_ar : a.content}</span>
               </DropdownMenuItem>
             ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="justify-center text-primary text-sm" onClick={() => navigate('/dashboard/announcements')}>
+              <ExternalLink className="h-3 w-3 me-1" />{isAr ? 'عرض الكل' : 'View All'}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -120,27 +139,29 @@ const TopBar = () => {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className={`${iconBtnClass} relative`}>
               <Bell className="h-4 w-4" />
-              {notifications.length > 0 && <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 text-[10px] flex items-center justify-center">{notifications.length}</Badge>}
+              {notifications.length > 0 && <Badge className="absolute top-0 -end-0.5 h-4 min-w-[16px] p-0 text-[10px] flex items-center justify-center">{notifications.length}</Badge>}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
             <div className="flex items-center justify-between px-3 py-2">
               <span className="text-sm font-medium">{isAr ? 'الإشعارات' : 'Notifications'}</span>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={markAllNotificationsRead} title={isAr ? 'تحديد الكل كمقروء' : 'Mark all read'}>
-                  <CheckCheck className="h-3 w-3" />
-                </Button>
-              </div>
+              <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={markAllNotificationsRead} title={isAr ? 'تحديد الكل كمقروء' : 'Mark all read'}>
+                <CheckCheck className="h-3 w-3" />
+              </Button>
             </div>
             <DropdownMenuSeparator />
             {notifications.length === 0 ? (
               <DropdownMenuItem disabled>{t('common.noData')}</DropdownMenuItem>
-            ) : notifications.map((n) => (
-              <DropdownMenuItem key={n.id} className="flex flex-col items-start">
+            ) : notifications.slice(0, 5).map((n) => (
+              <DropdownMenuItem key={n.id} className="flex flex-col items-start cursor-pointer" onClick={() => handleNotificationClick(n)}>
                 <span className="font-medium text-sm">{n.title}</span>
                 <span className="text-xs text-muted-foreground">{n.message}</span>
               </DropdownMenuItem>
             ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="justify-center text-primary text-sm" onClick={() => navigate('/dashboard/notifications')}>
+              <ExternalLink className="h-3 w-3 me-1" />{isAr ? 'عرض الكل' : 'View All'}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -164,6 +185,28 @@ const TopBar = () => {
           </DropdownMenuContent>
         </DropdownMenu>
       </header>
+
+      {/* Announcement Detail Dialog */}
+      <Dialog open={announcementDetailOpen} onOpenChange={setAnnouncementDetailOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Megaphone className="h-5 w-5 text-primary" />
+              {selectedAnnouncement && (isAr && selectedAnnouncement.title_ar ? selectedAnnouncement.title_ar : selectedAnnouncement?.title)}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedAnnouncement && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg bg-muted/50">
+                <p className="text-sm whitespace-pre-wrap">{isAr && selectedAnnouncement.content_ar ? selectedAnnouncement.content_ar : selectedAnnouncement.content}</p>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <Badge variant="outline">{selectedAnnouncement.target_audience === 'all' ? (isAr ? 'الجميع' : 'Everyone') : selectedAnnouncement.target_audience}</Badge>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Add Announcement Dialog */}
       <Dialog open={addAnnouncementOpen} onOpenChange={setAddAnnouncementOpen}>
