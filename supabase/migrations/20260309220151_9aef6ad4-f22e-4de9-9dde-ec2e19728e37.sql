@@ -1,0 +1,8 @@
+
+ALTER TABLE public.students
+ADD CONSTRAINT students_user_id_profiles_fkey
+FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
+
+ALTER TABLE public.teachers
+ADD CONSTRAINT teachers_user_id_profiles_fkey
+FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;

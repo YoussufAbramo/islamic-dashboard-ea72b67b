@@ -28,7 +28,7 @@ const Teachers = () => {
   const [addLoading, setAddLoading] = useState(false);
 
   const fetchTeachers = async () => {
-    const { data } = await supabase.from('teachers').select('*, profiles:user_id(full_name, phone, email)');
+    const { data } = await supabase.from('teachers').select('*, profiles:teachers_user_id_profiles_fkey(full_name, phone, email)');
     setTeachers(data || []);
   };
 

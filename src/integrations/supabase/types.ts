@@ -198,6 +198,13 @@ export type Database = {
             referencedRelation: "chats"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "chat_messages_sender_id_profiles_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       chats: {
@@ -511,6 +518,13 @@ export type Database = {
             referencedRelation: "teachers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "students_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       subscriptions: {
@@ -653,7 +667,15 @@ export type Database = {
           user_id?: string
           weekly_schedule?: Json | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "teachers_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       timetable_entries: {
         Row: {

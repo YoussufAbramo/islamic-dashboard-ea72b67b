@@ -20,7 +20,7 @@ const Timetable = () => {
     const fetchEntries = async () => {
       const { data } = await supabase
         .from('timetable_entries')
-        .select('*, courses:course_id(title), students:student_id(user_id, profiles:user_id(full_name)), teachers_rel:teacher_id(user_id, profiles:user_id(full_name))')
+        .select('*, courses:course_id(title), students:student_id(user_id, profiles:students_user_id_profiles_fkey(full_name)), teachers_rel:teacher_id(user_id, profiles:teachers_user_id_profiles_fkey(full_name))')
         .order('scheduled_at', { ascending: true });
       setEntries(data || []);
     };
