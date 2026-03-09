@@ -17,6 +17,7 @@ const CURRENCIES: Currency[] = [
 ];
 
 export type ColorTheme = 'emerald' | 'ocean' | 'purple' | 'desert' | 'midnight';
+export type ButtonShape = 'rounded' | 'circular' | 'square';
 
 const THEMES: { value: ColorTheme; label: string; labelAr: string; color: string }[] = [
   { value: 'emerald', label: 'Emerald Gold', labelAr: 'الزمرد الذهبي', color: 'hsl(160 45% 28%)' },
@@ -60,6 +61,7 @@ interface PendingSettings {
   appLogo: string;
   ltrFont: string;
   rtlFont: string;
+  buttonShape: ButtonShape;
 }
 
 interface AppSettingsContextType {
@@ -79,7 +81,8 @@ interface AppSettingsContextType {
   setLtrFont: (f: string) => void;
   rtlFont: string;
   setRtlFont: (f: string) => void;
-  // Pending settings (for save button)
+  buttonShape: ButtonShape;
+  setButtonShape: (s: ButtonShape) => void;
   pending: PendingSettings;
   updatePending: (partial: Partial<PendingSettings>) => void;
   saveSettings: () => void;
@@ -98,6 +101,7 @@ function loadSaved(): PendingSettings {
     appLogo: localStorage.getItem('app_logo') || '',
     ltrFont: localStorage.getItem('app_ltr_font') || 'Inter',
     rtlFont: localStorage.getItem('app_rtl_font') || 'Cairo',
+    buttonShape: (localStorage.getItem('app_button_shape') as ButtonShape) || 'rounded',
   };
 }
 
@@ -114,11 +118,17 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   }, [saved.colorTheme]);
 
+  // Apply button shape
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.remove('btn-rounded', 'btn-circular', 'btn-square');
+    root.classList.add(`btn-${saved.buttonShape}`);
+  }, [saved.buttonShape]);
+
   // Apply fonts
   useEffect(() => {
     document.documentElement.style.setProperty('--font-ltr', `'${saved.ltrFont}', sans-serif`);
     document.documentElement.style.setProperty('--font-rtl', `'${saved.rtlFont}', sans-serif`);
-    // Load Google Fonts dynamically
     const families = [saved.ltrFont, saved.rtlFont].map(f => f.replace(/ /g, '+')).join('&family=');
     const linkId = 'dynamic-google-fonts';
     let link = document.getElementById(linkId) as HTMLLinkElement;
@@ -134,7 +144,6 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const hasPendingChanges = JSON.stringify(saved) !== JSON.stringify(pending);
 
   const saveSettings = useCallback(() => {
-    // Persist all pending to localStorage and apply
     localStorage.setItem('app_currency', JSON.stringify(pending.currency));
     localStorage.setItem('app_color_theme', pending.colorTheme);
     localStorage.setItem('app_name', pending.appName);
@@ -142,6 +151,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     localStorage.setItem('app_logo', pending.appLogo);
     localStorage.setItem('app_ltr_font', pending.ltrFont);
     localStorage.setItem('app_rtl_font', pending.rtlFont);
+    localStorage.setItem('app_button_shape', pending.buttonShape);
     setSaved({ ...pending });
   }, [pending]);
 
@@ -153,19 +163,18 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setPending(prev => ({ ...prev, ...partial }));
   }, []);
 
-  // Direct setters (for backwards compat, immediately save)
   const setCurrency = useCallback((c: Currency) => { setPending(p => ({ ...p, currency: c })); }, []);
   const setColorTheme = useCallback((t: ColorTheme) => { setPending(p => ({ ...p, colorTheme: t })); }, []);
   const setAppName = useCallback((n: string) => { setPending(p => ({ ...p, appName: n })); }, []);
   const setAppDescription = useCallback((d: string) => { setPending(p => ({ ...p, appDescription: d })); }, []);
   const setAppLogo = useCallback((l: string) => {
-    // Logo upload is immediate
     localStorage.setItem('app_logo', l);
     setSaved(s => ({ ...s, appLogo: l }));
     setPending(p => ({ ...p, appLogo: l }));
   }, []);
   const setLtrFont = useCallback((f: string) => { setPending(p => ({ ...p, ltrFont: f })); }, []);
   const setRtlFont = useCallback((f: string) => { setPending(p => ({ ...p, rtlFont: f })); }, []);
+  const setButtonShape = useCallback((s: ButtonShape) => { setPending(p => ({ ...p, buttonShape: s })); }, []);
 
   return (
     <AppSettingsContext.Provider value={{
@@ -176,6 +185,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       appLogo: saved.appLogo, setAppLogo,
       ltrFont: saved.ltrFont, setLtrFont,
       rtlFont: saved.rtlFont, setRtlFont,
+      buttonShape: saved.buttonShape, setButtonShape,
       pending, updatePending, saveSettings, hasPendingChanges, discardChanges,
     }}>
       {children}

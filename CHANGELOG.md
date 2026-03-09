@@ -2,6 +2,46 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [1.2.0] - 2026-03-09
+
+### Added
+- Announcements page (`/dashboard/announcements`) with full CRUD and detail popup
+- Notifications page (`/dashboard/notifications`) with mark-read and navigation
+- Forgot Password page (`/forgot-password`) as standalone auth page
+- Button shape setting (rounded/circular/square) in App Settings
+- Certificate design selection (Classic, Modern, Elegant) with isolated print window
+- Support ticket detail UI with tabbed layout (Details, Notes, Contact)
+- WhatsApp/Email/Call contact buttons in support ticket detail
+- Resolution notes textarea in support tickets
+- Dashboard widget toggle for 12 individual widgets
+- Clickable stat cards navigating to related pages
+- Upcoming Lessons, Recent Subscriptions, Announcements dashboard widgets
+- "View All" buttons in TopBar announcements and notifications dropdowns
+- Announcement detail popup when clicking in TopBar dropdown
+- Notification click navigates to related page via `link` field
+- Custom scrollbar styling matching dashboard theme
+- Font preview loading only on Settings page (optimized)
+- `manage-accounts` edge function for email updates and user management
+- Islamic geometric corner patterns on auth page
+
+### Changed
+- Sidebar menu reordered: Overview → Educate → Messages → Users → Finance
+- Added Announcements and Notifications to sidebar Messages category
+- Admin quick login password fixed to match actual credentials
+- Test accounts updated to `@codecom.dev` emails
+- Forgot password changed from inline handler to dedicated page link
+- TopBar badge position adjusted (slightly lower on icons)
+- Certificate print now opens isolated window instead of printing whole page
+- Dashboard calendar styled with gradient headers and ring indicators
+- All RLS policies converted from RESTRICTIVE to PERMISSIVE (fixes data visibility)
+
+### Fixed
+- Admin quick login not working (wrong password in TEST_ACCOUNTS)
+- Students/teachers not showing in dashboard (RESTRICTIVE RLS policies)
+- Certificate print printing entire dashboard page
+- Font preview not working in Settings page
+- Dark mode color issues with non-default color themes
+
 ## [1.1.0] - 2026-03-09
 
 ### Added
