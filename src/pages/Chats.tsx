@@ -34,7 +34,7 @@ const Chats = () => {
   const fetchChats = async () => {
     const { data } = await supabase
       .from('chats')
-      .select('*, teachers:teacher_id(user_id, profiles:user_id(full_name)), students:student_id(user_id, profiles:user_id(full_name))')
+      .select('*, teachers:teacher_id(user_id, profiles:teachers_user_id_profiles_fkey(full_name)), students:student_id(user_id, profiles:students_user_id_profiles_fkey(full_name))')
       .order('created_at', { ascending: false });
     setChats(data || []);
   };
