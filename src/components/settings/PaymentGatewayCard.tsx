@@ -1,6 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Check, CreditCard } from 'lucide-react';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
@@ -23,7 +21,6 @@ const PaymentGatewayCard = ({ isAr }: PaymentGatewayCardProps) => {
   const { pending, updatePending } = useAppSettings();
 
   const selectedGateway = pending.paymentGateway || '';
-  const apiKey = pending.paymentGatewayKey || '';
 
   return (
     <Card>
@@ -33,7 +30,7 @@ const PaymentGatewayCard = ({ isAr }: PaymentGatewayCardProps) => {
           {isAr ? 'بوابة الدفع' : 'Payment Gateway'}
         </CardTitle>
         <CardDescription>
-          {isAr ? 'اختر بوابة الدفع وأدخل مفتاح API' : 'Select a payment gateway and enter your API key'}
+          {isAr ? 'اختر بوابة الدفع المفضلة' : 'Select your preferred payment gateway'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -41,7 +38,7 @@ const PaymentGatewayCard = ({ isAr }: PaymentGatewayCardProps) => {
           {GATEWAYS.map((gw) => (
             <button
               key={gw.id}
-              onClick={() => updatePending({ paymentGateway: gw.id, paymentGatewayKey: gw.id === selectedGateway ? apiKey : '' })}
+              onClick={() => updatePending({ paymentGateway: gw.id })}
               className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
                 selectedGateway === gw.id
                   ? 'border-primary shadow-md scale-[1.02]'
@@ -67,20 +64,11 @@ const PaymentGatewayCard = ({ isAr }: PaymentGatewayCardProps) => {
                 {isAr ? 'مفعّل' : 'Selected'}
               </span>
             </div>
-            <div className="space-y-1">
-              <Label>{isAr ? 'مفتاح API' : 'API Key'}</Label>
-              <Input
-                type="password"
-                value={apiKey}
-                onChange={(e) => updatePending({ paymentGatewayKey: e.target.value })}
-                placeholder={isAr ? 'أدخل مفتاح API الخاص بك' : 'Enter your API key'}
-              />
-              <p className="text-xs text-muted-foreground">
-                {isAr
-                  ? 'سيتم حفظ المفتاح بشكل آمن في إعدادات التطبيق'
-                  : 'The key will be stored securely in app settings'}
-              </p>
-            </div>
+            <p className="text-xs text-muted-foreground">
+              {isAr
+                ? 'يتم تخزين مفاتيح API بشكل آمن على الخادم عبر إعدادات Supabase Secrets'
+                : 'API keys are stored securely server-side via Supabase Secrets. Configure them in your Supabase dashboard.'}
+            </p>
           </div>
         )}
       </CardContent>
