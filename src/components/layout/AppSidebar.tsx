@@ -126,7 +126,7 @@ const AppSidebar = () => {
             onClick={() => navigate('/dashboard/settings')}
           >
             <Settings className="h-5 w-5 text-sidebar-foreground/60" />
-            <span className="text-sm text-sidebar-foreground/80">{isAr ? 'الإعدادات' : 'Settings'}</span>
+            <span className="text-sm text-sidebar-foreground/80">{isAr ? 'إعدادات التطبيق' : 'App Settings'}</span>
           </div>
 
           {/* User profile */}

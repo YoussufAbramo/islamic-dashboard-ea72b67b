@@ -1,4 +1,5 @@
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useAppSettings, LTR_FONTS, RTL_FONTS, type ButtonShape } from '@/contexts/AppSettingsContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,14 +11,17 @@ import { Palette, Building2, Coins, Upload, Check, Type, Save, Undo2, RectangleH
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useRef, useEffect } from 'react';
+import DataManagementCard from '@/components/settings/DataManagementCard';
 
 const Settings = () => {
   const { language } = useLanguage();
+  const { role } = useAuth();
   const {
     pending, updatePending, saveSettings, hasPendingChanges, discardChanges,
     themes, currencies, setAppLogo, appLogo,
   } = useAppSettings();
   const isAr = language === 'ar';
+  const isAdmin = role === 'admin';
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Dynamically load all preview fonts only on this page
@@ -272,6 +276,9 @@ const Settings = () => {
           </Select>
         </CardContent>
       </Card>
+
+      {/* Data Management (Admin only) */}
+      {isAdmin && <DataManagementCard isAr={isAr} />}
 
       {/* Sticky save bar */}
       {hasPendingChanges && (

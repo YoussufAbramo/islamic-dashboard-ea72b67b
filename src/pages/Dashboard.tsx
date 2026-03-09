@@ -6,7 +6,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { BookOpen, Users, GraduationCap, CreditCard, HeadphonesIcon, Calendar as CalendarIcon, DollarSign, AlertTriangle, Pencil, Award, ClipboardCheck, MessageSquare, TrendingUp, UserCheck, Megaphone, BarChart3 } from 'lucide-react';
+import { BookOpen, Users, GraduationCap, CreditCard, HeadphonesIcon, Calendar as CalendarIcon, DollarSign, AlertTriangle, Pencil, Award, ClipboardCheck, MessageSquare, UserCheck, Megaphone } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -33,37 +33,93 @@ interface TimetableEntry {
   teacher_id: string | null;
 }
 
-type WidgetKey = 'stats' | 'calendar' | 'recentActivity' | 'quickActions' | 'attendanceOverview' | 'certificatesIssued' | 'topStudents' | 'recentSubscriptions' | 'upcomingLessons' | 'supportOverview' | 'teacherOverview' | 'announcementsWidget';
+// Individual widget keys - stats are now separate
+type WidgetKey =
+  | 'statCourses' | 'statStudents' | 'statTeachers' | 'statSubscriptions'
+  | 'statTickets' | 'statLessons' | 'statWeeklyLessons' | 'statMri'
+  | 'attendanceOverview' | 'certificatesIssued' | 'supportOverview'
+  | 'teacherOverview' | 'announcementsWidget' | 'chatsOverview'
+  | 'calendar' | 'upcomingLessons' | 'recentActivity'
+  | 'recentSubscriptions' | 'topStudents';
 
 const DEFAULT_WIDGETS: Record<WidgetKey, boolean> = {
-  stats: true,
-  calendar: true,
-  recentActivity: true,
-  quickActions: true,
-  attendanceOverview: true,
-  certificatesIssued: true,
-  topStudents: true,
-  recentSubscriptions: true,
-  upcomingLessons: true,
-  supportOverview: true,
-  teacherOverview: true,
-  announcementsWidget: true,
+  statCourses: true, statStudents: true, statTeachers: true, statSubscriptions: true,
+  statTickets: true, statLessons: true, statWeeklyLessons: true, statMri: true,
+  attendanceOverview: true, certificatesIssued: true, supportOverview: true,
+  teacherOverview: true, announcementsWidget: true, chatsOverview: true,
+  calendar: true, upcomingLessons: true, recentActivity: true,
+  recentSubscriptions: true, topStudents: true,
 };
 
 const WIDGET_LABELS: Record<WidgetKey, { en: string; ar: string }> = {
-  stats: { en: 'Statistics Cards', ar: 'بطاقات الإحصائيات' },
+  statCourses: { en: 'Courses Count', ar: 'عدد الدورات' },
+  statStudents: { en: 'Students Count', ar: 'عدد الطلاب' },
+  statTeachers: { en: 'Teachers Count', ar: 'عدد المعلمين' },
+  statSubscriptions: { en: 'Active Subscriptions', ar: 'الاشتراكات النشطة' },
+  statTickets: { en: 'Open Tickets', ar: 'التذاكر المفتوحة' },
+  statLessons: { en: 'Upcoming Lessons', ar: 'الدروس القادمة' },
+  statWeeklyLessons: { en: 'Weekly Lessons', ar: 'دروس الأسبوع' },
+  statMri: { en: 'Monthly Income', ar: 'الدخل الشهري' },
+  attendanceOverview: { en: 'Attendance Card', ar: 'بطاقة الحضور' },
+  certificatesIssued: { en: 'Certificates Card', ar: 'بطاقة الشهادات' },
+  supportOverview: { en: 'Support Card', ar: 'بطاقة الدعم' },
+  teacherOverview: { en: 'Teachers Card', ar: 'بطاقة المعلمين' },
+  announcementsWidget: { en: 'Announcements Card', ar: 'بطاقة الإعلانات' },
+  chatsOverview: { en: 'Chats Card', ar: 'بطاقة المحادثات' },
   calendar: { en: 'Lessons Calendar', ar: 'تقويم الدروس' },
+  upcomingLessons: { en: 'Upcoming Lessons List', ar: 'قائمة الدروس القادمة' },
   recentActivity: { en: 'Recent Activity', ar: 'النشاط الأخير' },
-  quickActions: { en: 'Quick Actions', ar: 'إجراءات سريعة' },
-  attendanceOverview: { en: 'Attendance Overview', ar: 'نظرة عامة على الحضور' },
-  certificatesIssued: { en: 'Certificates Issued', ar: 'الشهادات الصادرة' },
-  topStudents: { en: 'Top Students', ar: 'أفضل الطلاب' },
   recentSubscriptions: { en: 'Recent Subscriptions', ar: 'الاشتراكات الأخيرة' },
-  upcomingLessons: { en: 'Upcoming Lessons', ar: 'الدروس القادمة' },
-  supportOverview: { en: 'Support Overview', ar: 'نظرة عامة على الدعم' },
-  teacherOverview: { en: 'Teacher Overview', ar: 'نظرة عامة على المعلمين' },
-  announcementsWidget: { en: 'Announcements', ar: 'الإعلانات' },
+  topStudents: { en: 'Top Students', ar: 'أفضل الطلاب' },
 };
+
+interface WidgetCategory {
+  label: string;
+  labelAr: string;
+  keys: WidgetKey[];
+}
+
+const WIDGET_CATEGORIES: WidgetCategory[] = [
+  {
+    label: '📊 Statistics Cards',
+    labelAr: '📊 بطاقات الإحصائيات',
+    keys: ['statCourses', 'statStudents', 'statTeachers', 'statSubscriptions', 'statTickets', 'statLessons', 'statWeeklyLessons', 'statMri'],
+  },
+  {
+    label: '📋 Overview Cards',
+    labelAr: '📋 بطاقات النظرة العامة',
+    keys: ['attendanceOverview', 'certificatesIssued', 'supportOverview', 'teacherOverview', 'announcementsWidget', 'chatsOverview'],
+  },
+  {
+    label: '📅 Schedule & Activity',
+    labelAr: '📅 الجدول والنشاط',
+    keys: ['calendar', 'upcomingLessons', 'recentActivity', 'recentSubscriptions', 'topStudents'],
+  },
+];
+
+function migrateWidgets(saved: any): Record<WidgetKey, boolean> {
+  const result = { ...DEFAULT_WIDGETS };
+  if (saved) {
+    // Migrate old 'stats' key to individual stat keys
+    if ('stats' in saved) {
+      const statsVal = saved.stats;
+      (['statCourses', 'statStudents', 'statTeachers', 'statSubscriptions', 'statTickets', 'statLessons', 'statWeeklyLessons', 'statMri'] as WidgetKey[]).forEach(k => {
+        result[k] = statsVal;
+      });
+    }
+    // Migrate old 'quickActions' to 'chatsOverview'
+    if ('quickActions' in saved) {
+      result.chatsOverview = saved.quickActions;
+    }
+    // Apply any matching new keys
+    for (const key of Object.keys(result) as WidgetKey[]) {
+      if (key in saved) {
+        result[key] = saved[key];
+      }
+    }
+  }
+  return result;
+}
 
 const Dashboard = () => {
   const { role, profile } = useAuth();
@@ -79,7 +135,7 @@ const Dashboard = () => {
   const [editMode, setEditMode] = useState(false);
   const [widgets, setWidgets] = useState<Record<WidgetKey, boolean>>(() => {
     const saved = localStorage.getItem('dashboard_widgets');
-    return saved ? { ...DEFAULT_WIDGETS, ...JSON.parse(saved) } : DEFAULT_WIDGETS;
+    return migrateWidgets(saved ? JSON.parse(saved) : null);
   });
   const isAr = language === 'ar';
   const isAdmin = role === 'admin';
@@ -119,19 +175,11 @@ const Dashboard = () => {
       const absences = weekData.filter((e: any) => e.status === 'cancelled').length;
 
       setStats({
-        courses: courses.count || 0,
-        students: students.count || 0,
-        teachers: teachers.count || 0,
-        subscriptions: subs.count || 0,
-        tickets: tickets.count || 0,
-        lessons: timetable.count || 0,
-        mri,
-        weeklyLessons: weekData.length,
-        teacherAbsences: absences,
-        certificates: certs.count || 0,
-        attendance: attendanceCount.count || 0,
-        chats: chatCount.count || 0,
-        announcements: announcementsCount.count || 0,
+        courses: courses.count || 0, students: students.count || 0, teachers: teachers.count || 0,
+        subscriptions: subs.count || 0, tickets: tickets.count || 0, lessons: timetable.count || 0,
+        mri, weeklyLessons: weekData.length, teacherAbsences: absences,
+        certificates: certs.count || 0, attendance: attendanceCount.count || 0,
+        chats: chatCount.count || 0, announcements: announcementsCount.count || 0,
       });
     };
 
@@ -166,6 +214,9 @@ const Dashboard = () => {
   const hasLessonModifier = (date: Date) => lessonDates.some(d => isSameDay(d, date));
   const upcomingEntries = timetableEntries.filter(e => new Date(e.scheduled_at) >= new Date()).slice(0, 5);
 
+  // Check if any stat in a group is visible
+  const hasAnyStat = (['statCourses', 'statStudents', 'statTeachers', 'statSubscriptions', 'statTickets', 'statLessons', 'statWeeklyLessons', 'statMri'] as WidgetKey[]).some(k => widgets[k]);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -177,64 +228,70 @@ const Dashboard = () => {
             onClick={() => setEditMode(!editMode)}
           >
             <Pencil className="h-4 w-4 me-1" />
-            {editMode ? (isAr ? 'تم' : 'Done') : (isAr ? 'تعديل' : 'Edit Mode')}
+            {editMode ? (isAr ? 'تم' : 'Done') : (isAr ? 'إدارة لوحة التحكم' : 'Manage Dashboard')}
           </Button>
         )}
       </div>
 
-      {/* Edit Mode Panel */}
+      {/* Edit Mode Panel - Categorized */}
       {editMode && isAdmin && (
         <Card className="border-primary/30 bg-primary/5">
-          <CardContent className="pt-4">
-            <p className="text-sm font-medium mb-3">{isAr ? 'إظهار/إخفاء الأدوات' : 'Show/Hide Widgets'}</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              {(Object.keys(WIDGET_LABELS) as WidgetKey[]).map((key) => (
-                <div key={key} className="flex items-center justify-between gap-2 p-2 rounded-lg border border-border">
-                  <span className="text-xs">{isAr ? WIDGET_LABELS[key].ar : WIDGET_LABELS[key].en}</span>
-                  <Switch checked={widgets[key]} onCheckedChange={() => toggleWidget(key)} />
+          <CardContent className="pt-4 space-y-4">
+            {WIDGET_CATEGORIES.map((cat) => (
+              <div key={cat.label}>
+                <p className="text-sm font-semibold mb-2 text-primary">
+                  {isAr ? cat.labelAr : cat.label}
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                  {cat.keys.map((key) => (
+                    <div key={key} className="flex items-center justify-between gap-2 p-2 rounded-lg border border-border bg-background">
+                      <span className="text-xs">{isAr ? WIDGET_LABELS[key].ar : WIDGET_LABELS[key].en}</span>
+                      <Switch checked={widgets[key]} onCheckedChange={() => toggleWidget(key)} />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </CardContent>
         </Card>
       )}
 
-      {/* Stats */}
-      {widgets.stats && (
-        <>
-          {role === 'admin' && (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              <StatCard title={t('dashboard.totalCourses')} value={stats.courses} icon={BookOpen} onClick={() => navigate('/dashboard/courses')} />
-              <StatCard title={t('dashboard.totalStudents')} value={stats.students} icon={GraduationCap} onClick={() => navigate('/dashboard/students')} />
-              <StatCard title={t('dashboard.totalTeachers')} value={stats.teachers} icon={Users} onClick={() => navigate('/dashboard/teachers')} />
-              <StatCard title={t('dashboard.activeSubscriptions')} value={stats.subscriptions} icon={CreditCard} onClick={() => navigate('/dashboard/subscriptions')} />
-              <StatCard title={t('dashboard.openTickets')} value={stats.tickets} icon={HeadphonesIcon} onClick={() => navigate('/dashboard/support')} />
-              <StatCard title={t('dashboard.upcomingLessons')} value={stats.lessons} icon={CalendarIcon} onClick={() => navigate('/dashboard/timetable')} />
-              <StatCard title={isAr ? 'دروس هذا الأسبوع' : 'Lessons This Week'} value={stats.weeklyLessons} icon={CalendarIcon} onClick={() => navigate('/dashboard/timetable')} />
-              <StatCard title={isAr ? 'الدخل الشهري المتكرر' : 'Monthly Recurring Income'} value={`${currency.symbol}${stats.mri.toFixed(2)}`} icon={DollarSign} onClick={() => navigate('/dashboard/reports')} />
-              {stats.teacherAbsences > 0 && (
-                <StatCard title={isAr ? 'غيابات المعلمين' : 'Teacher Absences'} value={stats.teacherAbsences} icon={AlertTriangle} alert onClick={() => navigate('/dashboard/attendance')} />
-              )}
-            </div>
+      {/* Admin Statistics */}
+      {role === 'admin' && hasAnyStat && (
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {widgets.statCourses && <StatCard title={t('dashboard.totalCourses')} value={stats.courses} icon={BookOpen} onClick={() => navigate('/dashboard/courses')} />}
+          {widgets.statStudents && <StatCard title={t('dashboard.totalStudents')} value={stats.students} icon={GraduationCap} onClick={() => navigate('/dashboard/students')} />}
+          {widgets.statTeachers && <StatCard title={t('dashboard.totalTeachers')} value={stats.teachers} icon={Users} onClick={() => navigate('/dashboard/teachers')} />}
+          {widgets.statSubscriptions && <StatCard title={t('dashboard.activeSubscriptions')} value={stats.subscriptions} icon={CreditCard} onClick={() => navigate('/dashboard/subscriptions')} />}
+          {widgets.statTickets && <StatCard title={t('dashboard.openTickets')} value={stats.tickets} icon={HeadphonesIcon} onClick={() => navigate('/dashboard/support')} />}
+          {widgets.statLessons && <StatCard title={t('dashboard.upcomingLessons')} value={stats.lessons} icon={CalendarIcon} onClick={() => navigate('/dashboard/timetable')} />}
+          {widgets.statWeeklyLessons && <StatCard title={isAr ? 'دروس هذا الأسبوع' : 'Lessons This Week'} value={stats.weeklyLessons} icon={CalendarIcon} onClick={() => navigate('/dashboard/timetable')} />}
+          {widgets.statMri && <StatCard title={isAr ? 'الدخل الشهري المتكرر' : 'Monthly Recurring Income'} value={`${currency.symbol}${stats.mri.toFixed(2)}`} icon={DollarSign} onClick={() => navigate('/dashboard/reports')} />}
+          {stats.teacherAbsences > 0 && (
+            <StatCard title={isAr ? 'غيابات المعلمين' : 'Teacher Absences'} value={stats.teacherAbsences} icon={AlertTriangle} alert onClick={() => navigate('/dashboard/attendance')} />
           )}
-          {role === 'teacher' && (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              <StatCard title={t('dashboard.myStudents')} value={stats.students} icon={GraduationCap} onClick={() => navigate('/dashboard/students')} />
-              <StatCard title={t('dashboard.myCourses')} value={stats.courses} icon={BookOpen} onClick={() => navigate('/dashboard/courses')} />
-              <StatCard title={t('dashboard.upcomingLessons')} value={stats.lessons} icon={CalendarIcon} onClick={() => navigate('/dashboard/timetable')} />
-            </div>
-          )}
-          {role === 'student' && (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              <StatCard title={t('dashboard.myCourses')} value={stats.courses} icon={BookOpen} onClick={() => navigate('/dashboard/courses')} />
-              <StatCard title={t('dashboard.mySchedule')} value={stats.lessons} icon={CalendarIcon} onClick={() => navigate('/dashboard/timetable')} />
-              <StatCard title={t('dashboard.activeSubscriptions')} value={stats.subscriptions} icon={CreditCard} onClick={() => navigate('/dashboard/subscriptions')} />
-            </div>
-          )}
-        </>
+        </div>
       )}
 
-      {/* Row of small widgets */}
+      {/* Teacher Stats */}
+      {role === 'teacher' && (
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <StatCard title={t('dashboard.myStudents')} value={stats.students} icon={GraduationCap} onClick={() => navigate('/dashboard/students')} />
+          <StatCard title={t('dashboard.myCourses')} value={stats.courses} icon={BookOpen} onClick={() => navigate('/dashboard/courses')} />
+          <StatCard title={t('dashboard.upcomingLessons')} value={stats.lessons} icon={CalendarIcon} onClick={() => navigate('/dashboard/timetable')} />
+        </div>
+      )}
+
+      {/* Student Stats */}
+      {role === 'student' && (
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <StatCard title={t('dashboard.myCourses')} value={stats.courses} icon={BookOpen} onClick={() => navigate('/dashboard/courses')} />
+          <StatCard title={t('dashboard.mySchedule')} value={stats.lessons} icon={CalendarIcon} onClick={() => navigate('/dashboard/timetable')} />
+          <StatCard title={t('dashboard.activeSubscriptions')} value={stats.subscriptions} icon={CreditCard} onClick={() => navigate('/dashboard/subscriptions')} />
+        </div>
+      )}
+
+      {/* Overview Cards */}
       {isAdmin && (
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {widgets.attendanceOverview && (
@@ -307,7 +364,7 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           )}
-          {widgets.quickActions && (
+          {widgets.chatsOverview && (
             <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/chats')}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
