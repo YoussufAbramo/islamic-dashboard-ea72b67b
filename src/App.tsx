@@ -8,6 +8,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AppSettingsProvider } from "@/contexts/AppSettingsContext";
 import { ThemeProvider } from "next-themes";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import RoleGuard from "@/components/RoleGuard";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ResetPassword from "./pages/ResetPassword";
@@ -53,17 +54,17 @@ const App = () => (
                     <Route index element={<Dashboard />} />
                     <Route path="courses" element={<Courses />} />
                     <Route path="courses/:id" element={<CourseDetail />} />
-                    <Route path="students" element={<Students />} />
-                    <Route path="teachers" element={<Teachers />} />
-                    <Route path="support" element={<Support />} />
+                    <Route path="students" element={<RoleGuard allowed={['admin', 'teacher']}><Students /></RoleGuard>} />
+                    <Route path="teachers" element={<RoleGuard allowed={['admin']}><Teachers /></RoleGuard>} />
+                    <Route path="support" element={<RoleGuard allowed={['admin']}><Support /></RoleGuard>} />
                     <Route path="timetable" element={<Timetable />} />
-                    <Route path="subscriptions" element={<Subscriptions />} />
+                    <Route path="subscriptions" element={<RoleGuard allowed={['admin']}><Subscriptions /></RoleGuard>} />
                     <Route path="chats" element={<Chats />} />
-                    <Route path="attendance" element={<Attendance />} />
-                    <Route path="settings" element={<Settings />} />
+                    <Route path="attendance" element={<RoleGuard allowed={['admin', 'teacher']}><Attendance /></RoleGuard>} />
+                    <Route path="settings" element={<RoleGuard allowed={['admin']}><Settings /></RoleGuard>} />
                     <Route path="certificates" element={<Certificates />} />
-                    <Route path="reports" element={<Reports />} />
-                    <Route path="invoices" element={<Invoices />} />
+                    <Route path="reports" element={<RoleGuard allowed={['admin']}><Reports /></RoleGuard>} />
+                    <Route path="invoices" element={<RoleGuard allowed={['admin']}><Invoices /></RoleGuard>} />
                     <Route path="announcements" element={<Announcements />} />
                     <Route path="notifications" element={<Notifications />} />
                     <Route path="profile" element={<Profile />} />
