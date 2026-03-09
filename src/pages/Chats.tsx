@@ -42,7 +42,7 @@ const Chats = () => {
   const fetchMessages = async (chatId: string) => {
     const { data } = await supabase
       .from('chat_messages')
-      .select('*, profiles:sender_id(full_name)')
+      .select('*, profiles:chat_messages_sender_id_profiles_fkey(full_name)')
       .eq('chat_id', chatId)
       .order('created_at', { ascending: true });
     setMessages(data || []);
