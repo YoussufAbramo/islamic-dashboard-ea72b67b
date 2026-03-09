@@ -145,7 +145,7 @@ const AppSidebar = () => {
             onClick={() => navigate('/dashboard/profile')}
           >
             <Avatar className="h-9 w-9">
-              <AvatarImage src={profile?.avatar_url || ''} />
+              <AvatarImage src={resolvedAvatarUrl} />
               <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
                 {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
               </AvatarFallback>
