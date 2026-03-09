@@ -28,6 +28,7 @@ import Certificates from "./pages/Certificates";
 import Reports from "./pages/Reports";
 import Announcements from "./pages/Announcements";
 import Notifications from "./pages/Notifications";
+import Invoices from "./pages/Invoices";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,6 +63,7 @@ const App = () => (
                     <Route path="settings" element={<Settings />} />
                     <Route path="certificates" element={<Certificates />} />
                     <Route path="reports" element={<Reports />} />
+                    <Route path="invoices" element={<Invoices />} />
                     <Route path="announcements" element={<Announcements />} />
                     <Route path="notifications" element={<Notifications />} />
                     <Route path="profile" element={<Profile />} />

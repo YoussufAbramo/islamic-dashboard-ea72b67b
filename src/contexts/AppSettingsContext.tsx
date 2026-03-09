@@ -62,6 +62,9 @@ interface PendingSettings {
   ltrFont: string;
   rtlFont: string;
   buttonShape: ButtonShape;
+  currencyDecimals: number;
+  paymentGateway: string;
+  paymentGatewayKey: string;
 }
 
 interface AppSettingsContextType {
@@ -83,6 +86,12 @@ interface AppSettingsContextType {
   setRtlFont: (f: string) => void;
   buttonShape: ButtonShape;
   setButtonShape: (s: ButtonShape) => void;
+  currencyDecimals: number;
+  setCurrencyDecimals: (d: number) => void;
+  paymentGateway: string;
+  setPaymentGateway: (g: string) => void;
+  paymentGatewayKey: string;
+  setPaymentGatewayKey: (k: string) => void;
   pending: PendingSettings;
   updatePending: (partial: Partial<PendingSettings>) => void;
   saveSettings: () => void;
@@ -102,6 +111,9 @@ function loadSaved(): PendingSettings {
     ltrFont: localStorage.getItem('app_ltr_font') || 'Inter',
     rtlFont: localStorage.getItem('app_rtl_font') || 'Cairo',
     buttonShape: (localStorage.getItem('app_button_shape') as ButtonShape) || 'rounded',
+    currencyDecimals: parseInt(localStorage.getItem('app_currency_decimals') || '2', 10),
+    paymentGateway: localStorage.getItem('app_payment_gateway') || '',
+    paymentGatewayKey: localStorage.getItem('app_payment_gateway_key') || '',
   };
 }
 
@@ -152,6 +164,9 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     localStorage.setItem('app_ltr_font', pending.ltrFont);
     localStorage.setItem('app_rtl_font', pending.rtlFont);
     localStorage.setItem('app_button_shape', pending.buttonShape);
+    localStorage.setItem('app_currency_decimals', String(pending.currencyDecimals));
+    localStorage.setItem('app_payment_gateway', pending.paymentGateway);
+    localStorage.setItem('app_payment_gateway_key', pending.paymentGatewayKey);
     setSaved({ ...pending });
   }, [pending]);
 
@@ -175,6 +190,9 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const setLtrFont = useCallback((f: string) => { setPending(p => ({ ...p, ltrFont: f })); }, []);
   const setRtlFont = useCallback((f: string) => { setPending(p => ({ ...p, rtlFont: f })); }, []);
   const setButtonShape = useCallback((s: ButtonShape) => { setPending(p => ({ ...p, buttonShape: s })); }, []);
+  const setCurrencyDecimals = useCallback((d: number) => { setPending(p => ({ ...p, currencyDecimals: d })); }, []);
+  const setPaymentGateway = useCallback((g: string) => { setPending(p => ({ ...p, paymentGateway: g })); }, []);
+  const setPaymentGatewayKey = useCallback((k: string) => { setPending(p => ({ ...p, paymentGatewayKey: k })); }, []);
 
   return (
     <AppSettingsContext.Provider value={{
@@ -186,6 +204,9 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       ltrFont: saved.ltrFont, setLtrFont,
       rtlFont: saved.rtlFont, setRtlFont,
       buttonShape: saved.buttonShape, setButtonShape,
+      currencyDecimals: saved.currencyDecimals, setCurrencyDecimals,
+      paymentGateway: saved.paymentGateway, setPaymentGateway,
+      paymentGatewayKey: saved.paymentGatewayKey, setPaymentGatewayKey,
       pending, updatePending, saveSettings, hasPendingChanges, discardChanges,
     }}>
       {children}

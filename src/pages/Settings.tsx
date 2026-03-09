@@ -7,11 +7,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Palette, Building2, Coins, Upload, Check, Type, Save, Undo2, RectangleHorizontal, Circle, Square } from 'lucide-react';
+import { Palette, Building2, Coins, Upload, Check, Type, Save, Undo2, RectangleHorizontal, Circle, Square, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useRef, useEffect } from 'react';
 import DataManagementCard from '@/components/settings/DataManagementCard';
+import PaymentGatewayCard from '@/components/settings/PaymentGatewayCard';
 
 const Settings = () => {
   const { language } = useLanguage();
@@ -257,25 +258,58 @@ const Settings = () => {
             <Coins className="h-5 w-5 text-primary" />
             {isAr ? 'العملة' : 'Currency'}
           </CardTitle>
-          <CardDescription>{isAr ? 'اختر العملة الافتراضية' : 'Choose the default currency'}</CardDescription>
+          <CardDescription>{isAr ? 'اختر العملة الافتراضية وعدد الأرقام العشرية' : 'Choose the default currency and decimal places'}</CardDescription>
         </CardHeader>
-        <CardContent>
-          <Select
-            value={pending.currency.name}
-            onValueChange={(v) => {
-              const c = currencies.find((c) => c.name === v);
-              if (c) updatePending({ currency: c });
-            }}
-          >
-            <SelectTrigger className="max-w-xs"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {currencies.map((c) => (
-                <SelectItem key={c.name} value={c.name}>{c.symbol} — {c.name}</SelectItem>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>{isAr ? 'العملة' : 'Currency'}</Label>
+            <Select
+              value={pending.currency.name}
+              onValueChange={(v) => {
+                const c = currencies.find((c) => c.name === v);
+                if (c) updatePending({ currency: c });
+              }}
+            >
+              <SelectTrigger className="max-w-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {currencies.map((c) => (
+                  <SelectItem key={c.name} value={c.name}>{c.symbol} — {c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>{isAr ? 'عدد الأرقام العشرية' : 'Decimal Places'}</Label>
+            <div className="flex gap-2">
+              {[0, 1, 2].map((d) => (
+                <button
+                  key={d}
+                  onClick={() => updatePending({ currencyDecimals: d })}
+                  className={`flex flex-col items-center gap-1 px-4 py-3 rounded-xl border-2 transition-all ${
+                    pending.currencyDecimals === d
+                      ? 'border-primary shadow-md scale-[1.02]'
+                      : 'border-border hover:border-muted-foreground/30'
+                  }`}
+                >
+                  <span className="text-sm font-mono font-bold">
+                    {d === 0 ? '1' : d === 1 ? '1.0' : '1.00'}
+                  </span>
+                  <span className="text-xs text-muted-foreground">{d} {isAr ? 'أرقام' : 'digits'}</span>
+                  {pending.currencyDecimals === d && (
+                    <Check className="h-3 w-3 text-primary" />
+                  )}
+                </button>
               ))}
-            </SelectContent>
-          </Select>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {isAr ? 'مثال' : 'Example'}: {pending.currency.symbol}{(1234.56).toFixed(pending.currencyDecimals)}
+            </p>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Payment Gateway */}
+      {isAdmin && <PaymentGatewayCard isAr={isAr} />}
 
       {/* Data Management (Admin only) */}
       {isAdmin && <DataManagementCard isAr={isAr} />}
