@@ -62,6 +62,9 @@ interface PendingSettings {
   ltrFont: string;
   rtlFont: string;
   buttonShape: ButtonShape;
+  currencyDecimals: number;
+  paymentGateway: string;
+  paymentGatewayKey: string;
 }
 
 interface AppSettingsContextType {
