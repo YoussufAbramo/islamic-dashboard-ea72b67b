@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Palette, Building2, Coins, Upload, Check, Type, Save, Undo2, RectangleHorizontal, Circle, Square } from 'lucide-react';
+import { Palette, Building2, Coins, Upload, Check, Type, Save, Undo2, RectangleHorizontal, Circle, Square, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useRef, useEffect } from 'react';
