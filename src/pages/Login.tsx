@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { COPYRIGHT } from '@/lib/version';
+import CopyrightText from '@/components/CopyrightText';
 import { toast } from 'sonner';
 import { GraduationCap, Users, ShieldCheck, Eye, EyeOff, BookOpen } from 'lucide-react';
+import islamicBg from '@/assets/islamic-bg.jpg';
 
 type LoginRole = 'student' | 'teacher' | 'admin';
 
@@ -35,21 +36,9 @@ const Login = () => {
       return;
     }
     setLoading(true);
-    const { data, error } = await signIn(email, password);
+    const { error } = await signIn(email, password);
     if (error) {
       toast.error(error.message);
-      setLoading(false);
-      return;
-    }
-    const { data: roleData } = await (await import('@/integrations/supabase/client')).supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', data.user.id)
-      .single();
-
-    if (roleData?.role !== selectedRole) {
-      await (await import('@/integrations/supabase/client')).supabase.auth.signOut();
-      toast.error(language === 'ar' ? 'نوع الحساب غير صحيح' : 'Account type does not match. Please select the correct role.');
       setLoading(false);
       return;
     }
@@ -57,23 +46,44 @@ const Login = () => {
     navigate('/dashboard');
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast.error(language === 'ar' ? 'يرجى إدخال بريدك الإلكتروني أولاً' : 'Please enter your email first');
+      return;
+    }
+    const { supabase } = await import('@/integrations/supabase/client');
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success(language === 'ar' ? 'تم إرسال رابط إعادة تعيين كلمة المرور' : 'Password reset link sent to your email');
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-background">
-      {/* Layered Islamic patterns */}
-      <div className="absolute inset-0 islamic-pattern opacity-30" />
-      <div className="absolute inset-0 islamic-star-pattern opacity-20" />
-      <div className="absolute inset-0 islamic-arabesque opacity-10" />
+      {/* Islamic background image - fixed direction so it doesn't flip in RTL */}
+      <div
+        className="absolute inset-0 opacity-15 dark:opacity-10"
+        style={{
+          backgroundImage: `url(${islamicBg})`,
+          backgroundSize: '400px 400px',
+          backgroundRepeat: 'repeat',
+          direction: 'ltr',
+        }}
+      />
       
-      {/* Animated gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--emerald))]/10 via-background/95 to-[hsl(var(--gold))]/10 animate-pulse" style={{ animationDuration: '8s' }} />
-      <div className="absolute inset-0 bg-gradient-to-br from-background via-background/90 to-background" />
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background/90 via-background/80 to-background/90" />
 
       {/* Decorative corner ornaments */}
-      <svg className="absolute top-0 start-0 w-32 h-32 text-gold/20" viewBox="0 0 100 100">
+      <svg className="absolute top-0 left-0 w-32 h-32 text-gold/20" viewBox="0 0 100 100">
         <path d="M0 0 L50 0 A50 50 0 0 0 0 50 Z" fill="currentColor" />
         <path d="M10 10 L40 10 A30 30 0 0 0 10 40 Z" fill="none" stroke="currentColor" strokeWidth="0.5" />
       </svg>
-      <svg className="absolute bottom-0 end-0 w-32 h-32 text-gold/20 rotate-180" viewBox="0 0 100 100">
+      <svg className="absolute bottom-0 right-0 w-32 h-32 text-gold/20 rotate-180" viewBox="0 0 100 100">
         <path d="M0 0 L50 0 A50 50 0 0 0 0 50 Z" fill="currentColor" />
         <path d="M10 10 L40 10 A30 30 0 0 0 10 40 Z" fill="none" stroke="currentColor" strokeWidth="0.5" />
       </svg>
@@ -174,7 +184,16 @@ const Login = () => {
 
                 {/* Password */}
                 <div className="space-y-2">
-                  <Label htmlFor="password">{t('auth.password')}</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">{t('auth.password')}</Label>
+                    <button
+                      type="button"
+                      onClick={handleForgotPassword}
+                      className="text-xs text-primary hover:underline transition-colors"
+                    >
+                      {language === 'ar' ? 'نسيت كلمة المرور؟' : 'Forgot password?'}
+                    </button>
+                  </div>
                   <div className="relative">
                     <Input
                       id="password"
@@ -223,7 +242,7 @@ const Login = () => {
             <div className="w-1 h-1 rounded-full bg-gold/40" />
             <div className="w-8 h-[1px] bg-gradient-to-l from-transparent to-[hsl(var(--gold))]/40" />
           </div>
-          <p className="text-[10px] text-muted-foreground/60">{COPYRIGHT}</p>
+          <CopyrightText />
         </div>
       </div>
     </div>
