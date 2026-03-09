@@ -4,12 +4,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
-  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader,
+  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
 } from '@/components/ui/sidebar';
 
 const AppSidebar = () => {
   const { role } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -28,8 +28,13 @@ const AppSidebar = () => {
 
   return (
     <Sidebar>
-      <SidebarHeader className="p-4">
-        <h2 className="text-lg font-bold text-sidebar-foreground">EduDash</h2>
+      <SidebarHeader className="p-4 border-b border-sidebar-border">
+        <div className="flex items-center gap-2">
+          <BookOpen className="h-6 w-6 text-gold" />
+          <h2 className="text-lg font-bold font-amiri text-sidebar-foreground">
+            {language === 'ar' ? 'منصة التعليم' : 'EduDash'}
+          </h2>
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
