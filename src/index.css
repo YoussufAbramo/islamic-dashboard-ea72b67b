@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -54,6 +54,13 @@
     --emerald-light: 160 35% 45%;
     --cream: 40 33% 96%;
     --islamic-pattern-opacity: 0.04;
+
+    /* Chart colors */
+    --chart-1: 160 45% 28%;
+    --chart-2: 38 65% 55%;
+    --chart-3: 200 60% 50%;
+    --chart-4: 280 50% 55%;
+    --chart-5: 340 60% 50%;
   }
 
   .dark {
@@ -100,6 +107,133 @@
     --emerald-light: 160 30% 35%;
     --cream: 160 15% 14%;
     --islamic-pattern-opacity: 0.06;
+
+    --chart-1: 38 65% 55%;
+    --chart-2: 160 35% 45%;
+    --chart-3: 200 50% 45%;
+    --chart-4: 280 40% 50%;
+    --chart-5: 340 50% 45%;
+  }
+
+  /* ===== Color Themes ===== */
+  .theme-ocean:root, :root.theme-ocean {
+    --primary: 210 65% 38%;
+    --primary-foreground: 210 20% 98%;
+    --accent: 190 60% 50%;
+    --accent-foreground: 210 30% 10%;
+    --ring: 210 65% 38%;
+    --gold: 190 60% 50%;
+    --gold-light: 190 50% 70%;
+    --emerald: 210 65% 38%;
+    --emerald-light: 210 50% 50%;
+    --sidebar-background: 210 40% 12%;
+    --sidebar-primary: 190 60% 50%;
+    --sidebar-accent: 210 35% 18%;
+    --sidebar-border: 210 30% 20%;
+    --sidebar-ring: 190 60% 50%;
+  }
+  .dark.theme-ocean {
+    --primary: 190 60% 50%;
+    --primary-foreground: 210 30% 6%;
+    --accent: 190 45% 38%;
+    --ring: 190 60% 50%;
+    --gold: 190 60% 50%;
+    --emerald: 210 50% 50%;
+    --sidebar-background: 210 35% 5%;
+    --sidebar-primary: 190 60% 50%;
+    --sidebar-accent: 210 30% 10%;
+    --sidebar-border: 210 25% 12%;
+    --sidebar-ring: 190 60% 50%;
+  }
+
+  .theme-purple:root, :root.theme-purple {
+    --primary: 270 50% 40%;
+    --primary-foreground: 270 20% 98%;
+    --accent: 290 55% 55%;
+    --accent-foreground: 270 30% 10%;
+    --ring: 270 50% 40%;
+    --gold: 290 55% 55%;
+    --gold-light: 290 45% 72%;
+    --emerald: 270 50% 40%;
+    --emerald-light: 270 40% 52%;
+    --sidebar-background: 270 35% 12%;
+    --sidebar-primary: 290 55% 55%;
+    --sidebar-accent: 270 30% 18%;
+    --sidebar-border: 270 25% 20%;
+    --sidebar-ring: 290 55% 55%;
+  }
+  .dark.theme-purple {
+    --primary: 290 55% 55%;
+    --primary-foreground: 270 30% 6%;
+    --accent: 290 40% 40%;
+    --ring: 290 55% 55%;
+    --gold: 290 55% 55%;
+    --emerald: 270 40% 52%;
+    --sidebar-background: 270 30% 5%;
+    --sidebar-primary: 290 55% 55%;
+    --sidebar-accent: 270 25% 10%;
+    --sidebar-border: 270 20% 12%;
+    --sidebar-ring: 290 55% 55%;
+  }
+
+  .theme-desert:root, :root.theme-desert {
+    --primary: 25 60% 42%;
+    --primary-foreground: 35 30% 98%;
+    --accent: 35 70% 55%;
+    --accent-foreground: 25 40% 10%;
+    --ring: 25 60% 42%;
+    --gold: 35 70% 55%;
+    --gold-light: 35 60% 72%;
+    --emerald: 25 60% 42%;
+    --emerald-light: 25 50% 52%;
+    --sidebar-background: 25 40% 12%;
+    --sidebar-primary: 35 70% 55%;
+    --sidebar-accent: 25 35% 18%;
+    --sidebar-border: 25 30% 20%;
+    --sidebar-ring: 35 70% 55%;
+  }
+  .dark.theme-desert {
+    --primary: 35 70% 55%;
+    --primary-foreground: 25 40% 6%;
+    --accent: 35 55% 40%;
+    --ring: 35 70% 55%;
+    --gold: 35 70% 55%;
+    --emerald: 25 50% 52%;
+    --sidebar-background: 25 35% 5%;
+    --sidebar-primary: 35 70% 55%;
+    --sidebar-accent: 25 30% 10%;
+    --sidebar-border: 25 25% 12%;
+    --sidebar-ring: 35 70% 55%;
+  }
+
+  .theme-midnight:root, :root.theme-midnight {
+    --primary: 220 55% 35%;
+    --primary-foreground: 220 20% 98%;
+    --accent: 240 50% 55%;
+    --accent-foreground: 220 30% 10%;
+    --ring: 220 55% 35%;
+    --gold: 240 50% 55%;
+    --gold-light: 240 40% 72%;
+    --emerald: 220 55% 35%;
+    --emerald-light: 220 45% 48%;
+    --sidebar-background: 220 40% 10%;
+    --sidebar-primary: 240 50% 55%;
+    --sidebar-accent: 220 35% 16%;
+    --sidebar-border: 220 30% 18%;
+    --sidebar-ring: 240 50% 55%;
+  }
+  .dark.theme-midnight {
+    --primary: 240 50% 55%;
+    --primary-foreground: 220 30% 6%;
+    --accent: 240 38% 42%;
+    --ring: 240 50% 55%;
+    --gold: 240 50% 55%;
+    --emerald: 220 45% 48%;
+    --sidebar-background: 220 35% 5%;
+    --sidebar-primary: 240 50% 55%;
+    --sidebar-accent: 220 30% 8%;
+    --sidebar-border: 220 25% 10%;
+    --sidebar-ring: 240 50% 55%;
   }
 }
 
@@ -114,7 +248,7 @@
   }
 
   [dir="rtl"] body {
-    font-family: 'Amiri', 'Inter', sans-serif;
+    font-family: 'Cairo', 'Inter', sans-serif;
   }
 }
 
@@ -143,7 +277,7 @@
   }
 
   .font-amiri {
-    font-family: 'Amiri', serif;
+    font-family: 'Cairo', serif;
   }
 
   .islamic-star-pattern {
@@ -158,5 +292,14 @@
 
   .islamic-arch-glow {
     box-shadow: 0 0 30px hsl(var(--gold) / 0.2), 0 0 60px hsl(var(--gold) / 0.1);
+  }
+
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+    .print-only {
+      display: block !important;
+    }
   }
 }

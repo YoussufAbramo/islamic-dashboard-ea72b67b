@@ -1,0 +1,17 @@
+{
+  "name": "EduDash - Islamic Educational Dashboard",
+  "short_name": "EduDash",
+  "description": "Islamic Educational Dashboard for managing courses, students, and teachers",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f5f0",
+  "theme_color": "#2d7a5e",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}

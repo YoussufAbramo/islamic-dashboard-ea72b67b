@@ -22,6 +22,9 @@ import Subscriptions from "./pages/Subscriptions";
 import Chats from "./pages/Chats";
 import Profile from "./pages/Profile";
 import Attendance from "./pages/Attendance";
+import Settings from "./pages/Settings";
+import Certificates from "./pages/Certificates";
+import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +55,9 @@ const App = () => (
                     <Route path="subscriptions" element={<Subscriptions />} />
                     <Route path="chats" element={<Chats />} />
                     <Route path="attendance" element={<Attendance />} />
+                    <Route path="settings" element={<Settings />} />
+                    <Route path="certificates" element={<Certificates />} />
+                    <Route path="reports" element={<Reports />} />
                     <Route path="profile" element={<Profile />} />
                   </Route>
                   <Route path="*" element={<NotFound />} />
