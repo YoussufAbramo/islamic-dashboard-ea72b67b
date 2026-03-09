@@ -86,6 +86,12 @@ interface AppSettingsContextType {
   setRtlFont: (f: string) => void;
   buttonShape: ButtonShape;
   setButtonShape: (s: ButtonShape) => void;
+  currencyDecimals: number;
+  setCurrencyDecimals: (d: number) => void;
+  paymentGateway: string;
+  setPaymentGateway: (g: string) => void;
+  paymentGatewayKey: string;
+  setPaymentGatewayKey: (k: string) => void;
   pending: PendingSettings;
   updatePending: (partial: Partial<PendingSettings>) => void;
   saveSettings: () => void;
