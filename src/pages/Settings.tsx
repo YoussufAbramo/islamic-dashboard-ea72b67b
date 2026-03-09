@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useRef, useEffect } from 'react';
 import DataManagementCard from '@/components/settings/DataManagementCard';
+import PaymentGatewayCard from '@/components/settings/PaymentGatewayCard';
 
 const Settings = () => {
   const { language } = useLanguage();
