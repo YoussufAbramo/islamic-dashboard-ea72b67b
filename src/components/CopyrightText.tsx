@@ -2,16 +2,20 @@ import { COPYRIGHT_TEXT, COPYRIGHT_LINK, COPYRIGHT_NAME, COPYRIGHT_SUFFIX } from
 
 interface CopyrightTextProps {
   className?: string;
+  linkClassName?: string;
 }
 
-const CopyrightText = ({ className = 'text-[10px] text-muted-foreground/60' }: CopyrightTextProps) => (
+const CopyrightText = ({
+  className = 'text-[10px] text-muted-foreground/60',
+  linkClassName = 'underline hover:text-foreground transition-colors',
+}: CopyrightTextProps) => (
   <p className={className}>
     {COPYRIGHT_TEXT}{' '}
     <a
       href={COPYRIGHT_LINK}
       target="_blank"
       rel="noopener noreferrer"
-      className="underline hover:text-foreground transition-colors"
+      className={linkClassName}
     >
       {COPYRIGHT_NAME}
     </a>{' '}

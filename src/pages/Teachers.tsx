@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,11 +8,12 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Search, Eye } from 'lucide-react';
+import { Search, Eye, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Teachers = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { role } = useAuth();
   const [teachers, setTeachers] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [detailOpen, setDetailOpen] = useState(false);
@@ -19,6 +21,11 @@ const Teachers = () => {
   const [profile, setProfile] = useState<any>(null);
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ bio: '', specialization: '' });
+
+  // Add teacher dialog
+  const [addOpen, setAddOpen] = useState(false);
+  const [addForm, setAddForm] = useState({ full_name: '', email: '', password: '', phone: '', specialization: '', bio: '' });
+  const [addLoading, setAddLoading] = useState(false);
 
   const fetchTeachers = async () => {
     const { data } = await supabase.from('teachers').select('*, profiles:user_id(full_name, phone, email)');
@@ -37,9 +44,29 @@ const Teachers = () => {
 
   const saveEdit = async () => {
     await supabase.from('teachers').update(editForm).eq('id', selected.id);
-    toast.success('Teacher updated');
+    toast.success(language === 'ar' ? 'تم تحديث المعلم' : 'Teacher updated');
     setEditing(false);
     fetchTeachers();
+  };
+
+  const handleAddTeacher = async () => {
+    if (!addForm.email || !addForm.password || !addForm.full_name) {
+      toast.error(language === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields');
+      return;
+    }
+    setAddLoading(true);
+    const { error } = await supabase.functions.invoke('manage-users', {
+      body: { action: 'create', role: 'teacher', email: addForm.email, password: addForm.password, full_name: addForm.full_name, phone: addForm.phone, specialization: addForm.specialization, bio: addForm.bio },
+    });
+    setAddLoading(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success(language === 'ar' ? 'تم إضافة المعلم' : 'Teacher added successfully');
+      setAddOpen(false);
+      setAddForm({ full_name: '', email: '', password: '', phone: '', specialization: '', bio: '' });
+      fetchTeachers();
+    }
   };
 
   const filtered = teachers.filter((t) => {
@@ -49,7 +76,15 @@ const Teachers = () => {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">{t('teachers.title')}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{t('teachers.title')}</h1>
+        {role === 'admin' && (
+          <Button onClick={() => setAddOpen(true)}>
+            <Plus className="h-4 w-4 me-2" />
+            {language === 'ar' ? 'إضافة معلم' : 'Add Teacher'}
+          </Button>
+        )}
+      </div>
 
       <div className="relative max-w-sm">
         <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -84,6 +119,7 @@ const Teachers = () => {
         </Table>
       </div>
 
+      {/* Detail dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{t('teachers.details')}</DialogTitle></DialogHeader>
@@ -112,6 +148,24 @@ const Teachers = () => {
               )}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add teacher dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>{language === 'ar' ? 'إضافة معلم جديد' : 'Add New Teacher'}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div><Label>{t('auth.fullName')} *</Label><Input value={addForm.full_name} onChange={(e) => setAddForm({ ...addForm, full_name: e.target.value })} /></div>
+            <div><Label>{t('auth.email')} *</Label><Input type="email" value={addForm.email} onChange={(e) => setAddForm({ ...addForm, email: e.target.value })} /></div>
+            <div><Label>{t('auth.password')} *</Label><Input type="password" value={addForm.password} onChange={(e) => setAddForm({ ...addForm, password: e.target.value })} placeholder={language === 'ar' ? '6 أحرف على الأقل' : 'Min 6 characters'} /></div>
+            <div><Label>{t('auth.phone')}</Label><Input value={addForm.phone} onChange={(e) => setAddForm({ ...addForm, phone: e.target.value })} /></div>
+            <div><Label>{t('teachers.specialization')}</Label><Input value={addForm.specialization} onChange={(e) => setAddForm({ ...addForm, specialization: e.target.value })} /></div>
+            <div><Label>{t('teachers.bio')}</Label><Textarea value={addForm.bio} onChange={(e) => setAddForm({ ...addForm, bio: e.target.value })} /></div>
+            <Button onClick={handleAddTeacher} disabled={addLoading} className="w-full">
+              {addLoading ? t('common.loading') : (language === 'ar' ? 'إضافة المعلم' : 'Add Teacher')}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

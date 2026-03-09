@@ -4,20 +4,32 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Ban, CheckCircle, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Send, Ban, CheckCircle, Trash2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 const Chats = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user, role } = useAuth();
   const [chats, setChats] = useState<any[]>([]);
   const [selectedChat, setSelectedChat] = useState<any>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
+
+  // Create chat
+  const [createOpen, setCreateOpen] = useState(false);
+  const [chatType, setChatType] = useState<'direct' | 'group'>('direct');
+  const [studentsList, setStudentsList] = useState<any[]>([]);
+  const [teachersList, setTeachersList] = useState<any[]>([]);
+  const [subscriptionsList, setSubscriptionsList] = useState<any[]>([]);
+  const [createForm, setCreateForm] = useState({ student_id: '', teacher_id: '', name: '', subscription_id: '' });
+  const [createLoading, setCreateLoading] = useState(false);
 
   const fetchChats = async () => {
     const { data } = await supabase
@@ -34,6 +46,17 @@ const Chats = () => {
       .eq('chat_id', chatId)
       .order('created_at', { ascending: true });
     setMessages(data || []);
+  };
+
+  const fetchFormData = async () => {
+    const [s, te, subs] = await Promise.all([
+      supabase.from('students').select('id, profiles:user_id(full_name)'),
+      supabase.from('teachers').select('id, profiles:user_id(full_name)'),
+      supabase.from('subscriptions').select('id, courses:course_id(title), students:student_id(user_id, profiles:user_id(full_name))').eq('status', 'active'),
+    ]);
+    setStudentsList(s.data || []);
+    setTeachersList(te.data || []);
+    setSubscriptionsList(subs.data || []);
   };
 
   useEffect(() => { fetchChats(); }, []);
@@ -57,7 +80,7 @@ const Chats = () => {
   const deleteMessage = async (messageId: string) => {
     await supabase.from('chat_messages').update({ is_deleted: true }).eq('id', messageId);
     fetchMessages(selectedChat.id);
-    toast.success('Message deleted');
+    toast.success(language === 'ar' ? 'تم حذف الرسالة' : 'Message deleted');
   };
 
   const toggleSuspend = async () => {
@@ -68,12 +91,60 @@ const Chats = () => {
     toast.success(newStatus ? t('chats.suspended') : t('chats.unsuspend'));
   };
 
+  const handleCreateChat = async () => {
+    if (chatType === 'direct') {
+      if (!createForm.student_id && !createForm.teacher_id) {
+        toast.error(language === 'ar' ? 'يرجى اختيار مستخدم واحد على الأقل' : 'Please select at least one user');
+        return;
+      }
+    } else {
+      if (!createForm.name || !createForm.subscription_id) {
+        toast.error(language === 'ar' ? 'يرجى إدخال اسم المجموعة واختيار الاشتراك' : 'Please enter group name and select subscription');
+        return;
+      }
+    }
+
+    setCreateLoading(true);
+    const insertData: any = {
+      is_group: chatType === 'group',
+      name: chatType === 'group' ? createForm.name : null,
+      subscription_id: chatType === 'group' ? createForm.subscription_id : null,
+      student_id: createForm.student_id || null,
+      teacher_id: createForm.teacher_id || null,
+    };
+
+    const { error } = await supabase.from('chats').insert(insertData);
+    setCreateLoading(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success(language === 'ar' ? 'تم إنشاء المحادثة' : 'Chat created');
+      setCreateOpen(false);
+      setCreateForm({ student_id: '', teacher_id: '', name: '', subscription_id: '' });
+      fetchChats();
+    }
+  };
+
+  const getChatLabel = (chat: any) => {
+    if (chat.is_group && chat.name) return chat.name;
+    const teacher = chat.teachers?.profiles?.full_name || '';
+    const student = chat.students?.profiles?.full_name || '';
+    return `${teacher}${teacher && student ? ' ↔ ' : ''}${student}` || (language === 'ar' ? 'محادثة' : 'Chat');
+  };
+
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">{t('chats.title')}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{t('chats.title')}</h1>
+        {role === 'admin' && (
+          <Button onClick={() => { setCreateOpen(true); fetchFormData(); }}>
+            <Plus className="h-4 w-4 me-2" />
+            {language === 'ar' ? 'محادثة جديدة' : 'New Chat'}
+          </Button>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-200px)]">
-        {/* Chat list */}
         <Card className="md:col-span-1">
           <CardHeader className="pb-2"><CardTitle className="text-sm">{t('chats.title')}</CardTitle></CardHeader>
           <CardContent className="p-0">
@@ -86,8 +157,8 @@ const Chats = () => {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-sm">{chat.teachers?.profiles?.full_name}</p>
-                      <p className="text-xs text-muted-foreground">{chat.students?.profiles?.full_name}</p>
+                      <p className="font-medium text-sm">{getChatLabel(chat)}</p>
+                      {chat.is_group && <Badge variant="outline" className="text-[10px] mt-1">{language === 'ar' ? 'مجموعة' : 'Group'}</Badge>}
                     </div>
                     {chat.is_suspended && <Badge variant="destructive" className="text-xs">{t('chats.suspended')}</Badge>}
                   </div>
@@ -98,15 +169,12 @@ const Chats = () => {
           </CardContent>
         </Card>
 
-        {/* Messages */}
         <Card className="md:col-span-2 flex flex-col">
           {selectedChat ? (
             <>
               <CardHeader className="pb-2 flex-row items-center justify-between">
                 <div>
-                  <CardTitle className="text-sm">
-                    {selectedChat.teachers?.profiles?.full_name} ↔ {selectedChat.students?.profiles?.full_name}
-                  </CardTitle>
+                  <CardTitle className="text-sm">{getChatLabel(selectedChat)}</CardTitle>
                   {selectedChat.is_suspended && <Badge variant="destructive" className="text-xs mt-1">{t('chats.suspended')}</Badge>}
                 </div>
                 {role === 'admin' && (
@@ -158,6 +226,85 @@ const Chats = () => {
           )}
         </Card>
       </div>
+
+      {/* Create chat dialog */}
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>{language === 'ar' ? 'إنشاء محادثة جديدة' : 'Create New Chat'}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>{language === 'ar' ? 'نوع المحادثة' : 'Chat Type'}</Label>
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                <button
+                  type="button"
+                  onClick={() => setChatType('direct')}
+                  className={`p-3 rounded-lg border-2 text-sm transition-all ${chatType === 'direct' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'}`}
+                >
+                  {language === 'ar' ? 'محادثة مباشرة' : '1-on-1 Chat'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setChatType('group')}
+                  className={`p-3 rounded-lg border-2 text-sm transition-all ${chatType === 'group' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'}`}
+                >
+                  {language === 'ar' ? 'مجموعة' : 'Group Chat'}
+                </button>
+              </div>
+            </div>
+
+            {chatType === 'direct' ? (
+              <>
+                <div>
+                  <Label>{t('subscriptions.student')}</Label>
+                  <Select value={createForm.student_id} onValueChange={(v) => setCreateForm({ ...createForm, student_id: v })}>
+                    <SelectTrigger><SelectValue placeholder={language === 'ar' ? 'اختر طالب' : 'Select student'} /></SelectTrigger>
+                    <SelectContent>
+                      {studentsList.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>{s.profiles?.full_name || s.id}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>{t('subscriptions.teacher')}</Label>
+                  <Select value={createForm.teacher_id} onValueChange={(v) => setCreateForm({ ...createForm, teacher_id: v })}>
+                    <SelectTrigger><SelectValue placeholder={language === 'ar' ? 'اختر معلم' : 'Select teacher'} /></SelectTrigger>
+                    <SelectContent>
+                      {teachersList.map((te) => (
+                        <SelectItem key={te.id} value={te.id}>{te.profiles?.full_name || te.id}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <Label>{language === 'ar' ? 'اسم المجموعة' : 'Group Name'} *</Label>
+                  <Input value={createForm.name} onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })} />
+                </div>
+                <div>
+                  <Label>{language === 'ar' ? 'الاشتراك المرتبط' : 'Linked Subscription'} *</Label>
+                  <Select value={createForm.subscription_id} onValueChange={(v) => setCreateForm({ ...createForm, subscription_id: v })}>
+                    <SelectTrigger><SelectValue placeholder={language === 'ar' ? 'اختر اشتراك' : 'Select subscription'} /></SelectTrigger>
+                    <SelectContent>
+                      {subscriptionsList.map((sub) => (
+                        <SelectItem key={sub.id} value={sub.id}>
+                          {sub.students?.profiles?.full_name || ''} - {sub.courses?.title || ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+
+            <Button onClick={handleCreateChat} disabled={createLoading} className="w-full">
+              {createLoading ? t('common.loading') : (language === 'ar' ? 'إنشاء المحادثة' : 'Create Chat')}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
