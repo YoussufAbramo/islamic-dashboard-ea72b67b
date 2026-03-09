@@ -22,6 +22,8 @@ export type Database = {
           created_by: string | null
           id: string
           is_active: boolean
+          scheduled_at: string | null
+          target_audience: string | null
           title: string
           title_ar: string | null
         }
@@ -32,6 +34,8 @@ export type Database = {
           created_by?: string | null
           id?: string
           is_active?: boolean
+          scheduled_at?: string | null
+          target_audience?: string | null
           title: string
           title_ar?: string | null
         }
@@ -42,6 +46,8 @@ export type Database = {
           created_by?: string | null
           id?: string
           is_active?: boolean
+          scheduled_at?: string | null
+          target_audience?: string | null
           title?: string
           title_ar?: string | null
         }
@@ -85,6 +91,76 @@ export type Database = {
             columns: ["timetable_entry_id"]
             isOneToOne: false
             referencedRelation: "timetable_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      certificates: {
+        Row: {
+          certificate_number: string
+          course_id: string | null
+          created_at: string
+          description: string | null
+          description_ar: string | null
+          id: string
+          issued_at: string
+          issued_by: string | null
+          recipient_id: string
+          recipient_type: string
+          status: string
+          title: string
+          title_ar: string | null
+        }
+        Insert: {
+          certificate_number?: string
+          course_id?: string | null
+          created_at?: string
+          description?: string | null
+          description_ar?: string | null
+          id?: string
+          issued_at?: string
+          issued_by?: string | null
+          recipient_id: string
+          recipient_type?: string
+          status?: string
+          title: string
+          title_ar?: string | null
+        }
+        Update: {
+          certificate_number?: string
+          course_id?: string | null
+          created_at?: string
+          description?: string | null
+          description_ar?: string | null
+          id?: string
+          issued_at?: string
+          issued_by?: string | null
+          recipient_id?: string
+          recipient_type?: string
+          status?: string
+          title?: string
+          title_ar?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificates_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certificates_issued_by_fkey"
+            columns: ["issued_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certificates_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -356,6 +432,51 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      student_progress: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          id: string
+          lesson_id: string
+          score: number | null
+          student_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          lesson_id: string
+          score?: number | null
+          student_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          score?: number | null
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_progress_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       students: {
         Row: {
