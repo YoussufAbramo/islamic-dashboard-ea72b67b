@@ -1,4 +1,4 @@
-import { Moon, Sun, Bell, Megaphone, Globe, LogOut, User, Plus, CheckCheck, Eye } from 'lucide-react';
+import { Moon, Sun, Bell, Megaphone, Globe, LogOut, User, Plus, CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -67,24 +67,26 @@ const TopBar = () => {
     fetchData();
   };
 
+  const iconBtnClass = "rounded-full h-9 w-9";
+
   return (
     <>
       <header className="flex h-14 items-center gap-2 border-b bg-background px-4">
-        <SidebarTrigger />
+        <SidebarTrigger className="rounded-full" />
         <div className="flex-1" />
 
-        <Button variant="ghost" size="icon" onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}>
+        <Button variant="ghost" size="icon" className={iconBtnClass} onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}>
           <Globe className="h-4 w-4" />
         </Button>
 
-        <Button variant="ghost" size="icon" onClick={toggleDark}>
+        <Button variant="ghost" size="icon" className={iconBtnClass} onClick={toggleDark}>
           {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </Button>
 
         {/* Announcements */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className={`${iconBtnClass} relative`}>
               <Megaphone className="h-4 w-4" />
               {announcements.length > 0 && <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 text-[10px] flex items-center justify-center">{announcements.length}</Badge>}
             </Button>
@@ -94,7 +96,7 @@ const TopBar = () => {
               <span className="text-sm font-medium">{isAr ? 'الإعلانات' : 'Announcements'}</span>
               <div className="flex gap-1">
                 {isAdmin && (
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setAddAnnouncementOpen(true)}>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => setAddAnnouncementOpen(true)}>
                     <Plus className="h-3 w-3" />
                   </Button>
                 )}
@@ -116,7 +118,7 @@ const TopBar = () => {
         {/* Notifications */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className={`${iconBtnClass} relative`}>
               <Bell className="h-4 w-4" />
               {notifications.length > 0 && <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 text-[10px] flex items-center justify-center">{notifications.length}</Badge>}
             </Button>
@@ -125,7 +127,7 @@ const TopBar = () => {
             <div className="flex items-center justify-between px-3 py-2">
               <span className="text-sm font-medium">{isAr ? 'الإشعارات' : 'Notifications'}</span>
               <div className="flex gap-1">
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={markAllNotificationsRead} title={isAr ? 'تحديد الكل كمقروء' : 'Mark all read'}>
+                <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={markAllNotificationsRead} title={isAr ? 'تحديد الكل كمقروء' : 'Mark all read'}>
                   <CheckCheck className="h-3 w-3" />
                 </Button>
               </div>
@@ -145,7 +147,7 @@ const TopBar = () => {
         {/* Profile dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className={iconBtnClass}>
               <User className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>

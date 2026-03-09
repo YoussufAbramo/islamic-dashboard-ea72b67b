@@ -26,6 +26,42 @@ const THEMES: { value: ColorTheme; label: string; labelAr: string; color: string
   { value: 'midnight', label: 'Midnight', labelAr: 'منتصف الليل', color: 'hsl(220 55% 35%)' },
 ];
 
+export const LTR_FONTS = [
+  { value: 'Inter', label: 'Inter' },
+  { value: 'Roboto', label: 'Roboto' },
+  { value: 'Poppins', label: 'Poppins' },
+  { value: 'Open Sans', label: 'Open Sans' },
+  { value: 'Lato', label: 'Lato' },
+  { value: 'Montserrat', label: 'Montserrat' },
+  { value: 'Nunito', label: 'Nunito' },
+  { value: 'Raleway', label: 'Raleway' },
+  { value: 'Source Sans 3', label: 'Source Sans 3' },
+  { value: 'DM Sans', label: 'DM Sans' },
+];
+
+export const RTL_FONTS = [
+  { value: 'Cairo', label: 'Cairo' },
+  { value: 'Tajawal', label: 'Tajawal' },
+  { value: 'Noto Kufi Arabic', label: 'Noto Kufi Arabic' },
+  { value: 'Almarai', label: 'Almarai' },
+  { value: 'IBM Plex Sans Arabic', label: 'IBM Plex Sans Arabic' },
+  { value: 'Readex Pro', label: 'Readex Pro' },
+  { value: 'Rubik', label: 'Rubik' },
+  { value: 'Changa', label: 'Changa' },
+  { value: 'El Messiri', label: 'El Messiri' },
+  { value: 'Noto Sans Arabic', label: 'Noto Sans Arabic' },
+];
+
+interface PendingSettings {
+  currency: Currency;
+  colorTheme: ColorTheme;
+  appName: string;
+  appDescription: string;
+  appLogo: string;
+  ltrFont: string;
+  rtlFont: string;
+}
+
 interface AppSettingsContextType {
   currency: Currency;
   setCurrency: (c: Currency) => void;
@@ -39,65 +75,108 @@ interface AppSettingsContextType {
   setAppDescription: (d: string) => void;
   appLogo: string;
   setAppLogo: (l: string) => void;
+  ltrFont: string;
+  setLtrFont: (f: string) => void;
+  rtlFont: string;
+  setRtlFont: (f: string) => void;
+  // Pending settings (for save button)
+  pending: PendingSettings;
+  updatePending: (partial: Partial<PendingSettings>) => void;
+  saveSettings: () => void;
+  hasPendingChanges: boolean;
+  discardChanges: () => void;
 }
 
 const AppSettingsContext = createContext<AppSettingsContextType | null>(null);
 
+function loadSaved(): PendingSettings {
+  return {
+    currency: (() => { const s = localStorage.getItem('app_currency'); return s ? JSON.parse(s) : CURRENCIES[0]; })(),
+    colorTheme: (localStorage.getItem('app_color_theme') as ColorTheme) || 'emerald',
+    appName: localStorage.getItem('app_name') || 'EduDash',
+    appDescription: localStorage.getItem('app_description') || 'Islamic Educational Dashboard',
+    appLogo: localStorage.getItem('app_logo') || '',
+    ltrFont: localStorage.getItem('app_ltr_font') || 'Inter',
+    rtlFont: localStorage.getItem('app_rtl_font') || 'Cairo',
+  };
+}
+
 export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currency, setCurrencyState] = useState<Currency>(() => {
-    const saved = localStorage.getItem('app_currency');
-    return saved ? JSON.parse(saved) : CURRENCIES[0];
-  });
-
-  const [colorTheme, setColorThemeState] = useState<ColorTheme>(() => {
-    return (localStorage.getItem('app_color_theme') as ColorTheme) || 'emerald';
-  });
-
-  const [appName, setAppNameState] = useState(() => localStorage.getItem('app_name') || 'EduDash');
-  const [appDescription, setAppDescriptionState] = useState(() => localStorage.getItem('app_description') || 'Islamic Educational Dashboard');
-  const [appLogo, setAppLogoState] = useState(() => localStorage.getItem('app_logo') || '');
+  const [saved, setSaved] = useState<PendingSettings>(loadSaved);
+  const [pending, setPending] = useState<PendingSettings>(loadSaved);
 
   // Apply theme class to root
   useEffect(() => {
     const root = document.documentElement;
     root.classList.remove('theme-ocean', 'theme-purple', 'theme-desert', 'theme-midnight');
-    if (colorTheme !== 'emerald') {
-      root.classList.add(`theme-${colorTheme}`);
+    if (saved.colorTheme !== 'emerald') {
+      root.classList.add(`theme-${saved.colorTheme}`);
     }
-  }, [colorTheme]);
+  }, [saved.colorTheme]);
 
-  const setCurrency = useCallback((c: Currency) => {
-    setCurrencyState(c);
-    localStorage.setItem('app_currency', JSON.stringify(c));
+  // Apply fonts
+  useEffect(() => {
+    document.documentElement.style.setProperty('--font-ltr', `'${saved.ltrFont}', sans-serif`);
+    document.documentElement.style.setProperty('--font-rtl', `'${saved.rtlFont}', sans-serif`);
+    // Load Google Fonts dynamically
+    const families = [saved.ltrFont, saved.rtlFont].map(f => f.replace(/ /g, '+')).join('&family=');
+    const linkId = 'dynamic-google-fonts';
+    let link = document.getElementById(linkId) as HTMLLinkElement;
+    if (!link) {
+      link = document.createElement('link');
+      link.id = linkId;
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+    }
+    link.href = `https://fonts.googleapis.com/css2?family=${families}:wght@300;400;500;600;700&display=swap`;
+  }, [saved.ltrFont, saved.rtlFont]);
+
+  const hasPendingChanges = JSON.stringify(saved) !== JSON.stringify(pending);
+
+  const saveSettings = useCallback(() => {
+    // Persist all pending to localStorage and apply
+    localStorage.setItem('app_currency', JSON.stringify(pending.currency));
+    localStorage.setItem('app_color_theme', pending.colorTheme);
+    localStorage.setItem('app_name', pending.appName);
+    localStorage.setItem('app_description', pending.appDescription);
+    localStorage.setItem('app_logo', pending.appLogo);
+    localStorage.setItem('app_ltr_font', pending.ltrFont);
+    localStorage.setItem('app_rtl_font', pending.rtlFont);
+    setSaved({ ...pending });
+  }, [pending]);
+
+  const discardChanges = useCallback(() => {
+    setPending({ ...saved });
+  }, [saved]);
+
+  const updatePending = useCallback((partial: Partial<PendingSettings>) => {
+    setPending(prev => ({ ...prev, ...partial }));
   }, []);
 
-  const setColorTheme = useCallback((t: ColorTheme) => {
-    setColorThemeState(t);
-    localStorage.setItem('app_color_theme', t);
-  }, []);
-
-  const setAppName = useCallback((n: string) => {
-    setAppNameState(n);
-    localStorage.setItem('app_name', n);
-  }, []);
-
-  const setAppDescription = useCallback((d: string) => {
-    setAppDescriptionState(d);
-    localStorage.setItem('app_description', d);
-  }, []);
-
+  // Direct setters (for backwards compat, immediately save)
+  const setCurrency = useCallback((c: Currency) => { setPending(p => ({ ...p, currency: c })); }, []);
+  const setColorTheme = useCallback((t: ColorTheme) => { setPending(p => ({ ...p, colorTheme: t })); }, []);
+  const setAppName = useCallback((n: string) => { setPending(p => ({ ...p, appName: n })); }, []);
+  const setAppDescription = useCallback((d: string) => { setPending(p => ({ ...p, appDescription: d })); }, []);
   const setAppLogo = useCallback((l: string) => {
-    setAppLogoState(l);
+    // Logo upload is immediate
     localStorage.setItem('app_logo', l);
+    setSaved(s => ({ ...s, appLogo: l }));
+    setPending(p => ({ ...p, appLogo: l }));
   }, []);
+  const setLtrFont = useCallback((f: string) => { setPending(p => ({ ...p, ltrFont: f })); }, []);
+  const setRtlFont = useCallback((f: string) => { setPending(p => ({ ...p, rtlFont: f })); }, []);
 
   return (
     <AppSettingsContext.Provider value={{
-      currency, setCurrency, currencies: CURRENCIES,
-      colorTheme, setColorTheme, themes: THEMES,
-      appName, setAppName,
-      appDescription, setAppDescription,
-      appLogo, setAppLogo,
+      currency: saved.currency, setCurrency, currencies: CURRENCIES,
+      colorTheme: saved.colorTheme, setColorTheme, themes: THEMES,
+      appName: saved.appName, setAppName,
+      appDescription: saved.appDescription, setAppDescription,
+      appLogo: saved.appLogo, setAppLogo,
+      ltrFont: saved.ltrFont, setLtrFont,
+      rtlFont: saved.rtlFont, setRtlFont,
+      pending, updatePending, saveSettings, hasPendingChanges, discardChanges,
     }}>
       {children}
     </AppSettingsContext.Provider>
