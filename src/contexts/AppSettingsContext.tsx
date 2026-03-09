@@ -64,7 +64,6 @@ interface PendingSettings {
   buttonShape: ButtonShape;
   currencyDecimals: number;
   paymentGateway: string;
-  paymentGatewayKey: string;
 }
 
 interface AppSettingsContextType {
