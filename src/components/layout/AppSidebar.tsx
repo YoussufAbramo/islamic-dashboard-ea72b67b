@@ -32,7 +32,6 @@ const AppSidebar = () => {
     { key: 'chats', label: t('nav.chats'), icon: MessageSquare, path: '/dashboard/chats', roles: ['admin', 'teacher', 'student'] },
   ];
 
-  const isAr = language === 'ar';
   const items = allItems.filter((item) => role && item.roles.includes(role));
 
   return (
