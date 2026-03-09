@@ -47,7 +47,7 @@ const Invoices = () => {
   const fetchInvoices = async () => {
     const { data } = await supabase
       .from('invoices')
-      .select('*, courses:course_id(title, title_ar), students:student_id(user_id, profiles:students_user_id_profiles_fkey(full_name, email, phone))')
+      .select('*, courses:invoices_course_id_fkey(title, title_ar), students:invoices_student_id_fkey(user_id, profiles:students_user_id_profiles_fkey(full_name, email, phone))')
       .order('created_at', { ascending: false });
     setInvoices(data || []);
   };
