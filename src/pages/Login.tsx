@@ -230,27 +230,6 @@ const Login = () => {
                   {loading ? t('common.loading') : t('auth.login')}
                 </Button>
 
-                {/* Quick Login Buttons */}
-                <div className="w-full space-y-2">
-                  <p className="text-xs text-muted-foreground text-center">
-                    {language === 'ar' ? 'تسجيل دخول سريع للاختبار' : 'Quick test login'}
-                  </p>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Button type="button" variant="outline" size="sm" className="text-xs" onClick={() => handleQuickLogin('student')} disabled={loading}>
-                      <GraduationCap className="h-3 w-3 me-1" />
-                      {language === 'ar' ? 'طالب' : 'Student'}
-                    </Button>
-                    <Button type="button" variant="outline" size="sm" className="text-xs" onClick={() => handleQuickLogin('teacher')} disabled={loading}>
-                      <Users className="h-3 w-3 me-1" />
-                      {language === 'ar' ? 'معلم' : 'Teacher'}
-                    </Button>
-                    <Button type="button" variant="outline" size="sm" className="text-xs" onClick={() => handleQuickLogin('admin')} disabled={loading}>
-                      <ShieldCheck className="h-3 w-3 me-1" />
-                      {language === 'ar' ? 'مدير' : 'Admin'}
-                    </Button>
-                  </div>
-                </div>
-
                 <p className="text-sm text-muted-foreground text-center">
                   {t('auth.noAccount')}{' '}
                   <Link to="/signup" className="text-primary font-medium hover:underline">
