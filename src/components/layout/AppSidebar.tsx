@@ -32,6 +32,13 @@ const AppSidebar = () => {
   const navigate = useNavigate();
   const isAr = language === 'ar';
   const location = useLocation();
+  const [resolvedAvatarUrl, setResolvedAvatarUrl] = useState('');
+
+  useEffect(() => {
+    if (profile?.avatar_url) {
+      getAvatarSignedUrl(profile.avatar_url).then(setResolvedAvatarUrl);
+    }
+  }, [profile?.avatar_url]);
 
   const categories: MenuCategory[] = [
     {
