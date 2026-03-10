@@ -140,6 +140,8 @@ const Chats = () => {
     return getChatLabel(chat).toLowerCase().includes(searchQuery.toLowerCase());
   });
 
+  const { currentPage, totalPages, paginatedItems: paginatedChats, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filteredChats);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
