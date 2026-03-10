@@ -150,6 +150,11 @@
     --sidebar-accent: 210 35% 18%;
     --sidebar-border: 210 30% 20%;
     --sidebar-ring: 190 60% 50%;
+    --sidebar-light-background: 210 20% 96%;
+    --sidebar-light-foreground: 210 30% 12%;
+    --sidebar-light-accent: 210 15% 90%;
+    --sidebar-light-accent-foreground: 210 30% 12%;
+    --sidebar-light-border: 210 15% 85%;
   }
   /* Ocean - Dark */
   .dark.theme-ocean {
