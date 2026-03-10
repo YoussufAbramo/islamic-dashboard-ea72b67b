@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
@@ -74,15 +74,44 @@ const PaymentGatewayCard = ({ isAr }: PaymentGatewayCardProps) => {
   const { pending, updatePending } = useAppSettings();
   const selectedGateway = pending.paymentGateway || '';
 
-  // Track active gateways and their API values
   const [activeGateways, setActiveGateways] = useState<Record<string, boolean>>(() => {
     const saved = localStorage.getItem('app_active_gateways');
     return saved ? JSON.parse(saved) : { paypal: true, paymob: true };
   });
   const [apiValues, setApiValues] = useState<Record<string, Record<string, string>>>({});
+  const [maskedValues, setMaskedValues] = useState<Record<string, Record<string, string>>>({});
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState<string | null>(null);
   const [logoErrors, setLogoErrors] = useState<Record<string, boolean>>({});
+  const [savedGateways, setSavedGateways] = useState<Set<string>>(new Set());
+
+  // Load saved keys on mount
+  useEffect(() => {
+    const loadSavedKeys = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('manage-accounts', {
+          body: { action: 'get_payment_keys' },
+        });
+        if (!error && data?.gateways) {
+          const masks: Record<string, Record<string, string>> = {};
+          const active: Record<string, boolean> = { ...activeGateways };
+          const saved = new Set<string>();
+          for (const gw of data.gateways) {
+            masks[gw.gateway_id] = gw.masked_keys;
+            active[gw.gateway_id] = gw.is_active;
+            saved.add(gw.gateway_id);
+          }
+          setMaskedValues(masks);
+          setActiveGateways(active);
+          setSavedGateways(saved);
+          localStorage.setItem('app_active_gateways', JSON.stringify(active));
+        }
+      } catch {
+        // Silently fail on load — keys may not be configured yet
+      }
+    };
+    loadSavedKeys();
+  }, []);
 
   const toggleGateway = (id: string) => {
     const next = { ...activeGateways, [id]: !activeGateways[id] };
@@ -104,18 +133,38 @@ const PaymentGatewayCard = ({ isAr }: PaymentGatewayCardProps) => {
   };
 
   const saveApiKeys = async (gwId: string) => {
+    const keys = apiValues[gwId] || {};
+    const hasValues = Object.values(keys).some(v => v.trim() !== '');
+    if (!hasValues) {
+      toast.error(isAr ? 'يرجى إدخال مفتاح واحد على الأقل' : 'Please enter at least one key');
+      return;
+    }
+
     setSaving(gwId);
     try {
-      // Store API keys via edge function (server-side storage)
-      const { error } = await supabase.functions.invoke('manage-accounts', {
+      const { data, error } = await supabase.functions.invoke('manage-accounts', {
         body: {
           action: 'store_payment_keys',
           gateway: gwId,
-          keys: apiValues[gwId] || {},
+          keys,
         },
       });
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
       toast.success(isAr ? 'تم حفظ مفاتيح API بنجاح' : 'API keys saved successfully');
+
+      // Update masked values and clear raw input
+      const newMasked: Record<string, string> = {};
+      for (const [key, value] of Object.entries(keys)) {
+        if (typeof value === 'string' && value.length > 4) {
+          newMasked[key] = '•'.repeat(value.length - 4) + value.slice(-4);
+        } else {
+          newMasked[key] = '••••';
+        }
+      }
+      setMaskedValues(prev => ({ ...prev, [gwId]: { ...(prev[gwId] || {}), ...newMasked } }));
+      setSavedGateways(prev => new Set(prev).add(gwId));
+      setApiValues(prev => ({ ...prev, [gwId]: {} }));
     } catch (err: any) {
       toast.error(isAr ? 'فشل حفظ مفاتيح API. يرجى المحاولة مرة أخرى.' : 'Failed to save API keys. Please try again.');
       console.error('Payment key save error:', err);
@@ -138,6 +187,7 @@ const PaymentGatewayCard = ({ isAr }: PaymentGatewayCardProps) => {
       <CardContent className="space-y-4">
         {GATEWAYS.map((gw) => {
           const isActive = !!activeGateways[gw.id];
+          const isSaved = savedGateways.has(gw.id);
           return (
             <div
               key={gw.id}
@@ -162,11 +212,19 @@ const PaymentGatewayCard = ({ isAr }: PaymentGatewayCardProps) => {
                   </div>
                   <div>
                     <h4 className="font-medium text-sm">{gw.name}</h4>
-                    {isActive && (
-                      <Badge variant="outline" className="text-[10px] mt-0.5">
-                        {isAr ? 'مفعّل' : 'Active'}
-                      </Badge>
-                    )}
+                    <div className="flex gap-1 mt-0.5">
+                      {isActive && (
+                        <Badge variant="outline" className="text-[10px]">
+                          {isAr ? 'مفعّل' : 'Active'}
+                        </Badge>
+                      )}
+                      {isSaved && (
+                        <Badge variant="secondary" className="text-[10px]">
+                          <Check className="h-2.5 w-2.5 me-0.5" />
+                          {isAr ? 'مُهيأ' : 'Configured'}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <Switch
@@ -178,38 +236,42 @@ const PaymentGatewayCard = ({ isAr }: PaymentGatewayCardProps) => {
               {/* API Fields (shown when active) */}
               {isActive && (
                 <div className="px-4 pb-4 space-y-3 border-t border-border pt-3">
-                  {gw.fields.map((field) => (
-                    <div key={field.key} className="space-y-1">
-                      <Label className="text-xs">
-                        {isAr ? field.labelAr : field.label}
-                      </Label>
-                      <div className="relative">
-                        <Input
-                          type={field.secret && !showSecrets[`${gw.id}_${field.key}`] ? 'password' : 'text'}
-                          value={apiValues[gw.id]?.[field.key] || ''}
-                          onChange={(e) => updateApiValue(gw.id, field.key, e.target.value)}
-                          placeholder={`${isAr ? 'أدخل' : 'Enter'} ${field.label}`}
-                          className="text-sm pe-10"
-                        />
-                        {field.secret && (
-                          <button
-                            type="button"
-                            onClick={() => setShowSecrets(prev => ({
-                              ...prev,
-                              [`${gw.id}_${field.key}`]: !prev[`${gw.id}_${field.key}`],
-                            }))}
-                            className="absolute end-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                          >
-                            {showSecrets[`${gw.id}_${field.key}`] ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
-                            )}
-                          </button>
-                        )}
+                  {gw.fields.map((field) => {
+                    const masked = maskedValues[gw.id]?.[field.key];
+                    const rawValue = apiValues[gw.id]?.[field.key] || '';
+                    return (
+                      <div key={field.key} className="space-y-1">
+                        <Label className="text-xs">
+                          {isAr ? field.labelAr : field.label}
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            type={field.secret && !showSecrets[`${gw.id}_${field.key}`] ? 'password' : 'text'}
+                            value={rawValue}
+                            onChange={(e) => updateApiValue(gw.id, field.key, e.target.value)}
+                            placeholder={masked || `${isAr ? 'أدخل' : 'Enter'} ${field.label}`}
+                            className="text-sm pe-10"
+                          />
+                          {field.secret && (
+                            <button
+                              type="button"
+                              onClick={() => setShowSecrets(prev => ({
+                                ...prev,
+                                [`${gw.id}_${field.key}`]: !prev[`${gw.id}_${field.key}`],
+                              }))}
+                              className="absolute end-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            >
+                              {showSecrets[`${gw.id}_${field.key}`] ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   <div className="flex items-center justify-between pt-2">
                     <p className="text-[10px] text-muted-foreground">
                       {isAr
