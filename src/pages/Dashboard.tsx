@@ -175,7 +175,7 @@ const Dashboard = () => {
     const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
 
     const fetchStats = async () => {
-      const [courses, students, teachers, subs, tickets, timetable, weeklyEntries, certs, attendanceCount, chatCount, announcementsCount] = await Promise.all([
+      const [courses, students, teachers, subs, tickets, timetable, weeklyEntries, certs, attendanceCount, chatCount, announcementsCount, invoicesCount, pendingInvoicesCount] = await Promise.all([
         supabase.from('courses').select('id', { count: 'exact', head: true }),
         supabase.from('students').select('id', { count: 'exact', head: true }),
         supabase.from('teachers').select('id', { count: 'exact', head: true }),
@@ -187,6 +187,8 @@ const Dashboard = () => {
         supabase.from('attendance').select('id', { count: 'exact', head: true }),
         supabase.from('chats').select('id', { count: 'exact', head: true }),
         supabase.from('announcements').select('id', { count: 'exact', head: true }).eq('is_active', true),
+        supabase.from('invoices').select('id', { count: 'exact', head: true }),
+        supabase.from('invoices').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
       ]);
 
       const subsData = subs.data || [];
