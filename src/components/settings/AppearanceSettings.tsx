@@ -6,16 +6,17 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Palette, Building2, Upload, Check, Type, RectangleHorizontal, Circle, Square, Search, Plus, AlignLeft, AlignCenter, AlignRight, Image, Moon, Sun, PanelLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { useRef, useEffect, useState, useMemo } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 const AppearanceSettings = () => {
   const { language } = useLanguage();
-  const { pending, updatePending, themes, setAppLogo, appLogo, signatureImage, setSignatureImage, stampImage, setStampImage, signaturePosition, stampPosition, setFavicon, favicon } = useAppSettings();
+  const { pending, updatePending, themes, setAppLogo, appLogo, darkLogo, setDarkLogo, signatureImage, setSignatureImage, stampImage, setStampImage, signaturePosition, stampPosition, setFavicon, favicon } = useAppSettings();
   const isAr = language === 'ar';
   const fileRef = useRef<HTMLInputElement>(null);
+  const darkLogoRef = useRef<HTMLInputElement>(null);
   const signatureRef = useRef<HTMLInputElement>(null);
   const stampRef = useRef<HTMLInputElement>(null);
   const faviconRef = useRef<HTMLInputElement>(null);
@@ -41,6 +42,18 @@ const AppearanceSettings = () => {
     if (uploadErr) { toast.error(uploadErr); return; }
     setAppLogo(signedUrl);
     toast.success(isAr ? 'تم رفع الشعار' : 'Logo uploaded');
+  };
+
+  const handleDarkLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const ext = file.name.split('.').pop();
+    const path = `branding/dark-logo-${Date.now()}.${ext}`;
+    const { uploadAndGetSignedUrl } = await import('@/lib/storage');
+    const { signedUrl, error: uploadErr } = await uploadAndGetSignedUrl(path, file);
+    if (uploadErr) { toast.error(uploadErr); return; }
+    setDarkLogo(signedUrl);
+    toast.success(isAr ? 'تم رفع شعار الوضع الداكن' : 'Dark mode logo uploaded');
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, setter: (url: string) => void, prefix: string) => {
@@ -166,6 +179,7 @@ const AppearanceSettings = () => {
           {/* App Logo */}
           <div className="space-y-2">
             <Label>{isAr ? 'شعار التطبيق' : 'App Logo'}</Label>
+            <p className="text-xs text-muted-foreground">{isAr ? 'الشعار الرئيسي للوضع الفاتح' : 'Main logo for light mode'}</p>
             <div className="flex items-center gap-4">
               {appLogo ? (
                 <img src={appLogo} alt="Logo" className="h-14 max-w-[200px] rounded-lg object-contain border border-border" />
@@ -178,6 +192,31 @@ const AppearanceSettings = () => {
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
                 <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>{isAr ? 'رفع شعار' : 'Upload Logo'}</Button>
                 {appLogo && <Button variant="ghost" size="sm" onClick={() => setAppLogo('')}>{isAr ? 'إزالة' : 'Remove'}</Button>}
+              </div>
+            </div>
+          </div>
+
+          {/* Dark Mode Logo */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Moon className="h-4 w-4" />
+              {isAr ? 'شعار الوضع الداكن (أبيض)' : 'Dark Mode Logo (White)'}
+            </Label>
+            <p className="text-xs text-muted-foreground">{isAr ? 'شعار بديل يظهر على الخلفيات الداكنة (القائمة الجانبية الداكنة والوضع المظلم)' : 'Alternative logo shown on dark backgrounds (dark sidebar and dark mode)'}</p>
+            <div className="flex items-center gap-4">
+              {darkLogo ? (
+                <div className="h-14 max-w-[200px] rounded-lg border border-border bg-sidebar p-2">
+                  <img src={darkLogo} alt="Dark Logo" className="h-full w-full object-contain" />
+                </div>
+              ) : (
+                <div className="h-14 w-14 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-sidebar">
+                  <Moon className="h-5 w-5 text-sidebar-foreground/40" />
+                </div>
+              )}
+              <div className="flex gap-2">
+                <input ref={darkLogoRef} type="file" accept="image/*" className="hidden" onChange={handleDarkLogoUpload} />
+                <Button variant="outline" size="sm" onClick={() => darkLogoRef.current?.click()}>{isAr ? 'رفع شعار داكن' : 'Upload Dark Logo'}</Button>
+                {darkLogo && <Button variant="ghost" size="sm" onClick={() => setDarkLogo('')}>{isAr ? 'إزالة' : 'Remove'}</Button>}
               </div>
             </div>
           </div>

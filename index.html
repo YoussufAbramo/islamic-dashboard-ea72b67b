@@ -14,6 +14,11 @@
     <link rel="apple-touch-icon" href="/favicon.png" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="canonical" href="https://islamic-dashboard.lovable.app/" />
+    <!-- Font preloading for faster initial render -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@300;400;500;600;700&family=Cairo:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" as="style" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@300;400;500;600;700&family=Cairo:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://islamic-dashboard.lovable.app/" />
     <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5f82b5b9-8072-40b0-90f9-90af2500ad04/id-preview-d316c52d--6b0f1e1e-c6a8-4798-a26b-38c5ba2ad0c7.lovable.app-1773034306687.png">
@@ -40,8 +45,49 @@
       }
     }
     </script>
+    <style>
+      /* Loading screen styles */
+      #app-loader {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #faf9f6;
+        z-index: 99999;
+        transition: opacity 0.3s ease;
+      }
+      @media (prefers-color-scheme: dark) {
+        #app-loader { background: #0f1a14; }
+        #app-loader .loader-text { color: #d4c9a8; }
+        #app-loader .loader-spinner { border-color: #2d4a3a; border-top-color: #c8a84e; }
+      }
+      .loader-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid #e8e0d0;
+        border-top-color: #2d7a5e;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      .loader-text {
+        margin-top: 16px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 14px;
+        color: #5a6e62;
+        letter-spacing: 0.5px;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
+    <div id="app-loader">
+      <div class="loader-spinner"></div>
+      <p class="loader-text">Loading...</p>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

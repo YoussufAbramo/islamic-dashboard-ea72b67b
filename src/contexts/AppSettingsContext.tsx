@@ -64,6 +64,7 @@ interface PendingSettings {
   appName: string;
   appDescription: string;
   appLogo: string;
+  darkLogo: string;
   signatureImage: string;
   stampImage: string;
   signaturePosition: FooterPosition;
@@ -91,6 +92,8 @@ interface AppSettingsContextType {
   setAppDescription: (d: string) => void;
   appLogo: string;
   setAppLogo: (l: string) => void;
+  darkLogo: string;
+  setDarkLogo: (l: string) => void;
   signatureImage: string;
   setSignatureImage: (s: string) => void;
   stampImage: string;
@@ -124,15 +127,14 @@ interface AppSettingsContextType {
 
 const AppSettingsContext = createContext<AppSettingsContextType | null>(null);
 
-const SETTINGS_VERSION = '3';
+const SETTINGS_VERSION = '4';
 
 function loadSaved(): PendingSettings {
-  // Clear stale settings when defaults change
   const storedVersion = localStorage.getItem('app_settings_version');
   if (storedVersion !== SETTINGS_VERSION) {
-  const keysToReset = [
+    const keysToReset = [
       'app_currency', 'app_color_theme', 'app_name', 'app_description',
-      'app_logo', 'app_signature_image', 'app_stamp_image', 'app_signature_position',
+      'app_logo', 'app_dark_logo', 'app_signature_image', 'app_stamp_image', 'app_signature_position',
       'app_stamp_position', 'app_ltr_font', 'app_rtl_font', 'app_button_shape',
       'app_currency_decimals', 'app_payment_gateway', 'app_default_language',
       'app_default_timezone', 'app_favicon', 'app_active_gateways', 'app_sidebar_mode',
@@ -147,6 +149,7 @@ function loadSaved(): PendingSettings {
     appName: localStorage.getItem('app_name') || DEFAULT_APP_NAME,
     appDescription: localStorage.getItem('app_description') || DEFAULT_APP_DESCRIPTION,
     appLogo: localStorage.getItem('app_logo') || DEFAULT_LOGO,
+    darkLogo: localStorage.getItem('app_dark_logo') || '',
     signatureImage: localStorage.getItem('app_signature_image') || DEFAULT_SIGNATURE,
     stampImage: localStorage.getItem('app_stamp_image') || DEFAULT_STAMP,
     signaturePosition: (localStorage.getItem('app_signature_position') as FooterPosition) || 'left',
@@ -212,6 +215,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     localStorage.setItem('app_name', pending.appName);
     localStorage.setItem('app_description', pending.appDescription);
     localStorage.setItem('app_logo', pending.appLogo);
+    localStorage.setItem('app_dark_logo', pending.darkLogo);
     localStorage.setItem('app_signature_image', pending.signatureImage);
     localStorage.setItem('app_stamp_image', pending.stampImage);
     localStorage.setItem('app_signature_position', pending.signaturePosition);
@@ -229,7 +233,6 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const discardChanges = useCallback(() => {
     setPending({ ...saved });
-    // Re-apply saved visual settings on discard
     const root = document.documentElement;
     root.classList.remove('theme-ocean', 'theme-purple', 'theme-desert', 'theme-midnight', 'theme-rose', 'theme-teal', 'theme-amber', 'theme-slate', 'theme-crimson');
     if (saved.colorTheme !== 'emerald') root.classList.add(`theme-${saved.colorTheme}`);
@@ -239,6 +242,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     document.documentElement.style.setProperty('--font-rtl', `'${saved.rtlFont}', sans-serif`);
     document.documentElement.setAttribute('data-sidebar-mode', saved.sidebarMode);
   }, [saved]);
+
   const updatePending = useCallback((partial: Partial<PendingSettings>) => { setPending(prev => ({ ...prev, ...partial })); }, []);
 
   const setCurrency = useCallback((c: Currency) => { setPending(p => ({ ...p, currency: c })); }, []);
@@ -246,6 +250,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const setAppName = useCallback((n: string) => { setPending(p => ({ ...p, appName: n })); }, []);
   const setAppDescription = useCallback((d: string) => { setPending(p => ({ ...p, appDescription: d })); }, []);
   const setAppLogo = useCallback((l: string) => { localStorage.setItem('app_logo', l); setSaved(s => ({ ...s, appLogo: l })); setPending(p => ({ ...p, appLogo: l })); }, []);
+  const setDarkLogo = useCallback((l: string) => { localStorage.setItem('app_dark_logo', l); setSaved(s => ({ ...s, darkLogo: l })); setPending(p => ({ ...p, darkLogo: l })); }, []);
   const setSignatureImage = useCallback((s: string) => { localStorage.setItem('app_signature_image', s); setSaved(prev => ({ ...prev, signatureImage: s })); setPending(prev => ({ ...prev, signatureImage: s })); }, []);
   const setStampImage = useCallback((s: string) => { localStorage.setItem('app_stamp_image', s); setSaved(prev => ({ ...prev, stampImage: s })); setPending(prev => ({ ...prev, stampImage: s })); }, []);
   const setSignaturePosition = useCallback((p: FooterPosition) => { setPending(prev => ({ ...prev, signaturePosition: p })); }, []);
@@ -265,6 +270,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       appName: saved.appName, setAppName,
       appDescription: saved.appDescription, setAppDescription,
       appLogo: saved.appLogo, setAppLogo,
+      darkLogo: saved.darkLogo, setDarkLogo,
       signatureImage: saved.signatureImage, setSignatureImage,
       stampImage: saved.stampImage, setStampImage,
       signaturePosition: saved.signaturePosition, setSignaturePosition,

@@ -2,6 +2,33 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [3.0.0] - 2026-03-10
+
+### Added
+- "Manage Roles" sidebar item now shows "Coming Soon" badge (renamed from "Role Management")
+- Dark mode logo: Upload a white/light logo variant for dark sidebar and dark mode
+- Education System settings: 30 coming soon features organized in 3 tabs (10 Teacher, 10 Student, 10 Platform)
+- Certificate grid view: Toggle between list and grid views with certificate design previews
+- Certificate action buttons: Unified dropdown menu for print/PDF/delete actions per design
+- Subscription creation: Schedule picker with weekly day selection and time slot
+- Calculator: Schedule picker when creating subscriptions from calculator
+- Chat notification badges: Unread message count shown on "Chats" item in sidebar
+- New message notifications: Badge indicator beside new chat messages
+- Loading screen: CSS-based loading spinner shown before React mounts
+- Skeleton loading: Dashboard skeleton placeholders during auth loading
+- Font preloading: Google Fonts preconnect and preload for faster initial render
+- Auto-discard settings: Unsaved changes automatically discarded when leaving Settings page
+- Group chat: Support for multiple students and multiple teachers via chat_members table
+
+### Changed
+- Sidebar light mode: Fixed text color contrast for all sidebar elements
+- Sidebar logo: Uses dark mode logo variant when sidebar is in dark mode
+- Settings version bumped to v4 (force-applies new defaults including dark logo)
+- Version bumped to 3.0.0
+
+### Security
+- EXECUTE permissions on RLS helper functions re-granted to authenticated users
+
 ## [2.9.0] - 2026-03-10
 
 ### Added
