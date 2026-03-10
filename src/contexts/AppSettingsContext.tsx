@@ -116,7 +116,7 @@ function loadSaved(): PendingSettings {
   return {
     currency: (() => { const s = localStorage.getItem('app_currency'); return s ? JSON.parse(s) : CURRENCIES[0]; })(),
     colorTheme: (localStorage.getItem('app_color_theme') as ColorTheme) || 'emerald',
-    appName: localStorage.getItem('app_name') || 'EduDash',
+    appName: localStorage.getItem('app_name') || 'Islamic Dashboard',
     appDescription: localStorage.getItem('app_description') || 'Islamic Educational Dashboard',
     appLogo: localStorage.getItem('app_logo') || '',
     signatureImage: localStorage.getItem('app_signature_image') || '',
