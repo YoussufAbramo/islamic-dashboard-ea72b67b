@@ -134,7 +134,7 @@ const Reports = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {subscriptions.map(s => (
+                  {sortedSubscriptions.map(s => (
                     <TableRow key={s.id}>
                       <TableCell>{getStudentName(s.student_id)}</TableCell>
                       <TableCell>{getCourseName(s.course_id)}</TableCell>
