@@ -22,6 +22,11 @@ const InvoiceView = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  const signatureImage = typeof window !== 'undefined' ? localStorage.getItem('app_signature_image') || '' : '';
+  const stampImage = typeof window !== 'undefined' ? localStorage.getItem('app_stamp_image') || '' : '';
+  const signaturePosition = (typeof window !== 'undefined' ? localStorage.getItem('app_signature_position') : 'left') as FooterPosition || 'left';
+  const stampPosition = (typeof window !== 'undefined' ? localStorage.getItem('app_stamp_position') : 'right') as FooterPosition || 'right';
+
   useEffect(() => {
     const fetchInvoice = async () => {
       if (!id) { setError(true); setLoading(false); return; }
