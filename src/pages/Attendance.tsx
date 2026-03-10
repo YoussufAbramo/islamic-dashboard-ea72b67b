@@ -129,15 +129,6 @@ const Attendance = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">{isAr ? 'تتبع الحضور' : 'Attendance Tracking'}</h1>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')}
-          className="gap-1"
-        >
-          {sortOrder === 'newest' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}
-          {sortOrder === 'newest' ? (isAr ? 'الأحدث' : 'Newest') : (isAr ? 'الأقدم' : 'Oldest')}
-        </Button>
       </div>
 
       {/* Summary Cards */}
