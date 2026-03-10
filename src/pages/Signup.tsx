@@ -94,7 +94,7 @@ const Signup = () => {
             </div>
           )}
           <h1 className="text-4xl font-bold font-amiri text-gold">
-            {language === 'ar' ? (appName || 'منصة التعليم') : (appName || 'EduDash')}
+            {language === 'ar' ? (appName || 'منصة التعليم') : (appName || 'Islamic Dashboard')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1 font-amiri">
             {appDescription || (language === 'ar' ? 'بسم الله الرحمن الرحيم' : 'In the Name of Allah, the Most Gracious')}
