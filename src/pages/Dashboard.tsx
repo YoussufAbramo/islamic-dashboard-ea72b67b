@@ -202,6 +202,7 @@ const Dashboard = () => {
         mri, weeklyLessons: weekData.length, teacherAbsences: absences,
         certificates: certs.count || 0, attendance: attendanceCount.count || 0,
         chats: chatCount.count || 0, announcements: announcementsCount.count || 0,
+        invoices: invoicesCount.count || 0, pendingInvoices: pendingInvoicesCount.count || 0,
       });
 
       // Build sales data by month (last 6 months)
