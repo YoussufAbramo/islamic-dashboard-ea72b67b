@@ -1,6 +1,6 @@
 {
-  "name": "EduDash - Islamic Educational Dashboard",
-  "short_name": "EduDash",
+  "name": "Islamic Dashboard",
+  "short_name": "Islamic Dashboard",
   "description": "Islamic Educational Dashboard for managing courses, students, and teachers",
   "start_url": "/",
   "display": "standalone",

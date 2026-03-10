@@ -16,12 +16,25 @@ const statusConfig: Record<string, { bg: string; label: string }> = {
   cancelled: { bg: 'bg-muted text-muted-foreground border-border', label: 'Cancelled' },
 };
 
+// Read currency from localStorage (this page is outside AppSettingsProvider for anon access)
+const getCurrencySymbol = (): string => {
+  try {
+    const raw = localStorage.getItem('app_currency');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return parsed.symbol || '$';
+    }
+  } catch {}
+  return '$';
+};
+
 const InvoiceView = () => {
   const { id } = useParams<{ id: string }>();
   const [invoice, setInvoice] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  const currencySymbol = getCurrencySymbol();
   const signatureImage = typeof window !== 'undefined' ? localStorage.getItem('app_signature_image') || '' : '';
   const stampImage = typeof window !== 'undefined' ? localStorage.getItem('app_stamp_image') || '' : '';
   const signaturePosition = (typeof window !== 'undefined' ? localStorage.getItem('app_signature_position') : 'left') as FooterPosition || 'left';
@@ -70,12 +83,11 @@ const InvoiceView = () => {
   }
 
   const sc = statusConfig[invoice.status] || statusConfig.pending;
-  const formatAmount = (n: number) => `$${n.toFixed(2)}`;
+  const formatAmount = (n: number) => `${currencySymbol}${n.toFixed(2)}`;
 
   return (
     <div className="min-h-screen bg-background py-8 px-4 print:py-2 print:px-0">
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Print-hidden nav */}
         <div className="flex justify-between items-center print:hidden">
           <Link to="/">
             <Button variant="ghost" size="sm"><ArrowLeft className="h-4 w-4 me-2" />Home</Button>
@@ -85,7 +97,6 @@ const InvoiceView = () => {
           </Button>
         </div>
 
-        {/* Invoice Header */}
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -101,7 +112,6 @@ const InvoiceView = () => {
 
         <Separator />
 
-        {/* Student & Course */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Card>
             <CardHeader className="py-3 px-4">
@@ -126,7 +136,6 @@ const InvoiceView = () => {
           </Card>
         </div>
 
-        {/* Amount */}
         <div className="p-6 rounded-xl border border-border bg-muted/30 text-center">
           <p className="text-sm text-muted-foreground">Amount Due</p>
           <p className="text-4xl font-bold mt-1">{formatAmount(invoice.amount)}</p>
@@ -135,14 +144,12 @@ const InvoiceView = () => {
           </p>
         </div>
 
-        {/* Pay Now placeholder */}
         {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
           <Button className="w-full" size="lg">
             <CreditCard className="h-4 w-4 me-2" />Pay Now
           </Button>
         )}
 
-        {/* Notes */}
         {invoice.notes && (
           <div className="space-y-1">
             <h4 className="font-medium text-sm">Notes</h4>
@@ -150,7 +157,6 @@ const InvoiceView = () => {
           </div>
         )}
 
-        {/* Signature & Stamp */}
         {(signatureImage || stampImage) && (
           <div className="pt-4 border-t border-border print:border-border">
             <div className="flex items-end gap-4">
