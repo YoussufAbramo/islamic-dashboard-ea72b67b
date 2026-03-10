@@ -216,7 +216,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
 
           {/* Erase Sample Data */}
           <div className="flex items-start gap-4 p-4 rounded-lg border border-border">
-            <PackagePlus className="h-8 w-8 text-orange-500 shrink-0 mt-0.5" />
+            <PackagePlus className="h-8 w-8 text-muted-foreground shrink-0 mt-0.5" />
             <div className="flex-1 space-y-2">
               <h4 className="font-medium">{isAr ? 'مسح البيانات التجريبية' : 'Erase Sample Data'}</h4>
               <p className="text-sm text-muted-foreground">
