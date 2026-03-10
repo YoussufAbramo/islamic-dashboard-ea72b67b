@@ -3,8 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, DollarSign, HardDrive } from 'lucide-react';
+import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, DollarSign, HardDrive, GraduationCap } from 'lucide-react';
 import { toast } from 'sonner';
 import AppearanceSettings from '@/components/settings/AppearanceSettings';
 import PaymentGatewayCard from '@/components/settings/PaymentGatewayCard';
@@ -14,8 +13,9 @@ import GeneralSettings from '@/components/settings/GeneralSettings';
 import LandingContentSettings from '@/components/settings/LandingContentSettings';
 import SaaSPricingSettings from '@/components/settings/SaaSPricingSettings';
 import BackupsSettings from '@/components/settings/BackupsSettings';
+import EducationSystemSettings from '@/components/settings/EducationSystemSettings';
 
-type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing' | 'backups';
+type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing' | 'backups' | 'education';
 
 const Settings = () => {
   const { language } = useLanguage();
@@ -33,6 +33,7 @@ const Settings = () => {
   const tabs: { value: SettingsTab; label: string; labelAr: string; icon: any; adminOnly?: boolean; comingSoon?: boolean }[] = [
     { value: 'general', label: 'General', labelAr: 'عام', icon: Settings2 },
     { value: 'appearance', label: 'Appearance', labelAr: 'المظهر', icon: Palette },
+    { value: 'education', label: 'Education System', labelAr: 'النظام التعليمي', icon: GraduationCap },
     { value: 'landing', label: 'Landing Page', labelAr: 'صفحة الهبوط', icon: Globe, adminOnly: true },
     { value: 'pricing', label: 'Pricing Packages', labelAr: 'باقات الأسعار', icon: DollarSign, adminOnly: true },
     { value: 'auth', label: 'Authentication', labelAr: 'المصادقة', icon: ShieldCheck, adminOnly: true },
@@ -93,6 +94,7 @@ const Settings = () => {
         <div className="flex-1 min-w-0">
           {activeTab === 'general' && <GeneralSettings />}
           {activeTab === 'appearance' && <AppearanceSettings />}
+          {activeTab === 'education' && <EducationSystemSettings />}
           {activeTab === 'landing' && isAdmin && <LandingContentSettings />}
           {activeTab === 'pricing' && isAdmin && <SaaSPricingSettings />}
           {activeTab === 'auth' && isAdmin && <AuthenticationSettings />}
@@ -102,9 +104,9 @@ const Settings = () => {
         </div>
       </div>
 
-      {/* Sticky save bar */}
+      {/* Fixed save bar */}
       {hasPendingChanges && (
-        <div className="sticky bottom-4 flex justify-end gap-2 p-3 rounded-lg border bg-card shadow-lg">
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 p-3 rounded-lg border bg-card shadow-lg max-w-xl w-[calc(100%-2rem)]">
           <span className="text-sm text-muted-foreground flex items-center me-auto">{isAr ? 'لديك تغييرات غير محفوظة' : 'You have unsaved changes'}</span>
           <Button variant="outline" size="sm" onClick={discardChanges}>{isAr ? 'تراجع' : 'Discard'}</Button>
           <Button size="sm" onClick={handleSave}><Save className="h-4 w-4 me-1" />{isAr ? 'حفظ' : 'Save'}</Button>

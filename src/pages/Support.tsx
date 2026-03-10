@@ -217,8 +217,8 @@ const Support = () => {
                 <TableCell><Badge variant={statusColors[ticket.status] as any}>{getLabel(ticketStatusLabels, ticket.status, isAr)}</Badge></TableCell>
                 <TableCell>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted" onClick={() => openDetail(ticket)}><Eye className="h-4 w-4" /></Button>
-                    {isAdmin && <Button variant="ghost" size="icon" className="rounded-full hover:bg-destructive/10 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(ticket.id)}><Trash2 className="h-4 w-4" /></Button>}
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted h-8 w-8" onClick={() => openDetail(ticket)}><Eye className="h-3.5 w-3.5" /></Button>
+                    {isAdmin && <Button variant="ghost" size="icon" className="rounded-full hover:bg-destructive/10 text-destructive hover:text-destructive h-8 w-8" onClick={() => setDeleteTarget(ticket.id)}><Trash2 className="h-3.5 w-3.5" /></Button>}
                   </div>
                 </TableCell>
               </TableRow>

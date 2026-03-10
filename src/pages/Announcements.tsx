@@ -96,6 +96,7 @@ const Announcements = () => {
                       {isAr && a.title_ar ? a.title_ar : a.title}
                     </CardTitle>
                     <div className="flex items-center gap-2">
+                      {a.target_audience === 'all' && <Badge variant="outline" className="text-[10px]">{isAr ? 'الجميع' : 'Everyone'}</Badge>}
                       {a.target_audience !== 'all' && <Badge variant="outline" className="text-[10px]">{a.target_audience}</Badge>}
                       {!a.is_active && <Badge variant="secondary" className="text-[10px]">{isAr ? 'غير نشط' : 'Inactive'}</Badge>}
                     </div>
