@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { usePagination } from '@/hooks/use-pagination';
 import PaginationControls from '@/components/PaginationControls';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Award, Plus, Check, Search } from 'lucide-react';
+import { Award, Plus, Check, Search, ArrowUp, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -32,7 +32,7 @@ const Certificates = () => {
   const [courses, setCourses] = useState<any[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [form, setForm] = useState({ recipient_id: '', recipient_type: 'student', title: '', title_ar: '', description: '', course_id: '', design: 'classic' as CertDesign });
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
 
   const fetchData = async () => {
     const [certsRes, profilesRes, coursesRes] = await Promise.all([
@@ -122,15 +122,25 @@ const Certificates = () => {
     { value: 'elegant', label: 'Elegant', labelAr: 'أنيق', color: '#7c3aed' },
   ];
 
-  const filteredCerts = certs.filter(cert => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    const title = (isAr && cert.title_ar ? cert.title_ar : cert.title).toLowerCase();
-    const recipient = getProfileName(cert.recipient_id).toLowerCase();
-    const course = cert.course_id ? getCourseName(cert.course_id).toLowerCase() : '';
-    const number = cert.certificate_number.toLowerCase();
-    return title.includes(q) || recipient.includes(q) || course.includes(q) || number.includes(q);
-  });
+  const filteredCerts = useMemo(() => {
+    let result = certs.filter(cert => {
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      const title = (isAr && cert.title_ar ? cert.title_ar : cert.title).toLowerCase();
+      const recipient = getProfileName(cert.recipient_id).toLowerCase();
+      const course = cert.course_id ? getCourseName(cert.course_id).toLowerCase() : '';
+      const number = cert.certificate_number.toLowerCase();
+      return title.includes(q) || recipient.includes(q) || course.includes(q) || number.includes(q);
+    });
+    result.sort((a, b) => {
+      const da = new Date(a.issued_at).getTime();
+      const db = new Date(b.issued_at).getTime();
+      return sortOrder === 'newest' ? db - da : da - db;
+    });
+    return result;
+  }, [certs, searchQuery, sortOrder, isAr]);
+
+  const [form, setForm] = useState({ recipient_id: '', recipient_type: 'student', title: '', title_ar: '', description: '', course_id: '', design: 'classic' as CertDesign });
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filteredCerts);
 
@@ -139,6 +149,10 @@ const Certificates = () => {
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-3xl font-bold shrink-0">{isAr ? 'الشهادات' : 'Certificates'}</h1>
         <div className="flex items-center gap-2 ms-auto">
+          <Button variant="outline" size="sm" onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')} className="gap-1">
+            {sortOrder === 'newest' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}
+            {sortOrder === 'newest' ? (isAr ? 'الأحدث' : 'Newest') : (isAr ? 'الأقدم' : 'Oldest')}
+          </Button>
           <div className="relative">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input

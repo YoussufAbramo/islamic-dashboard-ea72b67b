@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { usePagination } from '@/hooks/use-pagination';
 import PaginationControls from '@/components/PaginationControls';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Search, Eye, Plus } from 'lucide-react';
+import { Search, Eye, Plus, ArrowUp, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Subscriptions = () => {
@@ -21,6 +21,7 @@ const Subscriptions = () => {
   const { currency } = useAppSettings();
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [search, setSearch] = useState('');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [detailOpen, setDetailOpen] = useState(false);
   const [selected, setSelected] = useState<any>(null);
   const [editing, setEditing] = useState(false);
@@ -97,11 +98,19 @@ const Subscriptions = () => {
 
   const statusColors: Record<string, string> = { active: 'default', expired: 'secondary', cancelled: 'destructive' };
 
-  const filtered = subscriptions.filter((s) => {
-    const studentName = s.students?.profiles?.full_name || '';
-    const courseName = s.courses?.title || '';
-    return studentName.toLowerCase().includes(search.toLowerCase()) || courseName.toLowerCase().includes(search.toLowerCase());
-  });
+  const filtered = useMemo(() => {
+    let result = subscriptions.filter((s) => {
+      const studentName = s.students?.profiles?.full_name || '';
+      const courseName = s.courses?.title || '';
+      return studentName.toLowerCase().includes(search.toLowerCase()) || courseName.toLowerCase().includes(search.toLowerCase());
+    });
+    result.sort((a, b) => {
+      const da = new Date(a.created_at).getTime();
+      const db = new Date(b.created_at).getTime();
+      return sortOrder === 'newest' ? db - da : da - db;
+    });
+    return result;
+  }, [subscriptions, search, sortOrder]);
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
 
@@ -110,6 +119,10 @@ const Subscriptions = () => {
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold shrink-0">{t('subscriptions.title')}</h1>
         <div className="flex items-center gap-2 ms-auto">
+          <Button variant="outline" size="sm" onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')} className="gap-1">
+            {sortOrder === 'newest' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}
+            {sortOrder === 'newest' ? (language === 'ar' ? 'الأحدث' : 'Newest') : (language === 'ar' ? 'الأقدم' : 'Oldest')}
+          </Button>
           <div className="relative">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="ps-9 w-48 sm:w-64" />

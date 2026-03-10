@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { CheckCircle, XCircle, Clock, UserCheck } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, UserCheck, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface AttendanceRecord {
   id: string;
@@ -30,6 +31,8 @@ interface TeacherInfo {
   profile?: { full_name: string };
 }
 
+type SortOrder = 'newest' | 'oldest';
+
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--destructive))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
 const Attendance = () => {
@@ -40,6 +43,7 @@ const Attendance = () => {
   const [teachers, setTeachers] = useState<TeacherInfo[]>([]);
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
 
   const isAr = language === 'ar';
 
@@ -65,41 +69,40 @@ const Attendance = () => {
     fetchData();
   }, []);
 
+  const sortedAttendance = useMemo(() => {
+    const sorted = [...attendance];
+    sorted.sort((a, b) => {
+      const da = new Date(a.created_at).getTime();
+      const db = new Date(b.created_at).getTime();
+      return sortOrder === 'newest' ? db - da : da - db;
+    });
+    return sorted;
+  }, [attendance, sortOrder]);
+
   // Build per-student stats
   const studentStats = students.map((s) => {
-    const records = attendance.filter((a) => a.student_id === s.id);
+    const records = sortedAttendance.filter((a) => a.student_id === s.id);
     const total = records.length;
     const present = records.filter((r) => r.status === 'present').length;
     const absent = records.filter((r) => r.status === 'absent').length;
     const late = records.filter((r) => r.status === 'late').length;
     const excused = records.filter((r) => r.status === 'excused').length;
     const rate = total > 0 ? Math.round((present / total) * 100) : 0;
-    return {
-      name: profiles[s.user_id] || (isAr ? 'طالب' : 'Student'),
-      studentId: s.id,
-      teacherId: s.assigned_teacher_id,
-      total, present, absent, late, excused, rate,
-    };
+    return { name: profiles[s.user_id] || (isAr ? 'طالب' : 'Student'), studentId: s.id, teacherId: s.assigned_teacher_id, total, present, absent, late, excused, rate };
   }).filter((s) => s.total > 0);
 
-  // Build per-teacher stats
   const teacherStats = teachers.map((t) => {
     const assignedStudentIds = students.filter((s) => s.assigned_teacher_id === t.id).map((s) => s.id);
-    const records = attendance.filter((a) => assignedStudentIds.includes(a.student_id));
+    const records = sortedAttendance.filter((a) => assignedStudentIds.includes(a.student_id));
     const total = records.length;
     const present = records.filter((r) => r.status === 'present').length;
     const absent = records.filter((r) => r.status === 'absent').length;
     const late = records.filter((r) => r.status === 'late').length;
     const excused = records.filter((r) => r.status === 'excused').length;
     const rate = total > 0 ? Math.round((present / total) * 100) : 0;
-    return {
-      name: profiles[t.user_id] || (isAr ? 'معلم' : 'Teacher'),
-      teacherId: t.id,
-      total, present, absent, late, excused, rate,
-    };
+    return { name: profiles[t.user_id] || (isAr ? 'معلم' : 'Teacher'), teacherId: t.id, total, present, absent, late, excused, rate };
   }).filter((t) => t.total > 0);
 
-  // Overall summary
   const totalRecords = attendance.length;
   const totalPresent = attendance.filter((a) => a.status === 'present').length;
   const totalAbsent = attendance.filter((a) => a.status === 'absent').length;
@@ -124,41 +127,27 @@ const Attendance = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">{isAr ? 'تتبع الحضور' : 'Attendance Tracking'}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">{isAr ? 'تتبع الحضور' : 'Attendance Tracking'}</h1>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')}
+          className="gap-1"
+        >
+          {sortOrder === 'newest' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}
+          {sortOrder === 'newest' ? (isAr ? 'الأحدث' : 'Newest') : (isAr ? 'الأقدم' : 'Oldest')}
+        </Button>
+      </div>
 
       {/* Summary Cards */}
       <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <CheckCircle className="h-8 w-8 mx-auto text-primary mb-2" />
-            <p className="text-2xl font-bold">{overallRate}%</p>
-            <p className="text-sm text-muted-foreground">{isAr ? 'معدل الحضور' : 'Attendance Rate'}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <UserCheck className="h-8 w-8 mx-auto text-primary mb-2" />
-            <p className="text-2xl font-bold">{totalPresent}</p>
-            <p className="text-sm text-muted-foreground">{isAr ? 'حاضر' : 'Present'}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <XCircle className="h-8 w-8 mx-auto text-destructive mb-2" />
-            <p className="text-2xl font-bold">{totalAbsent}</p>
-            <p className="text-sm text-muted-foreground">{isAr ? 'غائب' : 'Absent'}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <Clock className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-            <p className="text-2xl font-bold">{totalLate + totalExcused}</p>
-            <p className="text-sm text-muted-foreground">{isAr ? 'متأخر / معذور' : 'Late / Excused'}</p>
-          </CardContent>
-        </Card>
+        <Card><CardContent className="pt-6 text-center"><CheckCircle className="h-8 w-8 mx-auto text-primary mb-2" /><p className="text-2xl font-bold">{overallRate}%</p><p className="text-sm text-muted-foreground">{isAr ? 'معدل الحضور' : 'Attendance Rate'}</p></CardContent></Card>
+        <Card><CardContent className="pt-6 text-center"><UserCheck className="h-8 w-8 mx-auto text-primary mb-2" /><p className="text-2xl font-bold">{totalPresent}</p><p className="text-sm text-muted-foreground">{isAr ? 'حاضر' : 'Present'}</p></CardContent></Card>
+        <Card><CardContent className="pt-6 text-center"><XCircle className="h-8 w-8 mx-auto text-destructive mb-2" /><p className="text-2xl font-bold">{totalAbsent}</p><p className="text-sm text-muted-foreground">{isAr ? 'غائب' : 'Absent'}</p></CardContent></Card>
+        <Card><CardContent className="pt-6 text-center"><Clock className="h-8 w-8 mx-auto text-muted-foreground mb-2" /><p className="text-2xl font-bold">{totalLate + totalExcused}</p><p className="text-sm text-muted-foreground">{isAr ? 'متأخر / معذور' : 'Late / Excused'}</p></CardContent></Card>
       </div>
 
-      {/* Charts */}
       <Tabs defaultValue="students">
         <TabsList>
           <TabsTrigger value="students">{isAr ? 'حسب الطالب' : 'Per Student'}</TabsTrigger>
@@ -168,37 +157,25 @@ const Attendance = () => {
 
         <TabsContent value="students" className="space-y-6">
           {studentStats.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6 text-center text-muted-foreground">
-                {isAr ? 'لا توجد بيانات حضور للطلاب' : 'No student attendance data available'}
-              </CardContent>
-            </Card>
+            <Card><CardContent className="pt-6 text-center text-muted-foreground">{isAr ? 'لا توجد بيانات حضور للطلاب' : 'No student attendance data available'}</CardContent></Card>
           ) : (
             <>
               <Card>
-                <CardHeader>
-                  <CardTitle>{isAr ? 'معدل حضور الطلاب' : 'Student Attendance Rates'}</CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle>{isAr ? 'معدل حضور الطلاب' : 'Student Attendance Rates'}</CardTitle></CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={Math.max(300, studentStats.length * 50)}>
                     <BarChart data={studentStats} layout="vertical" margin={{ left: 20, right: 20 }}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                       <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${v}%`} className="text-muted-foreground" />
                       <YAxis type="category" dataKey="name" width={120} className="text-muted-foreground" tick={{ fontSize: 12 }} />
-                      <Tooltip
-                        contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }}
-                        formatter={(value: number) => [`${value}%`, isAr ? 'معدل الحضور' : 'Attendance Rate']}
-                      />
+                      <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} formatter={(value: number) => [`${value}%`, isAr ? 'معدل الحضور' : 'Attendance Rate']} />
                       <Bar dataKey="rate" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
-
               <Card>
-                <CardHeader>
-                  <CardTitle>{isAr ? 'تفاصيل حضور الطلاب' : 'Student Attendance Breakdown'}</CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle>{isAr ? 'تفاصيل حضور الطلاب' : 'Student Attendance Breakdown'}</CardTitle></CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={Math.max(300, studentStats.length * 50)}>
                     <BarChart data={studentStats} layout="vertical" margin={{ left: 20, right: 20 }}>
@@ -221,37 +198,25 @@ const Attendance = () => {
 
         <TabsContent value="teachers" className="space-y-6">
           {teacherStats.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6 text-center text-muted-foreground">
-                {isAr ? 'لا توجد بيانات حضور للمعلمين' : 'No teacher attendance data available'}
-              </CardContent>
-            </Card>
+            <Card><CardContent className="pt-6 text-center text-muted-foreground">{isAr ? 'لا توجد بيانات حضور للمعلمين' : 'No teacher attendance data available'}</CardContent></Card>
           ) : (
             <>
               <Card>
-                <CardHeader>
-                  <CardTitle>{isAr ? 'معدل حضور طلاب كل معلم' : 'Teacher Student Attendance Rates'}</CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle>{isAr ? 'معدل حضور طلاب كل معلم' : 'Teacher Student Attendance Rates'}</CardTitle></CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={Math.max(300, teacherStats.length * 60)}>
                     <BarChart data={teacherStats} layout="vertical" margin={{ left: 20, right: 20 }}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                       <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${v}%`} className="text-muted-foreground" />
                       <YAxis type="category" dataKey="name" width={120} className="text-muted-foreground" tick={{ fontSize: 12 }} />
-                      <Tooltip
-                        contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }}
-                        formatter={(value: number) => [`${value}%`, isAr ? 'معدل الحضور' : 'Attendance Rate']}
-                      />
+                      <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} formatter={(value: number) => [`${value}%`, isAr ? 'معدل الحضور' : 'Attendance Rate']} />
                       <Bar dataKey="rate" fill="hsl(var(--chart-2))" radius={[0, 4, 4, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
-
               <Card>
-                <CardHeader>
-                  <CardTitle>{isAr ? 'تفاصيل حضور طلاب المعلمين' : 'Teacher Student Attendance Breakdown'}</CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle>{isAr ? 'تفاصيل حضور طلاب المعلمين' : 'Teacher Student Attendance Breakdown'}</CardTitle></CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={Math.max(300, teacherStats.length * 60)}>
                     <BarChart data={teacherStats} layout="vertical" margin={{ left: 20, right: 20 }}>
@@ -275,28 +240,15 @@ const Attendance = () => {
         <TabsContent value="overview" className="space-y-6">
           <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
             <Card>
-              <CardHeader>
-                <CardTitle>{isAr ? 'توزيع الحضور الإجمالي' : 'Overall Attendance Distribution'}</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>{isAr ? 'توزيع الحضور الإجمالي' : 'Overall Attendance Distribution'}</CardTitle></CardHeader>
               <CardContent>
                 {pieData.length === 0 ? (
                   <p className="text-center text-muted-foreground">{isAr ? 'لا توجد بيانات' : 'No data'}</p>
                 ) : (
                   <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={5}
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {pieData.map((_, index) => (
-                          <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                        ))}
+                      <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                        {pieData.map((_, index) => (<Cell key={index} fill={COLORS[index % COLORS.length]} />))}
                       </Pie>
                       <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
                       <Legend />
@@ -305,36 +257,15 @@ const Attendance = () => {
                 )}
               </CardContent>
             </Card>
-
             <Card>
-              <CardHeader>
-                <CardTitle>{isAr ? 'ملخص الإحصائيات' : 'Statistics Summary'}</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>{isAr ? 'ملخص الإحصائيات' : 'Statistics Summary'}</CardTitle></CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg border border-border">
-                  <span className="text-sm">{isAr ? 'إجمالي السجلات' : 'Total Records'}</span>
-                  <Badge variant="secondary">{totalRecords}</Badge>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg border border-border">
-                  <span className="text-sm">{isAr ? 'حاضر' : 'Present'}</span>
-                  <Badge className="bg-primary/10 text-primary">{totalPresent}</Badge>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg border border-border">
-                  <span className="text-sm">{isAr ? 'غائب' : 'Absent'}</span>
-                  <Badge variant="destructive">{totalAbsent}</Badge>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg border border-border">
-                  <span className="text-sm">{isAr ? 'متأخر' : 'Late'}</span>
-                  <Badge variant="outline">{totalLate}</Badge>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg border border-border">
-                  <span className="text-sm">{isAr ? 'معذور' : 'Excused'}</span>
-                  <Badge variant="outline">{totalExcused}</Badge>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/50">
-                  <span className="text-sm font-medium">{isAr ? 'معدل الحضور العام' : 'Overall Attendance Rate'}</span>
-                  <Badge className="bg-primary text-primary-foreground">{overallRate}%</Badge>
-                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border"><span className="text-sm">{isAr ? 'إجمالي السجلات' : 'Total Records'}</span><Badge variant="secondary">{totalRecords}</Badge></div>
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border"><span className="text-sm">{isAr ? 'حاضر' : 'Present'}</span><Badge className="bg-primary/10 text-primary">{totalPresent}</Badge></div>
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border"><span className="text-sm">{isAr ? 'غائب' : 'Absent'}</span><Badge variant="destructive">{totalAbsent}</Badge></div>
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border"><span className="text-sm">{isAr ? 'متأخر' : 'Late'}</span><Badge variant="outline">{totalLate}</Badge></div>
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border"><span className="text-sm">{isAr ? 'معذور' : 'Excused'}</span><Badge variant="outline">{totalExcused}</Badge></div>
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/50"><span className="text-sm font-medium">{isAr ? 'معدل الحضور العام' : 'Overall Attendance Rate'}</span><Badge className="bg-primary text-primary-foreground">{overallRate}%</Badge></div>
               </CardContent>
             </Card>
           </div>

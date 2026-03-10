@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { usePagination } from '@/hooks/use-pagination';
 import PaginationControls from '@/components/PaginationControls';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Plus, FileText } from 'lucide-react';
+import { Search, Plus, FileText, ArrowUp, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
 import InvoiceStatsCards from '@/components/invoices/InvoiceStatsCards';
 import InvoiceTable from '@/components/invoices/InvoiceTable';
@@ -29,6 +29,7 @@ const Invoices = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [createOpen, setCreateOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
@@ -114,16 +115,22 @@ const Invoices = () => {
     cancelled: invoices.filter(i => i.status === 'cancelled').length,
   };
 
-  const filtered = invoices.filter((inv) => {
-    const matchesStatus = statusFilter === 'all' || inv.status === statusFilter;
-    const studentName = inv.students?.profiles?.full_name || '';
-    const invoiceNum = inv.invoice_number || '';
-    const q = search.toLowerCase();
-    const matchesSearch = studentName.toLowerCase().includes(q) || invoiceNum.toLowerCase().includes(q);
-    return matchesStatus && matchesSearch;
-  });
-
-  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+  const filtered = useMemo(() => {
+    let result = invoices.filter((inv) => {
+      const matchesStatus = statusFilter === 'all' || inv.status === statusFilter;
+      const studentName = inv.students?.profiles?.full_name || '';
+      const invoiceNum = inv.invoice_number || '';
+      const q = search.toLowerCase();
+      const matchesSearch = studentName.toLowerCase().includes(q) || invoiceNum.toLowerCase().includes(q);
+      return matchesStatus && matchesSearch;
+    });
+    result.sort((a, b) => {
+      const da = new Date(a.created_at).getTime();
+      const db = new Date(b.created_at).getTime();
+      return sortOrder === 'newest' ? db - da : da - db;
+    });
+    return result;
+  }, [invoices, statusFilter, search, sortOrder]);
 
   const showEmptyState = !loading && invoices.length === 0;
 
@@ -135,12 +142,18 @@ const Invoices = () => {
     { value: 'cancelled', label: isAr ? 'ملغية' : 'Cancelled' },
   ];
 
+  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold shrink-0">{isAr ? 'الفواتير' : 'Invoices'}</h1>
         <div className="flex items-center gap-2 ms-auto">
+          <Button variant="outline" size="sm" onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')} className="gap-1">
+            {sortOrder === 'newest' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}
+            {sortOrder === 'newest' ? (isAr ? 'الأحدث' : 'Newest') : (isAr ? 'الأقدم' : 'Oldest')}
+          </Button>
           <div className="relative">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input

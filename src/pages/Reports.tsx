@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,8 +7,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Download, FileText, Printer } from 'lucide-react';
+import { Download, FileText, Printer, ArrowUp, ArrowDown } from 'lucide-react';
 import { format } from 'date-fns';
+
+type SortOrder = 'newest' | 'oldest';
 
 const Reports = () => {
   const { language } = useLanguage();
@@ -20,6 +22,7 @@ const Reports = () => {
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const [students, setStudents] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
+  const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -59,6 +62,26 @@ const Reports = () => {
     URL.revokeObjectURL(url);
   };
 
+  const sortedSubscriptions = useMemo(() => {
+    const sorted = [...subscriptions];
+    sorted.sort((a, b) => {
+      const da = new Date(a.created_at).getTime();
+      const db = new Date(b.created_at).getTime();
+      return sortOrder === 'newest' ? db - da : da - db;
+    });
+    return sorted;
+  }, [subscriptions, sortOrder]);
+
+  const sortedAttendance = useMemo(() => {
+    const sorted = [...attendance];
+    sorted.sort((a, b) => {
+      const da = new Date(a.created_at).getTime();
+      const db = new Date(b.created_at).getTime();
+      return sortOrder === 'newest' ? db - da : da - db;
+    });
+    return sorted;
+  }, [attendance, sortOrder]);
+
   const totalRevenue = subscriptions.reduce((s, sub) => s + (Number(sub.price) || 0), 0);
   const activeSubs = subscriptions.filter(s => s.status === 'active').length;
 
@@ -66,9 +89,15 @@ const Reports = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">{isAr ? 'التقارير والتحليلات' : 'Reports & Analytics'}</h1>
-        <Button variant="outline" onClick={() => window.print()}>
-          <Printer className="h-4 w-4 me-2" />{isAr ? 'طباعة' : 'Print'}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')} className="gap-1">
+            {sortOrder === 'newest' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}
+            {sortOrder === 'newest' ? (isAr ? 'الأحدث' : 'Newest') : (isAr ? 'الأقدم' : 'Oldest')}
+          </Button>
+          <Button variant="outline" onClick={() => window.print()}>
+            <Printer className="h-4 w-4 me-2" />{isAr ? 'طباعة' : 'Print'}
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="subscriptions">
@@ -105,7 +134,7 @@ const Reports = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {subscriptions.map(s => (
+                  {sortedSubscriptions.map(s => (
                     <TableRow key={s.id}>
                       <TableCell>{getStudentName(s.student_id)}</TableCell>
                       <TableCell>{getCourseName(s.course_id)}</TableCell>
@@ -124,7 +153,7 @@ const Reports = () => {
           <div className="flex items-center justify-end">
             <Button variant="outline" size="sm" onClick={() => exportCSV(
               ['Student', 'Status', 'Date', 'Notes'],
-              attendance.map(a => [getStudentName(a.student_id), a.status, format(new Date(a.created_at), 'PP'), a.notes || '']),
+              sortedAttendance.map(a => [getStudentName(a.student_id), a.status, format(new Date(a.created_at), 'PP'), a.notes || '']),
               'attendance-report'
             )}>
               <Download className="h-4 w-4 me-2" />CSV
