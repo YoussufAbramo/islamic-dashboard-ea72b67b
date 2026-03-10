@@ -2,6 +2,30 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [1.5.0] - 2026-03-10
+
+### Added
+- Font search functionality in Appearance settings with popover picker
+- Custom font option — add any Google Font by name for LTR or RTL
+- Seed data log dialog showing detailed record counts per table
+- 3-step confirmation flow for Erase All Data feature
+- Payment gateway activate/deactivate toggle per gateway
+- API key input fields per payment gateway (stored server-side)
+- Eye/hide toggle for secret API fields
+- Payment gateway logos (PayPal, Stripe, Fawaterak, Xpay, Paymob)
+
+### Changed
+- Button shape setting now only affects buttons and inputs, not all elements (cards, sections, etc.)
+- Decimal Places selector redesigned with proper RadioGroup component
+- Payment Methods redesigned with per-gateway activation and API configuration
+- "Clear All Data" renamed to "Erase All Data" with 3-step confirmation (warning → backup → final input)
+- Confirmation code changed from "DELETE NOW" to "ERASE NOW"
+- Font picker changed from Select dropdown to searchable Popover with preview
+
+### Fixed
+- Circular button shape was applying `border-radius: 9999px` to all elements (cards, sections, dropdowns)
+- Font preview not rendering correctly when switching fonts
+
 ## [1.4.0] - 2026-03-10
 
 ### Added

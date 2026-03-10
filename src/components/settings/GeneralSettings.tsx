@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Coins, Check, MessageSquare } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const GeneralSettings = () => {
   const { language } = useLanguage();
@@ -39,15 +40,29 @@ const GeneralSettings = () => {
             </div>
             <div className="space-y-2">
               <Label>{isAr ? 'عدد الأرقام العشرية' : 'Decimal Places'}</Label>
-              <div className="flex gap-2">
+              <RadioGroup
+                value={String(pending.currencyDecimals)}
+                onValueChange={(v) => updatePending({ currencyDecimals: Number(v) })}
+                className="flex gap-3"
+              >
                 {[0, 1, 2].map((d) => (
-                  <button key={d} onClick={() => updatePending({ currencyDecimals: d })} className={`flex flex-col items-center gap-1 px-4 py-3 rounded-xl border-2 transition-all ${pending.currencyDecimals === d ? 'border-primary shadow-md scale-[1.02]' : 'border-border hover:border-muted-foreground/30'}`}>
-                    <span className="text-sm font-mono font-bold">{d === 0 ? '1' : d === 1 ? '1.0' : '1.00'}</span>
-                    <span className="text-xs text-muted-foreground">{d} {isAr ? 'أرقام' : 'digits'}</span>
-                    {pending.currencyDecimals === d && <Check className="h-3 w-3 text-primary" />}
-                  </button>
+                  <Label
+                    key={d}
+                    htmlFor={`decimal-${d}`}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all ${
+                      pending.currencyDecimals === d
+                        ? 'border-primary bg-primary/5 shadow-sm'
+                        : 'border-border hover:border-muted-foreground/30'
+                    }`}
+                  >
+                    <RadioGroupItem value={String(d)} id={`decimal-${d}`} />
+                    <div className="flex flex-col">
+                      <span className="text-sm font-mono font-bold">{d === 0 ? '1' : d === 1 ? '1.0' : '1.00'}</span>
+                      <span className="text-[10px] text-muted-foreground">{d} {isAr ? 'أرقام' : 'digits'}</span>
+                    </div>
+                  </Label>
                 ))}
-              </div>
+              </RadioGroup>
               <p className="text-xs text-muted-foreground">{isAr ? 'مثال' : 'Example'}: {pending.currency.symbol}{(1234.56).toFixed(pending.currencyDecimals)}</p>
             </div>
           </div>

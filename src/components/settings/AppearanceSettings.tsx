@@ -4,12 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Palette, Building2, Upload, Check, Type, RectangleHorizontal, Circle, Square } from 'lucide-react';
+import { Palette, Building2, Upload, Check, Type, RectangleHorizontal, Circle, Square, Search, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 const AppearanceSettings = () => {
   const { language } = useLanguage();
@@ -17,8 +19,24 @@ const AppearanceSettings = () => {
   const isAr = language === 'ar';
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const [ltrSearch, setLtrSearch] = useState('');
+  const [rtlSearch, setRtlSearch] = useState('');
+  const [ltrOpen, setLtrOpen] = useState(false);
+  const [rtlOpen, setRtlOpen] = useState(false);
+  const [customFontDialog, setCustomFontDialog] = useState<'ltr' | 'rtl' | null>(null);
+  const [customFontName, setCustomFontName] = useState('');
+  const [customFonts, setCustomFonts] = useState<{ ltr: string[]; rtl: string[] }>(() => {
+    const saved = localStorage.getItem('app_custom_fonts');
+    return saved ? JSON.parse(saved) : { ltr: [], rtl: [] };
+  });
+
+  // Preload all font previews
   useEffect(() => {
-    const allFonts = [...LTR_FONTS, ...RTL_FONTS].map(f => f.value.replace(/ /g, '+')).join('&family=');
+    const allFonts = [
+      ...LTR_FONTS, ...RTL_FONTS,
+      ...customFonts.ltr.map(f => ({ value: f, label: f })),
+      ...customFonts.rtl.map(f => ({ value: f, label: f })),
+    ].map(f => f.value.replace(/ /g, '+')).join('&family=');
     const linkId = 'settings-preview-fonts';
     let link = document.getElementById(linkId) as HTMLLinkElement;
     if (!link) {
@@ -29,7 +47,7 @@ const AppearanceSettings = () => {
     }
     link.href = `https://fonts.googleapis.com/css2?${allFonts.split('&family=').map(f => `family=${f}`).join('&family=')}:wght@400;600&display=swap`;
     return () => { const el = document.getElementById(linkId); if (el) el.remove(); };
-  }, []);
+  }, [customFonts]);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -48,6 +66,121 @@ const AppearanceSettings = () => {
     { value: 'circular', label: 'Circular', labelAr: 'دائري', icon: Circle },
     { value: 'square', label: 'Square', labelAr: 'مربع', icon: Square },
   ];
+
+  const allLtrFonts = useMemo(() => [
+    ...LTR_FONTS,
+    ...customFonts.ltr.map(f => ({ value: f, label: f })),
+  ], [customFonts.ltr]);
+
+  const allRtlFonts = useMemo(() => [
+    ...RTL_FONTS,
+    ...customFonts.rtl.map(f => ({ value: f, label: f })),
+  ], [customFonts.rtl]);
+
+  const filteredLtrFonts = useMemo(() =>
+    allLtrFonts.filter(f => f.label.toLowerCase().includes(ltrSearch.toLowerCase())),
+    [allLtrFonts, ltrSearch]
+  );
+
+  const filteredRtlFonts = useMemo(() =>
+    allRtlFonts.filter(f => f.label.toLowerCase().includes(rtlSearch.toLowerCase())),
+    [allRtlFonts, rtlSearch]
+  );
+
+  const addCustomFont = () => {
+    if (!customFontName.trim() || !customFontDialog) return;
+    const type = customFontDialog;
+    const updated = {
+      ...customFonts,
+      [type]: [...customFonts[type], customFontName.trim()],
+    };
+    setCustomFonts(updated);
+    localStorage.setItem('app_custom_fonts', JSON.stringify(updated));
+    updatePending({ [type === 'ltr' ? 'ltrFont' : 'rtlFont']: customFontName.trim() });
+    // Load the new font
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?family=${customFontName.trim().replace(/ /g, '+')}:wght@400;600&display=swap`;
+    document.head.appendChild(link);
+    setCustomFontName('');
+    setCustomFontDialog(null);
+    toast.success(isAr ? 'تمت إضافة الخط' : 'Font added');
+  };
+
+  const FontPicker = ({
+    fonts,
+    search,
+    setSearch,
+    open,
+    setOpen,
+    selected,
+    onSelect,
+    type,
+  }: {
+    fonts: { value: string; label: string }[];
+    search: string;
+    setSearch: (s: string) => void;
+    open: boolean;
+    setOpen: (o: boolean) => void;
+    selected: string;
+    onSelect: (v: string) => void;
+    type: 'ltr' | 'rtl';
+  }) => (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" className="w-full justify-start text-sm font-normal">
+          <span style={{ fontFamily: `'${selected}', sans-serif` }}>{selected}</span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 p-0" align="start">
+        <div className="p-2 border-b border-border">
+          <div className="relative">
+            <Search className="absolute start-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={isAr ? 'ابحث عن خط...' : 'Search fonts...'}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="ps-8 h-8 text-sm"
+            />
+          </div>
+        </div>
+        <ScrollArea className="h-[240px]">
+          <div className="p-1">
+            {fonts.map((f) => (
+              <button
+                key={f.value}
+                onClick={() => { onSelect(f.value); setOpen(false); }}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors ${
+                  selected === f.value
+                    ? 'bg-primary/10 text-primary'
+                    : 'hover:bg-muted'
+                }`}
+              >
+                <span style={{ fontFamily: `'${f.value}', sans-serif` }}>{f.label}</span>
+                {selected === f.value && <Check className="h-4 w-4" />}
+              </button>
+            ))}
+            {fonts.length === 0 && (
+              <p className="text-center text-sm text-muted-foreground py-4">
+                {isAr ? 'لا توجد نتائج' : 'No results'}
+              </p>
+            )}
+          </div>
+        </ScrollArea>
+        <div className="p-2 border-t border-border">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start text-xs"
+            onClick={() => { setOpen(false); setCustomFontDialog(type); }}
+          >
+            <Plus className="h-3 w-3 me-1" />
+            {isAr ? 'إضافة خط مخصص' : 'Add custom font'}
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
 
   return (
     <div className="space-y-6">
@@ -142,20 +275,32 @@ const AppearanceSettings = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>{isAr ? 'خط LTR (الإنجليزية)' : 'LTR Font (English)'}</Label>
-              <Select value={pending.ltrFont} onValueChange={(v) => updatePending({ ltrFont: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{LTR_FONTS.map((f) => <SelectItem key={f.value} value={f.value}><span style={{ fontFamily: `'${f.value}', sans-serif` }}>{f.label}</span></SelectItem>)}</SelectContent>
-              </Select>
+              <FontPicker
+                fonts={filteredLtrFonts}
+                search={ltrSearch}
+                setSearch={setLtrSearch}
+                open={ltrOpen}
+                setOpen={setLtrOpen}
+                selected={pending.ltrFont}
+                onSelect={(v) => updatePending({ ltrFont: v })}
+                type="ltr"
+              />
               <div className="p-3 rounded-lg border border-border bg-muted/30">
                 <p className="text-sm" style={{ fontFamily: `'${pending.ltrFont}', sans-serif` }}>The quick brown fox jumps over the lazy dog. 0123456789</p>
               </div>
             </div>
             <div className="space-y-2">
               <Label>{isAr ? 'خط RTL (العربية)' : 'RTL Font (Arabic)'}</Label>
-              <Select value={pending.rtlFont} onValueChange={(v) => updatePending({ rtlFont: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{RTL_FONTS.map((f) => <SelectItem key={f.value} value={f.value}><span style={{ fontFamily: `'${f.value}', sans-serif` }}>{f.label}</span></SelectItem>)}</SelectContent>
-              </Select>
+              <FontPicker
+                fonts={filteredRtlFonts}
+                search={rtlSearch}
+                setSearch={setRtlSearch}
+                open={rtlOpen}
+                setOpen={setRtlOpen}
+                selected={pending.rtlFont}
+                onSelect={(v) => updatePending({ rtlFont: v })}
+                type="rtl"
+              />
               <div className="p-3 rounded-lg border border-border bg-muted/30">
                 <p className="text-sm" dir="rtl" style={{ fontFamily: `'${pending.rtlFont}', sans-serif` }}>هذا نص تجريبي لمعاينة الخط العربي المختار. ٠١٢٣٤٥٦٧٨٩</p>
               </div>
@@ -163,6 +308,35 @@ const AppearanceSettings = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Custom Font Dialog */}
+      <Dialog open={!!customFontDialog} onOpenChange={(open) => !open && setCustomFontDialog(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{isAr ? 'إضافة خط مخصص' : 'Add Custom Font'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              {isAr
+                ? 'أدخل اسم خط Google Fonts بالضبط'
+                : 'Enter the exact Google Fonts name'}
+            </p>
+            <Input
+              value={customFontName}
+              onChange={(e) => setCustomFontName(e.target.value)}
+              placeholder={isAr ? 'مثال: Amiri' : 'e.g. Playfair Display'}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCustomFontDialog(null)}>
+              {isAr ? 'إلغاء' : 'Cancel'}
+            </Button>
+            <Button onClick={addCustomFont} disabled={!customFontName.trim()}>
+              {isAr ? 'إضافة' : 'Add'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
