@@ -315,11 +315,31 @@ const BackupsSettings = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="p-3 rounded-lg bg-muted text-sm text-muted-foreground">
-              <p className="font-medium mb-1">{isAr ? 'البيانات المشمولة:' : 'Included data:'}</p>
-              <p>{isAr
-                ? 'الدورات، الأقسام، الدروس، الطلاب، المعلمين، الاشتراكات، الفواتير، الجداول الزمنية، الحضور، الشهادات، الإعلانات، الإشعارات، المحادثات، تذاكر الدعم، إعدادات التطبيق'
-                : 'Courses, sections, lessons, students, teachers, subscriptions, invoices, timetable, attendance, certificates, announcements, notifications, chats, support tickets, app settings'}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>{isAr ? 'البيانات المشمولة' : 'Select Data to Backup'}</Label>
+                <div className="flex gap-2">
+                  <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={selectAll}>{isAr ? 'تحديد الكل' : 'Select All'}</Button>
+                  <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={deselectAll}>{isAr ? 'إلغاء الكل' : 'Deselect All'}</Button>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5 max-h-[200px] overflow-y-auto p-3 rounded-lg border border-border bg-muted/30">
+                {ALL_BACKUP_TABLES.map(t => (
+                  <label key={t.key} className="flex items-center gap-2 py-1 cursor-pointer text-sm hover:text-foreground">
+                    <Checkbox
+                      checked={selectedTables[t.key]}
+                      onCheckedChange={() => toggleTable(t.key)}
+                    />
+                    <span className={selectedTables[t.key] ? 'text-foreground' : 'text-muted-foreground'}>
+                      {isAr ? t.labelAr : t.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {isAr
+                  ? `${Object.values(selectedTables).filter(Boolean).length} من ${ALL_BACKUP_TABLES.length} جدول محدد`
+                  : `${Object.values(selectedTables).filter(Boolean).length} of ${ALL_BACKUP_TABLES.length} tables selected`}
               </p>
             </div>
           </div>
