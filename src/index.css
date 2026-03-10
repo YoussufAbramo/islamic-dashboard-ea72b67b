@@ -518,6 +518,11 @@
     --sidebar-accent: 215 15% 18%;
     --sidebar-border: 215 12% 22%;
     --sidebar-ring: 210 15% 55%;
+    --sidebar-light-background: 215 10% 96%;
+    --sidebar-light-foreground: 215 15% 12%;
+    --sidebar-light-accent: 215 8% 90%;
+    --sidebar-light-accent-foreground: 215 15% 12%;
+    --sidebar-light-border: 215 8% 85%;
   }
   .dark.theme-slate {
     --background: 215 18% 7%;
