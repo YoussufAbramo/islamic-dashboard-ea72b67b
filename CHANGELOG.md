@@ -2,6 +2,16 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [1.6.1] - 2026-03-10
+
+### Added
+- Public invoice view page at `/invoice/:id` — accessible via copied invoice URL
+- Invoice not-found state with friendly error message
+- Print support on public invoice page
+
+### Fixed
+- Invoice "Copy URL" now resolves to a working page instead of a 404
+
 ## [1.6.0] - 2026-03-10
 
 ### Added

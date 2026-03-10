@@ -30,6 +30,7 @@ import Reports from "./pages/Reports";
 import Announcements from "./pages/Announcements";
 import Notifications from "./pages/Notifications";
 import Invoices from "./pages/Invoices";
+import InvoiceView from "./pages/InvoiceView";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -69,6 +70,7 @@ const App = () => (
                     <Route path="notifications" element={<Notifications />} />
                     <Route path="profile" element={<Profile />} />
                   </Route>
+                  <Route path="/invoice/:id" element={<InvoiceView />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
