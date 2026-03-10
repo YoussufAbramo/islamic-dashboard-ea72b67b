@@ -141,7 +141,6 @@ const Invoices = () => {
     setDeleteTarget(null);
     fetchInvoices();
   };
-  };
 
   const statusCounts = {
     all: invoices.length,
