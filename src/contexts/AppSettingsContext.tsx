@@ -192,6 +192,16 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setSaved(s => ({ ...s, appLogo: l }));
     setPending(p => ({ ...p, appLogo: l }));
   }, []);
+  const setSignatureImage = useCallback((s: string) => {
+    localStorage.setItem('app_signature_image', s);
+    setSaved(prev => ({ ...prev, signatureImage: s }));
+    setPending(prev => ({ ...prev, signatureImage: s }));
+  }, []);
+  const setStampImage = useCallback((s: string) => {
+    localStorage.setItem('app_stamp_image', s);
+    setSaved(prev => ({ ...prev, stampImage: s }));
+    setPending(prev => ({ ...prev, stampImage: s }));
+  }, []);
   const setLtrFont = useCallback((f: string) => { setPending(p => ({ ...p, ltrFont: f })); }, []);
   const setRtlFont = useCallback((f: string) => { setPending(p => ({ ...p, rtlFont: f })); }, []);
   const setButtonShape = useCallback((s: ButtonShape) => { setPending(p => ({ ...p, buttonShape: s })); }, []);
