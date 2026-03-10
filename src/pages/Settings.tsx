@@ -13,6 +13,7 @@ import AuthenticationSettings from '@/components/settings/AuthenticationSettings
 import GeneralSettings from '@/components/settings/GeneralSettings';
 import LandingContentSettings from '@/components/settings/LandingContentSettings';
 import SaaSPricingSettings from '@/components/settings/SaaSPricingSettings';
+import BackupsSettings from '@/components/settings/BackupsSettings';
 
 type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing' | 'backups' | 'export-import';
 
