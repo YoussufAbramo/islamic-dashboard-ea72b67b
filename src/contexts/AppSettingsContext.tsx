@@ -111,6 +111,8 @@ function loadSaved(): PendingSettings {
     appName: localStorage.getItem('app_name') || 'EduDash',
     appDescription: localStorage.getItem('app_description') || 'Islamic Educational Dashboard',
     appLogo: localStorage.getItem('app_logo') || '',
+    signatureImage: localStorage.getItem('app_signature_image') || '',
+    stampImage: localStorage.getItem('app_stamp_image') || '',
     ltrFont: localStorage.getItem('app_ltr_font') || 'Inter',
     rtlFont: localStorage.getItem('app_rtl_font') || 'Cairo',
     buttonShape: (localStorage.getItem('app_button_shape') as ButtonShape) || 'rounded',
