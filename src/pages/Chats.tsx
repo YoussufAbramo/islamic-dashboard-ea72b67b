@@ -90,7 +90,7 @@ const Chats = () => {
       ? `تم حذف هذه الرسالة بواسطة ${role === 'admin' ? 'المسؤول' : 'المعلم'}`
       : `This message was deleted by ${role === 'admin' ? 'admin' : 'teacher'}`;
     await supabase.from('chat_messages').update({ message: deletedText, is_deleted: true }).eq('id', messageId);
-    fetchMessages(selectedChat.id);
+    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, message: deletedText, is_deleted: true } : m));
     toast.success(isAr ? 'تم حذف الرسالة' : 'Message deleted');
   };
 

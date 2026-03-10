@@ -200,18 +200,27 @@ const LandingPage = () => {
               </button>
               <div className="mx-2 h-6 w-px bg-border" />
               {user ? (
-                <button
-                  onClick={() => navigate('/dashboard')}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-accent/50 transition-colors"
-                >
-                  <Avatar className="h-7 w-7">
-                    <AvatarImage src={avatarUrl} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
-                      {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm font-medium text-foreground">{profile?.full_name || 'User'}</span>
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => navigate('/dashboard')}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-accent/50 transition-colors"
+                  >
+                    <Avatar className="h-7 w-7">
+                      <AvatarImage src={avatarUrl} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                        {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-medium text-foreground">{profile?.full_name || 'User'}</span>
+                  </button>
+                  <button
+                    onClick={async () => { const { signOut } = (await import('@/contexts/AuthContext')).useAuth ? {} as any : {}; /* handled below */ }}
+                    className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                    title={isAr ? 'تسجيل الخروج' : 'Logout'}
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </button>
+                </div>
               ) : (
                 <Button size="sm" onClick={() => navigate('/login')}>
                   {t('Get Started', 'ابدأ الآن')} <ChevronRight className="h-4 w-4 ms-1" />

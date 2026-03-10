@@ -81,7 +81,7 @@ const TopBar = () => {
     setAnnouncementDetailOpen(true);
   };
 
-  const iconBtnClass = "rounded-full h-9 w-9";
+  const iconBtnClass = "rounded-full h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted";
 
   return (
     <>

@@ -112,7 +112,7 @@ const Login = () => {
         {/* Header branding */}
         <div className="text-center mb-6">
           {appLogo ? (
-            <img src={appLogo} alt="Logo" className="w-20 h-20 mx-auto mb-4 rounded-full object-cover border-2 border-primary/20" />
+            <img src={appLogo} alt="Logo" className="max-h-20 mx-auto mb-4 object-contain" />
           ) : (
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-4 islamic-arch-glow">
               <BookOpen className="w-10 h-10 text-gold" />
