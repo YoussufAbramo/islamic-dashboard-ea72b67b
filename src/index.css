@@ -47,6 +47,13 @@
     --sidebar-border: 160 20% 20%;
     --sidebar-ring: 38 65% 55%;
 
+    /* Light sidebar overrides */
+    --sidebar-light-background: 40 25% 96%;
+    --sidebar-light-foreground: 160 30% 12%;
+    --sidebar-light-accent: 40 20% 90%;
+    --sidebar-light-accent-foreground: 160 30% 12%;
+    --sidebar-light-border: 40 15% 85%;
+
     /* Islamic design tokens */
     --gold: 38 65% 55%;
     --gold-light: 38 60% 75%;
@@ -114,6 +121,12 @@
 
     --chart-1: 38 65% 55%;
     --chart-2: 160 35% 45%;
+
+    --sidebar-light-background: 160 15% 14%;
+    --sidebar-light-foreground: 40 30% 90%;
+    --sidebar-light-accent: 160 20% 18%;
+    --sidebar-light-accent-foreground: 40 30% 90%;
+    --sidebar-light-border: 160 15% 20%;
     --chart-3: 200 50% 45%;
     --chart-4: 280 40% 50%;
     --chart-5: 340 50% 45%;
@@ -137,6 +150,11 @@
     --sidebar-accent: 210 35% 18%;
     --sidebar-border: 210 30% 20%;
     --sidebar-ring: 190 60% 50%;
+    --sidebar-light-background: 210 20% 96%;
+    --sidebar-light-foreground: 210 30% 12%;
+    --sidebar-light-accent: 210 15% 90%;
+    --sidebar-light-accent-foreground: 210 30% 12%;
+    --sidebar-light-border: 210 15% 85%;
   }
   /* Ocean - Dark */
   .dark.theme-ocean {
@@ -185,6 +203,11 @@
     --sidebar-accent: 270 30% 18%;
     --sidebar-border: 270 25% 20%;
     --sidebar-ring: 290 55% 55%;
+    --sidebar-light-background: 270 15% 96%;
+    --sidebar-light-foreground: 270 25% 12%;
+    --sidebar-light-accent: 270 12% 90%;
+    --sidebar-light-accent-foreground: 270 25% 12%;
+    --sidebar-light-border: 270 12% 85%;
   }
   /* Purple - Dark */
   .dark.theme-purple {
@@ -233,6 +256,11 @@
     --sidebar-accent: 25 35% 18%;
     --sidebar-border: 25 30% 20%;
     --sidebar-ring: 35 70% 55%;
+    --sidebar-light-background: 35 20% 96%;
+    --sidebar-light-foreground: 25 30% 12%;
+    --sidebar-light-accent: 35 15% 90%;
+    --sidebar-light-accent-foreground: 25 30% 12%;
+    --sidebar-light-border: 35 15% 85%;
   }
   /* Desert - Dark */
   .dark.theme-desert {
@@ -281,6 +309,11 @@
     --sidebar-accent: 220 35% 16%;
     --sidebar-border: 220 30% 18%;
     --sidebar-ring: 240 50% 55%;
+    --sidebar-light-background: 220 15% 96%;
+    --sidebar-light-foreground: 220 30% 12%;
+    --sidebar-light-accent: 220 12% 90%;
+    --sidebar-light-accent-foreground: 220 30% 12%;
+    --sidebar-light-border: 220 12% 85%;
   }
   /* Midnight - Dark */
   .dark.theme-midnight {
@@ -329,6 +362,11 @@
     --sidebar-accent: 345 30% 18%;
     --sidebar-border: 345 25% 20%;
     --sidebar-ring: 330 50% 55%;
+    --sidebar-light-background: 345 15% 96%;
+    --sidebar-light-foreground: 345 25% 12%;
+    --sidebar-light-accent: 345 12% 90%;
+    --sidebar-light-accent-foreground: 345 25% 12%;
+    --sidebar-light-border: 345 12% 85%;
   }
   .dark.theme-rose {
     --background: 345 25% 6%;
@@ -376,6 +414,11 @@
     --sidebar-accent: 180 35% 16%;
     --sidebar-border: 180 30% 18%;
     --sidebar-ring: 170 55% 48%;
+    --sidebar-light-background: 180 15% 96%;
+    --sidebar-light-foreground: 180 30% 12%;
+    --sidebar-light-accent: 180 12% 90%;
+    --sidebar-light-accent-foreground: 180 30% 12%;
+    --sidebar-light-border: 180 12% 85%;
   }
   .dark.theme-teal {
     --background: 180 25% 6%;
@@ -423,6 +466,11 @@
     --sidebar-accent: 30 35% 18%;
     --sidebar-border: 30 30% 20%;
     --sidebar-ring: 40 75% 50%;
+    --sidebar-light-background: 40 20% 96%;
+    --sidebar-light-foreground: 30 30% 12%;
+    --sidebar-light-accent: 40 15% 90%;
+    --sidebar-light-accent-foreground: 30 30% 12%;
+    --sidebar-light-border: 40 12% 85%;
   }
   .dark.theme-amber {
     --background: 30 25% 6%;
@@ -470,6 +518,11 @@
     --sidebar-accent: 215 15% 18%;
     --sidebar-border: 215 12% 22%;
     --sidebar-ring: 210 15% 55%;
+    --sidebar-light-background: 215 10% 96%;
+    --sidebar-light-foreground: 215 15% 12%;
+    --sidebar-light-accent: 215 8% 90%;
+    --sidebar-light-accent-foreground: 215 15% 12%;
+    --sidebar-light-border: 215 8% 85%;
   }
   .dark.theme-slate {
     --background: 215 18% 7%;
@@ -517,6 +570,11 @@
     --sidebar-accent: 0 35% 18%;
     --sidebar-border: 0 30% 20%;
     --sidebar-ring: 15 60% 52%;
+    --sidebar-light-background: 0 15% 96%;
+    --sidebar-light-foreground: 0 25% 12%;
+    --sidebar-light-accent: 0 10% 90%;
+    --sidebar-light-accent-foreground: 0 25% 12%;
+    --sidebar-light-border: 0 10% 85%;
   }
   .dark.theme-crimson {
     --background: 0 25% 6%;
@@ -604,6 +662,17 @@
   }
   ::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--muted-foreground) / 0.5);
+  }
+  /* Sidebar light mode overrides */
+  [data-sidebar-mode="light"] [data-sidebar="sidebar"] {
+    --sidebar-background: var(--sidebar-light-background);
+    --sidebar-foreground: var(--sidebar-light-foreground);
+    --sidebar-accent: var(--sidebar-light-accent);
+    --sidebar-accent-foreground: var(--sidebar-light-accent-foreground);
+    --sidebar-border: var(--sidebar-light-border);
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-ring: var(--ring);
   }
 }
 

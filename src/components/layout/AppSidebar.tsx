@@ -28,7 +28,7 @@ interface MenuCategory {
 const AppSidebar = () => {
   const { role, profile, signOut } = useAuth();
   const { t, language } = useLanguage();
-  const { appLogo, appName } = useAppSettings();
+  const { appLogo, appName, sidebarMode } = useAppSettings();
   const navigate = useNavigate();
   const isAr = language === 'ar';
   const location = useLocation();
@@ -92,6 +92,11 @@ const AppSidebar = () => {
       ],
     },
   ];
+
+  // Apply sidebar mode attribute to document for CSS targeting
+  useEffect(() => {
+    document.documentElement.setAttribute('data-sidebar-mode', sidebarMode);
+  }, [sidebarMode]);
 
   return (
     <Sidebar side={isAr ? 'right' : 'left'}>

@@ -29,6 +29,7 @@ const CURRENCIES: Currency[] = [
 export type ColorTheme = 'emerald' | 'ocean' | 'purple' | 'desert' | 'midnight' | 'rose' | 'teal' | 'amber' | 'slate' | 'crimson';
 export type ButtonShape = 'rounded' | 'circular' | 'square';
 export type FooterPosition = 'left' | 'center' | 'right';
+export type SidebarMode = 'dark' | 'light';
 
 const THEMES: { value: ColorTheme; label: string; labelAr: string; color: string }[] = [
   { value: 'emerald', label: 'Emerald Gold', labelAr: 'الزمرد الذهبي', color: 'hsl(160 45% 28%)' },
@@ -74,6 +75,7 @@ interface PendingSettings {
   paymentGateway: string;
   defaultLanguage: 'en' | 'ar';
   defaultTimezone: string;
+  sidebarMode: SidebarMode;
 }
 
 interface AppSettingsContextType {
@@ -111,6 +113,8 @@ interface AppSettingsContextType {
   setFavicon: (f: string) => void;
   defaultTimezone: string;
   setDefaultTimezone: (tz: string) => void;
+  sidebarMode: SidebarMode;
+  setSidebarMode: (m: SidebarMode) => void;
   pending: PendingSettings;
   updatePending: (partial: Partial<PendingSettings>) => void;
   saveSettings: () => void;
@@ -126,12 +130,12 @@ function loadSaved(): PendingSettings {
   // Clear stale settings when defaults change
   const storedVersion = localStorage.getItem('app_settings_version');
   if (storedVersion !== SETTINGS_VERSION) {
-    const keysToReset = [
+  const keysToReset = [
       'app_currency', 'app_color_theme', 'app_name', 'app_description',
       'app_logo', 'app_signature_image', 'app_stamp_image', 'app_signature_position',
       'app_stamp_position', 'app_ltr_font', 'app_rtl_font', 'app_button_shape',
       'app_currency_decimals', 'app_payment_gateway', 'app_default_language',
-      'app_default_timezone', 'app_favicon', 'app_active_gateways',
+      'app_default_timezone', 'app_favicon', 'app_active_gateways', 'app_sidebar_mode',
     ];
     keysToReset.forEach(k => localStorage.removeItem(k));
     localStorage.setItem('app_settings_version', SETTINGS_VERSION);
@@ -154,6 +158,7 @@ function loadSaved(): PendingSettings {
     paymentGateway: localStorage.getItem('app_payment_gateway') || 'paypal',
     defaultLanguage: (localStorage.getItem('app_default_language') as 'en' | 'ar') || 'en',
     defaultTimezone: localStorage.getItem('app_default_timezone') || Intl.DateTimeFormat().resolvedOptions().timeZone,
+    sidebarMode: (localStorage.getItem('app_sidebar_mode') as SidebarMode) || 'dark',
   };
 }
 
@@ -213,6 +218,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     localStorage.setItem('app_payment_gateway', pending.paymentGateway);
     localStorage.setItem('app_default_language', pending.defaultLanguage);
     localStorage.setItem('app_default_timezone', pending.defaultTimezone);
+    localStorage.setItem('app_sidebar_mode', pending.sidebarMode);
     setSaved({ ...pending });
   }, [pending]);
 
@@ -234,6 +240,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const setCurrencyDecimals = useCallback((d: number) => { setPending(p => ({ ...p, currencyDecimals: d })); }, []);
   const setPaymentGateway = useCallback((g: string) => { setPending(p => ({ ...p, paymentGateway: g })); }, []);
   const setDefaultTimezone = useCallback((tz: string) => { setPending(p => ({ ...p, defaultTimezone: tz })); }, []);
+  const setSidebarMode = useCallback((m: SidebarMode) => { setPending(p => ({ ...p, sidebarMode: m })); }, []);
 
   return (
     <AppSettingsContext.Provider value={{
@@ -253,6 +260,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       paymentGateway: saved.paymentGateway, setPaymentGateway,
       favicon, setFavicon,
       defaultTimezone: saved.defaultTimezone, setDefaultTimezone,
+      sidebarMode: saved.sidebarMode, setSidebarMode,
       pending, updatePending, saveSettings, hasPendingChanges, discardChanges,
     }}>
       {children}
