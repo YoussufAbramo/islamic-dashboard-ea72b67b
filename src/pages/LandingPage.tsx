@@ -84,7 +84,7 @@ const LandingPage = () => {
   const navigate = useNavigate();
   const { language, setLanguage } = useLanguage();
   const { pending } = useAppSettings();
-  const { user, profile } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const isAr = language === 'ar';
   const [packages, setPackages] = useState<PricingPackage[]>([]);
   const [content, setContent] = useState<Record<string, Record<string, any>>>(defaultContent);
