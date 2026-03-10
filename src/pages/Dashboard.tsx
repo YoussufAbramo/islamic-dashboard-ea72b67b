@@ -79,6 +79,20 @@ interface WidgetCategory {
   keys: WidgetKey[];
 }
 
+// Section keys for ordering
+type SectionKey = 'stats' | 'overview' | 'upcomingLessons' | 'recentSubscriptions' | 'calendar' | 'recentActivity';
+
+const DEFAULT_SECTION_ORDER: SectionKey[] = ['stats', 'overview', 'upcomingLessons', 'recentSubscriptions', 'calendar', 'recentActivity'];
+
+const SECTION_LABELS: Record<SectionKey, { en: string; ar: string }> = {
+  stats: { en: '📊 Statistics Cards', ar: '📊 بطاقات الإحصائيات' },
+  overview: { en: '📋 Overview Cards', ar: '📋 بطاقات النظرة العامة' },
+  upcomingLessons: { en: '📅 Upcoming Lessons', ar: '📅 الدروس القادمة' },
+  recentSubscriptions: { en: '💳 Recent Subscriptions', ar: '💳 أحدث الاشتراكات' },
+  calendar: { en: '🗓️ Lessons Calendar', ar: '🗓️ تقويم الدروس' },
+  recentActivity: { en: '⚡ Recent Activity', ar: '⚡ النشاط الأخير' },
+};
+
 const WIDGET_CATEGORIES: WidgetCategory[] = [
   {
     label: '📊 Statistics Cards',
