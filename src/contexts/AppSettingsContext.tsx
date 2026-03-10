@@ -59,6 +59,8 @@ interface PendingSettings {
   appName: string;
   appDescription: string;
   appLogo: string;
+  signatureImage: string;
+  stampImage: string;
   ltrFont: string;
   rtlFont: string;
   buttonShape: ButtonShape;
