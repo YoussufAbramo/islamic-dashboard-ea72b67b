@@ -74,6 +74,8 @@ const Courses = () => {
   const filtered = courses.filter((c) => c.title.toLowerCase().includes(search.toLowerCase()) || c.title_ar?.includes(search));
   const statusColor: Record<string, string> = { draft: 'secondary', published: 'default', archived: 'outline' };
 
+  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
