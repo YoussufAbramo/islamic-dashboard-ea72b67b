@@ -140,7 +140,7 @@ const InvoicePreviewDialog = ({ open, onOpenChange, invoice, isAr, formatPrice, 
             </h4>
             {gateway ? (
               <div className="flex items-center gap-3 p-3 rounded-lg border border-primary/30 bg-primary/5">
-                <span className="text-xl">{gateway.icon}</span>
+                <span className="text-sm font-bold" style={{ color: gateway.color }}>{gateway.name[0]}</span>
                 <div className="flex-1">
                   <span className="text-sm font-medium">{gateway.name}</span>
                 </div>

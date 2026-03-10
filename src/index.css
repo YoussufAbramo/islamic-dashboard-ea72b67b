@@ -328,10 +328,31 @@
     font-family: var(--font-rtl);
   }
 
-  /* Button shape system */
-  .btn-rounded { --radius: 0.5rem; }
-  .btn-circular { --radius: 9999px; }
-  .btn-square { --radius: 0px; }
+  /* Button shape system - only affects actual buttons and inputs */
+  .btn-rounded button,
+  .btn-rounded .btn,
+  .btn-rounded [role="button"],
+  .btn-rounded input,
+  .btn-rounded select,
+  .btn-rounded textarea {
+    border-radius: 0.5rem !important;
+  }
+  .btn-circular button,
+  .btn-circular .btn,
+  .btn-circular [role="button"],
+  .btn-circular input,
+  .btn-circular select,
+  .btn-circular textarea {
+    border-radius: 9999px !important;
+  }
+  .btn-square button,
+  .btn-square .btn,
+  .btn-square [role="button"],
+  .btn-square input,
+  .btn-square select,
+  .btn-square textarea {
+    border-radius: 0px !important;
+  }
 
   /* Custom scrollbar */
   ::-webkit-scrollbar {
