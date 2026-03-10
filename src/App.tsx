@@ -69,6 +69,7 @@ const App = () => (
                       <Route path="certificates" element={<Certificates />} />
                       <Route path="reports" element={<RoleGuard allowed={['admin']}><Reports /></RoleGuard>} />
                       <Route path="invoices" element={<RoleGuard allowed={['admin']}><Invoices /></RoleGuard>} />
+                      <Route path="calculator" element={<RoleGuard allowed={['admin']}><CalculatorPage /></RoleGuard>} />
                       <Route path="announcements" element={<Announcements />} />
                       <Route path="notifications" element={<Notifications />} />
                       <Route path="profile" element={<Profile />} />
