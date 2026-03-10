@@ -2,6 +2,17 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [1.6.2] - 2026-03-10
+
+### Changed
+- Pagination aligned to the right side with "Showing X to Y of Z" on a single line
+- Pagination active page now uses primary color (`default` variant) instead of outline
+- Chat body background now uses the same Islamic pattern effect as the auth pages
+- Removed time sorting button from Attendance page
+
+### Fixed
+- "Showing X to Y" text wrapping to two lines (added `whitespace-nowrap`)
+
 ## [1.6.1] - 2026-03-10
 
 ### Added

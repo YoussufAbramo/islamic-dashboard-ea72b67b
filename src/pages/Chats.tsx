@@ -218,8 +218,17 @@ const Chats = () => {
                 )}
               </CardHeader>
               <CardContent className="flex-1 flex flex-col p-0">
-                <ScrollArea className="flex-1" style={{ backgroundImage: `url(${islamicBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-                  <div className="space-y-3 p-4 bg-background/80 backdrop-blur-sm min-h-full">
+                <ScrollArea className="flex-1 relative">
+                  <div
+                    className="absolute inset-0 opacity-15 dark:opacity-10"
+                    style={{
+                      backgroundImage: `url(${islamicBg})`,
+                      backgroundSize: '400px 400px',
+                      backgroundRepeat: 'repeat',
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-br from-background/90 via-background/80 to-background/90" />
+                  <div className="space-y-3 p-4 min-h-full relative z-10">
                     {messages.map((msg) => {
                       const isOwn = msg.sender_id === user?.id;
                       const initials = (msg.profiles?.full_name || '?').charAt(0).toUpperCase();

@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { CheckCircle, XCircle, Clock, UserCheck, ArrowUp, ArrowDown } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, UserCheck } from 'lucide-react';
 
 interface AttendanceRecord {
   id: string;
@@ -31,7 +31,7 @@ interface TeacherInfo {
   profile?: { full_name: string };
 }
 
-type SortOrder = 'newest' | 'oldest';
+
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--destructive))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
@@ -43,7 +43,7 @@ const Attendance = () => {
   const [teachers, setTeachers] = useState<TeacherInfo[]>([]);
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
-  const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
+  
 
   const isAr = language === 'ar';
 
@@ -70,14 +70,13 @@ const Attendance = () => {
   }, []);
 
   const sortedAttendance = useMemo(() => {
-    const sorted = [...attendance];
-    sorted.sort((a, b) => {
+    const sorted = [...attendance].sort((a, b) => {
       const da = new Date(a.created_at).getTime();
       const db = new Date(b.created_at).getTime();
-      return sortOrder === 'newest' ? db - da : da - db;
+      return db - da;
     });
     return sorted;
-  }, [attendance, sortOrder]);
+  }, [attendance]);
 
   // Build per-student stats
   const studentStats = students.map((s) => {
@@ -129,15 +128,6 @@ const Attendance = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">{isAr ? 'تتبع الحضور' : 'Attendance Tracking'}</h1>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')}
-          className="gap-1"
-        >
-          {sortOrder === 'newest' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}
-          {sortOrder === 'newest' ? (isAr ? 'الأحدث' : 'Newest') : (isAr ? 'الأقدم' : 'Oldest')}
-        </Button>
       </div>
 
       {/* Summary Cards */}

@@ -46,13 +46,13 @@ const PaginationControls = ({ currentPage, totalPages, onPageChange, totalItems,
   };
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4">
-      <p className="text-sm text-muted-foreground">
+    <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-4">
+      <p className="text-sm text-muted-foreground whitespace-nowrap">
         {isAr
           ? `عرض ${startIndex} إلى ${endIndex} من ${totalItems}`
           : `Showing ${startIndex} to ${endIndex} of ${totalItems}`}
       </p>
-      <Pagination>
+      <Pagination className="w-auto mx-0">
         <PaginationContent>
           <PaginationItem>
             <PaginationPrevious
