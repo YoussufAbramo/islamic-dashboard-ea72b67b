@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { FileText, CreditCard, Printer, ArrowLeft } from 'lucide-react';
+import { FileText, CreditCard, Printer, ArrowLeft, BookOpen } from 'lucide-react';
 import { format } from 'date-fns';
 import type { FooterPosition } from '@/contexts/AppSettingsContext';
 
@@ -16,7 +16,21 @@ const statusConfig: Record<string, { bg: string; label: string }> = {
   cancelled: { bg: 'bg-muted text-muted-foreground border-border', label: 'Cancelled' },
 };
 
-// Read currency from localStorage (this page is outside AppSettingsProvider for anon access)
+interface GatewayInfo {
+  id: string;
+  name: string;
+  logo: string;
+  color: string;
+}
+
+const GATEWAYS: GatewayInfo[] = [
+  { id: 'paypal', name: 'PayPal', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/PayPal.svg/200px-PayPal.svg.png', color: 'hsl(210 80% 50%)' },
+  { id: 'stripe', name: 'Stripe', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/200px-Stripe_Logo%2C_revised_2016.svg.png', color: 'hsl(260 60% 55%)' },
+  { id: 'fawaterak', name: 'Fawaterak', logo: 'https://fawaterak.com/wp-content/uploads/2023/01/fawaterak-logo.png', color: 'hsl(160 50% 40%)' },
+  { id: 'xpay', name: 'Xpay', logo: 'https://xpay.app/wp-content/uploads/2022/07/xpay-logo.png', color: 'hsl(30 80% 50%)' },
+  { id: 'paymob', name: 'Paymob', logo: 'https://paymob.com/images/paymobLogo.png', color: 'hsl(200 70% 45%)' },
+];
+
 const getCurrencySymbol = (): string => {
   try {
     const raw = localStorage.getItem('app_currency');
@@ -28,17 +42,34 @@ const getCurrencySymbol = (): string => {
   return '$';
 };
 
+const getActiveGateways = (): string[] => {
+  try {
+    const raw = localStorage.getItem('app_active_gateways');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return Object.keys(parsed).filter(k => parsed[k]);
+    }
+  } catch {}
+  return [];
+};
+
 const InvoiceView = () => {
   const { id } = useParams<{ id: string }>();
   const [invoice, setInvoice] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [selectedGateway, setSelectedGateway] = useState<string | null>(null);
+  const [logoErrors, setLogoErrors] = useState<Record<string, boolean>>({});
 
   const currencySymbol = getCurrencySymbol();
+  const appName = typeof window !== 'undefined' ? localStorage.getItem('app_name') || 'Islamic Dashboard' : 'Islamic Dashboard';
+  const appLogo = typeof window !== 'undefined' ? localStorage.getItem('app_logo') || '' : '';
   const signatureImage = typeof window !== 'undefined' ? localStorage.getItem('app_signature_image') || '' : '';
   const stampImage = typeof window !== 'undefined' ? localStorage.getItem('app_stamp_image') || '' : '';
   const signaturePosition = (typeof window !== 'undefined' ? localStorage.getItem('app_signature_position') : 'left') as FooterPosition || 'left';
   const stampPosition = (typeof window !== 'undefined' ? localStorage.getItem('app_stamp_position') : 'right') as FooterPosition || 'right';
+  const activeGatewayIds = getActiveGateways();
+  const activeGateways = GATEWAYS.filter(g => activeGatewayIds.includes(g.id));
 
   useEffect(() => {
     const fetchInvoice = async () => {
@@ -88,6 +119,7 @@ const InvoiceView = () => {
   return (
     <div className="min-h-screen bg-background py-8 px-4 print:py-2 print:px-0">
       <div className="max-w-2xl mx-auto space-y-6">
+        {/* Top actions */}
         <div className="flex justify-between items-center print:hidden">
           <Link to="/">
             <Button variant="ghost" size="sm"><ArrowLeft className="h-4 w-4 me-2" />Home</Button>
@@ -96,6 +128,22 @@ const InvoiceView = () => {
             <Printer className="h-4 w-4 me-2" />Print
           </Button>
         </div>
+
+        {/* App Branding */}
+        <div className="flex items-center gap-3 pb-2">
+          {appLogo ? (
+            <img src={appLogo} alt={appName} className="h-10 w-10 rounded-lg object-cover" />
+          ) : (
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <BookOpen className="h-6 w-6 text-primary" />
+            </div>
+          )}
+          <div>
+            <h2 className="text-lg font-bold text-foreground">{appName}</h2>
+          </div>
+        </div>
+
+        <Separator />
 
         <div className="flex items-start justify-between">
           <div>
@@ -138,16 +186,63 @@ const InvoiceView = () => {
 
         <div className="p-6 rounded-xl border border-border bg-muted/30 text-center">
           <p className="text-sm text-muted-foreground">Amount Due</p>
-          <p className="text-4xl font-bold mt-1">{formatAmount(invoice.amount)}</p>
+          {invoice.original_amount && invoice.original_amount > invoice.amount ? (
+            <div className="mt-1">
+              <span className="text-lg text-muted-foreground line-through me-2">{formatAmount(invoice.original_amount)}</span>
+              <span className="text-4xl font-bold">{formatAmount(invoice.amount)}</span>
+            </div>
+          ) : (
+            <p className="text-4xl font-bold mt-1">{formatAmount(invoice.amount)}</p>
+          )}
           <p className="text-sm text-muted-foreground mt-2">
             Due: {invoice.due_date ? format(new Date(invoice.due_date), 'MMM dd, yyyy') : '-'}
           </p>
         </div>
 
-        {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
-          <Button className="w-full" size="lg">
-            <CreditCard className="h-4 w-4 me-2" />Pay Now
-          </Button>
+        {/* Payment Methods */}
+        {invoice.status !== 'paid' && invoice.status !== 'cancelled' && activeGateways.length > 0 && (
+          <div className="space-y-3 print:hidden">
+            <h4 className="font-medium text-sm flex items-center gap-2">
+              <CreditCard className="h-4 w-4" />
+              Available Payment Methods
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {activeGateways.map((gw) => (
+                <button
+                  key={gw.id}
+                  onClick={() => setSelectedGateway(gw.id)}
+                  className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-start ${
+                    selectedGateway === gw.id
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-primary/30 hover:bg-muted/50'
+                  }`}
+                >
+                  <div className="h-10 w-14 flex items-center justify-center rounded-lg bg-background border border-border overflow-hidden">
+                    {logoErrors[gw.id] ? (
+                      <span className="text-xs font-bold text-muted-foreground">{gw.name}</span>
+                    ) : (
+                      <img
+                        src={gw.logo}
+                        alt={gw.name}
+                        className="h-8 w-12 object-contain"
+                        onError={() => setLogoErrors(prev => ({ ...prev, [gw.id]: true }))}
+                      />
+                    )}
+                  </div>
+                  <span className="text-sm font-medium">{gw.name}</span>
+                  {selectedGateway === gw.id && (
+                    <Badge className="ms-auto text-[10px]">Selected</Badge>
+                  )}
+                </button>
+              ))}
+            </div>
+            {selectedGateway && (
+              <Button className="w-full" size="lg" onClick={() => window.open(`#pay/${invoice.id}/${selectedGateway}`, '_blank')}>
+                <CreditCard className="h-4 w-4 me-2" />
+                Pay Now with {GATEWAYS.find(g => g.id === selectedGateway)?.name}
+              </Button>
+            )}
+          </div>
         )}
 
         {invoice.notes && (
@@ -175,6 +270,11 @@ const InvoiceView = () => {
             </div>
           </div>
         )}
+
+        {/* Brand Footer */}
+        <div className="pt-4 border-t border-border text-center">
+          <p className="text-xs text-muted-foreground">{appName}</p>
+        </div>
       </div>
     </div>
   );
