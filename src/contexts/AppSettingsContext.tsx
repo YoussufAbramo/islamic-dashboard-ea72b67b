@@ -29,6 +29,7 @@ const CURRENCIES: Currency[] = [
 export type ColorTheme = 'emerald' | 'ocean' | 'purple' | 'desert' | 'midnight' | 'rose' | 'teal' | 'amber' | 'slate' | 'crimson';
 export type ButtonShape = 'rounded' | 'circular' | 'square';
 export type FooterPosition = 'left' | 'center' | 'right';
+export type SidebarMode = 'dark' | 'light';
 
 const THEMES: { value: ColorTheme; label: string; labelAr: string; color: string }[] = [
   { value: 'emerald', label: 'Emerald Gold', labelAr: 'الزمرد الذهبي', color: 'hsl(160 45% 28%)' },

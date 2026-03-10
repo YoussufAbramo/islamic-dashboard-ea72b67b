@@ -47,6 +47,13 @@
     --sidebar-border: 160 20% 20%;
     --sidebar-ring: 38 65% 55%;
 
+    /* Light sidebar overrides */
+    --sidebar-light-background: 40 25% 96%;
+    --sidebar-light-foreground: 160 30% 12%;
+    --sidebar-light-accent: 40 20% 90%;
+    --sidebar-light-accent-foreground: 160 30% 12%;
+    --sidebar-light-border: 40 15% 85%;
+
     /* Islamic design tokens */
     --gold: 38 65% 55%;
     --gold-light: 38 60% 75%;
