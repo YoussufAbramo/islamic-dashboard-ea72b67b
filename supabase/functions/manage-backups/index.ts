@@ -46,11 +46,16 @@ Deno.serve(async (req) => {
 
     // ==================== CREATE BACKUP ====================
     if (action === 'create_backup') {
-      const { name, format } = body as { name: string; format: 'json' | 'sql' | 'csv' }
+      const { name, format, tables: requestedTables } = body as { name: string; format: 'json' | 'sql' | 'csv'; tables?: string[] }
       
-      // Fetch all data
+      // Use requested tables or default to all
+      const tablesToExport = requestedTables && requestedTables.length > 0
+        ? ALL_TABLES.filter(t => requestedTables.includes(t))
+        : ALL_TABLES
+
+      // Fetch data for selected tables
       const exportData: Record<string, any[]> = {}
-      for (const table of ALL_TABLES) {
+      for (const table of tablesToExport) {
         const { data } = await adminClient.from(table).select('*')
         exportData[table] = data || []
       }
