@@ -117,8 +117,8 @@ const PaymentGatewayCard = ({ isAr }: PaymentGatewayCardProps) => {
       if (error) throw error;
       toast.success(isAr ? 'تم حفظ مفاتيح API بنجاح' : 'API keys saved successfully');
     } catch (err: any) {
-      // For now, store indication that keys were configured
-      toast.success(isAr ? 'تم حفظ إعدادات البوابة' : 'Gateway settings saved');
+      toast.error(isAr ? 'فشل حفظ مفاتيح API. يرجى المحاولة مرة أخرى.' : 'Failed to save API keys. Please try again.');
+      console.error('Payment key save error:', err);
     } finally {
       setSaving(null);
     }
