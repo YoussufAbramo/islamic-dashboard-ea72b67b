@@ -115,16 +115,22 @@ const Invoices = () => {
     cancelled: invoices.filter(i => i.status === 'cancelled').length,
   };
 
-  const filtered = invoices.filter((inv) => {
-    const matchesStatus = statusFilter === 'all' || inv.status === statusFilter;
-    const studentName = inv.students?.profiles?.full_name || '';
-    const invoiceNum = inv.invoice_number || '';
-    const q = search.toLowerCase();
-    const matchesSearch = studentName.toLowerCase().includes(q) || invoiceNum.toLowerCase().includes(q);
-    return matchesStatus && matchesSearch;
-  });
-
-  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+  const filtered = useMemo(() => {
+    let result = invoices.filter((inv) => {
+      const matchesStatus = statusFilter === 'all' || inv.status === statusFilter;
+      const studentName = inv.students?.profiles?.full_name || '';
+      const invoiceNum = inv.invoice_number || '';
+      const q = search.toLowerCase();
+      const matchesSearch = studentName.toLowerCase().includes(q) || invoiceNum.toLowerCase().includes(q);
+      return matchesStatus && matchesSearch;
+    });
+    result.sort((a, b) => {
+      const da = new Date(a.created_at).getTime();
+      const db = new Date(b.created_at).getTime();
+      return sortOrder === 'newest' ? db - da : da - db;
+    });
+    return result;
+  }, [invoices, statusFilter, search, sortOrder]);
 
   const showEmptyState = !loading && invoices.length === 0;
 
