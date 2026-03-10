@@ -122,7 +122,7 @@ const Dashboard = () => {
   const { t, language } = useLanguage();
   const { currency } = useAppSettings();
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ courses: 0, students: 0, teachers: 0, subscriptions: 0, tickets: 0, lessons: 0, mri: 0, weeklyLessons: 0, teacherAbsences: 0, certificates: 0, attendance: 0, chats: 0, announcements: 0 });
+  const [stats, setStats] = useState({ courses: 0, students: 0, teachers: 0, subscriptions: 0, tickets: 0, lessons: 0, mri: 0, weeklyLessons: 0, teacherAbsences: 0, certificates: 0, attendance: 0, chats: 0, announcements: 0, invoices: 0, pendingInvoices: 0 });
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [calendarMode, setCalendarMode] = useState<'monthly' | 'weekly'>('monthly');
   const [currentDate, setCurrentDate] = useState(new Date());
