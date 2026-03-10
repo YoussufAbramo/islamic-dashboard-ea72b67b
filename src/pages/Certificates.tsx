@@ -237,21 +237,57 @@ const Certificates = () => {
                 </div>
                 <div>
                   <Label>{isAr ? 'المستلم' : 'Recipient'}</Label>
-                  <Select value={form.recipient_id} onValueChange={(v) => setForm({ ...form, recipient_id: v })}>
-                    <SelectTrigger><SelectValue placeholder={isAr ? 'اختر...' : 'Select...'} /></SelectTrigger>
-                    <SelectContent>
-                      {profiles.map(p => <SelectItem key={p.id} value={p.id}>{p.full_name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <Popover open={recipientOpen} onOpenChange={setRecipientOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                        {form.recipient_id ? getProfileName(form.recipient_id) : (isAr ? 'اختر...' : 'Select...')}
+                        <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder={isAr ? 'بحث...' : 'Search...'} />
+                        <CommandList>
+                          <CommandEmpty>{isAr ? 'لا توجد نتائج' : 'No results'}</CommandEmpty>
+                          <CommandGroup>
+                            {profiles.map(p => (
+                              <CommandItem key={p.id} value={p.full_name} onSelect={() => { setForm({ ...form, recipient_id: p.id }); setRecipientOpen(false); }}>
+                                <Check className={cn("me-2 h-4 w-4", form.recipient_id === p.id ? "opacity-100" : "opacity-0")} />
+                                {p.full_name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div>
                   <Label>{isAr ? 'الدورة (اختياري)' : 'Course (optional)'}</Label>
-                  <Select value={form.course_id} onValueChange={(v) => setForm({ ...form, course_id: v })}>
-                    <SelectTrigger><SelectValue placeholder={isAr ? 'اختر...' : 'Select...'} /></SelectTrigger>
-                    <SelectContent>
-                      {courses.map(c => <SelectItem key={c.id} value={c.id}>{isAr && c.title_ar ? c.title_ar : c.title}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <Popover open={certCourseOpen} onOpenChange={setCertCourseOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                        {form.course_id ? getCourseName(form.course_id) : (isAr ? 'اختر...' : 'Select...')}
+                        <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder={isAr ? 'بحث...' : 'Search...'} />
+                        <CommandList>
+                          <CommandEmpty>{isAr ? 'لا توجد نتائج' : 'No results'}</CommandEmpty>
+                          <CommandGroup>
+                            {courses.map(c => (
+                              <CommandItem key={c.id} value={isAr && c.title_ar ? c.title_ar : c.title} onSelect={() => { setForm({ ...form, course_id: c.id }); setCertCourseOpen(false); }}>
+                                <Check className={cn("me-2 h-4 w-4", form.course_id === c.id ? "opacity-100" : "opacity-0")} />
+                                {isAr && c.title_ar ? c.title_ar : c.title}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div><Label>{isAr ? 'العنوان' : 'Title'}</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} /></div>
                 <div><Label>{isAr ? 'العنوان بالعربية' : 'Title (AR)'}</Label><Input value={form.title_ar} onChange={e => setForm({ ...form, title_ar: e.target.value })} dir="rtl" /></div>
