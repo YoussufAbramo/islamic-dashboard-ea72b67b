@@ -403,6 +403,27 @@ export type Database = {
           },
         ]
       }
+      landing_content: {
+        Row: {
+          content: Json
+          id: string
+          section_key: string
+          updated_at: string
+        }
+        Insert: {
+          content?: Json
+          id?: string
+          section_key: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          id?: string
+          section_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lessons: {
         Row: {
           content: Json | null
@@ -474,6 +495,66 @@ export type Database = {
           message?: string
           title?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      pricing_packages: {
+        Row: {
+          billing_cycle: string
+          created_at: string
+          features: Json
+          id: string
+          is_active: boolean
+          is_featured: boolean
+          max_courses: number
+          max_students: number
+          max_teachers: number
+          regular_price: number
+          sale_price: number | null
+          sort_order: number
+          subtitle: string | null
+          subtitle_ar: string | null
+          title: string
+          title_ar: string | null
+          updated_at: string
+        }
+        Insert: {
+          billing_cycle?: string
+          created_at?: string
+          features?: Json
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          max_courses?: number
+          max_students?: number
+          max_teachers?: number
+          regular_price?: number
+          sale_price?: number | null
+          sort_order?: number
+          subtitle?: string | null
+          subtitle_ar?: string | null
+          title?: string
+          title_ar?: string | null
+          updated_at?: string
+        }
+        Update: {
+          billing_cycle?: string
+          created_at?: string
+          features?: Json
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          max_courses?: number
+          max_students?: number
+          max_teachers?: number
+          regular_price?: number
+          sale_price?: number | null
+          sort_order?: number
+          subtitle?: string | null
+          subtitle_ar?: string | null
+          title?: string
+          title_ar?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
