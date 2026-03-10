@@ -184,13 +184,14 @@ const Invoices = () => {
 
           {/* Table */}
           <InvoiceTable
-            invoices={filtered}
+            invoices={paginatedItems}
             loading={loading}
             isAr={isAr}
             formatPrice={formatPrice}
             onPreview={openPreview}
             onCopyUrl={copyInvoiceUrl}
           />
+          <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
         </>
       )}
 
