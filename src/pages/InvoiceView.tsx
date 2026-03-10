@@ -17,12 +17,7 @@ const statusConfig: Record<string, { bg: string; label: string }> = {
   cancelled: { bg: 'bg-muted text-muted-foreground border-border', label: 'Cancelled' },
 };
 
-interface GatewayInfo {
-  id: string;
-  name: string;
-  logo: string;
-  color: string;
-}
+interface GatewayInfo { id: string; name: string; logo: string; color: string; }
 
 const GATEWAYS: GatewayInfo[] = [
   { id: 'paypal', name: 'PayPal', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/PayPal.svg/200px-PayPal.svg.png', color: 'hsl(210 80% 50%)' },
@@ -33,25 +28,10 @@ const GATEWAYS: GatewayInfo[] = [
 ];
 
 const getCurrencySymbol = (): string => {
-  try {
-    const raw = localStorage.getItem('app_currency');
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      return parsed.symbol || '$';
-    }
-  } catch {}
-  return '$';
+  try { const raw = localStorage.getItem('app_currency'); if (raw) return JSON.parse(raw).symbol || '$'; } catch {} return '$';
 };
-
 const getActiveGateways = (): string[] => {
-  try {
-    const raw = localStorage.getItem('app_active_gateways');
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      return Object.keys(parsed).filter(k => parsed[k]);
-    }
-  } catch {}
-  return [];
+  try { const raw = localStorage.getItem('app_active_gateways'); if (raw) { const parsed = JSON.parse(raw); return Object.keys(parsed).filter(k => parsed[k]); } } catch {} return [];
 };
 
 const InvoiceView = () => {
@@ -81,29 +61,16 @@ const InvoiceView = () => {
   useEffect(() => {
     const fetchInvoice = async () => {
       if (!id) { setError(true); setLoading(false); return; }
-      
-      // Try authenticated query first (for logged-in users)
-      const { data, error: err } = await supabase
+      const { data } = await supabase
         .from('invoices')
         .select('*, courses:invoices_course_id_fkey(title, title_ar), students:invoices_student_id_fkey(user_id, profiles:students_user_id_profiles_fkey(full_name, email, phone))')
-        .eq('id', id)
-        .maybeSingle();
-
+        .eq('id', id).maybeSingle();
       if (data) {
-        setInvoice(data);
-        setStudentInfo(data.students?.profiles);
-        setCourseInfo(data.courses);
+        setInvoice(data); setStudentInfo(data.students?.profiles); setCourseInfo(data.courses);
       } else if (token) {
-        // Fallback: use share_token via RPC for unauthenticated access
         const { data: rpcData } = await supabase.rpc('get_invoice_by_share_token', { _token: token });
-        if (rpcData && rpcData.length > 0) {
-          setInvoice(rpcData[0]);
-        } else {
-          setError(true);
-        }
-      } else {
-        setError(true);
-      }
+        if (rpcData && rpcData.length > 0) setInvoice(rpcData[0]); else setError(true);
+      } else setError(true);
       setLoading(false);
     };
     fetchInvoice();
@@ -111,74 +78,51 @@ const InvoiceView = () => {
 
   const handlePrint = () => window.print();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-muted-foreground">Loading invoice...</div>
-      </div>
-    );
-  }
-
-  if (error || !invoice) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Card className="max-w-md w-full mx-4">
-          <CardContent className="pt-6 text-center space-y-4">
-            <FileText className="h-12 w-12 mx-auto text-muted-foreground" />
-            <h2 className="text-xl font-bold">Invoice Not Found</h2>
-            <p className="text-muted-foreground">This invoice does not exist or has been removed.</p>
-            <Link to="/">
-              <Button variant="outline"><ArrowLeft className="h-4 w-4 me-2" />Go Home</Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-pulse text-muted-foreground">Loading invoice...</div></div>;
+  if (error || !invoice) return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Card className="max-w-md w-full mx-4"><CardContent className="pt-6 text-center space-y-4">
+        <FileText className="h-12 w-12 mx-auto text-muted-foreground" />
+        <h2 className="text-xl font-bold">Invoice Not Found</h2>
+        <p className="text-muted-foreground">This invoice does not exist or has been removed.</p>
+        <Link to="/"><Button variant="outline"><ArrowLeft className="h-4 w-4 me-2" />Go Home</Button></Link>
+      </CardContent></Card>
+    </div>
+  );
 
   const sc = statusConfig[invoice.status] || statusConfig.pending;
   const formatAmount = (n: number) => `${currencySymbol}${n.toFixed(2)}`;
   const student = studentInfo || invoice.students?.profiles;
   const course = courseInfo || invoice.courses;
+  const originalPrice = invoice.original_price != null ? Number(invoice.original_price) : null;
+  const salePrice = invoice.sale_price != null ? Number(invoice.sale_price) : null;
+  const hasDiscount = originalPrice != null && salePrice != null && salePrice < originalPrice;
 
   return (
     <div className="min-h-screen bg-background py-8 px-4 print:py-2 print:px-0">
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Top actions */}
         <div className="flex justify-between items-center print:hidden">
-          <Link to="/">
-            <Button variant="ghost" size="sm"><ArrowLeft className="h-4 w-4 me-2" />Home</Button>
-          </Link>
-          <Button variant="outline" size="sm" onClick={handlePrint}>
-            <Printer className="h-4 w-4 me-2" />Print
-          </Button>
+          <Link to="/"><Button variant="ghost" size="sm"><ArrowLeft className="h-4 w-4 me-2" />Home</Button></Link>
+          <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="h-4 w-4 me-2" />Print</Button>
         </div>
 
-        {/* App Branding */}
-        <div className="flex items-center gap-3 pb-2">
+        {/* App Branding - Logo only, full image */}
+        <div className="flex justify-center pb-2">
           {appLogo ? (
-            <img src={appLogo} alt={appName} className="h-10 w-10 rounded-lg object-cover" />
+            <img src={appLogo} alt={appName} className="max-h-20 w-auto object-contain" />
           ) : (
-            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <BookOpen className="h-6 w-6 text-primary" />
+            <div className="h-16 w-16 rounded-lg bg-primary/10 flex items-center justify-center">
+              <BookOpen className="h-10 w-10 text-primary" />
             </div>
           )}
-          <div>
-            <h2 className="text-lg font-bold text-foreground">{appName}</h2>
-          </div>
         </div>
 
         <Separator />
 
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <FileText className="h-6 w-6" />
-              {invoice.invoice_number}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Created: {format(new Date(invoice.created_at), 'MMM dd, yyyy')}
-            </p>
+            <h1 className="text-2xl font-bold flex items-center gap-2"><FileText className="h-6 w-6" />{invoice.invoice_number}</h1>
+            <p className="text-sm text-muted-foreground mt-1">Created: {format(new Date(invoice.created_at), 'MMM dd, yyyy')}</p>
           </div>
           <Badge variant="outline" className={sc.bg}>{sc.label}</Badge>
         </div>
@@ -187,9 +131,7 @@ const InvoiceView = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Card>
-            <CardHeader className="py-3 px-4">
-              <CardTitle className="text-sm">Student Info</CardTitle>
-            </CardHeader>
+            <CardHeader className="py-3 px-4"><CardTitle className="text-sm">Student Info</CardTitle></CardHeader>
             <CardContent className="px-4 pb-3 space-y-1">
               <p className="font-medium">{student?.full_name || '-'}</p>
               <p className="text-sm text-muted-foreground">{student?.email || '-'}</p>
@@ -197,87 +139,53 @@ const InvoiceView = () => {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="py-3 px-4">
-              <CardTitle className="text-sm">Course Details</CardTitle>
-            </CardHeader>
+            <CardHeader className="py-3 px-4"><CardTitle className="text-sm">Course Details</CardTitle></CardHeader>
             <CardContent className="px-4 pb-3 space-y-1">
               <p className="font-medium">{course?.title || '-'}</p>
-              <p className="text-sm text-muted-foreground">
-                {invoice.billing_cycle === 'yearly' ? 'Yearly subscription' : 'Monthly subscription'}
-              </p>
+              <p className="text-sm text-muted-foreground">{invoice.billing_cycle === 'yearly' ? 'Yearly subscription' : 'Monthly subscription'}</p>
             </CardContent>
           </Card>
         </div>
 
         <div className="p-6 rounded-xl border border-border bg-muted/30 text-center">
-          <p className="text-sm text-muted-foreground">Amount Due</p>
+          {hasDiscount && (
+            <p className="text-sm text-muted-foreground line-through mb-1">{isAr ? 'السعر الأصلي:' : 'Original:'} {formatAmount(originalPrice!)}</p>
+          )}
+          <p className="text-sm text-muted-foreground">{isAr ? 'المبلغ المستحق' : 'Amount Due'}</p>
           <p className="text-4xl font-bold mt-1">{formatAmount(invoice.amount)}</p>
-          <p className="text-sm text-muted-foreground mt-2">
-            Due: {invoice.due_date ? format(new Date(invoice.due_date), 'MMM dd, yyyy') : '-'}
-          </p>
+          {hasDiscount && (
+            <p className="text-sm text-primary mt-1">{isAr ? 'سعر مخفض' : 'Discounted Price'}</p>
+          )}
+          <p className="text-sm text-muted-foreground mt-2">Due: {invoice.due_date ? format(new Date(invoice.due_date), 'MMM dd, yyyy') : '-'}</p>
         </div>
 
-        {/* Payment Methods */}
         {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
           <div className="space-y-3 print:hidden">
-            <h4 className="font-medium text-sm flex items-center gap-2">
-              <CreditCard className="h-4 w-4" />
-              Available Payment Methods
-            </h4>
+            <h4 className="font-medium text-sm flex items-center gap-2"><CreditCard className="h-4 w-4" />Available Payment Methods</h4>
             {activeGateways.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {activeGateways.map((gw) => (
-                  <button
-                    key={gw.id}
-                    onClick={() => setSelectedGateway(gw.id)}
-                    className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-start ${
-                      selectedGateway === gw.id
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/30 hover:bg-muted/50'
-                    }`}
-                  >
+                  <button key={gw.id} onClick={() => setSelectedGateway(gw.id)} className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-start ${selectedGateway === gw.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30 hover:bg-muted/50'}`}>
                     <div className="h-10 w-14 flex items-center justify-center rounded-lg bg-background border border-border overflow-hidden">
-                      {logoErrors[gw.id] ? (
-                        <span className="text-xs font-bold text-muted-foreground">{gw.name}</span>
-                      ) : (
-                        <img
-                          src={gw.logo}
-                          alt={gw.name}
-                          className="h-8 w-12 object-contain"
-                          onError={() => setLogoErrors(prev => ({ ...prev, [gw.id]: true }))}
-                        />
-                      )}
+                      {logoErrors[gw.id] ? <span className="text-xs font-bold text-muted-foreground">{gw.name}</span> : <img src={gw.logo} alt={gw.name} className="h-8 w-12 object-contain" onError={() => setLogoErrors(prev => ({ ...prev, [gw.id]: true }))} />}
                     </div>
                     <span className="text-sm font-medium">{gw.name}</span>
-                    {selectedGateway === gw.id && (
-                      <Badge className="ms-auto text-[10px]">Selected</Badge>
-                    )}
+                    {selectedGateway === gw.id && <Badge className="ms-auto text-[10px]">Selected</Badge>}
                   </button>
                 ))}
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">{isAr ? 'لم يتم تفعيل أي طريقة دفع بعد' : 'No payment methods configured yet.'}</p>
             )}
-            <Button
-              className="w-full"
-              size="lg"
-              disabled={!selectedGateway}
-              onClick={() => selectedGateway && window.open(`#pay/${invoice.id}/${selectedGateway}`, '_blank')}
-            >
+            <Button className="w-full" size="lg" disabled={!selectedGateway} onClick={() => selectedGateway && window.open(`#pay/${invoice.id}/${selectedGateway}`, '_blank')}>
               <CreditCard className="h-4 w-4 me-2" />
-              {selectedGateway
-                ? `Pay Now with ${GATEWAYS.find(g => g.id === selectedGateway)?.name}`
-                : (isAr ? 'اختر طريقة الدفع' : 'Select a payment method')
-              }
+              {selectedGateway ? `Pay Now with ${GATEWAYS.find(g => g.id === selectedGateway)?.name}` : (isAr ? 'اختر طريقة الدفع' : 'Select a payment method')}
             </Button>
           </div>
         )}
 
         {invoice.notes && (
-          <div className="space-y-1">
-            <h4 className="font-medium text-sm">Notes</h4>
-            <p className="text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">{invoice.notes}</p>
-          </div>
+          <div className="space-y-1"><h4 className="font-medium text-sm">Notes</h4><p className="text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">{invoice.notes}</p></div>
         )}
 
         {(signatureImage || stampImage) && (
@@ -299,7 +207,6 @@ const InvoiceView = () => {
           </div>
         )}
 
-        {/* Brand Footer */}
         <div className="pt-4 border-t border-border text-center">
           <p className="text-xs text-muted-foreground">{appName}</p>
         </div>
