@@ -140,14 +140,25 @@ const Chats = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('chats.title')}</h1>
-        {role === 'admin' && (
-          <Button onClick={() => { setCreateOpen(true); fetchFormData(); }}>
-            <Plus className="h-4 w-4 me-2" />
-            {language === 'ar' ? 'محادثة جديدة' : 'New Chat'}
-          </Button>
-        )}
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold shrink-0">{t('chats.title')}</h1>
+        <div className="flex items-center gap-2 ms-auto">
+          <div className="relative">
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={language === 'ar' ? 'بحث في المحادثات...' : 'Search chats...'}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="ps-9 w-48 sm:w-64"
+            />
+          </div>
+          {role === 'admin' && (
+            <Button onClick={() => { setCreateOpen(true); fetchFormData(); }}>
+              <Plus className="h-4 w-4 me-2" />
+              {language === 'ar' ? 'محادثة جديدة' : 'New Chat'}
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-200px)]">
