@@ -26,6 +26,8 @@ interface Props {
   formatPrice: (n: number) => string;
   onPreview: (inv: any) => void;
   onCopyUrl: (inv: any) => void;
+  onDelete?: (inv: any) => void;
+  isAdmin?: boolean;
 }
 
 const InvoiceTable = ({ invoices, loading, isAr, formatPrice, onPreview, onCopyUrl }: Props) => {
