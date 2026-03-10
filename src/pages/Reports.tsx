@@ -22,6 +22,7 @@ const Reports = () => {
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const [students, setStudents] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
+  const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
 
   useEffect(() => {
     const fetchAll = async () => {
