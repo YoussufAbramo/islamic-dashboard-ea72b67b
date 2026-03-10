@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Eye, Copy } from 'lucide-react';
+import { Eye, Copy, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 
 const statusConfig: Record<string, { bg: string; label: string; labelAr: string }> = {
@@ -35,7 +35,7 @@ const InvoiceTable = ({ invoices, loading, isAr, formatPrice, onPreview, onCopyU
         <Table>
           <TableHeader>
             <TableRow>
-              {Array.from({ length: 7 }).map((_, i) => (
+              {Array.from({ length: 8 }).map((_, i) => (
                 <TableHead key={i}><Skeleton className="h-4 w-20" /></TableHead>
               ))}
             </TableRow>
@@ -43,7 +43,7 @@ const InvoiceTable = ({ invoices, loading, isAr, formatPrice, onPreview, onCopyU
           <TableBody>
             {Array.from({ length: 5 }).map((_, i) => (
               <TableRow key={i}>
-                {Array.from({ length: 7 }).map((_, j) => (
+                {Array.from({ length: 8 }).map((_, j) => (
                   <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
                 ))}
               </TableRow>
@@ -53,6 +53,11 @@ const InvoiceTable = ({ invoices, loading, isAr, formatPrice, onPreview, onCopyU
       </div>
     );
   }
+
+  const getInvoiceUrl = (inv: any) => {
+    const token = inv.share_token || '';
+    return `/invoice/${inv.id}?token=${token}`;
+  };
 
   // Mobile card layout
   const mobileCards = (
@@ -82,6 +87,9 @@ const InvoiceTable = ({ invoices, loading, isAr, formatPrice, onPreview, onCopyU
             <div className="flex gap-2 pt-1 border-t border-border">
               <Button variant="ghost" size="sm" className="flex-1" onClick={() => onPreview(inv)}>
                 <Eye className="h-4 w-4 me-1" />{isAr ? 'معاينة' : 'Preview'}
+              </Button>
+              <Button variant="ghost" size="sm" className="flex-1" onClick={() => window.open(getInvoiceUrl(inv), '_blank')}>
+                <ExternalLink className="h-4 w-4 me-1" />{isAr ? 'عرض' : 'View'}
               </Button>
               <Button variant="ghost" size="sm" className="flex-1" onClick={() => onCopyUrl(inv)}>
                 <Copy className="h-4 w-4 me-1" />{isAr ? 'نسخ' : 'Copy'}
@@ -139,10 +147,13 @@ const InvoiceTable = ({ invoices, loading, isAr, formatPrice, onPreview, onCopyU
                   <TableCell className="text-sm">{inv.due_date ? format(new Date(inv.due_date), 'MMM dd, yyyy') : '-'}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => onPreview(inv)}>
+                      <Button variant="ghost" size="icon" onClick={() => onPreview(inv)} title={isAr ? 'معاينة' : 'Preview'}>
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => onCopyUrl(inv)}>
+                      <Button variant="ghost" size="icon" onClick={() => window.open(getInvoiceUrl(inv), '_blank')} title={isAr ? 'عرض' : 'View'}>
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => onCopyUrl(inv)} title={isAr ? 'نسخ الرابط' : 'Copy URL'}>
                         <Copy className="h-4 w-4" />
                       </Button>
                     </div>

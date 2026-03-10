@@ -2,15 +2,14 @@ import { useEffect, useState, useMemo } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Download, FileText, Printer, ArrowUp, ArrowDown } from 'lucide-react';
+import { Download, Printer } from 'lucide-react';
 import { format } from 'date-fns';
-
-type SortOrder = 'newest' | 'oldest';
+import { subscriptionStatusLabels, subscriptionTypeLabels, getLabel } from '@/lib/statusLabels';
 
 const Reports = () => {
   const { language } = useLanguage();
@@ -22,7 +21,7 @@ const Reports = () => {
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const [students, setStudents] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
-  const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
+  const [subStatusFilter, setSubStatusFilter] = useState('all');
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -62,25 +61,22 @@ const Reports = () => {
     URL.revokeObjectURL(url);
   };
 
-  const sortedSubscriptions = useMemo(() => {
-    const sorted = [...subscriptions];
-    sorted.sort((a, b) => {
-      const da = new Date(a.created_at).getTime();
-      const db = new Date(b.created_at).getTime();
-      return sortOrder === 'newest' ? db - da : da - db;
-    });
-    return sorted;
-  }, [subscriptions, sortOrder]);
+  const subStatusCounts = {
+    all: subscriptions.length,
+    active: subscriptions.filter(s => s.status === 'active').length,
+    expired: subscriptions.filter(s => s.status === 'expired').length,
+    cancelled: subscriptions.filter(s => s.status === 'cancelled').length,
+  };
+
+  const filteredSubscriptions = useMemo(() => {
+    let result = subStatusFilter === 'all' ? subscriptions : subscriptions.filter(s => s.status === subStatusFilter);
+    result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return result;
+  }, [subscriptions, subStatusFilter]);
 
   const sortedAttendance = useMemo(() => {
-    const sorted = [...attendance];
-    sorted.sort((a, b) => {
-      const da = new Date(a.created_at).getTime();
-      const db = new Date(b.created_at).getTime();
-      return sortOrder === 'newest' ? db - da : da - db;
-    });
-    return sorted;
-  }, [attendance, sortOrder]);
+    return [...attendance].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [attendance]);
 
   const totalRevenue = subscriptions.reduce((s, sub) => s + (Number(sub.price) || 0), 0);
   const activeSubs = subscriptions.filter(s => s.status === 'active').length;
@@ -89,11 +85,9 @@ const Reports = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">{isAr ? 'التقارير والتحليلات' : 'Reports & Analytics'}</h1>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => window.print()}>
-            <Printer className="h-4 w-4 me-2" />{isAr ? 'طباعة' : 'Print'}
-          </Button>
-        </div>
+        <Button variant="outline" onClick={() => window.print()}>
+          <Printer className="h-4 w-4 me-2" />{isAr ? 'طباعة' : 'Print'}
+        </Button>
       </div>
 
       <Tabs defaultValue="subscriptions">
@@ -111,12 +105,25 @@ const Reports = () => {
             </div>
             <Button variant="outline" size="sm" onClick={() => exportCSV(
               ['Student', 'Course', 'Type', 'Status', 'Price', 'Start Date'],
-              subscriptions.map(s => [getStudentName(s.student_id), getCourseName(s.course_id), s.subscription_type, s.status, String(s.price || 0), s.start_date]),
+              filteredSubscriptions.map(s => [getStudentName(s.student_id), getCourseName(s.course_id), getLabel(subscriptionTypeLabels, s.subscription_type, isAr), getLabel(subscriptionStatusLabels, s.status, isAr), String(s.price || 0), s.start_date]),
               'subscriptions-report'
             )}>
               <Download className="h-4 w-4 me-2" />CSV
             </Button>
           </div>
+
+          {/* Status filter for subscriptions */}
+          <Tabs value={subStatusFilter} onValueChange={setSubStatusFilter}>
+            <TabsList>
+              {Object.entries(subStatusCounts).map(([key, count]) => (
+                <TabsTrigger key={key} value={key} className="text-xs gap-1.5">
+                  {key === 'all' ? (isAr ? 'الكل' : 'All') : getLabel(subscriptionStatusLabels, key, isAr)}
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 min-w-[18px]">{count}</Badge>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+
           <Card>
             <CardContent className="p-0">
               <Table>
@@ -130,12 +137,12 @@ const Reports = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {sortedSubscriptions.map(s => (
+                  {filteredSubscriptions.map(s => (
                     <TableRow key={s.id}>
                       <TableCell>{getStudentName(s.student_id)}</TableCell>
                       <TableCell>{getCourseName(s.course_id)}</TableCell>
-                      <TableCell><Badge variant="outline">{s.subscription_type}</Badge></TableCell>
-                      <TableCell><Badge variant={s.status === 'active' ? 'default' : 'secondary'}>{s.status}</Badge></TableCell>
+                      <TableCell><Badge variant="outline">{getLabel(subscriptionTypeLabels, s.subscription_type, isAr)}</Badge></TableCell>
+                      <TableCell><Badge variant={s.status === 'active' ? 'default' : 'secondary'}>{getLabel(subscriptionStatusLabels, s.status, isAr)}</Badge></TableCell>
                       <TableCell>{currency.symbol}{Number(s.price || 0).toFixed(2)}</TableCell>
                     </TableRow>
                   ))}
@@ -167,7 +174,7 @@ const Reports = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {attendance.map(a => (
+                  {sortedAttendance.map(a => (
                     <TableRow key={a.id}>
                       <TableCell>{getStudentName(a.student_id)}</TableCell>
                       <TableCell><Badge variant={a.status === 'present' ? 'default' : a.status === 'absent' ? 'destructive' : 'secondary'}>{a.status}</Badge></TableCell>
@@ -183,24 +190,9 @@ const Reports = () => {
 
         <TabsContent value="finances" className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Card>
-              <CardContent className="pt-4 text-center">
-                <p className="text-2xl font-bold">{currency.symbol}{totalRevenue.toFixed(2)}</p>
-                <p className="text-sm text-muted-foreground">{isAr ? 'إجمالي الإيرادات' : 'Total Revenue'}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4 text-center">
-                <p className="text-2xl font-bold text-primary">{currency.symbol}{(activeSubs > 0 ? totalRevenue / activeSubs : 0).toFixed(2)}</p>
-                <p className="text-sm text-muted-foreground">{isAr ? 'متوسط الاشتراك' : 'Avg Subscription'}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4 text-center">
-                <p className="text-2xl font-bold">{activeSubs}</p>
-                <p className="text-sm text-muted-foreground">{isAr ? 'اشتراكات نشطة' : 'Active Subscriptions'}</p>
-              </CardContent>
-            </Card>
+            <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold">{currency.symbol}{totalRevenue.toFixed(2)}</p><p className="text-sm text-muted-foreground">{isAr ? 'إجمالي الإيرادات' : 'Total Revenue'}</p></CardContent></Card>
+            <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold text-primary">{currency.symbol}{(activeSubs > 0 ? totalRevenue / activeSubs : 0).toFixed(2)}</p><p className="text-sm text-muted-foreground">{isAr ? 'متوسط الاشتراك' : 'Avg Subscription'}</p></CardContent></Card>
+            <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold">{activeSubs}</p><p className="text-sm text-muted-foreground">{isAr ? 'اشتراكات نشطة' : 'Active Subscriptions'}</p></CardContent></Card>
           </div>
           <Button variant="outline" size="sm" onClick={() => exportCSV(
             ['Total Revenue', 'Active Subscriptions', 'Avg Subscription'],

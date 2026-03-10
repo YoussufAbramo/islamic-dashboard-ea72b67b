@@ -14,9 +14,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Search, Eye, MessageSquare, Mail, Phone, ArrowDown, ArrowUp } from 'lucide-react';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
+import { Plus, Search, Eye, MessageSquare, Mail, Phone, ArrowDown, ArrowUp, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { ticketStatusLabels, ticketPriorityLabels, getLabel } from '@/lib/statusLabels';
 
 type SortOrder = 'newest' | 'oldest';
 
@@ -31,16 +33,19 @@ const WhatsAppIcon = () => (
 
 const Support = () => {
   const { t, language } = useLanguage();
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const isAr = language === 'ar';
+  const isAdmin = role === 'admin';
   const [tickets, setTickets] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [createOpen, setCreateOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [selected, setSelected] = useState<any>(null);
   const [resolutionNotes, setResolutionNotes] = useState('');
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '', department: 'general', priority: 'medium' });
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const fetchTickets = async () => {
     const { data } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
@@ -72,21 +77,49 @@ const Support = () => {
     fetchTickets();
   };
 
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    await supabase.from('support_tickets').delete().eq('id', deleteTarget);
+    toast.success(isAr ? 'تم حذف التذكرة' : 'Ticket deleted');
+    setDeleteTarget(null);
+    fetchTickets();
+  };
+
   const openDetail = (ticket: any) => {
     setSelected(ticket);
     setResolutionNotes(ticket.resolution_notes || '');
     setDetailOpen(true);
   };
 
+  const statusCounts = {
+    all: tickets.length,
+    open: tickets.filter(t => t.status === 'open').length,
+    in_progress: tickets.filter(t => t.status === 'in_progress').length,
+    resolved: tickets.filter(t => t.status === 'resolved').length,
+    closed: tickets.filter(t => t.status === 'closed').length,
+  };
+
+  const statusTabs = [
+    { value: 'all', label: isAr ? 'الكل' : 'All' },
+    { value: 'open', label: isAr ? 'مفتوحة' : 'Open' },
+    { value: 'in_progress', label: isAr ? 'قيد المعالجة' : 'In Progress' },
+    { value: 'resolved', label: isAr ? 'تم الحل' : 'Resolved' },
+    { value: 'closed', label: isAr ? 'مغلقة' : 'Closed' },
+  ];
+
   const filtered = useMemo(() => {
-    let result = tickets.filter((t) => t.subject.toLowerCase().includes(search.toLowerCase()) || t.name.toLowerCase().includes(search.toLowerCase()));
+    let result = tickets.filter((t) => {
+      const matchesStatus = statusFilter === 'all' || t.status === statusFilter;
+      const matchesSearch = t.subject.toLowerCase().includes(search.toLowerCase()) || t.name.toLowerCase().includes(search.toLowerCase());
+      return matchesStatus && matchesSearch;
+    });
     result.sort((a, b) => {
       const da = new Date(a.created_at).getTime();
       const db = new Date(b.created_at).getTime();
       return sortOrder === 'newest' ? db - da : da - db;
     });
     return result;
-  }, [tickets, search, sortOrder]);
+  }, [tickets, search, sortOrder, statusFilter]);
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
 
@@ -95,12 +128,7 @@ const Support = () => {
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold shrink-0">{t('support.title')}</h1>
         <div className="flex items-center gap-2 ms-auto">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')}
-            className="gap-1 h-9"
-          >
+          <Button variant="outline" size="sm" onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')} className="gap-1 h-9">
             {sortOrder === 'newest' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}
             {sortOrder === 'newest' ? (isAr ? 'الأحدث' : 'Newest') : (isAr ? 'الأقدم' : 'Oldest')}
           </Button>
@@ -153,6 +181,20 @@ const Support = () => {
         </div>
       </div>
 
+      {/* Status Filter Tabs */}
+      <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full">
+        <TabsList>
+          {statusTabs.map(tab => (
+            <TabsTrigger key={tab.value} value={tab.value} className="text-xs gap-1.5">
+              {tab.label}
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 min-w-[18px]">
+                {statusCounts[tab.value as keyof typeof statusCounts]}
+              </Badge>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -171,10 +213,13 @@ const Support = () => {
                 <TableCell className="font-medium">{ticket.subject}</TableCell>
                 <TableCell>{ticket.name}</TableCell>
                 <TableCell>{ticket.department}</TableCell>
-                <TableCell><Badge variant={priorityColors[ticket.priority] as any}>{ticket.priority}</Badge></TableCell>
-                <TableCell><Badge variant={statusColors[ticket.status] as any}>{ticket.status}</Badge></TableCell>
+                <TableCell><Badge variant={priorityColors[ticket.priority] as any}>{getLabel(ticketPriorityLabels, ticket.priority, isAr)}</Badge></TableCell>
+                <TableCell><Badge variant={statusColors[ticket.status] as any}>{getLabel(ticketStatusLabels, ticket.status, isAr)}</Badge></TableCell>
                 <TableCell>
-                  <Button variant="ghost" size="icon" className="rounded-full" onClick={() => openDetail(ticket)}><Eye className="h-4 w-4" /></Button>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" className="rounded-full" onClick={() => openDetail(ticket)}><Eye className="h-4 w-4" /></Button>
+                    {isAdmin && <Button variant="ghost" size="icon" className="rounded-full text-destructive" onClick={() => setDeleteTarget(ticket.id)}><Trash2 className="h-4 w-4" /></Button>}
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -184,7 +229,21 @@ const Support = () => {
       </div>
       <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
 
-      {/* Enhanced Detail Dialog */}
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{isAr ? 'حذف التذكرة' : 'Delete Ticket'}</AlertDialogTitle>
+            <AlertDialogDescription>{isAr ? 'هل أنت متأكد من حذف هذه التذكرة؟' : 'Are you sure you want to delete this ticket?'}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDelete}>{isAr ? 'حذف' : 'Delete'}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Detail Dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -206,7 +265,7 @@ const Support = () => {
                   <Card><CardContent className="pt-4"><Label className="text-xs text-muted-foreground">{t('students.name')}</Label><p className="font-medium">{selected.name}</p></CardContent></Card>
                   <Card><CardContent className="pt-4"><Label className="text-xs text-muted-foreground">{t('students.email')}</Label><p className="font-medium">{selected.email}</p></CardContent></Card>
                   <Card><CardContent className="pt-4"><Label className="text-xs text-muted-foreground">{t('support.department')}</Label><p className="font-medium">{selected.department}</p></CardContent></Card>
-                  <Card><CardContent className="pt-4"><Label className="text-xs text-muted-foreground">{t('support.priority')}</Label><Badge variant={priorityColors[selected.priority] as any}>{selected.priority}</Badge></CardContent></Card>
+                  <Card><CardContent className="pt-4"><Label className="text-xs text-muted-foreground">{t('support.priority')}</Label><Badge variant={priorityColors[selected.priority] as any}>{getLabel(ticketPriorityLabels, selected.priority, isAr)}</Badge></CardContent></Card>
                 </div>
                 <Card>
                   <CardContent className="pt-4">
