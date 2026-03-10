@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
       for (const t of teacherData) {
         try {
           const { data, error } = await adminClient.auth.admin.createUser({
-            email: t.email, password: 'sample123456', email_confirm: true,
+            email: t.email, password: crypto.randomUUID(), email_confirm: true,
             user_metadata: { full_name: t.name, phone: t.phone }
           })
           if (!error && data.user) {
