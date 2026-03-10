@@ -236,6 +236,8 @@ const Invoices = () => {
             formatPrice={formatPrice}
             onPreview={openPreview}
             onCopyUrl={copyInvoiceUrl}
+            onDelete={(inv) => setDeleteTarget(inv.id)}
+            isAdmin={role === 'admin'}
           />
           <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
         </>
