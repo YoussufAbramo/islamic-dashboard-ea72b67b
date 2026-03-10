@@ -37,6 +37,8 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const [appNameInput, setAppNameInput] = useState('');
   const [deleteCodeInput, setDeleteCodeInput] = useState('');
   const [understandCheck, setUnderstandCheck] = useState(false);
+  const [deleteTablesOpen, setDeleteTablesOpen] = useState(false);
+  const [deleteTablesLoading, setDeleteTablesLoading] = useState(false);
 
   const persistLog = (log: string[]) => {
     setSeedLog(log);
@@ -222,6 +224,38 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
     setUnderstandCheck(false);
   };
 
+  const handleDeleteTablesData = async () => {
+    setDeleteTablesLoading(true);
+    const log = [...seedLog];
+    const addLog = (msg: string) => {
+      log.push(`[${new Date().toLocaleTimeString()}] ${msg}`);
+      persistLog([...log]);
+    };
+    try {
+      addLog(isAr ? '🗑️ جاري حذف بيانات جداول قاعدة البيانات...' : '🗑️ Deleting database tables data...');
+      const { data, error } = await supabase.functions.invoke('manage-accounts', {
+        body: { action: 'clear_tables' },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      
+      const counts = data.counts || {};
+      Object.entries(counts).filter(([, v]) => (v as number) > 0).forEach(([table, count]) => {
+        addLog(`   🗑️ ${table}: -${count}`);
+      });
+      addLog(isAr ? `✅ تم حذف بيانات الجداول (${data.total_deleted || 0} سجل)` : `✅ Tables data deleted (${data.total_deleted || 0} records)`);
+
+      setEraseSummary({ counts, total: data.total_deleted || 0 });
+      setDeleteTablesOpen(false);
+      toast.success(isAr ? `تم حذف ${data.total_deleted} سجل` : `Deleted ${data.total_deleted} records`);
+    } catch (err: any) {
+      addLog(`❌ ${err.message || 'Failed to delete tables data'}`);
+      toast.error(err.message || 'Failed to delete tables data');
+    } finally {
+      setDeleteTablesLoading(false);
+    }
+  };
+
   const canDelete = backupDownloaded && appNameInput === appName && deleteCodeInput === 'ERASE NOW';
 
   return (
@@ -277,6 +311,27 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
               <Button variant="outline" size="sm" onClick={() => setConfirmEraseSeed(true)} disabled={eraseSeedLoading}>
                 {eraseSeedLoading && <Loader2 className="h-4 w-4 me-1 animate-spin" />}
                 {isAr ? 'مسح البيانات التجريبية' : 'Erase Sample Data'}
+              </Button>
+            </div>
+          </div>
+
+          {/* Delete Database Tables Data */}
+          <div className="flex items-start gap-4 p-4 rounded-lg border border-destructive/30 bg-destructive/5">
+            <Database className="h-8 w-8 text-destructive shrink-0 mt-0.5" />
+            <div className="flex-1 space-y-2">
+              <h4 className="font-medium text-destructive">{isAr ? 'حذف بيانات جداول قاعدة البيانات' : 'Delete Database Tables Data'}</h4>
+              <p className="text-sm text-muted-foreground">
+                {isAr
+                  ? 'حذف جميع الإدخالات في جميع جداول قاعدة البيانات لإعادة ضبطها. لن يتم حذف حسابات المستخدمين.'
+                  : 'Delete all entries in all database tables to reset the database. User accounts will NOT be deleted.'}
+              </p>
+              <p className="text-xs text-muted-foreground italic">
+                {isAr
+                  ? '⚠️ يُستخدم عادةً بعد الاختبار وإضافة بيانات تجريبية أو وهمية فقط.'
+                  : '⚠️ Usually only used after testing and adding fake or sample data.'}
+              </p>
+              <Button variant="destructive" size="sm" onClick={() => setDeleteTablesOpen(true)}>
+                {isAr ? 'حذف بيانات الجداول' : 'Delete Tables Data'}
               </Button>
             </div>
           </div>
@@ -523,6 +578,33 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* Delete Tables Data Confirmation */}
+      <AlertDialog open={deleteTablesOpen} onOpenChange={setDeleteTablesOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <Database className="h-5 w-5" />
+              {isAr ? 'حذف بيانات جداول قاعدة البيانات' : 'Delete Database Tables Data'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {isAr
+                ? 'سيتم حذف جميع الإدخالات في جميع الجداول. لن يتم حذف حسابات المستخدمين. هذا الإجراء يُستخدم عادةً بعد الاختبار فقط.'
+                : 'This will delete all entries in all database tables. User accounts will NOT be deleted. This is typically used after testing with fake/sample data only.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleDeleteTablesData}
+              disabled={deleteTablesLoading}
+            >
+              {deleteTablesLoading && <Loader2 className="h-4 w-4 me-1 animate-spin" />}
+              {isAr ? 'نعم، حذف بيانات الجداول' : 'Yes, Delete Tables Data'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {/* Erase Summary Report */}
       <Dialog open={!!eraseSummary} onOpenChange={(open) => !open && setEraseSummary(null)}>
         <DialogContent className="max-w-md">

@@ -12,11 +12,14 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Award, Plus, Check, Search, ArrowUp, ArrowDown } from 'lucide-react';
+import { Award, Plus, Check, Search, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { certificateStatusLabels, getLabel } from '@/lib/statusLabels';
 
 type CertDesign = 'classic' | 'modern' | 'elegant';
 
@@ -33,6 +36,8 @@ const Certificates = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const fetchData = async () => {
     const [certsRes, profilesRes, coursesRes] = await Promise.all([
@@ -58,6 +63,14 @@ const Certificates = () => {
     toast.success(isAr ? 'تم إنشاء الشهادة' : 'Certificate created');
     setDialogOpen(false);
     setForm({ recipient_id: '', recipient_type: 'student', title: '', title_ar: '', description: '', course_id: '', design: 'classic' });
+    fetchData();
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    await supabase.from('certificates').delete().eq('id', deleteTarget);
+    toast.success(isAr ? 'تم حذف الشهادة' : 'Certificate deleted');
+    setDeleteTarget(null);
     fetchData();
   };
 
@@ -124,8 +137,16 @@ const Certificates = () => {
     { value: 'elegant', label: 'Elegant', labelAr: 'أنيق', color: '#7c3aed' },
   ];
 
+  const statusCounts = {
+    all: certs.length,
+    active: certs.filter(c => c.status === 'active').length,
+    revoked: certs.filter(c => c.status === 'revoked').length,
+  };
+
   const filteredCerts = useMemo(() => {
     let result = certs.filter(cert => {
+      const matchesStatus = statusFilter === 'all' || cert.status === statusFilter;
+      if (!matchesStatus) return false;
       if (!searchQuery) return true;
       const q = searchQuery.toLowerCase();
       const title = (isAr && cert.title_ar ? cert.title_ar : cert.title).toLowerCase();
@@ -140,11 +161,13 @@ const Certificates = () => {
       return sortOrder === 'newest' ? db - da : da - db;
     });
     return result;
-  }, [certs, searchQuery, sortOrder, isAr]);
+  }, [certs, searchQuery, sortOrder, isAr, statusFilter]);
 
   const [form, setForm] = useState({ recipient_id: '', recipient_type: 'student', title: '', title_ar: '', description: '', course_id: '', design: 'classic' as CertDesign });
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filteredCerts);
+
+  const statusColors: Record<string, string> = { active: 'default', revoked: 'destructive' };
 
   return (
     <div className="space-y-6">
@@ -228,6 +251,18 @@ const Certificates = () => {
         </div>
       </div>
 
+      {/* Status Filter Tabs */}
+      <Tabs value={statusFilter} onValueChange={setStatusFilter}>
+        <TabsList>
+          {Object.entries(statusCounts).map(([key, count]) => (
+            <TabsTrigger key={key} value={key} className="text-xs gap-1.5">
+              {key === 'all' ? (isAr ? 'الكل' : 'All') : getLabel(certificateStatusLabels, key, isAr)}
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 min-w-[18px]">{count}</Badge>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+
       {filteredCerts.length === 0 ? (
         <Card><CardContent className="pt-6 text-center text-muted-foreground">
           {searchQuery
@@ -244,6 +279,7 @@ const Certificates = () => {
                   <TableHead>{isAr ? 'العنوان' : 'Title'}</TableHead>
                   <TableHead>{isAr ? 'المستلم' : 'Recipient'}</TableHead>
                   <TableHead>{isAr ? 'الدورة' : 'Course'}</TableHead>
+                  <TableHead>{isAr ? 'الحالة' : 'Status'}</TableHead>
                   <TableHead>{isAr ? 'التاريخ' : 'Date'}</TableHead>
                   <TableHead>{isAr ? 'إجراءات' : 'Actions'}</TableHead>
                 </TableRow>
@@ -255,6 +291,7 @@ const Certificates = () => {
                     <TableCell>{isAr && cert.title_ar ? cert.title_ar : cert.title}</TableCell>
                     <TableCell>{getProfileName(cert.recipient_id)}</TableCell>
                     <TableCell>{cert.course_id ? getCourseName(cert.course_id) : '—'}</TableCell>
+                    <TableCell><Badge variant={statusColors[cert.status] as any}>{getLabel(certificateStatusLabels, cert.status, isAr)}</Badge></TableCell>
                     <TableCell>{format(new Date(cert.issued_at), 'PP')}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">
@@ -263,6 +300,11 @@ const Certificates = () => {
                             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: d.color }} />
                           </Button>
                         ))}
+                        {isAdmin && (
+                          <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(cert.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -273,6 +315,20 @@ const Certificates = () => {
         </Card>
       )}
       <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{isAr ? 'حذف الشهادة' : 'Delete Certificate'}</AlertDialogTitle>
+            <AlertDialogDescription>{isAr ? 'هل أنت متأكد من حذف هذه الشهادة؟' : 'Are you sure you want to delete this certificate?'}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDelete}>{isAr ? 'حذف' : 'Delete'}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

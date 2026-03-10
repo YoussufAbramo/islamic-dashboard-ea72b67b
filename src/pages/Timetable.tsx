@@ -1,52 +1,81 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { format, isSameDay, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addMonths, addWeeks, eachDayOfInterval, isToday, isSameMonth } from 'date-fns';
-import { List, CalendarDays, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { List, CalendarDays, ChevronLeft, ChevronRight, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
 import { usePagination } from '@/hooks/use-pagination';
 import PaginationControls from '@/components/PaginationControls';
+import { timetableStatusLabels, getLabel } from '@/lib/statusLabels';
+import { toast } from 'sonner';
 
 type SortOrder = 'newest' | 'oldest';
 
 const Timetable = () => {
   const { t, language } = useLanguage();
+  const { role } = useAuth();
   const isAr = language === 'ar';
+  const isAdmin = role === 'admin';
   const [entries, setEntries] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [calendarMode, setCalendarMode] = useState<'monthly' | 'weekly'>('monthly');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchEntries = async () => {
-      const { data } = await supabase
-        .from('timetable_entries')
-        .select('*, courses:course_id(title), students:student_id(user_id, profiles:students_user_id_profiles_fkey(full_name)), teachers_rel:teacher_id(user_id, profiles:teachers_user_id_profiles_fkey(full_name))')
-        .order('scheduled_at', { ascending: true });
-      setEntries(data || []);
-    };
+  const fetchEntries = async () => {
+    const { data } = await supabase
+      .from('timetable_entries')
+      .select('*, courses:course_id(title), students:student_id(user_id, profiles:students_user_id_profiles_fkey(full_name)), teachers_rel:teacher_id(user_id, profiles:teachers_user_id_profiles_fkey(full_name))')
+      .order('scheduled_at', { ascending: true });
+    setEntries(data || []);
+  };
+
+  useEffect(() => { fetchEntries(); }, []);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    await supabase.from('timetable_entries').delete().eq('id', deleteTarget);
+    toast.success(isAr ? 'تم حذف الموعد' : 'Entry deleted');
+    setDeleteTarget(null);
     fetchEntries();
-  }, []);
+  };
 
-  const sortedEntries = useMemo(() => {
-    const sorted = [...entries];
-    sorted.sort((a, b) => {
+  const statusCounts = {
+    all: entries.length,
+    scheduled: entries.filter(e => e.status === 'scheduled').length,
+    completed: entries.filter(e => e.status === 'completed').length,
+    cancelled: entries.filter(e => e.status === 'cancelled').length,
+  };
+
+  const statusTabs = [
+    { value: 'all', label: isAr ? 'الكل' : 'All' },
+    { value: 'scheduled', label: getLabel(timetableStatusLabels, 'scheduled', isAr) },
+    { value: 'completed', label: getLabel(timetableStatusLabels, 'completed', isAr) },
+    { value: 'cancelled', label: getLabel(timetableStatusLabels, 'cancelled', isAr) },
+  ];
+
+  const filteredEntries = useMemo(() => {
+    let result = entries.filter(e => statusFilter === 'all' || e.status === statusFilter);
+    result.sort((a, b) => {
       const da = new Date(a.scheduled_at).getTime();
       const db = new Date(b.scheduled_at).getTime();
       return sortOrder === 'newest' ? db - da : da - db;
     });
-    return sorted;
-  }, [entries, sortOrder]);
+    return result;
+  }, [entries, sortOrder, statusFilter]);
 
   const now = new Date().toISOString();
-  const upcoming = sortedEntries.filter((e) => e.scheduled_at >= now);
-  const past = sortedEntries.filter((e) => e.scheduled_at < now);
+  const upcoming = filteredEntries.filter((e) => e.scheduled_at >= now);
+  const past = filteredEntries.filter((e) => e.scheduled_at < now);
 
   const statusColors: Record<string, string> = { scheduled: 'default', completed: 'secondary', cancelled: 'destructive' };
 
@@ -77,6 +106,7 @@ const Timetable = () => {
             <TableHead>{t('timetable.student')}</TableHead>
             <TableHead>{t('timetable.duration')}</TableHead>
             <TableHead>{t('timetable.status')}</TableHead>
+            {isAdmin && <TableHead>{t('common.actions')}</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -88,10 +118,17 @@ const Timetable = () => {
               <TableCell>{entry.teachers_rel?.profiles?.full_name || '-'}</TableCell>
               <TableCell>{entry.students?.profiles?.full_name || '-'}</TableCell>
               <TableCell>{entry.duration_minutes} {t('common.minutes')}</TableCell>
-              <TableCell><Badge variant={statusColors[entry.status] as any}>{t(`timetable.${entry.status}`)}</Badge></TableCell>
+              <TableCell><Badge variant={statusColors[entry.status] as any}>{getLabel(timetableStatusLabels, entry.status, isAr)}</Badge></TableCell>
+              {isAdmin && (
+                <TableCell>
+                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => setDeleteTarget(entry.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+              )}
             </TableRow>
           ))}
-          {items.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">{t('common.noData')}</TableCell></TableRow>}
+          {items.length === 0 && <TableRow><TableCell colSpan={isAdmin ? 8 : 7} className="text-center text-muted-foreground">{t('common.noData')}</TableCell></TableRow>}
         </TableBody>
       </Table>
     </div>
@@ -146,6 +183,20 @@ const Timetable = () => {
         </div>
       </div>
 
+      {/* Status Filter Tabs */}
+      <Tabs value={statusFilter} onValueChange={setStatusFilter}>
+        <TabsList>
+          {statusTabs.map(tab => (
+            <TabsTrigger key={tab.value} value={tab.value} className="text-xs gap-1.5">
+              {tab.label}
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 min-w-[18px]">
+                {statusCounts[tab.value as keyof typeof statusCounts]}
+              </Badge>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+
       {viewMode === 'list' ? (
         <Tabs defaultValue="upcoming">
           <TabsList>
@@ -196,13 +247,11 @@ const Timetable = () => {
             {/* Calendar Grid */}
             <Card className="lg:col-span-2">
               <CardContent className="pt-4">
-                {/* Day headers */}
                 <div className="grid grid-cols-7 gap-1 mb-1">
                   {weekDays.map(d => (
                     <div key={d} className="text-center text-xs font-medium text-muted-foreground py-2">{d}</div>
                   ))}
                 </div>
-                {/* Day cells */}
                 <div className="grid grid-cols-7 gap-1">
                   {calendarDays.map((day) => {
                     const count = getLessonCountForDay(day);
@@ -224,7 +273,7 @@ const Timetable = () => {
                       >
                         <span className="text-sm font-medium">{format(day, 'd')}</span>
                         {count > 0 && (
-                          <div className={`flex gap-0.5 mt-1 ${isSelected ? '' : ''}`}>
+                          <div className="flex gap-0.5 mt-1">
                             {Array.from({ length: Math.min(count, 3) }).map((_, i) => (
                               <div
                                 key={i}
@@ -267,7 +316,7 @@ const Timetable = () => {
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-sm font-semibold">{format(new Date(entry.scheduled_at), 'HH:mm')}</span>
                           <Badge variant={statusColors[entry.status] as any} className="text-[10px]">
-                            {t(`timetable.${entry.status}`)}
+                            {getLabel(timetableStatusLabels, entry.status, isAr)}
                           </Badge>
                         </div>
                         <p className="text-xs font-medium">{entry.courses?.title || '-'}</p>
@@ -284,6 +333,20 @@ const Timetable = () => {
           </div>
         </div>
       )}
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{isAr ? 'حذف الموعد' : 'Delete Entry'}</AlertDialogTitle>
+            <AlertDialogDescription>{isAr ? 'هل أنت متأكد من حذف هذا الموعد؟' : 'Are you sure you want to delete this entry?'}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDelete}>{isAr ? 'حذف' : 'Delete'}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

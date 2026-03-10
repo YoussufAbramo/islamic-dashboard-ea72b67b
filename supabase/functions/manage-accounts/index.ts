@@ -363,6 +363,45 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ success: true, deleted_users: deletedUsers, preserved_admins: adminIds.length, counts, total_deleted: totalDeleted, errors: errors.length > 0 ? errors : undefined }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
+    // ==================== CLEAR TABLES (reset all table data, keep auth users) ====================
+    if (action === 'clear_tables') {
+      const errors: string[] = []
+      const counts: Record<string, number> = {}
+
+      const countAndDelete = async (table: string) => {
+        const countQuery = await adminClient.from(table).select('id', { count: 'exact', head: true })
+        const before = countQuery.count || 0
+        const matchAll = '00000000-0000-0000-0000-000000000000'
+        const { error } = await adminClient.from(table).delete().neq('id', matchAll)
+        if (error) errors.push(`${table}: ${error.message}`)
+        const afterQuery = await adminClient.from(table).select('id', { count: 'exact', head: true })
+        const after = afterQuery.count || 0
+        counts[table] = before - after
+      }
+
+      // Delete in FK-safe order
+      await countAndDelete('chat_messages')
+      await countAndDelete('attendance')
+      await countAndDelete('student_progress')
+      await countAndDelete('timetable_entries')
+      await countAndDelete('chats')
+      await countAndDelete('certificates')
+      await countAndDelete('invoices')
+      await countAndDelete('subscriptions')
+      await countAndDelete('lessons')
+      await countAndDelete('course_sections')
+      await countAndDelete('courses')
+      await countAndDelete('notifications')
+      await countAndDelete('announcements')
+      await countAndDelete('support_tickets')
+      await countAndDelete('landing_content')
+      await countAndDelete('pricing_packages')
+
+      const totalDeleted = Object.values(counts).reduce((sum, c) => sum + c, 0)
+
+      return new Response(JSON.stringify({ success: true, counts, total_deleted: totalDeleted, errors: errors.length > 0 ? errors : undefined }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
     // ==================== CLEAR SEED (sample data only) ====================
     if (action === 'clear_seed') {
       const sampleEmails = [
