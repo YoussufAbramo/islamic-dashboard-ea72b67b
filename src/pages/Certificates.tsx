@@ -24,10 +24,6 @@ import { format } from 'date-fns';
 import { certificateStatusLabels, getLabel } from '@/lib/statusLabels';
 import { exportCertificatePdf } from '@/lib/certificatePdf';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
-import { format } from 'date-fns';
-import { certificateStatusLabels, getLabel } from '@/lib/statusLabels';
-import { exportCertificatePdf } from '@/lib/certificatePdf';
 
 type CertDesign = 'classic' | 'modern' | 'elegant';
 
