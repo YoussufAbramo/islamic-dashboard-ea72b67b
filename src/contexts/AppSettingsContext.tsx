@@ -215,6 +215,8 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       appName: saved.appName, setAppName,
       appDescription: saved.appDescription, setAppDescription,
       appLogo: saved.appLogo, setAppLogo,
+      signatureImage: saved.signatureImage, setSignatureImage,
+      stampImage: saved.stampImage, setStampImage,
       ltrFont: saved.ltrFont, setLtrFont,
       rtlFont: saved.rtlFont, setRtlFont,
       buttonShape: saved.buttonShape, setButtonShape,
