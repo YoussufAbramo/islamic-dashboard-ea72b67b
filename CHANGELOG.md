@@ -2,6 +2,26 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [3.1.0] - 2026-03-10
+
+### Added
+- Certificate grid view with mini certificate preview cards and enhanced dropdown action menus
+- Certificate preview dialog for viewing certificate details before printing/exporting
+- Schedule picker component: select weekly days and lesson time when creating subscriptions
+- Schedule picker integrated into both Subscription creation and Calculator flows
+- Multi-member group chat: `chat_members` join table supporting multiple students and teachers per group
+- Group chat creation now allows selecting multiple students and teachers via toggle buttons
+- Group member management dialog with add/remove capabilities per member
+- Skeleton loading states for all major data pages (Certificates, Subscriptions, Chats)
+- `schedule_days` and `schedule_time` columns added to subscriptions table
+- Subscription detail view now shows schedule information when available
+
+### Changed
+- Certificate action buttons consolidated into a clean dropdown menu (Print/Export by design, Delete)
+- Group chat creation no longer requires a linked subscription (made optional)
+- Chat list marks messages as read when entering a chat
+- Version bumped to 3.1.0
+
 ## [3.0.0] - 2026-03-10
 
 ### Added

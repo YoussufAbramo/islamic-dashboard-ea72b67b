@@ -165,6 +165,38 @@ export type Database = {
           },
         ]
       }
+      chat_members: {
+        Row: {
+          chat_id: string
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          chat_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          chat_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_members_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           chat_id: string
@@ -725,6 +757,8 @@ export type Database = {
           lesson_duration: number | null
           price: number | null
           renewal_date: string | null
+          schedule_days: string[] | null
+          schedule_time: string | null
           start_date: string
           status: string
           student_id: string
@@ -740,6 +774,8 @@ export type Database = {
           lesson_duration?: number | null
           price?: number | null
           renewal_date?: string | null
+          schedule_days?: string[] | null
+          schedule_time?: string | null
           start_date?: string
           status?: string
           student_id: string
@@ -755,6 +791,8 @@ export type Database = {
           lesson_duration?: number | null
           price?: number | null
           renewal_date?: string | null
+          schedule_days?: string[] | null
+          schedule_time?: string | null
           start_date?: string
           status?: string
           student_id?: string

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calculator as CalcIcon, DollarSign, Clock, CalendarDays, TrendingUp, Plus, Check, ChevronsUpDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import SchedulePicker from '@/components/SchedulePicker';
 
 const Calculator = () => {
   const { language } = useLanguage();
@@ -32,7 +33,7 @@ const Calculator = () => {
   const [students, setStudents] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [teachers, setTeachers] = useState<any[]>([]);
-  const [subForm, setSubForm] = useState({ student_id: '', course_id: '', teacher_id: '' });
+  const [subForm, setSubForm] = useState({ student_id: '', course_id: '', teacher_id: '', schedule_days: [] as string[], schedule_time: '' });
   const [studentOpen, setStudentOpen] = useState(false);
   const [courseOpen, setCourseOpen] = useState(false);
   const [teacherOpen, setTeacherOpen] = useState(false);
@@ -96,12 +97,14 @@ const Calculator = () => {
       lesson_duration: parseInt(form.lesson_duration) || 60,
       price: parseFloat(form.total_price) || 0,
       status: 'active',
+      schedule_days: subForm.schedule_days,
+      schedule_time: subForm.schedule_time || null,
     });
     setCreating(false);
     if (error) { toast.error(error.message); return; }
     toast.success(isAr ? 'تم إنشاء الاشتراك بنجاح' : 'Subscription created successfully');
     setCreateSubOpen(false);
-    setSubForm({ student_id: '', course_id: '', teacher_id: '' });
+    setSubForm({ student_id: '', course_id: '', teacher_id: '', schedule_days: [], schedule_time: '' });
   };
 
   const perLesson = totalLessons > 0 && parseFloat(form.total_price) > 0
@@ -241,7 +244,7 @@ const Calculator = () => {
 
       {/* Create Subscription Dialog */}
       <Dialog open={createSubOpen} onOpenChange={setCreateSubOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{isAr ? 'إنشاء اشتراك من الحاسبة' : 'Create Subscription from Calculator'}</DialogTitle>
           </DialogHeader>
@@ -302,6 +305,16 @@ const Calculator = () => {
                   </CommandGroup></CommandList></Command>
                 </PopoverContent>
               </Popover>
+            </div>
+
+            {/* Schedule Picker */}
+            <div className="border-t pt-3">
+              <SchedulePicker
+                selectedDays={subForm.schedule_days}
+                onDaysChange={(days) => setSubForm(f => ({ ...f, schedule_days: days }))}
+                time={subForm.schedule_time}
+                onTimeChange={(time) => setSubForm(f => ({ ...f, schedule_time: time }))}
+              />
             </div>
           </div>
           <DialogFooter>

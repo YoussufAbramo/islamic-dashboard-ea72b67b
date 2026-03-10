@@ -13,10 +13,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, Ban, CheckCircle, Trash2, Plus, Search, ArrowDown, ArrowUp, Users } from 'lucide-react';
+import { Send, Ban, CheckCircle, Trash2, Plus, Search, ArrowDown, ArrowUp, Users, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import islamicBg from '@/assets/islamic-bg.jpg';
+import { ChatSkeleton } from '@/components/PageSkeleton';
 
 type SortOrder = 'newest' | 'oldest';
 
@@ -30,21 +31,27 @@ const Chats = () => {
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
+  const [loading, setLoading] = useState(true);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [chatType, setChatType] = useState<'direct' | 'group'>('direct');
   const [studentsList, setStudentsList] = useState<any[]>([]);
   const [teachersList, setTeachersList] = useState<any[]>([]);
   const [subscriptionsList, setSubscriptionsList] = useState<any[]>([]);
-  const [createForm, setCreateForm] = useState({ student_id: '', teacher_id: '', name: '', subscription_id: '' });
+  const [createForm, setCreateForm] = useState({ student_id: '', teacher_id: '', name: '', subscription_id: '', group_students: [] as string[], group_teachers: [] as string[] });
   const [createLoading, setCreateLoading] = useState(false);
 
+  // Group members state
+  const [groupMembers, setGroupMembers] = useState<any[]>([]);
+
   const fetchChats = async () => {
+    setLoading(true);
     const { data } = await supabase
       .from('chats')
       .select('*, teachers:teacher_id(user_id, profiles:teachers_user_id_profiles_fkey(full_name)), students:student_id(user_id, profiles:students_user_id_profiles_fkey(full_name))')
       .order('created_at', { ascending: false });
     setChats(data || []);
+    setLoading(false);
   };
 
   const fetchMessages = async (chatId: string) => {
@@ -56,10 +63,18 @@ const Chats = () => {
     setMessages(data || []);
   };
 
+  const fetchGroupMembers = async (chatId: string) => {
+    const { data } = await supabase
+      .from('chat_members')
+      .select('*, profiles:user_id(full_name)')
+      .eq('chat_id', chatId);
+    setGroupMembers(data || []);
+  };
+
   const fetchFormData = async () => {
     const [s, te, subs] = await Promise.all([
-      supabase.from('students').select('id, profiles:students_user_id_profiles_fkey(full_name)'),
-      supabase.from('teachers').select('id, profiles:teachers_user_id_profiles_fkey(full_name)'),
+      supabase.from('students').select('id, user_id, profiles:students_user_id_profiles_fkey(full_name)'),
+      supabase.from('teachers').select('id, user_id, profiles:teachers_user_id_profiles_fkey(full_name)'),
       supabase.from('subscriptions').select('id, courses:course_id(title), students:student_id(user_id, profiles:students_user_id_profiles_fkey(full_name))').eq('status', 'active'),
     ]);
     setStudentsList(s.data || []);
@@ -72,7 +87,10 @@ const Chats = () => {
   useEffect(() => {
     if (selectedChat) {
       fetchMessages(selectedChat.id);
+      if (selectedChat.is_group) fetchGroupMembers(selectedChat.id);
       const interval = setInterval(() => fetchMessages(selectedChat.id), 5000);
+      // Mark chats as read
+      localStorage.setItem('chat_last_check', new Date().toISOString());
       return () => clearInterval(interval);
     }
   }, [selectedChat]);
@@ -102,6 +120,23 @@ const Chats = () => {
     toast.success(newStatus ? t('chats.suspended') : t('chats.unsuspend'));
   };
 
+  const addGroupMember = async (userId: string, memberRole: string) => {
+    const { error } = await supabase.from('chat_members').insert({
+      chat_id: selectedChat.id,
+      user_id: userId,
+      role: memberRole,
+    });
+    if (error) { toast.error(error.message); return; }
+    toast.success(isAr ? 'تمت إضافة العضو' : 'Member added');
+    fetchGroupMembers(selectedChat.id);
+  };
+
+  const removeGroupMember = async (memberId: string) => {
+    await supabase.from('chat_members').delete().eq('id', memberId);
+    toast.success(isAr ? 'تمت إزالة العضو' : 'Member removed');
+    fetchGroupMembers(selectedChat.id);
+  };
+
   const handleCreateChat = async () => {
     if (chatType === 'direct') {
       if (!createForm.student_id && !createForm.teacher_id) {
@@ -109,8 +144,8 @@ const Chats = () => {
         return;
       }
     } else {
-      if (!createForm.name || !createForm.subscription_id) {
-        toast.error(isAr ? 'يرجى إدخال اسم المجموعة واختيار الاشتراك' : 'Please enter group name and select subscription');
+      if (!createForm.name) {
+        toast.error(isAr ? 'يرجى إدخال اسم المجموعة' : 'Please enter group name');
         return;
       }
     }
@@ -119,21 +154,39 @@ const Chats = () => {
     const insertData: any = {
       is_group: chatType === 'group',
       name: chatType === 'group' ? createForm.name : null,
-      subscription_id: chatType === 'group' ? createForm.subscription_id : null,
-      student_id: createForm.student_id || null,
-      teacher_id: createForm.teacher_id || null,
+      subscription_id: chatType === 'group' && createForm.subscription_id ? createForm.subscription_id : null,
+      student_id: chatType === 'direct' ? (createForm.student_id || null) : null,
+      teacher_id: chatType === 'direct' ? (createForm.teacher_id || null) : null,
     };
 
-    const { error } = await supabase.from('chats').insert(insertData);
-    setCreateLoading(false);
+    const { data: newChat, error } = await supabase.from('chats').insert(insertData).select().single();
     if (error) {
       toast.error(error.message);
-    } else {
-      toast.success(isAr ? 'تم إنشاء المحادثة' : 'Chat created');
-      setCreateOpen(false);
-      setCreateForm({ student_id: '', teacher_id: '', name: '', subscription_id: '' });
-      fetchChats();
+      setCreateLoading(false);
+      return;
     }
+
+    // For group chats, add selected members to chat_members
+    if (chatType === 'group' && newChat) {
+      const members: { chat_id: string; user_id: string; role: string }[] = [];
+      createForm.group_students.forEach(sid => {
+        const student = studentsList.find(s => s.id === sid);
+        if (student) members.push({ chat_id: newChat.id, user_id: student.user_id, role: 'student' });
+      });
+      createForm.group_teachers.forEach(tid => {
+        const teacher = teachersList.find(t => t.id === tid);
+        if (teacher) members.push({ chat_id: newChat.id, user_id: teacher.user_id, role: 'teacher' });
+      });
+      if (members.length > 0) {
+        await supabase.from('chat_members').insert(members);
+      }
+    }
+
+    setCreateLoading(false);
+    toast.success(isAr ? 'تم إنشاء المحادثة' : 'Chat created');
+    setCreateOpen(false);
+    setCreateForm({ student_id: '', teacher_id: '', name: '', subscription_id: '', group_students: [], group_teachers: [] });
+    fetchChats();
   };
 
   const getChatLabel = (chat: any) => {
@@ -158,28 +211,23 @@ const Chats = () => {
 
   const { currentPage, totalPages, paginatedItems: paginatedChats, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filteredChats);
 
+  const toggleMultiSelect = (arr: string[], value: string) =>
+    arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value];
+
+  if (loading) return <ChatSkeleton />;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold shrink-0">{t('chats.title')}</h1>
         <div className="flex items-center gap-2 ms-auto">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')}
-            className="gap-1 h-9"
-          >
+          <Button variant="outline" size="sm" onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')} className="gap-1 h-9">
             {sortOrder === 'newest' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}
             {sortOrder === 'newest' ? (isAr ? 'الأحدث' : 'Newest') : (isAr ? 'الأقدم' : 'Oldest')}
           </Button>
           <div className="relative">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={isAr ? 'بحث في المحادثات...' : 'Search chats...'}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="ps-9 w-48 sm:w-64 h-9"
-            />
+            <Input placeholder={isAr ? 'بحث في المحادثات...' : 'Search chats...'} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="ps-9 w-48 sm:w-64 h-9" />
           </div>
           {role === 'admin' && (
             <Button size="sm" className="h-9" onClick={() => { setCreateOpen(true); fetchFormData(); }}>
@@ -198,11 +246,7 @@ const Chats = () => {
           <CardContent className="p-0">
             <ScrollArea className="h-[calc(100vh-320px)]">
               {paginatedChats.map((chat) => (
-                <div
-                  key={chat.id}
-                  className={`p-3 border-b cursor-pointer hover:bg-muted/50 transition-colors ${selectedChat?.id === chat.id ? 'bg-muted' : ''}`}
-                  onClick={() => setSelectedChat(chat)}
-                >
+                <div key={chat.id} className={`p-3 border-b cursor-pointer hover:bg-muted/50 transition-colors ${selectedChat?.id === chat.id ? 'bg-muted' : ''}`} onClick={() => setSelectedChat(chat)}>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium text-sm">{getChatLabel(chat)}</p>
@@ -235,14 +279,16 @@ const Chats = () => {
                   <div>
                     <CardTitle className="text-sm">{getChatLabel(selectedChat)}</CardTitle>
                     <p className="text-[10px] text-muted-foreground">
-                      {selectedChat.is_group ? (isAr ? 'محادثة جماعية' : 'Group Chat') : (isAr ? 'محادثة مباشرة' : 'Direct Chat')}
+                      {selectedChat.is_group
+                        ? `${isAr ? 'مجموعة' : 'Group'} • ${groupMembers.length} ${isAr ? 'عضو' : 'members'}`
+                        : (isAr ? 'محادثة مباشرة' : 'Direct Chat')}
                     </p>
                   </div>
                   {selectedChat.is_suspended && <Badge variant="destructive" className="text-xs">{t('chats.suspended')}</Badge>}
                 </div>
                 <div className="flex items-center gap-1">
                   {selectedChat.is_group && (
-                    <Dialog onOpenChange={(open) => { if (open) fetchFormData(); }}>
+                    <Dialog onOpenChange={(open) => { if (open) { fetchFormData(); fetchGroupMembers(selectedChat.id); } }}>
                       <DialogTrigger asChild>
                         <Button variant="ghost" size="sm" className="gap-1 text-xs">
                           <Users className="h-3 w-3" />
@@ -252,45 +298,38 @@ const Chats = () => {
                       <DialogContent className="max-w-sm">
                         <DialogHeader><DialogTitle>{isAr ? 'أعضاء المجموعة' : 'Group Members'}</DialogTitle></DialogHeader>
                         <div className="space-y-3">
-                          {/* Current Members */}
+                          {/* Current Members from chat_members table */}
                           <div className="space-y-2">
-                            {selectedChat.teachers?.profiles?.full_name && (
-                              <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/50">
+                            {groupMembers.map(member => (
+                              <div key={member.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/50">
                                 <div className="flex items-center gap-2">
-                                  <Avatar className="h-7 w-7"><AvatarFallback className="text-xs bg-primary/10 text-primary">{selectedChat.teachers.profiles.full_name.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
-                                  <div><p className="text-sm font-medium">{selectedChat.teachers.profiles.full_name}</p><p className="text-[10px] text-muted-foreground">{isAr ? 'معلم' : 'Teacher'}</p></div>
+                                  <Avatar className="h-7 w-7"><AvatarFallback className="text-xs bg-primary/10 text-primary">{(member.profiles?.full_name || '?').charAt(0).toUpperCase()}</AvatarFallback></Avatar>
+                                  <div>
+                                    <p className="text-sm font-medium">{member.profiles?.full_name || member.user_id}</p>
+                                    <p className="text-[10px] text-muted-foreground">{member.role === 'teacher' ? (isAr ? 'معلم' : 'Teacher') : (isAr ? 'طالب' : 'Student')}</p>
+                                  </div>
                                 </div>
                                 {role === 'admin' && (
-                                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={async () => {
-                                    await supabase.from('chats').update({ teacher_id: null }).eq('id', selectedChat.id);
-                                    setSelectedChat({ ...selectedChat, teacher_id: null, teachers: null });
-                                    fetchChats();
-                                    toast.success(isAr ? 'تمت إزالة المعلم' : 'Teacher removed');
-                                  }}>
+                                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={() => removeGroupMember(member.id)}>
                                     <Trash2 className="h-3 w-3" />
                                   </Button>
                                 )}
+                              </div>
+                            ))}
+                            {/* Legacy single teacher/student */}
+                            {selectedChat.teachers?.profiles?.full_name && (
+                              <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
+                                <Avatar className="h-7 w-7"><AvatarFallback className="text-xs bg-primary/10 text-primary">{selectedChat.teachers.profiles.full_name.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
+                                <div><p className="text-sm font-medium">{selectedChat.teachers.profiles.full_name}</p><p className="text-[10px] text-muted-foreground">{isAr ? 'معلم (أساسي)' : 'Teacher (primary)'}</p></div>
                               </div>
                             )}
                             {selectedChat.students?.profiles?.full_name && (
-                              <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/50">
-                                <div className="flex items-center gap-2">
-                                  <Avatar className="h-7 w-7"><AvatarFallback className="text-xs bg-primary/10 text-primary">{selectedChat.students.profiles.full_name.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
-                                  <div><p className="text-sm font-medium">{selectedChat.students.profiles.full_name}</p><p className="text-[10px] text-muted-foreground">{isAr ? 'طالب' : 'Student'}</p></div>
-                                </div>
-                                {role === 'admin' && (
-                                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={async () => {
-                                    await supabase.from('chats').update({ student_id: null }).eq('id', selectedChat.id);
-                                    setSelectedChat({ ...selectedChat, student_id: null, students: null });
-                                    fetchChats();
-                                    toast.success(isAr ? 'تمت إزالة الطالب' : 'Student removed');
-                                  }}>
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                )}
+                              <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
+                                <Avatar className="h-7 w-7"><AvatarFallback className="text-xs bg-primary/10 text-primary">{selectedChat.students.profiles.full_name.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
+                                <div><p className="text-sm font-medium">{selectedChat.students.profiles.full_name}</p><p className="text-[10px] text-muted-foreground">{isAr ? 'طالب (أساسي)' : 'Student (primary)'}</p></div>
                               </div>
                             )}
-                            {!selectedChat.teachers?.profiles?.full_name && !selectedChat.students?.profiles?.full_name && (
+                            {groupMembers.length === 0 && !selectedChat.teachers?.profiles?.full_name && !selectedChat.students?.profiles?.full_name && (
                               <p className="text-sm text-muted-foreground text-center py-2">{isAr ? 'لا يوجد أعضاء' : 'No members yet'}</p>
                             )}
                           </div>
@@ -298,48 +337,35 @@ const Chats = () => {
                           {/* Add Members (admin only) */}
                           {role === 'admin' && (
                             <div className="border-t border-border pt-3 space-y-3">
-                              <p className="text-xs font-medium text-muted-foreground">{isAr ? 'إضافة أعضاء' : 'Add Members'}</p>
-                              {!selectedChat.teacher_id && (
-                                <div className="space-y-1">
-                                  <Label className="text-xs">{isAr ? 'معلم' : 'Teacher'}</Label>
-                                  <Select onValueChange={async (v) => {
-                                    await supabase.from('chats').update({ teacher_id: v }).eq('id', selectedChat.id);
-                                    fetchChats();
-                                    const teacher = teachersList.find(t => t.id === v);
-                                    setSelectedChat({ ...selectedChat, teacher_id: v, teachers: teacher ? { profiles: teacher.profiles } : selectedChat.teachers });
-                                    toast.success(isAr ? 'تمت إضافة المعلم' : 'Teacher added');
-                                  }}>
-                                    <SelectTrigger className="h-8 text-xs"><SelectValue placeholder={isAr ? 'اختر معلم...' : 'Select teacher...'} /></SelectTrigger>
-                                    <SelectContent>
-                                      {teachersList.map(t => (
-                                        <SelectItem key={t.id} value={t.id}>{t.profiles?.full_name || t.id}</SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              )}
-                              {!selectedChat.student_id && (
-                                <div className="space-y-1">
-                                  <Label className="text-xs">{isAr ? 'طالب' : 'Student'}</Label>
-                                  <Select onValueChange={async (v) => {
-                                    await supabase.from('chats').update({ student_id: v }).eq('id', selectedChat.id);
-                                    fetchChats();
-                                    const student = studentsList.find(s => s.id === v);
-                                    setSelectedChat({ ...selectedChat, student_id: v, students: student ? { profiles: student.profiles } : selectedChat.students });
-                                    toast.success(isAr ? 'تمت إضافة الطالب' : 'Student added');
-                                  }}>
-                                    <SelectTrigger className="h-8 text-xs"><SelectValue placeholder={isAr ? 'اختر طالب...' : 'Select student...'} /></SelectTrigger>
-                                    <SelectContent>
-                                      {studentsList.map(s => (
-                                        <SelectItem key={s.id} value={s.id}>{s.profiles?.full_name || s.id}</SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              )}
-                              {selectedChat.teacher_id && selectedChat.student_id && (
-                                <p className="text-xs text-muted-foreground text-center">{isAr ? 'جميع الأدوار مشغولة' : 'All member slots filled'}</p>
-                              )}
+                              <p className="text-xs font-medium text-muted-foreground flex items-center gap-1"><UserPlus className="h-3 w-3" />{isAr ? 'إضافة أعضاء' : 'Add Members'}</p>
+                              <div className="space-y-1">
+                                <Label className="text-xs">{isAr ? 'إضافة معلم' : 'Add Teacher'}</Label>
+                                <Select onValueChange={async (v) => {
+                                  const teacher = teachersList.find(t => t.id === v);
+                                  if (teacher) await addGroupMember(teacher.user_id, 'teacher');
+                                }}>
+                                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder={isAr ? 'اختر معلم...' : 'Select teacher...'} /></SelectTrigger>
+                                  <SelectContent>
+                                    {teachersList.map(t => (
+                                      <SelectItem key={t.id} value={t.id}>{t.profiles?.full_name || t.id}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs">{isAr ? 'إضافة طالب' : 'Add Student'}</Label>
+                                <Select onValueChange={async (v) => {
+                                  const student = studentsList.find(s => s.id === v);
+                                  if (student) await addGroupMember(student.user_id, 'student');
+                                }}>
+                                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder={isAr ? 'اختر طالب...' : 'Select student...'} /></SelectTrigger>
+                                  <SelectContent>
+                                    {studentsList.map(s => (
+                                      <SelectItem key={s.id} value={s.id}>{s.profiles?.full_name || s.id}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
                             </div>
                           )}
                         </div>
@@ -408,8 +434,9 @@ const Chats = () => {
         </Card>
       </div>
 
+      {/* Create Chat Dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{isAr ? 'إنشاء محادثة جديدة' : 'Create New Chat'}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div>
@@ -426,14 +453,14 @@ const Chats = () => {
             {chatType === 'direct' ? (
               <>
                 <div>
-                  <Label>{t('subscriptions.student')}</Label>
+                  <Label>{isAr ? 'الطالب' : 'Student'}</Label>
                   <Select value={createForm.student_id} onValueChange={(v) => setCreateForm({ ...createForm, student_id: v })}>
                     <SelectTrigger><SelectValue placeholder={isAr ? 'اختر طالب' : 'Select student'} /></SelectTrigger>
                     <SelectContent>{studentsList.map((s) => <SelectItem key={s.id} value={s.id}>{s.profiles?.full_name || s.id}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label>{t('subscriptions.teacher')}</Label>
+                  <Label>{isAr ? 'المعلم' : 'Teacher'}</Label>
                   <Select value={createForm.teacher_id} onValueChange={(v) => setCreateForm({ ...createForm, teacher_id: v })}>
                     <SelectTrigger><SelectValue placeholder={isAr ? 'اختر معلم' : 'Select teacher'} /></SelectTrigger>
                     <SelectContent>{teachersList.map((te) => <SelectItem key={te.id} value={te.id}>{te.profiles?.full_name || te.id}</SelectItem>)}</SelectContent>
@@ -447,11 +474,43 @@ const Chats = () => {
                   <Input value={createForm.name} onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })} />
                 </div>
                 <div>
-                  <Label>{isAr ? 'الاشتراك المرتبط' : 'Linked Subscription'} *</Label>
+                  <Label>{isAr ? 'الاشتراك المرتبط (اختياري)' : 'Linked Subscription (optional)'}</Label>
                   <Select value={createForm.subscription_id} onValueChange={(v) => setCreateForm({ ...createForm, subscription_id: v })}>
                     <SelectTrigger><SelectValue placeholder={isAr ? 'اختر اشتراك' : 'Select subscription'} /></SelectTrigger>
                     <SelectContent>{subscriptionsList.map((sub) => <SelectItem key={sub.id} value={sub.id}>{sub.students?.profiles?.full_name || ''} - {sub.courses?.title || ''}</SelectItem>)}</SelectContent>
                   </Select>
+                </div>
+                {/* Multi-select teachers */}
+                <div>
+                  <Label>{isAr ? 'المعلمون' : 'Teachers'}</Label>
+                  <div className="flex flex-wrap gap-1.5 mt-1 p-2 border rounded-md min-h-[40px]">
+                    {teachersList.map(te => (
+                      <button
+                        key={te.id}
+                        type="button"
+                        onClick={() => setCreateForm(prev => ({ ...prev, group_teachers: toggleMultiSelect(prev.group_teachers, te.id) }))}
+                        className={`px-2 py-1 rounded-md text-xs border transition-all ${createForm.group_teachers.includes(te.id) ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/50 text-muted-foreground border-border hover:border-primary/40'}`}
+                      >
+                        {te.profiles?.full_name || te.id}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Multi-select students */}
+                <div>
+                  <Label>{isAr ? 'الطلاب' : 'Students'}</Label>
+                  <div className="flex flex-wrap gap-1.5 mt-1 p-2 border rounded-md min-h-[40px]">
+                    {studentsList.map(s => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => setCreateForm(prev => ({ ...prev, group_students: toggleMultiSelect(prev.group_students, s.id) }))}
+                        className={`px-2 py-1 rounded-md text-xs border transition-all ${createForm.group_students.includes(s.id) ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/50 text-muted-foreground border-border hover:border-primary/40'}`}
+                      >
+                        {s.profiles?.full_name || s.id}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </>
             )}
