@@ -1,5 +1,13 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
+const DEFAULT_LOGO = 'https://codecom.dev/wp-content/uploads/2023/07/logo-base.png';
+const DEFAULT_FAVICON = 'https://portal.codecom.dev/uploads/company/favicon.png';
+const DEFAULT_APP_NAME = 'Quran E-Learning Platform - CodeCom.dev';
+const DEFAULT_APP_DESCRIPTION = 'An interactive Quran learning platform offering courses in Tajweed, memorization, and Quran reading with qualified teachers. Study from anywhere and follow a structured path to improve your recitation and understanding.';
+const DEFAULT_LTR_FONT = 'Montserrat';
+const DEFAULT_RTL_FONT = 'Noto Kufi Arabic';
+const DEFAULT_ACTIVE_GATEWAYS = { paypal: true, paymob: true };
+
 interface Currency {
   name: string;
   symbol: string;
@@ -114,18 +122,18 @@ function loadSaved(): PendingSettings {
   return {
     currency: (() => { try { const s = localStorage.getItem('app_currency'); return s ? JSON.parse(s) : CURRENCIES[0]; } catch { return CURRENCIES[0]; } })(),
     colorTheme: (localStorage.getItem('app_color_theme') as ColorTheme) || 'emerald',
-    appName: localStorage.getItem('app_name') || 'Islamic Dashboard',
-    appDescription: localStorage.getItem('app_description') || 'Islamic Educational Dashboard',
-    appLogo: localStorage.getItem('app_logo') || '',
+    appName: localStorage.getItem('app_name') || DEFAULT_APP_NAME,
+    appDescription: localStorage.getItem('app_description') || DEFAULT_APP_DESCRIPTION,
+    appLogo: localStorage.getItem('app_logo') || DEFAULT_LOGO,
     signatureImage: localStorage.getItem('app_signature_image') || '',
     stampImage: localStorage.getItem('app_stamp_image') || '',
     signaturePosition: (localStorage.getItem('app_signature_position') as FooterPosition) || 'left',
     stampPosition: (localStorage.getItem('app_stamp_position') as FooterPosition) || 'right',
-    ltrFont: localStorage.getItem('app_ltr_font') || 'Inter',
-    rtlFont: localStorage.getItem('app_rtl_font') || 'Cairo',
+    ltrFont: localStorage.getItem('app_ltr_font') || DEFAULT_LTR_FONT,
+    rtlFont: localStorage.getItem('app_rtl_font') || DEFAULT_RTL_FONT,
     buttonShape: (localStorage.getItem('app_button_shape') as ButtonShape) || 'rounded',
     currencyDecimals: parseInt(localStorage.getItem('app_currency_decimals') || '2', 10),
-    paymentGateway: localStorage.getItem('app_payment_gateway') || '',
+    paymentGateway: localStorage.getItem('app_payment_gateway') || 'paypal',
     defaultLanguage: (localStorage.getItem('app_default_language') as 'en' | 'ar') || 'en',
     defaultTimezone: localStorage.getItem('app_default_timezone') || Intl.DateTimeFormat().resolvedOptions().timeZone,
   };
@@ -134,7 +142,7 @@ function loadSaved(): PendingSettings {
 export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [saved, setSaved] = useState<PendingSettings>(loadSaved);
   const [pending, setPending] = useState<PendingSettings>(loadSaved);
-  const [favicon, setFaviconState] = useState(() => localStorage.getItem('app_favicon') || '');
+  const [favicon, setFaviconState] = useState(() => localStorage.getItem('app_favicon') || DEFAULT_FAVICON);
 
   useEffect(() => {
     if (favicon) {
