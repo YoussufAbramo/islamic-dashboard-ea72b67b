@@ -123,6 +123,8 @@ const Invoices = () => {
     return matchesStatus && matchesSearch;
   });
 
+  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+
   const showEmptyState = !loading && invoices.length === 0;
 
   const statusTabs = [
