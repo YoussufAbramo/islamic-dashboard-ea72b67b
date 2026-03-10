@@ -296,6 +296,44 @@ const AppearanceSettings = () => {
         </CardContent>
       </Card>
 
+      {/* Sidebar Mode */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><PanelLeft className="h-5 w-5 text-primary" />{isAr ? 'وضع القائمة الجانبية' : 'Sidebar Mode'}</CardTitle>
+          <CardDescription>{isAr ? 'اختر المظهر الفاتح أو الداكن للقائمة الجانبية' : 'Choose light or dark appearance for the sidebar menu'}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            {([
+              { value: 'dark' as const, icon: Moon, label: 'Dark', labelAr: 'داكن' },
+              { value: 'light' as const, icon: Sun, label: 'Light', labelAr: 'فاتح' },
+            ]).map((opt) => {
+              const Icon = opt.icon;
+              const isSelected = pending.sidebarMode === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => updatePending({ sidebarMode: opt.value })}
+                  className={`relative flex flex-col items-center gap-3 p-5 rounded-xl border-2 transition-all ${isSelected ? 'border-primary shadow-md scale-[1.02]' : 'border-border hover:border-muted-foreground/30'}`}
+                >
+                  <div className={`w-full h-20 rounded-lg flex items-center justify-center ${opt.value === 'dark' ? 'bg-sidebar text-sidebar-foreground' : 'bg-muted text-foreground'}`}>
+                    <div className="flex flex-col items-center gap-1">
+                      <Icon className="h-6 w-6" />
+                      <div className={`flex gap-1 ${opt.value === 'dark' ? 'opacity-60' : 'opacity-40'}`}>
+                        <div className="w-6 h-1 rounded-full bg-current" />
+                        <div className="w-4 h-1 rounded-full bg-current" />
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-sm font-medium">{isAr ? opt.labelAr : opt.label}</span>
+                  {isSelected && <Check className="absolute top-2 end-2 h-4 w-4 text-primary" />}
+                </button>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Button Shape */}
       <Card>
         <CardHeader>
