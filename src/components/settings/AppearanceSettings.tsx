@@ -32,24 +32,6 @@ const AppearanceSettings = () => {
     return saved ? JSON.parse(saved) : { ltr: [], rtl: [] };
   });
 
-  // Preload all font previews
-  useEffect(() => {
-    const allFonts = [
-      ...LTR_FONTS, ...RTL_FONTS,
-      ...customFonts.ltr.map(f => ({ value: f, label: f })),
-      ...customFonts.rtl.map(f => ({ value: f, label: f })),
-    ].map(f => f.value.replace(/ /g, '+')).join('&family=');
-    const linkId = 'settings-preview-fonts';
-    let link = document.getElementById(linkId) as HTMLLinkElement;
-    if (!link) {
-      link = document.createElement('link');
-      link.id = linkId;
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
-    }
-    link.href = `https://fonts.googleapis.com/css2?${allFonts.split('&family=').map(f => `family=${f}`).join('&family=')}:wght@400;600&display=swap`;
-    return () => { const el = document.getElementById(linkId); if (el) el.remove(); };
-  }, [customFonts]);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
