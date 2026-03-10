@@ -95,18 +95,18 @@ const Certificates = () => {
           @media print { body { padding: 0; } }
         </style></head><body>
         <div class="cert">
-          <h1>${appName}</h1>
+          <h1>${esc(appName)}</h1>
           <p class="sub">${isAr ? 'شهادة تقدير' : 'Certificate of Achievement'}</p>
           <div class="divider">
-            <p class="title">${certTitle}</p>
+            <p class="title">${esc(certTitle)}</p>
             <p>${isAr ? 'مقدمة إلى' : 'Presented to'}</p>
-            <p class="name">${recipientName}</p>
-            ${cert.description ? `<p style="color:#666">${cert.description}</p>` : ''}
-            ${courseName ? `<p style="font-size:14px;color:#888">${isAr ? 'الدورة:' : 'Course:'} ${courseName}</p>` : ''}
+            <p class="name">${esc(recipientName)}</p>
+            ${cert.description ? `<p style="color:#666">${esc(cert.description)}</p>` : ''}
+            ${courseName ? `<p style="font-size:14px;color:#888">${isAr ? 'الدورة:' : 'Course:'} ${esc(courseName)}</p>` : ''}
           </div>
           <div class="footer">
             <span>${isAr ? 'التاريخ:' : 'Date:'} ${format(new Date(cert.issued_at), 'PP')}</span>
-            <span>${cert.certificate_number}</span>
+            <span>${esc(cert.certificate_number)}</span>
           </div>
         </div>
         <script>window.onload=function(){window.print();window.close();}</script>

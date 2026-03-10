@@ -54,19 +54,19 @@ const InvoicePreviewDialog = ({ open, onOpenChange, invoice, isAr, formatPrice, 
       .footer{margin-top:40px;padding-top:20px;border-top:1px solid #ddd;text-align:center;color:#999;font-size:12px}
       @media print{body{margin:0}}</style></head>
       <body>
-      ${appLogo ? `<img src="${appLogo}" class="logo" alt="logo" />` : ''}
-      <div class="header"><div><h1 style="margin:0">${inv.invoice_number}</h1>
+      ${appLogo ? `<img src="${esc(appLogo)}" class="logo" alt="logo" />` : ''}
+      <div class="header"><div><h1 style="margin:0">${esc(inv.invoice_number || '')}</h1>
       <p style="color:#666">Created: ${format(new Date(inv.created_at), 'MMM dd, yyyy')}</p></div>
-      <span class="badge ${inv.status}">${inv.status.toUpperCase()}</span></div>
-      <div class="grid"><div class="card"><h3>Student</h3><p><strong>${inv.students?.profiles?.full_name || '-'}</strong></p>
-      <p>${inv.students?.profiles?.email || '-'}</p><p>${inv.students?.profiles?.phone || '-'}</p></div>
-      <div class="card"><h3>Course</h3><p><strong>${inv.courses?.title || '-'}</strong></p>
+      <span class="badge ${esc(inv.status)}">${esc(inv.status?.toUpperCase() || '')}</span></div>
+      <div class="grid"><div class="card"><h3>Student</h3><p><strong>${esc(inv.students?.profiles?.full_name || '-')}</strong></p>
+      <p>${esc(inv.students?.profiles?.email || '-')}</p><p>${esc(inv.students?.profiles?.phone || '-')}</p></div>
+      <div class="card"><h3>Course</h3><p><strong>${esc(inv.courses?.title || '-')}</strong></p>
       <p>${inv.billing_cycle === 'yearly' ? 'Yearly' : 'Monthly'} subscription</p></div></div>
       <div class="amount">${formatPrice(inv.amount)}</div>
       <p style="text-align:center;color:#666">Due: ${inv.due_date ? format(new Date(inv.due_date), 'MMM dd, yyyy') : '-'}</p>
-      <div class="card" style="margin-top:20px"><h3>Payment Method</h3><p>${gwName}</p></div>
-      ${inv.notes ? `<div class="card" style="margin-top:12px"><h3>Notes</h3><p>${inv.notes}</p></div>` : ''}
-      <div class="footer"><p>${appName}</p></div>
+      <div class="card" style="margin-top:20px"><h3>Payment Method</h3><p>${esc(gwName)}</p></div>
+      ${inv.notes ? `<div class="card" style="margin-top:12px"><h3>Notes</h3><p>${esc(inv.notes)}</p></div>` : ''}
+      <div class="footer"><p>${esc(appName)}</p></div>
       </body></html>`);
     w.document.close();
   };
