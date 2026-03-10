@@ -11,7 +11,7 @@ import DataManagementCard from '@/components/settings/DataManagementCard';
 import AuthenticationSettings from '@/components/settings/AuthenticationSettings';
 import GeneralSettings from '@/components/settings/GeneralSettings';
 
-type SettingsTab = 'appearance' | 'payment' | 'data' | 'auth' | 'general';
+type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data';
 
 const Settings = () => {
   const { language } = useLanguage();
@@ -19,7 +19,7 @@ const Settings = () => {
   const { saveSettings, hasPendingChanges, discardChanges } = useAppSettings();
   const isAr = language === 'ar';
   const isAdmin = role === 'admin';
-  const [activeTab, setActiveTab] = useState<SettingsTab>('appearance');
+  const [activeTab, setActiveTab] = useState<SettingsTab>('general');
 
   const handleSave = () => {
     saveSettings();
@@ -27,11 +27,11 @@ const Settings = () => {
   };
 
   const tabs: { value: SettingsTab; label: string; labelAr: string; icon: any; adminOnly?: boolean }[] = [
+    { value: 'general', label: 'General', labelAr: 'عام', icon: Settings2 },
     { value: 'appearance', label: 'Appearance', labelAr: 'المظهر', icon: Palette },
+    { value: 'auth', label: 'Authentication', labelAr: 'المصادقة', icon: ShieldCheck, adminOnly: true },
     { value: 'payment', label: 'Payment Methods', labelAr: 'طرق الدفع', icon: CreditCard, adminOnly: true },
     { value: 'data', label: 'Data Management', labelAr: 'إدارة البيانات', icon: Database, adminOnly: true },
-    { value: 'auth', label: 'Authentication', labelAr: 'المصادقة', icon: ShieldCheck, adminOnly: true },
-    { value: 'general', label: 'General', labelAr: 'عام', icon: Settings2 },
   ];
 
   const visibleTabs = tabs.filter(t => !t.adminOnly || isAdmin);
@@ -52,34 +52,39 @@ const Settings = () => {
         </div>
       </div>
 
-      {/* Secondary Navigation */}
-      <div className="flex flex-wrap gap-1 p-1 rounded-lg bg-muted">
-        {visibleTabs.map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.value}
-              onClick={() => setActiveTab(tab.value)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                activeTab === tab.value
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Icon className="h-4 w-4" />
-              {isAr ? tab.labelAr : tab.label}
-            </button>
-          );
-        })}
-      </div>
+      {/* Vertical sidebar layout */}
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* Vertical Navigation */}
+        <div className="md:w-56 shrink-0">
+          <nav className="flex flex-row md:flex-col gap-1 p-1 rounded-lg bg-muted overflow-x-auto md:overflow-x-visible">
+            {visibleTabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.value}
+                  onClick={() => setActiveTab(tab.value)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all whitespace-nowrap w-full text-start ${
+                    activeTab === tab.value
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {isAr ? tab.labelAr : tab.label}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
 
-      {/* Tab Content */}
-      <div className="max-w-3xl">
-        {activeTab === 'appearance' && <AppearanceSettings />}
-        {activeTab === 'payment' && isAdmin && <PaymentGatewayCard isAr={isAr} />}
-        {activeTab === 'data' && isAdmin && <DataManagementCard isAr={isAr} />}
-        {activeTab === 'auth' && isAdmin && <AuthenticationSettings />}
-        {activeTab === 'general' && <GeneralSettings />}
+        {/* Tab Content */}
+        <div className="flex-1 min-w-0">
+          {activeTab === 'general' && <GeneralSettings />}
+          {activeTab === 'appearance' && <AppearanceSettings />}
+          {activeTab === 'auth' && isAdmin && <AuthenticationSettings />}
+          {activeTab === 'payment' && isAdmin && <PaymentGatewayCard isAr={isAr} />}
+          {activeTab === 'data' && isAdmin && <DataManagementCard isAr={isAr} />}
+        </div>
       </div>
 
       {/* Sticky save bar */}

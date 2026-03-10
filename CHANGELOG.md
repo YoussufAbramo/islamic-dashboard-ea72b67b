@@ -2,6 +2,40 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [1.4.0] - 2026-03-10
+
+### Added
+- Numeric pagination (20 rows per page) across all list pages
+- Reusable `usePagination` hook and `PaginationControls` component
+- Chat message avatars beside each message bubble
+- Islamic background texture in chat body (matches auth pages)
+- "Showing X to Y of Z" pagination info text
+
+### Changed
+- Settings page secondary menu changed to vertical sidebar layout
+- Settings tabs reordered: General → Appearance → Authentication → Payment Methods → Data Management
+- Appearance settings reordered: Branding first, then Color Theme, Button Shape, Fonts
+- Chat message deletion now replaces text with "deleted by admin/teacher" instead of hiding
+- Both admins and teachers can now delete chat messages
+- Search bars moved inline beside create buttons on all list pages
+- All deleted messages remain visible with italic styling
+
+### Fixed
+- Chat messages were fully hidden on delete instead of showing deletion notice
+
+## [1.3.0] - 2026-03-10
+
+### Added
+- Invoice page redesign with stats cards, status filter tabs, and professional preview dialog
+- Payment methods section with "Pay Now" button in invoice preview
+- Invoice signature/stamp footer for branding
+- Mobile card layout for invoices table
+- Search bars on Certificates, Chats, and Notifications pages
+- Settings page with tabbed secondary menu (Appearance, Payment, Data, Auth, General)
+- Appearance settings: color theme, button shape, fonts, branding
+- Authentication settings with OAuth provider links
+- General settings: currency and teacher chat permissions
+
 ## [1.2.0] - 2026-03-09
 
 ### Added

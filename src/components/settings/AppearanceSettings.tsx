@@ -51,6 +51,41 @@ const AppearanceSettings = () => {
 
   return (
     <div className="space-y-6">
+      {/* Branding */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Building2 className="h-5 w-5 text-primary" />{isAr ? 'العلامة التجارية' : 'Branding'}</CardTitle>
+          <CardDescription>{isAr ? 'خصص اسم التطبيق والشعار والوصف' : 'Customize app name, logo, and description'}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>{isAr ? 'اسم التطبيق' : 'App Name'}</Label>
+            <Input value={pending.appName} onChange={(e) => updatePending({ appName: e.target.value })} />
+          </div>
+          <div className="space-y-2">
+            <Label>{isAr ? 'وصف التطبيق' : 'App Description'}</Label>
+            <Textarea value={pending.appDescription} onChange={(e) => updatePending({ appDescription: e.target.value })} rows={2} />
+          </div>
+          <div className="space-y-2">
+            <Label>{isAr ? 'شعار التطبيق' : 'App Logo'}</Label>
+            <div className="flex items-center gap-4">
+              {appLogo ? (
+                <img src={appLogo} alt="Logo" className="h-14 w-14 rounded-lg object-cover border border-border" />
+              ) : (
+                <div className="h-14 w-14 rounded-lg border-2 border-dashed border-border flex items-center justify-center">
+                  <Upload className="h-5 w-5 text-muted-foreground" />
+                </div>
+              )}
+              <div className="flex gap-2">
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+                <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>{isAr ? 'رفع شعار' : 'Upload Logo'}</Button>
+                {appLogo && <Button variant="ghost" size="sm" onClick={() => setAppLogo('')}>{isAr ? 'إزالة' : 'Remove'}</Button>}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Color Theme */}
       <Card>
         <CardHeader>
@@ -123,41 +158,6 @@ const AppearanceSettings = () => {
               </Select>
               <div className="p-3 rounded-lg border border-border bg-muted/30">
                 <p className="text-sm" dir="rtl" style={{ fontFamily: `'${pending.rtlFont}', sans-serif` }}>هذا نص تجريبي لمعاينة الخط العربي المختار. ٠١٢٣٤٥٦٧٨٩</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Branding */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Building2 className="h-5 w-5 text-primary" />{isAr ? 'العلامة التجارية' : 'Branding'}</CardTitle>
-          <CardDescription>{isAr ? 'خصص اسم التطبيق والشعار والوصف' : 'Customize app name, logo, and description'}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>{isAr ? 'اسم التطبيق' : 'App Name'}</Label>
-            <Input value={pending.appName} onChange={(e) => updatePending({ appName: e.target.value })} />
-          </div>
-          <div className="space-y-2">
-            <Label>{isAr ? 'وصف التطبيق' : 'App Description'}</Label>
-            <Textarea value={pending.appDescription} onChange={(e) => updatePending({ appDescription: e.target.value })} rows={2} />
-          </div>
-          <div className="space-y-2">
-            <Label>{isAr ? 'شعار التطبيق' : 'App Logo'}</Label>
-            <div className="flex items-center gap-4">
-              {appLogo ? (
-                <img src={appLogo} alt="Logo" className="h-14 w-14 rounded-lg object-cover border border-border" />
-              ) : (
-                <div className="h-14 w-14 rounded-lg border-2 border-dashed border-border flex items-center justify-center">
-                  <Upload className="h-5 w-5 text-muted-foreground" />
-                </div>
-              )}
-              <div className="flex gap-2">
-                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
-                <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>{isAr ? 'رفع شعار' : 'Upload Logo'}</Button>
-                {appLogo && <Button variant="ghost" size="sm" onClick={() => setAppLogo('')}>{isAr ? 'إزالة' : 'Remove'}</Button>}
               </div>
             </div>
           </div>
