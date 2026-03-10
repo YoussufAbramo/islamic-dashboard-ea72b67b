@@ -33,7 +33,6 @@ interface TimetableEntry {
   teacher_id: string | null;
 }
 
-// Individual widget keys - stats are now separate
 type WidgetKey =
   | 'statCourses' | 'statStudents' | 'statTeachers' | 'statSubscriptions'
   | 'statTickets' | 'statLessons' | 'statWeeklyLessons' | 'statMri'
@@ -73,13 +72,8 @@ const WIDGET_LABELS: Record<WidgetKey, { en: string; ar: string }> = {
   topStudents: { en: 'Top Students', ar: 'أفضل الطلاب' },
 };
 
-interface WidgetCategory {
-  label: string;
-  labelAr: string;
-  keys: WidgetKey[];
-}
+interface WidgetCategory { label: string; labelAr: string; keys: WidgetKey[]; }
 
-// Section keys for ordering
 type SectionKey = 'stats' | 'overview' | 'upcomingLessons' | 'recentSubscriptions' | 'calendar' | 'recentActivity';
 
 const DEFAULT_SECTION_ORDER: SectionKey[] = ['stats', 'overview', 'upcomingLessons', 'recentSubscriptions', 'calendar', 'recentActivity'];
@@ -94,42 +88,21 @@ const SECTION_LABELS: Record<SectionKey, { en: string; ar: string }> = {
 };
 
 const WIDGET_CATEGORIES: WidgetCategory[] = [
-  {
-    label: '📊 Statistics Cards',
-    labelAr: '📊 بطاقات الإحصائيات',
-    keys: ['statCourses', 'statStudents', 'statTeachers', 'statSubscriptions', 'statTickets', 'statLessons', 'statWeeklyLessons', 'statMri'],
-  },
-  {
-    label: '📋 Overview Cards',
-    labelAr: '📋 بطاقات النظرة العامة',
-    keys: ['attendanceOverview', 'certificatesIssued', 'supportOverview', 'teacherOverview', 'announcementsWidget', 'chatsOverview'],
-  },
-  {
-    label: '📅 Schedule & Activity',
-    labelAr: '📅 الجدول والنشاط',
-    keys: ['calendar', 'upcomingLessons', 'recentActivity', 'recentSubscriptions', 'topStudents'],
-  },
+  { label: '📊 Statistics Cards', labelAr: '📊 بطاقات الإحصائيات', keys: ['statCourses', 'statStudents', 'statTeachers', 'statSubscriptions', 'statTickets', 'statLessons', 'statWeeklyLessons', 'statMri'] },
+  { label: '📋 Overview Cards', labelAr: '📋 بطاقات النظرة العامة', keys: ['attendanceOverview', 'certificatesIssued', 'supportOverview', 'teacherOverview', 'announcementsWidget', 'chatsOverview'] },
+  { label: '📅 Schedule & Activity', labelAr: '📅 الجدول والنشاط', keys: ['calendar', 'upcomingLessons', 'recentActivity', 'recentSubscriptions', 'topStudents'] },
 ];
 
 function migrateWidgets(saved: any): Record<WidgetKey, boolean> {
   const result = { ...DEFAULT_WIDGETS };
   if (saved) {
-    // Migrate old 'stats' key to individual stat keys
     if ('stats' in saved) {
       const statsVal = saved.stats;
-      (['statCourses', 'statStudents', 'statTeachers', 'statSubscriptions', 'statTickets', 'statLessons', 'statWeeklyLessons', 'statMri'] as WidgetKey[]).forEach(k => {
-        result[k] = statsVal;
-      });
+      (['statCourses', 'statStudents', 'statTeachers', 'statSubscriptions', 'statTickets', 'statLessons', 'statWeeklyLessons', 'statMri'] as WidgetKey[]).forEach(k => { result[k] = statsVal; });
     }
-    // Migrate old 'quickActions' to 'chatsOverview'
-    if ('quickActions' in saved) {
-      result.chatsOverview = saved.quickActions;
-    }
-    // Apply any matching new keys
+    if ('quickActions' in saved) { result.chatsOverview = saved.quickActions; }
     for (const key of Object.keys(result) as WidgetKey[]) {
-      if (key in saved) {
-        result[key] = saved[key];
-      }
+      if (key in saved) { result[key] = saved[key]; }
     }
   }
   return result;
@@ -190,9 +163,7 @@ const Dashboard = () => {
         supabase.from('subscriptions').select('id, price', { count: 'exact' }).eq('status', 'active'),
         supabase.from('support_tickets').select('id', { count: 'exact', head: true }).eq('status', 'open'),
         supabase.from('timetable_entries').select('id', { count: 'exact', head: true }).gte('scheduled_at', now.toISOString()),
-        supabase.from('timetable_entries').select('id, status')
-          .gte('scheduled_at', weekStart.toISOString())
-          .lte('scheduled_at', weekEnd.toISOString()),
+        supabase.from('timetable_entries').select('id, status').gte('scheduled_at', weekStart.toISOString()).lte('scheduled_at', weekEnd.toISOString()),
         supabase.from('certificates').select('id', { count: 'exact', head: true }),
         supabase.from('attendance').select('id', { count: 'exact', head: true }),
         supabase.from('chats').select('id', { count: 'exact', head: true }),
@@ -213,10 +184,7 @@ const Dashboard = () => {
     };
 
     const fetchTimetable = async () => {
-      const { data } = await supabase
-        .from('timetable_entries')
-        .select('id, scheduled_at, duration_minutes, status, course_id, teacher_id')
-        .order('scheduled_at', { ascending: true });
+      const { data } = await supabase.from('timetable_entries').select('id, scheduled_at, duration_minutes, status, course_id, teacher_id').order('scheduled_at', { ascending: true });
       setTimetableEntries(data || []);
     };
 
@@ -243,7 +211,6 @@ const Dashboard = () => {
   const hasLessonModifier = (date: Date) => lessonDates.some(d => isSameDay(d, date));
   const upcomingEntries = timetableEntries.filter(e => new Date(e.scheduled_at) >= new Date()).slice(0, 5);
 
-  // Check if any stat in a group is visible
   const hasAnyStat = (['statCourses', 'statStudents', 'statTeachers', 'statSubscriptions', 'statTickets', 'statLessons', 'statWeeklyLessons', 'statMri'] as WidgetKey[]).some(k => widgets[k]);
 
   return (
@@ -251,11 +218,7 @@ const Dashboard = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">{t('dashboard.welcome')}, {profile?.full_name || 'User'}</h1>
         {isAdmin && (
-          <Button
-            variant={editMode ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setEditMode(!editMode)}
-          >
+          <Button variant={editMode ? 'default' : 'outline'} size="sm" onClick={() => setEditMode(!editMode)}>
             <Pencil className="h-4 w-4 me-1" />
             {editMode ? (isAr ? 'تم' : 'Done') : (isAr ? 'إدارة لوحة التحكم' : 'Manage Dashboard')}
           </Button>
@@ -266,33 +229,22 @@ const Dashboard = () => {
       {editMode && isAdmin && (
         <Card className="border-primary/30 bg-primary/5">
           <CardContent className="pt-4 space-y-4">
-            {/* Section Order */}
             <div>
-              <p className="text-sm font-semibold mb-2 text-primary">
-                {isAr ? '🔀 ترتيب الأقسام' : '🔀 Section Order'}
-              </p>
+              <p className="text-sm font-semibold mb-2 text-primary">{isAr ? '🔀 ترتيب الأقسام' : '🔀 Section Order'}</p>
               <div className="space-y-1">
                 {sectionOrder.map((sKey, idx) => (
                   <div key={sKey} className="flex items-center gap-2 p-2 rounded-lg border border-border bg-background">
                     <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
                     <span className="text-xs flex-1">{isAr ? SECTION_LABELS[sKey].ar : SECTION_LABELS[sKey].en}</span>
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" disabled={idx === 0} onClick={() => moveSection(idx, 'up')}>
-                      <ArrowUp className="h-3 w-3" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" disabled={idx === sectionOrder.length - 1} onClick={() => moveSection(idx, 'down')}>
-                      <ArrowDown className="h-3 w-3" />
-                    </Button>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" disabled={idx === 0} onClick={() => moveSection(idx, 'up')}><ArrowUp className="h-3 w-3" /></Button>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" disabled={idx === sectionOrder.length - 1} onClick={() => moveSection(idx, 'down')}><ArrowDown className="h-3 w-3" /></Button>
                   </div>
                 ))}
               </div>
             </div>
-
-            {/* Widget Toggles */}
             {WIDGET_CATEGORIES.map((cat) => (
               <div key={cat.label}>
-                <p className="text-sm font-semibold mb-2 text-primary">
-                  {isAr ? cat.labelAr : cat.label}
-                </p>
+                <p className="text-sm font-semibold mb-2 text-primary">{isAr ? cat.labelAr : cat.label}</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                   {cat.keys.map((key) => (
                     <div key={key} className="flex items-center justify-between gap-2 p-2 rounded-lg border border-border bg-background">
@@ -307,7 +259,7 @@ const Dashboard = () => {
         </Card>
       )}
 
-      {/* Teacher Stats (always at top, not reorderable) */}
+      {/* Teacher Stats */}
       {role === 'teacher' && (
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <StatCard title={t('dashboard.myStudents')} value={stats.students} icon={GraduationCap} onClick={() => navigate('/dashboard/students')} />
@@ -316,7 +268,7 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Student Stats (always at top, not reorderable) */}
+      {/* Student Stats */}
       {role === 'student' && (
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <StatCard title={t('dashboard.myCourses')} value={stats.courses} icon={BookOpen} onClick={() => navigate('/dashboard/courses')} />
@@ -386,44 +338,55 @@ const Dashboard = () => {
             );
 
           case 'upcomingLessons':
-            return widgets.upcomingLessons && upcomingEntries.length > 0 ? (
-              <Card key={sectionKey} className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/timetable')}>
-                <CardHeader><CardTitle className="text-sm flex items-center gap-2"><CalendarIcon className="h-4 w-4 text-primary" />{isAr ? 'الدروس القادمة' : 'Upcoming Lessons'}</CardTitle></CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {upcomingEntries.map(entry => (
-                      <div key={entry.id} className="flex items-center justify-between p-2 rounded-lg border border-border">
-                        <div>
-                          <p className="text-sm font-medium">{format(new Date(entry.scheduled_at), 'EEE, MMM d')}</p>
-                          <p className="text-xs text-muted-foreground">{format(new Date(entry.scheduled_at), 'HH:mm')} · {entry.duration_minutes} {t('common.minutes')}</p>
-                        </div>
-                        <Badge variant={entry.status === 'cancelled' ? 'destructive' : 'outline'} className="text-[10px]">{entry.status}</Badge>
+            // Upcoming Lessons and Recent Subscriptions side by side
+            const showUpcoming = widgets.upcomingLessons && upcomingEntries.length > 0;
+            const showRecentSubs = widgets.recentSubscriptions && recentSubs.length > 0;
+            // If this is the upcomingLessons section, render both side by side
+            if (!showUpcoming && !showRecentSubs) return null;
+            return (
+              <div key={sectionKey} className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+                {showUpcoming && (
+                  <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/timetable')}>
+                    <CardHeader><CardTitle className="text-sm flex items-center gap-2"><CalendarIcon className="h-4 w-4 text-primary" />{isAr ? 'الدروس القادمة' : 'Upcoming Lessons'}</CardTitle></CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {upcomingEntries.map(entry => (
+                          <div key={entry.id} className="flex items-center justify-between p-2 rounded-lg border border-border">
+                            <div>
+                              <p className="text-sm font-medium">{format(new Date(entry.scheduled_at), 'EEE, MMM d')}</p>
+                              <p className="text-xs text-muted-foreground">{format(new Date(entry.scheduled_at), 'HH:mm')} · {entry.duration_minutes} {t('common.minutes')}</p>
+                            </div>
+                            <Badge variant={entry.status === 'cancelled' ? 'destructive' : 'outline'} className="text-[10px]">{entry.status}</Badge>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ) : null;
+                    </CardContent>
+                  </Card>
+                )}
+                {showRecentSubs && (
+                  <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/subscriptions')}>
+                    <CardHeader><CardTitle className="text-sm flex items-center gap-2"><CreditCard className="h-4 w-4 text-primary" />{isAr ? 'أحدث الاشتراكات' : 'Recent Subscriptions'}</CardTitle></CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {recentSubs.map(sub => (
+                          <div key={sub.id} className="flex items-center justify-between p-2 rounded-lg border border-border">
+                            <div>
+                              <p className="text-sm font-medium">{(sub.courses as any)?.title || '—'}</p>
+                              <p className="text-xs text-muted-foreground">{sub.subscription_type} · {currency.symbol}{Number(sub.price || 0).toFixed(0)}</p>
+                            </div>
+                            <Badge variant={sub.status === 'active' ? 'default' : 'secondary'} className="text-[10px]">{sub.status}</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            );
 
           case 'recentSubscriptions':
-            return widgets.recentSubscriptions && recentSubs.length > 0 ? (
-              <Card key={sectionKey} className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/subscriptions')}>
-                <CardHeader><CardTitle className="text-sm flex items-center gap-2"><CreditCard className="h-4 w-4 text-primary" />{isAr ? 'أحدث الاشتراكات' : 'Recent Subscriptions'}</CardTitle></CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {recentSubs.map(sub => (
-                      <div key={sub.id} className="flex items-center justify-between p-2 rounded-lg border border-border">
-                        <div>
-                          <p className="text-sm font-medium">{(sub.courses as any)?.title || '—'}</p>
-                          <p className="text-xs text-muted-foreground">{sub.subscription_type} · {currency.symbol}{Number(sub.price || 0).toFixed(0)}</p>
-                        </div>
-                        <Badge variant={sub.status === 'active' ? 'default' : 'secondary'} className="text-[10px]">{sub.status}</Badge>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ) : null;
+            // Already rendered in upcomingLessons section side-by-side
+            return null;
 
           case 'calendar':
             return widgets.calendar ? (

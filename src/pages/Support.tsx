@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { usePagination } from '@/hooks/use-pagination';
 import PaginationControls from '@/components/PaginationControls';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -14,9 +14,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Search, Eye, MessageSquare, Mail, Phone } from 'lucide-react';
+import { Plus, Search, Eye, MessageSquare, Mail, Phone, ArrowDown, ArrowUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+
+type SortOrder = 'newest' | 'oldest';
 
 const priorityColors: Record<string, string> = { low: 'secondary', medium: 'default', high: 'destructive', urgent: 'destructive' };
 const statusColors: Record<string, string> = { open: 'default', in_progress: 'secondary', resolved: 'outline', closed: 'outline' };
@@ -33,6 +35,7 @@ const Support = () => {
   const isAr = language === 'ar';
   const [tickets, setTickets] = useState<any[]>([]);
   const [search, setSearch] = useState('');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const [createOpen, setCreateOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [selected, setSelected] = useState<any>(null);
@@ -75,7 +78,15 @@ const Support = () => {
     setDetailOpen(true);
   };
 
-  const filtered = tickets.filter((t) => t.subject.toLowerCase().includes(search.toLowerCase()) || t.name.toLowerCase().includes(search.toLowerCase()));
+  const filtered = useMemo(() => {
+    let result = tickets.filter((t) => t.subject.toLowerCase().includes(search.toLowerCase()) || t.name.toLowerCase().includes(search.toLowerCase()));
+    result.sort((a, b) => {
+      const da = new Date(a.created_at).getTime();
+      const db = new Date(b.created_at).getTime();
+      return sortOrder === 'newest' ? db - da : da - db;
+    });
+    return result;
+  }, [tickets, search, sortOrder]);
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
 
@@ -84,12 +95,21 @@ const Support = () => {
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold shrink-0">{t('support.title')}</h1>
         <div className="flex items-center gap-2 ms-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')}
+            className="gap-1 h-9"
+          >
+            {sortOrder === 'newest' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}
+            {sortOrder === 'newest' ? (isAr ? 'الأحدث' : 'Newest') : (isAr ? 'الأقدم' : 'Oldest')}
+          </Button>
           <div className="relative">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="ps-9 w-48 sm:w-64" />
+            <Input placeholder={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="ps-9 w-48 sm:w-64 h-9" />
           </div>
           <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-            <DialogTrigger asChild><Button><Plus className="h-4 w-4 me-2" />{t('support.createTicket')}</Button></DialogTrigger>
+            <DialogTrigger asChild><Button size="sm" className="h-9"><Plus className="h-4 w-4 me-2" />{t('support.createTicket')}</Button></DialogTrigger>
             <DialogContent className="max-w-lg">
               <DialogHeader><DialogTitle>{t('support.createTicket')}</DialogTitle></DialogHeader>
               <div className="space-y-3">
@@ -212,13 +232,7 @@ const Support = () => {
               <TabsContent value="notes" className="space-y-4 mt-4">
                 <div>
                   <Label>{isAr ? 'ملاحظات الحل' : 'Resolution Notes'}</Label>
-                  <Textarea
-                    value={resolutionNotes}
-                    onChange={e => setResolutionNotes(e.target.value)}
-                    rows={6}
-                    placeholder={isAr ? 'اكتب ملاحظات حول هذه التذكرة...' : 'Write notes about this ticket...'}
-                    className="mt-2"
-                  />
+                  <Textarea value={resolutionNotes} onChange={e => setResolutionNotes(e.target.value)} rows={6} placeholder={isAr ? 'اكتب ملاحظات حول هذه التذكرة...' : 'Write notes about this ticket...'} className="mt-2" />
                 </div>
                 <Button onClick={saveResolutionNotes} size="sm">{isAr ? 'حفظ الملاحظات' : 'Save Notes'}</Button>
               </TabsContent>
@@ -228,23 +242,17 @@ const Support = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {selected.phone && (
                     <a href={`https://wa.me/${selected.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer">
-                      <Button variant="outline" className="w-full">
-                        <WhatsAppIcon /> <span className="ms-2">WhatsApp</span>
-                      </Button>
+                      <Button variant="outline" className="w-full"><WhatsAppIcon /> <span className="ms-2">WhatsApp</span></Button>
                     </a>
                   )}
                   {selected.email && (
                     <a href={`mailto:${selected.email}`} target="_blank" rel="noopener noreferrer">
-                      <Button variant="outline" className="w-full">
-                        <Mail className="h-4 w-4 me-2" /> {isAr ? 'بريد إلكتروني' : 'Email'}
-                      </Button>
+                      <Button variant="outline" className="w-full"><Mail className="h-4 w-4 me-2" /> {isAr ? 'بريد إلكتروني' : 'Email'}</Button>
                     </a>
                   )}
                   {selected.phone && (
                     <a href={`tel:${selected.phone}`}>
-                      <Button variant="outline" className="w-full">
-                        <Phone className="h-4 w-4 me-2" /> {isAr ? 'اتصال' : 'Call'}
-                      </Button>
+                      <Button variant="outline" className="w-full"><Phone className="h-4 w-4 me-2" /> {isAr ? 'اتصال' : 'Call'}</Button>
                     </a>
                   )}
                 </div>

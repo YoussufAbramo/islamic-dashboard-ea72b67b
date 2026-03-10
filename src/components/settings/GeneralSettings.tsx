@@ -2,9 +2,11 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Coins, MessageSquare, Globe } from 'lucide-react';
+import { Coins, MessageSquare, Globe, Building2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 const GeneralSettings = () => {
@@ -22,6 +24,24 @@ const GeneralSettings = () => {
 
   return (
     <div className="space-y-6">
+      {/* App Name & Description */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Building2 className="h-5 w-5 text-primary" />{isAr ? 'معلومات التطبيق' : 'App Information'}</CardTitle>
+          <CardDescription>{isAr ? 'اسم التطبيق والوصف' : 'App name and description'}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>{isAr ? 'اسم التطبيق' : 'App Name'}</Label>
+            <Input value={pending.appName} onChange={(e) => updatePending({ appName: e.target.value })} />
+          </div>
+          <div className="space-y-2">
+            <Label>{isAr ? 'وصف التطبيق' : 'App Description'}</Label>
+            <Textarea value={pending.appDescription} onChange={(e) => updatePending({ appDescription: e.target.value })} rows={2} />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Currency */}
       <Card>
         <CardHeader>
@@ -43,11 +63,12 @@ const GeneralSettings = () => {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {[0, 1, 2, 3].map((d) => (
-                    <SelectItem key={d} value={String(d)}>{d} — {(1234.5678).toFixed(d)}</SelectItem>
+                    <SelectItem key={d} value={String(d)}>
+                      {d} — {isAr ? 'مثال' : 'e.g.'} {pending.currency.symbol}{(1234.5678).toFixed(d)}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">{isAr ? 'مثال' : 'Example'}: {pending.currency.symbol}{(1234.56).toFixed(pending.currencyDecimals)}</p>
             </div>
           </div>
         </CardContent>

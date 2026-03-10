@@ -28,7 +28,7 @@ interface MenuCategory {
 const AppSidebar = () => {
   const { role, profile } = useAuth();
   const { t, language } = useLanguage();
-  const { appName, appLogo } = useAppSettings();
+  const { appLogo } = useAppSettings();
   const navigate = useNavigate();
   const isAr = language === 'ar';
   const location = useLocation();
@@ -90,15 +90,12 @@ const AppSidebar = () => {
   return (
     <Sidebar side={isAr ? 'right' : 'left'}>
       <SidebarHeader className="p-4 border-b border-sidebar-border">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center">
           {appLogo ? (
-            <img src={appLogo} alt="Logo" className="h-7 w-7 rounded object-cover" />
+            <img src={appLogo} alt="Logo" className="h-9 w-9 rounded object-cover" />
           ) : (
-            <BookOpen className="h-6 w-6 text-gold" />
+            <BookOpen className="h-8 w-8 text-gold" />
           )}
-          <h2 className="text-lg font-bold font-amiri text-sidebar-foreground truncate">
-            {appName || (isAr ? 'منصة التعليم' : 'Islamic Dashboard')}
-          </h2>
         </div>
       </SidebarHeader>
       <SidebarContent>

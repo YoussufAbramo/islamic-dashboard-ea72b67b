@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Users, GraduationCap, Calendar, Award, BarChart3, MessageSquare, Shield, Star, ChevronRight, Check, Menu, X, BookOpen, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import CopyrightText from '@/components/CopyrightText';
 import islamicPatternHero from '@/assets/islamic-pattern-hero.jpg';
 import dashboardMockup from '@/assets/dashboard-mockup.png';
@@ -82,12 +84,14 @@ const LandingPage = () => {
   const navigate = useNavigate();
   const { language, setLanguage } = useLanguage();
   const { pending } = useAppSettings();
+  const { user, profile } = useAuth();
   const isAr = language === 'ar';
   const [packages, setPackages] = useState<PricingPackage[]>([]);
   const [content, setContent] = useState<Record<string, Record<string, any>>>(defaultContent);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
+  const [avatarUrl, setAvatarUrl] = useState('');
 
   const appName = pending.appName || 'Islamic Dashboard';
   const appLogo = pending.appLogo;
@@ -115,6 +119,14 @@ const LandingPage = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (profile?.avatar_url) {
+      import('@/lib/storage').then(({ getAvatarSignedUrl }) => {
+        getAvatarSignedUrl(profile.avatar_url).then(setAvatarUrl);
+      });
+    }
+  }, [profile?.avatar_url]);
+
   const scrollTo = useCallback((id: string) => {
     setMobileMenuOpen(false);
     const el = document.getElementById(id);
@@ -137,7 +149,6 @@ const LandingPage = () => {
     { label: t('Pricing', 'الأسعار'), id: 'pricing' },
   ];
 
-  // Read currency from pending settings
   const currencySymbol = pending.currency?.symbol || '$';
 
   return (
@@ -174,12 +185,24 @@ const LandingPage = () => {
                 {language === 'en' ? 'العربية' : 'English'}
               </button>
               <div className="mx-2 h-6 w-px bg-border" />
-              <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
-                {t('Log In', 'تسجيل الدخول')}
-              </Button>
-              <Button size="sm" onClick={() => navigate('/signup')}>
-                {t('Sign Up', 'إنشاء حساب')} <ChevronRight className="h-4 w-4 ms-1" />
-              </Button>
+              {user ? (
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-accent/50 transition-colors"
+                >
+                  <Avatar className="h-7 w-7">
+                    <AvatarImage src={avatarUrl} />
+                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                      {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium text-foreground">{profile?.full_name || 'User'}</span>
+                </button>
+              ) : (
+                <Button size="sm" onClick={() => navigate('/login')}>
+                  {t('Get Started', 'ابدأ الآن')} <ChevronRight className="h-4 w-4 ms-1" />
+                </Button>
+              )}
             </div>
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -201,8 +224,18 @@ const LandingPage = () => {
                 </button>
               </div>
               <div className="flex gap-2 px-4">
-                <Button variant="outline" size="sm" className="flex-1" onClick={() => navigate('/login')}>{t('Log In', 'تسجيل الدخول')}</Button>
-                <Button size="sm" className="flex-1" onClick={() => navigate('/signup')}>{t('Sign Up', 'إنشاء حساب')}</Button>
+                {user ? (
+                  <Button size="sm" className="flex-1" onClick={() => navigate('/dashboard')}>
+                    <Avatar className="h-5 w-5 me-2">
+                      <AvatarFallback className="text-[10px]">{profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
+                    </Avatar>
+                    {profile?.full_name || 'Dashboard'}
+                  </Button>
+                ) : (
+                  <Button size="sm" className="flex-1" onClick={() => navigate('/login')}>
+                    {t('Get Started', 'ابدأ الآن')}
+                  </Button>
+                )}
               </div>
             </div>
           )}
@@ -230,7 +263,7 @@ const LandingPage = () => {
                 {ct('hero', 'subtitle')}
               </p>
               <div className="flex flex-wrap gap-4">
-                <Button size="lg" onClick={() => navigate('/signup')} className="text-base">
+                <Button size="lg" onClick={() => navigate(user ? '/dashboard' : '/login')} className="text-base">
                   {ct('hero', 'cta')} <ChevronRight className="h-5 w-5 ms-2" />
                 </Button>
                 <Button variant="outline" size="lg" onClick={() => scrollTo('features')} className="text-base">
@@ -295,9 +328,7 @@ const LandingPage = () => {
 
       {/* Islamic Pattern Divider */}
       <div className="relative py-8">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border/30" />
-        </div>
+        <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border/30" /></div>
         <div className="relative flex justify-center">
           <div className="px-6 bg-background">
             <div className="h-8 w-8 rounded-full border-2 border-primary/30 flex items-center justify-center">
@@ -367,16 +398,10 @@ const LandingPage = () => {
             <h2 className="text-3xl md:text-4xl font-bold font-amiri text-foreground mb-4">{t('Simple, Transparent Pricing', 'أسعار بسيطة وشفافة')}</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">{t("Choose the plan that fits your institution's needs", 'اختر الخطة المناسبة لاحتياجات مؤسستك')}</p>
             <div className="inline-flex items-center gap-2 p-1 rounded-lg bg-muted border border-border">
-              <button
-                onClick={() => setBillingCycle('monthly')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${billingCycle === 'monthly' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}
-              >
+              <button onClick={() => setBillingCycle('monthly')} className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${billingCycle === 'monthly' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}>
                 {t('Monthly', 'شهري')}
               </button>
-              <button
-                onClick={() => setBillingCycle('yearly')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${billingCycle === 'yearly' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}
-              >
+              <button onClick={() => setBillingCycle('yearly')} className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${billingCycle === 'yearly' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}>
                 {t('Yearly', 'سنوي')} <Badge variant="secondary" className="ms-1 text-[10px]">{t('Save 20%', 'وفر 20%')}</Badge>
               </button>
             </div>
@@ -434,7 +459,7 @@ const LandingPage = () => {
                     </ul>
                   </CardContent>
                   <CardFooter>
-                    <Button className="w-full" variant={pkg.is_featured ? 'default' : 'outline'} onClick={() => navigate('/signup')}>
+                    <Button className="w-full" variant={pkg.is_featured ? 'default' : 'outline'} onClick={() => navigate(user ? '/dashboard' : '/login')}>
                       {t('Get Started', 'ابدأ الآن')}
                     </Button>
                   </CardFooter>
@@ -458,7 +483,7 @@ const LandingPage = () => {
           <h2 className="text-3xl md:text-4xl font-bold font-amiri text-foreground mb-4">{ct('cta', 'title')}</h2>
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">{ct('cta', 'subtitle')}</p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <Button size="lg" onClick={() => navigate('/signup')} className="text-base">
+            <Button size="lg" onClick={() => navigate(user ? '/dashboard' : '/login')} className="text-base">
               {t('Start Free Trial', 'ابدأ تجربة مجانية')} <ChevronRight className="h-5 w-5 ms-2" />
             </Button>
             <Button variant="outline" size="lg" className="text-base">
