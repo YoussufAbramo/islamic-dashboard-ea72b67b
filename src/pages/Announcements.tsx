@@ -150,13 +150,17 @@ const Announcements = () => {
 
       {/* Create Dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>{isAr ? 'إعلان جديد' : 'New Announcement'}</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div><Label>{isAr ? 'العنوان' : 'Title'}</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} /></div>
-            <div><Label>{isAr ? 'العنوان بالعربية' : 'Title (AR)'}</Label><Input value={form.title_ar} onChange={e => setForm({ ...form, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
-            <div><Label>{isAr ? 'المحتوى' : 'Content'}</Label><Textarea value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} rows={3} /></div>
-            <div><Label>{isAr ? 'المحتوى بالعربية' : 'Content (AR)'}</Label><Textarea value={form.content_ar} onChange={e => setForm({ ...form, content_ar: e.target.value })} dir="rtl" className="text-right" rows={3} /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>{isAr ? 'العنوان' : 'Title'}</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} /></div>
+              <div><Label>{isAr ? 'العنوان بالعربية' : 'Title (AR)'}</Label><Input value={form.title_ar} onChange={e => setForm({ ...form, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>{isAr ? 'المحتوى' : 'Content'}</Label><Textarea value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} rows={3} /></div>
+              <div><Label>{isAr ? 'المحتوى بالعربية' : 'Content (AR)'}</Label><Textarea value={form.content_ar} onChange={e => setForm({ ...form, content_ar: e.target.value })} dir="rtl" className="text-right" rows={3} /></div>
+            </div>
             <div>
               <Label>{isAr ? 'الجمهور المستهدف' : 'Target Audience'}</Label>
               <Select value={form.target_audience} onValueChange={v => setForm({ ...form, target_audience: v })}>

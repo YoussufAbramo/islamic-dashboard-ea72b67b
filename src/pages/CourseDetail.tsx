@@ -119,8 +119,10 @@ const CourseDetail = () => {
             <DialogContent>
               <DialogHeader><DialogTitle>{t('courses.addSection')}</DialogTitle></DialogHeader>
               <div className="space-y-3">
-                <div><Label>Title (EN)</Label><Input value={sectionForm.title} onChange={(e) => setSectionForm({ ...sectionForm, title: e.target.value })} /></div>
-                <div><Label>Title (AR)</Label><Input value={sectionForm.title_ar} onChange={(e) => setSectionForm({ ...sectionForm, title_ar: e.target.value })} dir="rtl" /></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><Label>Title (EN)</Label><Input value={sectionForm.title} onChange={(e) => setSectionForm({ ...sectionForm, title: e.target.value })} /></div>
+                  <div><Label>Title (AR)</Label><Input value={sectionForm.title_ar} onChange={(e) => setSectionForm({ ...sectionForm, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
+                </div>
                 <Button onClick={addSection} className="w-full">{t('common.save')}</Button>
               </div>
             </DialogContent>
@@ -160,8 +162,10 @@ const CourseDetail = () => {
                     <DialogContent>
                       <DialogHeader><DialogTitle>{t('courses.addLesson')}</DialogTitle></DialogHeader>
                       <div className="space-y-3">
-                        <div><Label>Title (EN)</Label><Input value={lessonForm.title} onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })} /></div>
-                        <div><Label>Title (AR)</Label><Input value={lessonForm.title_ar} onChange={(e) => setLessonForm({ ...lessonForm, title_ar: e.target.value })} dir="rtl" /></div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div><Label>Title (EN)</Label><Input value={lessonForm.title} onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })} /></div>
+                          <div><Label>Title (AR)</Label><Input value={lessonForm.title_ar} onChange={(e) => setLessonForm({ ...lessonForm, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
+                        </div>
                         <div>
                           <Label>{t('courses.lessonType')}</Label>
                           <Select value={lessonForm.lesson_type} onValueChange={(v) => setLessonForm({ ...lessonForm, lesson_type: v })}>
