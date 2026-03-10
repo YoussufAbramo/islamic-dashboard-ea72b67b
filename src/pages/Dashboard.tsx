@@ -459,6 +459,20 @@ const Dashboard = () => {
                     </CardContent>
                   </Card>
                 )}
+                {/* Invoices overview card */}
+                <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/invoices')}>
+                  <CardContent className="pt-4 flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><FileText className="h-5 w-5 text-primary" /></div>
+                    <div><p className="text-sm font-medium">{isAr ? 'الفواتير' : 'Invoices'}</p><p className="text-xs text-muted-foreground">{stats.invoices} {isAr ? 'فاتورة' : 'total'}</p></div>
+                  </CardContent>
+                </Card>
+                {/* Pending Invoices card */}
+                <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/invoices')}>
+                  <CardContent className="pt-4 flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><TrendingUp className="h-5 w-5 text-primary" /></div>
+                    <div><p className="text-sm font-medium">{isAr ? 'فواتير معلقة' : 'Pending Invoices'}</p><p className="text-xs text-muted-foreground">{stats.pendingInvoices} {isAr ? 'معلقة' : 'pending'}</p></div>
+                  </CardContent>
+                </Card>
               </div>
             );
 

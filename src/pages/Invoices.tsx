@@ -352,6 +352,20 @@ const Invoices = () => {
         signaturePosition={signaturePosition}
         stampPosition={stampPosition}
       />
+
+      {/* Delete Invoice Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{isAr ? 'حذف الفاتورة' : 'Delete Invoice'}</AlertDialogTitle>
+            <AlertDialogDescription>{isAr ? 'هل أنت متأكد من حذف هذه الفاتورة؟' : 'Are you sure you want to delete this invoice?'}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDeleteInvoice}>{isAr ? 'حذف' : 'Delete'}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
