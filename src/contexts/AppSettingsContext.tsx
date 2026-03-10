@@ -142,7 +142,7 @@ function loadSaved(): PendingSettings {
 export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [saved, setSaved] = useState<PendingSettings>(loadSaved);
   const [pending, setPending] = useState<PendingSettings>(loadSaved);
-  const [favicon, setFaviconState] = useState(() => localStorage.getItem('app_favicon') || '');
+  const [favicon, setFaviconState] = useState(() => localStorage.getItem('app_favicon') || DEFAULT_FAVICON);
 
   useEffect(() => {
     if (favicon) {
