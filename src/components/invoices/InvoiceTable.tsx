@@ -96,6 +96,11 @@ const InvoiceTable = ({ invoices, loading, isAr, formatPrice, onPreview, onCopyU
               <Button variant="ghost" size="sm" className="flex-1" onClick={() => onCopyUrl(inv)}>
                 <Copy className="h-4 w-4 me-1" />{isAr ? 'نسخ' : 'Copy'}
               </Button>
+              {isAdmin && onDelete && (
+                <Button variant="ghost" size="sm" className="flex-1 text-destructive hover:text-destructive" onClick={() => onDelete(inv)}>
+                  <Trash2 className="h-4 w-4 me-1" />{isAr ? 'حذف' : 'Delete'}
+                </Button>
+              )}
             </div>
           </div>
         );
