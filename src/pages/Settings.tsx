@@ -31,6 +31,8 @@ const Settings = () => {
   const tabs: { value: SettingsTab; label: string; labelAr: string; icon: any; adminOnly?: boolean }[] = [
     { value: 'general', label: 'General', labelAr: 'عام', icon: Settings2 },
     { value: 'appearance', label: 'Appearance', labelAr: 'المظهر', icon: Palette },
+    { value: 'landing', label: 'Landing Page', labelAr: 'صفحة الهبوط', icon: Globe, adminOnly: true },
+    { value: 'pricing', label: 'SaaS Pricing', labelAr: 'باقات الأسعار', icon: DollarSign, adminOnly: true },
     { value: 'auth', label: 'Authentication', labelAr: 'المصادقة', icon: ShieldCheck, adminOnly: true },
     { value: 'payment', label: 'Payment Methods', labelAr: 'طرق الدفع', icon: CreditCard, adminOnly: true },
     { value: 'data', label: 'Data Management', labelAr: 'إدارة البيانات', icon: Database, adminOnly: true },
