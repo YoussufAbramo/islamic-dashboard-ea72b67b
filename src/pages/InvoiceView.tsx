@@ -31,7 +31,9 @@ const getCurrencySymbol = (): string => {
   try { const raw = localStorage.getItem('app_currency'); if (raw) return JSON.parse(raw).symbol || '$'; } catch {} return '$';
 };
 const getActiveGateways = (): string[] => {
-  try { const raw = localStorage.getItem('app_active_gateways'); if (raw) { const parsed = JSON.parse(raw); return Object.keys(parsed).filter(k => parsed[k]); } } catch {} return [];
+  try { const raw = localStorage.getItem('app_active_gateways'); if (raw) { const parsed = JSON.parse(raw); return Object.keys(parsed).filter(k => parsed[k]); } } catch {}
+  // Default: paypal and paymob enabled
+  return ['paypal', 'paymob'];
 };
 
 const InvoiceView = () => {
