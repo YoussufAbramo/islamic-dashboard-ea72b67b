@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { FileText, CreditCard, Clock, CheckCircle, Printer, ArrowLeft } from 'lucide-react';
+import { FileText, CreditCard, Printer, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import type { FooterPosition } from '@/contexts/AppSettingsContext';
 
