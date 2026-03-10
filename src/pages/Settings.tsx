@@ -43,18 +43,6 @@ const Settings = () => {
 
   const visibleTabs = tabs.filter(t => !t.adminOnly || isAdmin);
 
-  const ComingSoonCard = ({ title, titleAr }: { title: string; titleAr: string }) => (
-    <Card>
-      <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-        <Construction className="h-12 w-12 text-muted-foreground mb-4" />
-        <CardTitle className="text-xl mb-2">{isAr ? titleAr : title}</CardTitle>
-        <CardDescription className="text-base">
-          {isAr ? 'هذه الميزة قيد التطوير وستكون متاحة قريباً.' : 'This feature is under development and will be available soon.'}
-        </CardDescription>
-      </CardContent>
-    </Card>
-  );
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
