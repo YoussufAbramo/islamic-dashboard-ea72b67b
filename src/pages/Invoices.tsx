@@ -279,6 +279,8 @@ const Invoices = () => {
         appName={appName}
         onCopyUrl={copyInvoiceUrl}
         role={role}
+        signatureImage={signatureImage}
+        stampImage={stampImage}
       />
     </div>
   );
