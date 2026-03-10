@@ -26,9 +26,9 @@ const GeneralSettings = () => {
 
   const timezones = useMemo(() => {
     try {
-      return Intl.supportedValuesOf('timeZone');
+      return (Intl as any).supportedValuesOf('timeZone') as string[];
     } catch {
-      return ['UTC', 'America/New_York', 'Europe/London', 'Asia/Dubai', 'Asia/Riyadh', 'Africa/Cairo'];
+      return ['UTC', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'Europe/London', 'Europe/Paris', 'Europe/Berlin', 'Asia/Dubai', 'Asia/Riyadh', 'Asia/Kolkata', 'Asia/Tokyo', 'Africa/Cairo', 'Australia/Sydney', 'Pacific/Auckland'];
     }
   }, []);
 

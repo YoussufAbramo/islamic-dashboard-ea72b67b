@@ -2,6 +2,42 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [2.5.0] - 2026-03-10
+
+### Added
+- Dashboard: Sales Performance bar chart and Attendance Performance pie chart (side-by-side)
+- Course image upload when creating/editing courses (stored in course-images bucket)
+- Status tab filters on Courses, Timetable, Certificates, Support, Subscriptions, and Reports pages
+- Delete buttons with confirmation dialogs on Students, Teachers, Courses, Invoices, Timetable, Certificates, Support, Subscriptions, Announcements, and Chats pages
+- Editable profile fields (name, phone, email) in Student and Teacher detail dialogs
+- Default timezone setting in General Settings
+- Timezone-based backup naming (HH-MM-SS format)
+- Backup comment/note field shown in backup list
+- "Delete Database Tables Data" option in Data Management (resets all table data)
+- Searchable subscription dropdowns (student/course/teacher) with search input
+- Auto-calculated renewal date based on subscription type
+- Weekly lessons and lesson duration fields in subscription creation
+- "View" action button on invoice table rows
+- Original price and sale price display on invoice view page
+- Invoice view: full logo image, removed app name text
+- Red notification/announcement badges in TopBar
+- Landing page button on Login page
+- App name fallback in sidebar when no logo is set
+- Human-readable status labels across all pages (Support, Subscriptions, Reports)
+- "Pricing Packages" renamed from "SaaS Pricing" in Settings
+- Authentication settings: Google, Facebook, Microsoft providers with brand logos
+- View invoice button in invoice list redirecting to invoice URL
+
+### Changed
+- Dashboard now has configurable "Performance Graphs" section at the top
+- Backup names include time (HH-MM-SS) based on app timezone
+- Subscription creation: course/student not required, supports weekly lessons and lesson duration
+- Version bumped to 2.5.0
+
+### Security
+- Lesson content and course sections restricted to enrolled users via RLS policies
+- `is_enrolled_in_course` security definer function for subscription-based access control
+
 ## [2.2.0] - 2026-03-10
 
 ### Added

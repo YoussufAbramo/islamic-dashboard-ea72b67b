@@ -8,6 +8,7 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
 import { HardDrive, Plus, Download, Trash2, Loader2, FileJson, FileText, Database, Clock, AlertTriangle, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -25,6 +26,7 @@ const BackupsSettings = () => {
   const { language } = useLanguage();
   const { pending } = useAppSettings();
   const isAr = language === 'ar';
+  const defaultTimezone = pending.defaultTimezone || 'UTC';
   const [backups, setBackups] = useState<BackupFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -33,9 +35,27 @@ const BackupsSettings = () => {
   const [deleting, setDeleting] = useState(false);
   const [downloading, setDownloading] = useState<string | null>(null);
 
-  // Create form
   const [backupName, setBackupName] = useState('');
   const [backupFormat, setBackupFormat] = useState<'json' | 'sql' | 'csv'>('json');
+  const [backupComment, setBackupComment] = useState('');
+
+  // Comments stored in localStorage
+  const [backupComments, setBackupComments] = useState<Record<string, string>>(() => {
+    try { const s = localStorage.getItem('backup_comments'); return s ? JSON.parse(s) : {}; } catch { return {}; }
+  });
+
+  const saveComment = (name: string, comment: string) => {
+    const next = { ...backupComments, [name]: comment };
+    setBackupComments(next);
+    localStorage.setItem('backup_comments', JSON.stringify(next));
+  };
+
+  const generateBackupName = () => {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-CA', { timeZone: defaultTimezone }); // YYYY-MM-DD
+    const timeStr = now.toLocaleTimeString('en-GB', { timeZone: defaultTimezone, hour12: false }).replace(/:/g, '-'); // HH-MM-SS
+    return `backup-${dateStr}_${timeStr}`;
+  };
 
   const ALL_BACKUP_TABLES = [
     { key: 'courses', label: 'Courses', labelAr: 'الدورات' },
@@ -64,97 +84,68 @@ const BackupsSettings = () => {
     Object.fromEntries(ALL_BACKUP_TABLES.map(t => [t.key, true]))
   );
 
-  const toggleTable = (key: string) => {
-    setSelectedTables(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
+  const toggleTable = (key: string) => setSelectedTables(prev => ({ ...prev, [key]: !prev[key] }));
   const selectAll = () => setSelectedTables(Object.fromEntries(ALL_BACKUP_TABLES.map(t => [t.key, true])));
   const deselectAll = () => setSelectedTables(Object.fromEntries(ALL_BACKUP_TABLES.map(t => [t.key, false])));
 
   const fetchBackups = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('manage-backups', {
-        body: { action: 'list_backups' },
-      });
+      const { data, error } = await supabase.functions.invoke('manage-backups', { body: { action: 'list_backups' } });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setBackups(data.backups || []);
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to load backups');
-    } finally {
-      setLoading(false);
-    }
+    } catch (err: any) { toast.error(err.message || 'Failed to load backups'); }
+    finally { setLoading(false); }
   }, []);
 
   useEffect(() => { fetchBackups(); }, [fetchBackups]);
 
   const handleCreate = async () => {
-    if (!backupName.trim()) {
-      toast.error(isAr ? 'أدخل اسم الملف' : 'Enter a file name');
-      return;
-    }
+    if (!backupName.trim()) { toast.error(isAr ? 'أدخل اسم الملف' : 'Enter a file name'); return; }
     setCreating(true);
     try {
       const tablesToBackup = Object.keys(selectedTables).filter(k => selectedTables[k]);
-      if (tablesToBackup.length === 0) {
-        toast.error(isAr ? 'اختر جدولاً واحداً على الأقل' : 'Select at least one table');
-        setCreating(false);
-        return;
-      }
+      if (tablesToBackup.length === 0) { toast.error(isAr ? 'اختر جدولاً واحداً على الأقل' : 'Select at least one table'); setCreating(false); return; }
       const appSettings = { ...pending };
       const { data, error } = await supabase.functions.invoke('manage-backups', {
         body: { action: 'create_backup', name: backupName.trim(), format: backupFormat, appSettings, tables: tablesToBackup },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast.success(isAr
-        ? `تم إنشاء النسخة الاحتياطية: ${data.file} (${data.total_records} سجل)`
-        : `Backup created: ${data.file} (${data.total_records} records)`
-      );
+      if (backupComment.trim()) saveComment(data.file, backupComment.trim());
+      toast.success(isAr ? `تم إنشاء النسخة الاحتياطية: ${data.file} (${data.total_records} سجل)` : `Backup created: ${data.file} (${data.total_records} records)`);
       setShowCreate(false);
       setBackupName('');
+      setBackupComment('');
       fetchBackups();
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to create backup');
-    } finally {
-      setCreating(false);
-    }
+    } catch (err: any) { toast.error(err.message || 'Failed to create backup'); }
+    finally { setCreating(false); }
   };
 
   const handleDownload = async (fileName: string) => {
     setDownloading(fileName);
     try {
-      const { data, error } = await supabase.functions.invoke('manage-backups', {
-        body: { action: 'download_backup', fileName },
-      });
+      const { data, error } = await supabase.functions.invoke('manage-backups', { body: { action: 'download_backup', fileName } });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       window.open(data.url, '_blank');
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to download backup');
-    } finally {
-      setDownloading(null);
-    }
+    } catch (err: any) { toast.error(err.message || 'Failed to download backup'); }
+    finally { setDownloading(null); }
   };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      const { data, error } = await supabase.functions.invoke('manage-backups', {
-        body: { action: 'delete_backup', fileName: deleteTarget },
-      });
+      const { data, error } = await supabase.functions.invoke('manage-backups', { body: { action: 'delete_backup', fileName: deleteTarget } });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       toast.success(isAr ? 'تم حذف النسخة الاحتياطية' : 'Backup deleted');
       setDeleteTarget(null);
       fetchBackups();
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to delete backup');
-    } finally {
-      setDeleting(false);
-    }
+    } catch (err: any) { toast.error(err.message || 'Failed to delete backup'); }
+    finally { setDeleting(false); }
   };
 
   const formatSize = (bytes: number) => {
@@ -176,31 +167,22 @@ const BackupsSettings = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="flex items-center gap-2">
-                  <HardDrive className="h-5 w-5 text-primary" />
-                  {isAr ? 'النسخ الاحتياطية' : 'Backups'}
-                </CardTitle>
-                <CardDescription>
-                  {isAr ? 'إنشاء وإدارة النسخ الاحتياطية لبيانات المنصة' : 'Create and manage platform data backups'}
-                </CardDescription>
+                <CardTitle className="flex items-center gap-2"><HardDrive className="h-5 w-5 text-primary" />{isAr ? 'النسخ الاحتياطية' : 'Backups'}</CardTitle>
+                <CardDescription>{isAr ? 'إنشاء وإدارة النسخ الاحتياطية لبيانات المنصة' : 'Create and manage platform data backups'}</CardDescription>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={fetchBackups} disabled={loading}>
-                  <RefreshCw className={`h-4 w-4 me-1 ${loading ? 'animate-spin' : ''}`} />
-                  {isAr ? 'تحديث' : 'Refresh'}
+                  <RefreshCw className={`h-4 w-4 me-1 ${loading ? 'animate-spin' : ''}`} />{isAr ? 'تحديث' : 'Refresh'}
                 </Button>
-                <Button size="sm" onClick={() => { setShowCreate(true); setBackupName(`backup-${new Date().toISOString().split('T')[0]}`); }}>
-                  <Plus className="h-4 w-4 me-1" />
-                  {isAr ? 'إنشاء نسخة احتياطية' : 'Create Backup'}
+                <Button size="sm" onClick={() => { setShowCreate(true); setBackupName(generateBackupName()); setBackupComment(''); }}>
+                  <Plus className="h-4 w-4 me-1" />{isAr ? 'إنشاء نسخة احتياطية' : 'Create Backup'}
                 </Button>
               </div>
             </div>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
+              <div className="flex items-center justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
             ) : backups.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <HardDrive className="h-10 w-10 mx-auto mb-3 opacity-50" />
@@ -215,31 +197,19 @@ const BackupsSettings = () => {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{backup.name}</p>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {new Date(backup.created_at).toLocaleString(isAr ? 'ar-SA' : 'en-US')}
-                        </span>
+                        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{new Date(backup.created_at).toLocaleString(isAr ? 'ar-SA' : 'en-US')}</span>
                         <span>{formatSize(backup.size)}</span>
                         <span className="uppercase font-mono">{backup.format}</span>
                       </div>
+                      {backupComments[backup.name] && (
+                        <p className="text-xs text-muted-foreground mt-1 italic">💬 {backupComments[backup.name]}</p>
+                      )}
                     </div>
                     <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDownload(backup.name)}
-                        disabled={downloading === backup.name}
-                      >
-                        {downloading === backup.name
-                          ? <Loader2 className="h-4 w-4 animate-spin" />
-                          : <Download className="h-4 w-4" />}
+                      <Button variant="ghost" size="sm" onClick={() => handleDownload(backup.name)} disabled={downloading === backup.name}>
+                        {downloading === backup.name ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDeleteTarget(backup.name)}
-                        className="text-destructive hover:text-destructive"
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(backup.name)} className="text-destructive hover:text-destructive">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -250,16 +220,10 @@ const BackupsSettings = () => {
           </CardContent>
         </Card>
 
-        {/* Auto Backups */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Clock className="h-4 w-4 text-primary" />
-              {isAr ? 'النسخ الاحتياطي التلقائي' : 'Auto Backups'}
-            </CardTitle>
-            <CardDescription>
-              {isAr ? 'هذه الميزة قيد التطوير وستكون متاحة قريباً' : 'This feature is under development and will be available soon'}
-            </CardDescription>
+            <CardTitle className="text-base flex items-center gap-2"><Clock className="h-4 w-4 text-primary" />{isAr ? 'النسخ الاحتياطي التلقائي' : 'Auto Backups'}</CardTitle>
+            <CardDescription>{isAr ? 'هذه الميزة قيد التطوير وستكون متاحة قريباً' : 'This feature is under development and will be available soon'}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between opacity-50 pointer-events-none">
@@ -273,45 +237,30 @@ const BackupsSettings = () => {
         </Card>
       </div>
 
-      {/* Create Backup Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Plus className="h-5 w-5 text-primary" />
-              {isAr ? 'إنشاء نسخة احتياطية' : 'Create Backup'}
-            </DialogTitle>
-            <DialogDescription>
-              {isAr
-                ? 'سيتم تصدير جميع بيانات المنصة وحفظها في ملف نسخة احتياطية'
-                : 'All platform data will be exported and saved as a backup file'}
-            </DialogDescription>
+            <DialogTitle className="flex items-center gap-2"><Plus className="h-5 w-5 text-primary" />{isAr ? 'إنشاء نسخة احتياطية' : 'Create Backup'}</DialogTitle>
+            <DialogDescription>{isAr ? 'سيتم تصدير جميع بيانات المنصة وحفظها في ملف نسخة احتياطية' : 'All platform data will be exported and saved as a backup file'}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>{isAr ? 'اسم الملف' : 'File Name'}</Label>
-              <Input
-                value={backupName}
-                onChange={(e) => setBackupName(e.target.value)}
-                placeholder={isAr ? 'اسم النسخة الاحتياطية' : 'Backup name'}
-              />
+              <Input value={backupName} onChange={(e) => setBackupName(e.target.value)} placeholder={isAr ? 'اسم النسخة الاحتياطية' : 'Backup name'} />
+              <p className="text-xs text-muted-foreground">{isAr ? `المنطقة الزمنية: ${defaultTimezone}` : `Timezone: ${defaultTimezone}`}</p>
+            </div>
+            <div className="space-y-2">
+              <Label>{isAr ? 'تعليق (اختياري)' : 'Comment (optional)'}</Label>
+              <Textarea value={backupComment} onChange={(e) => setBackupComment(e.target.value)} placeholder={isAr ? 'أضف تعليقاً على هذه النسخة...' : 'Add a comment for this backup...'} rows={2} />
             </div>
             <div className="space-y-2">
               <Label>{isAr ? 'التنسيق' : 'Format'}</Label>
               <Select value={backupFormat} onValueChange={(v) => setBackupFormat(v as any)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="json">
-                    <span className="flex items-center gap-2"><FileJson className="h-4 w-4" /> JSON</span>
-                  </SelectItem>
-                  <SelectItem value="sql">
-                    <span className="flex items-center gap-2"><Database className="h-4 w-4" /> SQL</span>
-                  </SelectItem>
-                  <SelectItem value="csv">
-                    <span className="flex items-center gap-2"><FileText className="h-4 w-4" /> CSV</span>
-                  </SelectItem>
+                  <SelectItem value="json"><span className="flex items-center gap-2"><FileJson className="h-4 w-4" /> JSON</span></SelectItem>
+                  <SelectItem value="sql"><span className="flex items-center gap-2"><Database className="h-4 w-4" /> SQL</span></SelectItem>
+                  <SelectItem value="csv"><span className="flex items-center gap-2"><FileText className="h-4 w-4" /> CSV</span></SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -326,20 +275,13 @@ const BackupsSettings = () => {
               <div className="grid grid-cols-2 gap-1.5 max-h-[200px] overflow-y-auto p-3 rounded-lg border border-border bg-muted/30">
                 {ALL_BACKUP_TABLES.map(t => (
                   <label key={t.key} className="flex items-center gap-2 py-1 cursor-pointer text-sm hover:text-foreground">
-                    <Checkbox
-                      checked={selectedTables[t.key]}
-                      onCheckedChange={() => toggleTable(t.key)}
-                    />
-                    <span className={selectedTables[t.key] ? 'text-foreground' : 'text-muted-foreground'}>
-                      {isAr ? t.labelAr : t.label}
-                    </span>
+                    <Checkbox checked={selectedTables[t.key]} onCheckedChange={() => toggleTable(t.key)} />
+                    <span className={selectedTables[t.key] ? 'text-foreground' : 'text-muted-foreground'}>{isAr ? t.labelAr : t.label}</span>
                   </label>
                 ))}
               </div>
               <p className="text-xs text-muted-foreground">
-                {isAr
-                  ? `${Object.values(selectedTables).filter(Boolean).length} من ${ALL_BACKUP_TABLES.length} جدول محدد`
-                  : `${Object.values(selectedTables).filter(Boolean).length} of ${ALL_BACKUP_TABLES.length} tables selected`}
+                {isAr ? `${Object.values(selectedTables).filter(Boolean).length} من ${ALL_BACKUP_TABLES.length} جدول محدد` : `${Object.values(selectedTables).filter(Boolean).length} of ${ALL_BACKUP_TABLES.length} tables selected`}
               </p>
             </div>
           </div>
@@ -353,29 +295,19 @@ const BackupsSettings = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-              {isAr ? 'حذف النسخة الاحتياطية' : 'Delete Backup'}
-            </AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-destructive" />{isAr ? 'حذف النسخة الاحتياطية' : 'Delete Backup'}</AlertDialogTitle>
             <AlertDialogDescription>
-              {isAr
-                ? `هل أنت متأكد من حذف "${deleteTarget}"؟ لا يمكن التراجع عن هذا الإجراء.`
-                : `Are you sure you want to delete "${deleteTarget}"? This cannot be undone.`}
+              {isAr ? `هل أنت متأكد من حذف "${deleteTarget}"؟ لا يمكن التراجع عن هذا الإجراء.` : `Are you sure you want to delete "${deleteTarget}"? This cannot be undone.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={handleDelete}
-              disabled={deleting}
-            >
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDelete} disabled={deleting}>
               {deleting && <Loader2 className="h-4 w-4 me-1 animate-spin" />}
-              {isAr ? 'نعم، حذف' : 'Yes, Delete'}
+              {isAr ? 'حذف' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
