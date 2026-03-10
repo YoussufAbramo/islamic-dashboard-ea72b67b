@@ -103,6 +103,8 @@ const Subscriptions = () => {
     return studentName.toLowerCase().includes(search.toLowerCase()) || courseName.toLowerCase().includes(search.toLowerCase());
   });
 
+  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
