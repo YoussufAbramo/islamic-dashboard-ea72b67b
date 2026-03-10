@@ -85,6 +85,10 @@ interface AppSettingsContextType {
   setSignatureImage: (s: string) => void;
   stampImage: string;
   setStampImage: (s: string) => void;
+  signaturePosition: FooterPosition;
+  setSignaturePosition: (p: FooterPosition) => void;
+  stampPosition: FooterPosition;
+  setStampPosition: (p: FooterPosition) => void;
   ltrFont: string;
   setLtrFont: (f: string) => void;
   rtlFont: string;
