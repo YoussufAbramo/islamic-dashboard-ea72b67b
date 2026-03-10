@@ -210,6 +210,8 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setSaved(prev => ({ ...prev, stampImage: s }));
     setPending(prev => ({ ...prev, stampImage: s }));
   }, []);
+  const setSignaturePosition = useCallback((p: FooterPosition) => { setPending(prev => ({ ...prev, signaturePosition: p })); }, []);
+  const setStampPosition = useCallback((p: FooterPosition) => { setPending(prev => ({ ...prev, stampPosition: p })); }, []);
   const setLtrFont = useCallback((f: string) => { setPending(p => ({ ...p, ltrFont: f })); }, []);
   const setRtlFont = useCallback((f: string) => { setPending(p => ({ ...p, rtlFont: f })); }, []);
   const setButtonShape = useCallback((s: ButtonShape) => { setPending(p => ({ ...p, buttonShape: s })); }, []);
