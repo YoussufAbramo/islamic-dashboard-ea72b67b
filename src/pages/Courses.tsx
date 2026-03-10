@@ -125,10 +125,14 @@ const Courses = () => {
               <DialogContent className="max-w-lg">
                 <DialogHeader><DialogTitle>{editCourse ? t('courses.edit') : t('courses.create')}</DialogTitle></DialogHeader>
                 <div className="space-y-3">
-                  <div><Label>{t('courses.name')} (EN)</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
-                  <div><Label>{t('courses.name')} (AR)</Label><Input value={form.title_ar} onChange={(e) => setForm({ ...form, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
-                  <div><Label>{t('courses.description')} (EN)</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
-                  <div><Label>{t('courses.description')} (AR)</Label><Textarea value={form.description_ar} onChange={(e) => setForm({ ...form, description_ar: e.target.value })} dir="rtl" className="text-right" /></div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><Label>{t('courses.name')} (EN)</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+                    <div><Label>{t('courses.name')} (AR)</Label><Input value={form.title_ar} onChange={(e) => setForm({ ...form, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><Label>{t('courses.description')} (EN)</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+                    <div><Label>{t('courses.description')} (AR)</Label><Textarea value={form.description_ar} onChange={(e) => setForm({ ...form, description_ar: e.target.value })} dir="rtl" className="text-right" /></div>
+                  </div>
                   <div>
                     <Label>{isAr ? 'صورة الدورة' : 'Course Image'}</Label>
                     {(form.image_url || imageFile) && (
