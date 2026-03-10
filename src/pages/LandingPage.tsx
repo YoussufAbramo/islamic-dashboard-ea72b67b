@@ -214,7 +214,7 @@ const LandingPage = () => {
                     <span className="text-sm font-medium text-foreground">{profile?.full_name || 'User'}</span>
                   </button>
                   <button
-                    onClick={async () => { const { signOut } = await import('@supabase/supabase-js').then(() => ({ signOut: async () => { await supabase.auth.signOut(); navigate('/login'); } })); await signOut(); }}
+                    onClick={async () => { await signOut(); navigate('/login'); }}
                     className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                     title={isAr ? 'تسجيل الخروج' : 'Logout'}
                   >
