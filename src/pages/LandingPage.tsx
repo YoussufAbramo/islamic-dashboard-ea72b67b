@@ -169,92 +169,95 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-lg">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-b border-border/40">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <button onClick={() => scrollTo('top')} className="flex items-center gap-2">
-              {appLogo ? (
-                <img src={appLogo} alt={appName} className="h-8 max-w-[160px] object-contain" />
-              ) : (
-                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <BookOpen className="h-5 w-5 text-primary" />
-                </div>
-              )}
-            </button>
-            <div className="hidden md:flex items-center gap-1">
-              {navLinks.map(link => (
-                <button
-                  key={link.id}
-                  onClick={() => scrollTo(link.id)}
-                  className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-accent/50"
-                >
-                  {link.label}
-                </button>
-              ))}
-              <div className="mx-2 h-6 w-px bg-border" />
-              <button onClick={toggleDark} className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors hover:bg-accent/50">
+            {/* Left: Logo + Nav Links */}
+            <div className="flex items-center gap-8">
+              <button onClick={() => scrollTo('top')} className="flex items-center gap-2 shrink-0">
+                {appLogo ? (
+                  <img src={appLogo} alt={appName} className="h-8 max-w-[140px] object-contain" />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+                      <BookOpen className="h-4 w-4 text-primary-foreground" />
+                    </div>
+                    <span className="font-bold text-foreground hidden sm:block">{appName}</span>
+                  </div>
+                )}
+              </button>
+              <div className="hidden md:flex items-center gap-1">
+                {navLinks.map(link => (
+                  <button
+                    key={link.id}
+                    onClick={() => scrollTo(link.id)}
+                    className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-muted"
+                  >
+                    {link.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: Actions */}
+            <div className="hidden md:flex items-center gap-2">
+              <button onClick={toggleDark} className="h-9 w-9 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                 {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
-              <button onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')} className="text-sm font-medium px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground transition-colors hover:bg-accent/50">
-                {language === 'en' ? 'العربية' : 'English'}
+              <button onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')} className="h-9 px-3 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                {language === 'en' ? 'AR' : 'EN'}
               </button>
-              <div className="mx-2 h-6 w-px bg-border" />
               {user ? (
-                <button
-                  onClick={() => navigate('/dashboard')}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-accent/50 transition-colors group"
-                >
-                  <Avatar className="h-7 w-7">
-                    <AvatarImage src={avatarUrl} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
-                      {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm font-medium text-foreground">{profile?.full_name || 'User'}</span>
-                  <span
-                    role="button"
-                    onClick={async (e) => { e.stopPropagation(); await signOut(); navigate('/login'); }}
-                    className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                    title={isAr ? 'تسجيل الخروج' : 'Logout'}
-                  >
-                    <LogOut className="h-3.5 w-3.5" />
-                  </span>
-                </button>
+                <div className="flex items-center gap-2 ms-1">
+                  <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')} className="gap-2">
+                    <Avatar className="h-5 w-5">
+                      <AvatarImage src={avatarUrl} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-[10px]">
+                        {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    {profile?.full_name || 'Dashboard'}
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-destructive" onClick={async () => { await signOut(); navigate('/login'); }}>
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </div>
               ) : (
-                <Button size="sm" onClick={() => navigate('/login')}>
+                <Button size="sm" onClick={() => navigate('/login')} className="ms-1">
                   {t('Get Started', 'ابدأ الآن')} <ChevronRight className="h-4 w-4 ms-1" />
                 </Button>
               )}
             </div>
+
+            {/* Mobile menu toggle */}
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
+
+          {/* Mobile Menu */}
           {mobileMenuOpen && (
-            <div className="md:hidden pb-4 space-y-2">
+            <div className="md:hidden pb-4 border-t border-border/40 pt-3 space-y-2">
               {navLinks.map(link => (
-                <button key={link.id} onClick={() => scrollTo(link.id)} className="block w-full text-start px-4 py-2 text-sm text-muted-foreground hover:text-foreground">
+                <button key={link.id} onClick={() => scrollTo(link.id)} className="block w-full text-start px-3 py-2 text-sm text-muted-foreground hover:text-foreground rounded-md hover:bg-muted">
                   {link.label}
                 </button>
               ))}
-              <div className="flex gap-2 px-4">
-                <button onClick={toggleDark} className="p-2 rounded-lg border border-border text-muted-foreground">
+              <div className="flex gap-2 px-3 pt-2">
+                <button onClick={toggleDark} className="h-9 w-9 rounded-md border border-border flex items-center justify-center text-muted-foreground">
                   {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                 </button>
-                <button onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')} className="text-sm px-3 py-1.5 rounded-lg border border-border text-muted-foreground">
+                <button onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')} className="h-9 px-3 rounded-md border border-border text-sm text-muted-foreground">
                   {language === 'en' ? 'العربية' : 'English'}
                 </button>
               </div>
-              <div className="flex gap-2 px-4">
+              <div className="px-3 pt-1">
                 {user ? (
-                  <Button size="sm" className="flex-1" onClick={() => navigate('/dashboard')}>
-                    <Avatar className="h-5 w-5 me-2">
-                      <AvatarFallback className="text-[10px]">{profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
-                    </Avatar>
+                  <Button size="sm" className="w-full" onClick={() => navigate('/dashboard')}>
                     {profile?.full_name || 'Dashboard'}
                   </Button>
                 ) : (
-                  <Button size="sm" className="flex-1" onClick={() => navigate('/login')}>
+                  <Button size="sm" className="w-full" onClick={() => navigate('/login')}>
                     {t('Get Started', 'ابدأ الآن')}
                   </Button>
                 )}
@@ -262,7 +265,6 @@ const LandingPage = () => {
             </div>
           )}
         </div>
-        <div className="h-1 w-full bg-gradient-to-r from-primary/0 via-primary to-primary/0" />
       </nav>
 
       {/* Hero Section */}

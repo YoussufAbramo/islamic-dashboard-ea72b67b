@@ -2,6 +2,25 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [2.9.0] - 2026-03-10
+
+### Added
+- Admins page: Lists all admin users under the Users sidebar category
+- Role Management page: Design-only page with preset roles (Admin, Teacher, Student as undeletable; Education Content Creator and Customer Support as deletable) with permissions matrix
+- Education System settings: New settings tab with Chat Permissions (moved from General) and coming soon features (Homework, Exams, Grading, Auto Scheduling, Learning Paths)
+- Calculator: Create Subscription button to generate a subscription from calculated pricing data with searchable student/course/teacher selectors
+- Announcements: "Everyone" badge displayed when target audience is all users
+
+### Changed
+- Landing page navbar: Fully redesigned with left-aligned logo + nav links and right-aligned actions (cleaner structure)
+- Settings save/discard bar: Now fixed at bottom center of screen, always visible when scrolling
+- Sidebar Mode renamed to "Main Menu Mode" in Appearance settings
+- Action buttons: Reduced to h-8 w-8 with h-3.5 icons across Courses, Teachers, Students, Timetable, and Support pages (matching Invoices)
+- Appearance settings: Changes now apply instantly for preview (color theme, button shape, fonts, sidebar mode) without saving — reverted on discard
+- Chat Permissions moved from General Settings to new Education System tab
+- RTL switch toggle: Fixed white dot positioning with `direction: ltr` override
+- Version bumped to 2.9.0
+
 ## [2.8.0] - 2026-03-10
 
 ### Added

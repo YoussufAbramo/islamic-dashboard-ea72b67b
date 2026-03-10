@@ -1,12 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Calculator as CalcIcon, DollarSign, Clock, CalendarDays, TrendingUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calculator as CalcIcon, DollarSign, Clock, CalendarDays, TrendingUp, Plus, Check, ChevronsUpDown } from 'lucide-react';
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 const Calculator = () => {
   const { language } = useLanguage();
@@ -20,6 +27,16 @@ const Calculator = () => {
     price_rate: '',
     total_price: '',
   });
+
+  const [createSubOpen, setCreateSubOpen] = useState(false);
+  const [students, setStudents] = useState<any[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [teachers, setTeachers] = useState<any[]>([]);
+  const [subForm, setSubForm] = useState({ student_id: '', course_id: '', teacher_id: '' });
+  const [studentOpen, setStudentOpen] = useState(false);
+  const [courseOpen, setCourseOpen] = useState(false);
+  const [teacherOpen, setTeacherOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   const calcTotalHours = (weeklyLessons: string, lessonDuration: string, subType: string) => {
     const wl = parseInt(weeklyLessons) || 1;
@@ -43,7 +60,6 @@ const Calculator = () => {
     setForm(prev => ({ ...prev, total_price: value, price_rate: rate }));
   };
 
-  // Recalculate when lessons/duration/type changes
   useEffect(() => {
     if (form.price_rate) {
       const rate = parseFloat(form.price_rate) || 0;
@@ -53,6 +69,40 @@ const Calculator = () => {
       }
     }
   }, [form.weekly_lessons, form.lesson_duration, form.subscription_type]);
+
+  const fetchFormData = async () => {
+    const [sRes, cRes, tRes] = await Promise.all([
+      supabase.from('students').select('id, profiles:students_user_id_profiles_fkey(full_name)'),
+      supabase.from('courses').select('id, title'),
+      supabase.from('teachers').select('id, profiles:teachers_user_id_profiles_fkey(full_name)'),
+    ]);
+    setStudents(sRes.data || []);
+    setCourses(cRes.data || []);
+    setTeachers(tRes.data || []);
+  };
+
+  const handleCreateSubscription = async () => {
+    if (!subForm.student_id || !subForm.course_id) {
+      toast.error(isAr ? 'يرجى اختيار الطالب والدورة' : 'Please select student and course');
+      return;
+    }
+    setCreating(true);
+    const { error } = await supabase.from('subscriptions').insert({
+      student_id: subForm.student_id,
+      course_id: subForm.course_id,
+      teacher_id: subForm.teacher_id || null,
+      subscription_type: form.subscription_type,
+      weekly_lessons: parseInt(form.weekly_lessons) || 1,
+      lesson_duration: parseInt(form.lesson_duration) || 60,
+      price: parseFloat(form.total_price) || 0,
+      status: 'active',
+    });
+    setCreating(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success(isAr ? 'تم إنشاء الاشتراك بنجاح' : 'Subscription created successfully');
+    setCreateSubOpen(false);
+    setSubForm({ student_id: '', course_id: '', teacher_id: '' });
+  };
 
   const perLesson = totalLessons > 0 && parseFloat(form.total_price) > 0
     ? (parseFloat(form.total_price) / totalLessons).toFixed(2)
@@ -71,7 +121,6 @@ const Calculator = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Input Section */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
@@ -83,23 +132,11 @@ const Calculator = () => {
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>{isAr ? 'الدروس الأسبوعية' : 'Weekly Lessons'}</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  max="30"
-                  value={form.weekly_lessons}
-                  onChange={(e) => setForm(prev => ({ ...prev, weekly_lessons: e.target.value }))}
-                />
+                <Input type="number" min="1" max="30" value={form.weekly_lessons} onChange={(e) => setForm(prev => ({ ...prev, weekly_lessons: e.target.value }))} />
               </div>
               <div className="space-y-2">
                 <Label>{isAr ? 'مدة الدرس (دقيقة)' : 'Duration (min)'}</Label>
-                <Input
-                  type="number"
-                  min="15"
-                  step="15"
-                  value={form.lesson_duration}
-                  onChange={(e) => setForm(prev => ({ ...prev, lesson_duration: e.target.value }))}
-                />
+                <Input type="number" min="15" step="15" value={form.lesson_duration} onChange={(e) => setForm(prev => ({ ...prev, lesson_duration: e.target.value }))} />
               </div>
               <div className="space-y-2">
                 <Label>{isAr ? 'فترة الاشتراك' : 'Period'}</Label>
@@ -112,7 +149,6 @@ const Calculator = () => {
                 </Select>
               </div>
             </div>
-
             <div className="pt-4 border-t border-border">
               <CardTitle className="text-lg flex items-center gap-2 mb-4">
                 <DollarSign className="h-5 w-5 text-primary" />
@@ -120,39 +156,17 @@ const Calculator = () => {
               </CardTitle>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-1">
-                    {isAr ? 'سعر الساعة' : 'Price Rate/hr'}
-                    <span className="text-xs text-muted-foreground">({currency.symbol})</span>
-                  </Label>
+                  <Label className="flex items-center gap-1">{isAr ? 'سعر الساعة' : 'Price Rate/hr'} <span className="text-xs text-muted-foreground">({currency.symbol})</span></Label>
                   <div className="relative">
                     <span className="absolute start-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">{currency.symbol}</span>
-                    <Input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={form.price_rate}
-                      onChange={(e) => handleRateChange(e.target.value)}
-                      placeholder="0.00"
-                      className="ps-8"
-                    />
+                    <Input type="number" min="0" step="0.01" value={form.price_rate} onChange={(e) => handleRateChange(e.target.value)} placeholder="0.00" className="ps-8" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-1">
-                    {isAr ? 'السعر الإجمالي' : 'Total Price'}
-                    <span className="text-xs text-muted-foreground">({currency.symbol}/{form.subscription_type === 'yearly' ? (isAr ? 'سنة' : 'year') : (isAr ? 'شهر' : 'month')})</span>
-                  </Label>
+                  <Label className="flex items-center gap-1">{isAr ? 'السعر الإجمالي' : 'Total Price'} <span className="text-xs text-muted-foreground">({currency.symbol}/{form.subscription_type === 'yearly' ? (isAr ? 'سنة' : 'year') : (isAr ? 'شهر' : 'month')})</span></Label>
                   <div className="relative">
                     <span className="absolute start-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">{currency.symbol}</span>
-                    <Input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={form.total_price}
-                      onChange={(e) => handleTotalChange(e.target.value)}
-                      placeholder="0.00"
-                      className="ps-8"
-                    />
+                    <Input type="number" min="0" step="0.01" value={form.total_price} onChange={(e) => handleTotalChange(e.target.value)} placeholder="0.00" className="ps-8" />
                   </div>
                 </div>
               </div>
@@ -160,7 +174,6 @@ const Calculator = () => {
           </CardContent>
         </Card>
 
-        {/* Summary Section */}
         <div className="space-y-4">
           <Card className="border-primary/20 bg-primary/5">
             <CardHeader className="pb-2">
@@ -184,7 +197,6 @@ const Calculator = () => {
                   <Badge variant="outline" className="text-sm">{currency.symbol}{perLesson}</Badge>
                 </div>
               </div>
-
               {parseFloat(form.total_price) > 0 && (
                 <div className="pt-3 border-t border-primary/20">
                   <div className="text-center">
@@ -192,12 +204,15 @@ const Calculator = () => {
                     <p className="text-2xl font-bold text-primary">{currency.symbol}{form.price_rate || '0.00'}</p>
                   </div>
                   <div className="text-center mt-3">
-                    <p className="text-xs text-muted-foreground mb-1">
-                      {isAr ? 'الإجمالي' : 'Total'} / {form.subscription_type === 'yearly' ? (isAr ? 'سنة' : 'year') : (isAr ? 'شهر' : 'month')}
-                    </p>
+                    <p className="text-xs text-muted-foreground mb-1">{isAr ? 'الإجمالي' : 'Total'} / {form.subscription_type === 'yearly' ? (isAr ? 'سنة' : 'year') : (isAr ? 'شهر' : 'month')}</p>
                     <p className="text-3xl font-bold">{currency.symbol}{form.total_price || '0.00'}</p>
                   </div>
                 </div>
+              )}
+              {parseFloat(form.total_price) > 0 && (
+                <Button className="w-full mt-2" onClick={() => { fetchFormData(); setCreateSubOpen(true); }}>
+                  <Plus className="h-4 w-4 me-2" />{isAr ? 'إنشاء اشتراك' : 'Create Subscription'}
+                </Button>
               )}
             </CardContent>
           </Card>
@@ -223,6 +238,78 @@ const Calculator = () => {
           )}
         </div>
       </div>
+
+      {/* Create Subscription Dialog */}
+      <Dialog open={createSubOpen} onOpenChange={setCreateSubOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{isAr ? 'إنشاء اشتراك من الحاسبة' : 'Create Subscription from Calculator'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="p-3 rounded-lg bg-muted/50 space-y-1 text-sm">
+              <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'النوع' : 'Type'}</span><span className="font-medium">{form.subscription_type}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'دروس أسبوعية' : 'Weekly Lessons'}</span><span className="font-medium">{form.weekly_lessons}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'مدة الدرس' : 'Duration'}</span><span className="font-medium">{form.lesson_duration} min</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'السعر' : 'Price'}</span><span className="font-medium font-bold">{currency.symbol}{form.total_price}</span></div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>{isAr ? 'الطالب' : 'Student'} *</Label>
+              <Popover open={studentOpen} onOpenChange={setStudentOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-between font-normal">
+                    {subForm.student_id ? students.find(s => s.id === subForm.student_id)?.profiles?.full_name || '...' : (isAr ? 'اختر طالب' : 'Select student')}
+                    <ChevronsUpDown className="ms-2 h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                  <Command><CommandInput placeholder={isAr ? 'بحث...' : 'Search...'} /><CommandList><CommandEmpty>{isAr ? 'لا نتائج' : 'No results'}</CommandEmpty><CommandGroup>
+                    {students.map(s => <CommandItem key={s.id} value={s.profiles?.full_name || s.id} onSelect={() => { setSubForm(f => ({...f, student_id: s.id})); setStudentOpen(false); }}><Check className={cn("me-2 h-4 w-4", subForm.student_id === s.id ? "opacity-100" : "opacity-0")} />{s.profiles?.full_name}</CommandItem>)}
+                  </CommandGroup></CommandList></Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="space-y-2">
+              <Label>{isAr ? 'الدورة' : 'Course'} *</Label>
+              <Popover open={courseOpen} onOpenChange={setCourseOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-between font-normal">
+                    {subForm.course_id ? courses.find(c => c.id === subForm.course_id)?.title || '...' : (isAr ? 'اختر دورة' : 'Select course')}
+                    <ChevronsUpDown className="ms-2 h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                  <Command><CommandInput placeholder={isAr ? 'بحث...' : 'Search...'} /><CommandList><CommandEmpty>{isAr ? 'لا نتائج' : 'No results'}</CommandEmpty><CommandGroup>
+                    {courses.map(c => <CommandItem key={c.id} value={c.title} onSelect={() => { setSubForm(f => ({...f, course_id: c.id})); setCourseOpen(false); }}><Check className={cn("me-2 h-4 w-4", subForm.course_id === c.id ? "opacity-100" : "opacity-0")} />{c.title}</CommandItem>)}
+                  </CommandGroup></CommandList></Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="space-y-2">
+              <Label>{isAr ? 'المعلم (اختياري)' : 'Teacher (optional)'}</Label>
+              <Popover open={teacherOpen} onOpenChange={setTeacherOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-between font-normal">
+                    {subForm.teacher_id ? teachers.find(t => t.id === subForm.teacher_id)?.profiles?.full_name || '...' : (isAr ? 'اختر معلم' : 'Select teacher')}
+                    <ChevronsUpDown className="ms-2 h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                  <Command><CommandInput placeholder={isAr ? 'بحث...' : 'Search...'} /><CommandList><CommandEmpty>{isAr ? 'لا نتائج' : 'No results'}</CommandEmpty><CommandGroup>
+                    {teachers.map(t => <CommandItem key={t.id} value={t.profiles?.full_name || t.id} onSelect={() => { setSubForm(f => ({...f, teacher_id: t.id})); setTeacherOpen(false); }}><Check className={cn("me-2 h-4 w-4", subForm.teacher_id === t.id ? "opacity-100" : "opacity-0")} />{t.profiles?.full_name}</CommandItem>)}
+                  </CommandGroup></CommandList></Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateSubOpen(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
+            <Button onClick={handleCreateSubscription} disabled={creating}>{creating ? (isAr ? 'جاري الإنشاء...' : 'Creating...') : (isAr ? 'إنشاء الاشتراك' : 'Create Subscription')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
