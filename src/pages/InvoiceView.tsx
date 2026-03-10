@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { FileText, CreditCard, Printer, ArrowLeft, BookOpen } from 'lucide-react';
 import { format } from 'date-fns';
 import type { FooterPosition } from '@/contexts/AppSettingsContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const statusConfig: Record<string, { bg: string; label: string }> = {
   pending: { bg: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30', label: 'Pending' },
