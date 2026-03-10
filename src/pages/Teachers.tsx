@@ -123,8 +123,8 @@ const Teachers = () => {
                 <TableCell>{teacher.profiles?.email}</TableCell>
                 <TableCell>{teacher.specialization}</TableCell>
                 <TableCell className="flex gap-1">
-                  <Button variant="ghost" size="icon" onClick={() => viewDetails(teacher)}><Eye className="h-4 w-4" /></Button>
-                  {role === 'admin' && <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => setDeleteTarget(teacher.id)}><Trash2 className="h-4 w-4" /></Button>}
+                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted" onClick={() => viewDetails(teacher)}><Eye className="h-4 w-4" /></Button>
+                  {role === 'admin' && <Button variant="ghost" size="icon" className="rounded-full hover:bg-destructive/10 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(teacher.id)}><Trash2 className="h-4 w-4" /></Button>}
                 </TableCell>
               </TableRow>
             ))}

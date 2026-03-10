@@ -55,8 +55,8 @@ const InvoiceView = () => {
   const appName = localStorage.getItem('app_name') || 'Quran E-Learning Platform - CodeCom.dev';
   const appLogo = localStorage.getItem('app_logo') || '/logo.png';
   const appFavicon = localStorage.getItem('app_favicon') || '/favicon.png';
-  const signatureImage = localStorage.getItem('app_signature_image') || '';
-  const stampImage = localStorage.getItem('app_stamp_image') || '';
+  const signatureImage = localStorage.getItem('app_signature_image') || '/signature.png';
+  const stampImage = localStorage.getItem('app_stamp_image') || '/stamp.jpg';
   const signaturePosition = (localStorage.getItem('app_signature_position') || 'left') as FooterPosition;
   const stampPosition = (localStorage.getItem('app_stamp_position') || 'right') as FooterPosition;
   const activeGatewayIds = getActiveGateways();

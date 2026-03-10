@@ -121,7 +121,7 @@ const Timetable = () => {
               <TableCell><Badge variant={statusColors[entry.status] as any}>{getLabel(timetableStatusLabels, entry.status, isAr)}</Badge></TableCell>
               {isAdmin && (
                 <TableCell>
-                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => setDeleteTarget(entry.id)}>
+                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-destructive/10 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(entry.id)}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </TableCell>
