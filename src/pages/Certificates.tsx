@@ -67,6 +67,8 @@ const Certificates = () => {
     return c ? (isAr && c.title_ar ? c.title_ar : c.title) : '';
   };
 
+  const esc = (s: string) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
   const handlePrint = (cert: any, design: CertDesign = 'classic') => {
     setTimeout(() => {
       const printWindow = window.open('', '_blank', 'width=800,height=600');
