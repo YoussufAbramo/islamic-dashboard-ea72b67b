@@ -7,8 +7,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Download, FileText, Printer } from 'lucide-react';
+import { Download, FileText, Printer, ArrowUp, ArrowDown } from 'lucide-react';
 import { format } from 'date-fns';
+
+type SortOrder = 'newest' | 'oldest';
 
 const Reports = () => {
   const { language } = useLanguage();
