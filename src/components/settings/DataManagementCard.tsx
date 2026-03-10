@@ -34,6 +34,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const [clearLoading, setClearLoading] = useState(false);
   const [backupDownloaded, setBackupDownloaded] = useState(false);
   const [backupLoading, setBackupLoading] = useState(false);
+  const [eraseSummary, setEraseSummary] = useState<{ counts: Record<string, number>; total: number } | null>(null);
   const [appNameInput, setAppNameInput] = useState('');
   const [deleteCodeInput, setDeleteCodeInput] = useState('');
   const [understandCheck, setUnderstandCheck] = useState(false);
@@ -203,10 +204,16 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+      
+      setEraseSummary({
+        counts: data.counts || {},
+        total: data.total_deleted || 0,
+      });
+      
       toast.success(
         isAr
-          ? `تم مسح جميع البيانات. تم حذف ${data.deleted_users} مستخدمين وحفظ ${data.preserved_admins} مدير`
-          : `All data erased. Deleted ${data.deleted_users} users, preserved ${data.preserved_admins} admin(s).`
+          ? `تم مسح جميع البيانات. تم حذف ${data.total_deleted} سجل وحفظ ${data.preserved_admins} مدير`
+          : `All data erased. Deleted ${data.total_deleted} records, preserved ${data.preserved_admins} admin(s).`
       );
       resetClearState();
     } catch (err: any) {
@@ -527,6 +534,43 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
             >
               {clearLoading && <Loader2 className="h-4 w-4 me-1 animate-spin" />}
               {isAr ? 'مسح جميع البيانات نهائياً' : 'Permanently Erase All Data'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Erase Summary Report */}
+      <Dialog open={!!eraseSummary} onOpenChange={(open) => !open && setEraseSummary(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-primary">
+              <CheckCircle2 className="h-5 w-5" />
+              {isAr ? 'تقرير المسح' : 'Erase Summary Report'}
+            </DialogTitle>
+            <DialogDescription>
+              {isAr
+                ? `تم حذف ${eraseSummary?.total || 0} سجل بنجاح`
+                : `Successfully deleted ${eraseSummary?.total || 0} records`}
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="h-[300px] rounded-lg border border-border bg-muted/30 p-3">
+            <div className="space-y-1">
+              {eraseSummary && Object.entries(eraseSummary.counts)
+                .filter(([, count]) => count > 0)
+                .sort(([, a], [, b]) => b - a)
+                .map(([table, count]) => (
+                  <div key={table} className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted">
+                    <span className="text-sm font-medium">{table.replace(/_/g, ' ')}</span>
+                    <span className="text-sm font-mono text-destructive">-{count}</span>
+                  </div>
+                ))}
+              {eraseSummary && Object.values(eraseSummary.counts).every(c => c === 0) && (
+                <p className="text-center text-muted-foreground py-4">{isAr ? 'لا توجد بيانات للحذف' : 'No data to delete'}</p>
+              )}
+            </div>
+          </ScrollArea>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEraseSummary(null)}>
+              {isAr ? 'إغلاق' : 'Close'}
             </Button>
           </DialogFooter>
         </DialogContent>

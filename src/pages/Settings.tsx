@@ -13,6 +13,7 @@ import AuthenticationSettings from '@/components/settings/AuthenticationSettings
 import GeneralSettings from '@/components/settings/GeneralSettings';
 import LandingContentSettings from '@/components/settings/LandingContentSettings';
 import SaaSPricingSettings from '@/components/settings/SaaSPricingSettings';
+import BackupsSettings from '@/components/settings/BackupsSettings';
 
 type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing' | 'backups' | 'export-import';
 
@@ -37,7 +38,7 @@ const Settings = () => {
     { value: 'auth', label: 'Authentication', labelAr: 'المصادقة', icon: ShieldCheck, adminOnly: true },
     { value: 'payment', label: 'Payment Methods', labelAr: 'طرق الدفع', icon: CreditCard, adminOnly: true },
     { value: 'data', label: 'Data Management', labelAr: 'إدارة البيانات', icon: Database, adminOnly: true },
-    { value: 'backups', label: 'Backups', labelAr: 'النسخ الاحتياطية', icon: HardDrive, adminOnly: true, comingSoon: true },
+    { value: 'backups', label: 'Backups', labelAr: 'النسخ الاحتياطية', icon: HardDrive, adminOnly: true },
     { value: 'export-import', label: 'Export/Import Setup', labelAr: 'تصدير/استيراد الإعداد', icon: ArrowDownUp, adminOnly: true, comingSoon: true },
   ];
 
@@ -110,7 +111,7 @@ const Settings = () => {
           {activeTab === 'auth' && isAdmin && <AuthenticationSettings />}
           {activeTab === 'payment' && isAdmin && <PaymentGatewayCard isAr={isAr} />}
           {activeTab === 'data' && isAdmin && <DataManagementCard isAr={isAr} />}
-          {activeTab === 'backups' && isAdmin && <ComingSoonCard title="Backups" titleAr="النسخ الاحتياطية" />}
+          {activeTab === 'backups' && isAdmin && <BackupsSettings />}
           {activeTab === 'export-import' && isAdmin && <ComingSoonCard title="Export/Import Setup" titleAr="تصدير/استيراد الإعداد" />}
         </div>
       </div>

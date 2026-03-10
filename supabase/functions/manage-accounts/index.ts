@@ -301,7 +301,6 @@ Deno.serve(async (req) => {
 
     // ==================== CLEAR ALL ====================
     if (action === 'clear_all') {
-      // Get admin user IDs to preserve
       const { data: adminRoles } = await adminClient.from('user_roles').select('user_id').eq('role', 'admin')
       const adminIds = (adminRoles || []).map(r => r.user_id)
 
@@ -310,34 +309,39 @@ Deno.serve(async (req) => {
       }
 
       const errors: string[] = []
-      const tryDelete = async (table: string, query: any) => {
+      const counts: Record<string, number> = {}
+
+      const countAndDelete = async (table: string, query: any) => {
+        // Count first
+        const countQuery = await adminClient.from(table).select('id', { count: 'exact', head: true })
+        const before = countQuery.count || 0
         const { error } = await query
         if (error) errors.push(`${table}: ${error.message}`)
+        // Count after
+        const afterQuery = await adminClient.from(table).select('id', { count: 'exact', head: true })
+        const after = afterQuery.count || 0
+        counts[table] = before - after
       }
 
-      // Delete in FK-safe order — use .neq('id', '00000000-0000-0000-0000-000000000000') as "match all"
       const matchAll = '00000000-0000-0000-0000-000000000000'
-      await tryDelete('chat_messages', adminClient.from('chat_messages').delete().neq('id', matchAll))
-      await tryDelete('attendance', adminClient.from('attendance').delete().neq('id', matchAll))
-      await tryDelete('student_progress', adminClient.from('student_progress').delete().neq('id', matchAll))
-      await tryDelete('timetable_entries', adminClient.from('timetable_entries').delete().neq('id', matchAll))
-      await tryDelete('chats', adminClient.from('chats').delete().neq('id', matchAll))
-      await tryDelete('certificates', adminClient.from('certificates').delete().neq('id', matchAll))
-      await tryDelete('invoices', adminClient.from('invoices').delete().neq('id', matchAll))
-      await tryDelete('subscriptions', adminClient.from('subscriptions').delete().neq('id', matchAll))
-      await tryDelete('lessons', adminClient.from('lessons').delete().neq('id', matchAll))
-      await tryDelete('course_sections', adminClient.from('course_sections').delete().neq('id', matchAll))
-      await tryDelete('courses', adminClient.from('courses').delete().neq('id', matchAll))
-      await tryDelete('notifications', adminClient.from('notifications').delete().neq('id', matchAll))
-      await tryDelete('announcements', adminClient.from('announcements').delete().neq('id', matchAll))
-      await tryDelete('support_tickets', adminClient.from('support_tickets').delete().neq('id', matchAll))
-
-      // Delete non-admin students, teachers, profiles, roles
-      await tryDelete('students', adminClient.from('students').delete().not('user_id', 'in', `(${adminIds.join(',')})`))
-      await tryDelete('teachers', adminClient.from('teachers').delete().not('user_id', 'in', `(${adminIds.join(',')})`))
-      await tryDelete('profiles', adminClient.from('profiles').delete().not('id', 'in', `(${adminIds.join(',')})`))
-      await tryDelete('user_roles', adminClient.from('user_roles').delete().not('user_id', 'in', `(${adminIds.join(',')})`))
-
+      await countAndDelete('chat_messages', adminClient.from('chat_messages').delete().neq('id', matchAll))
+      await countAndDelete('attendance', adminClient.from('attendance').delete().neq('id', matchAll))
+      await countAndDelete('student_progress', adminClient.from('student_progress').delete().neq('id', matchAll))
+      await countAndDelete('timetable_entries', adminClient.from('timetable_entries').delete().neq('id', matchAll))
+      await countAndDelete('chats', adminClient.from('chats').delete().neq('id', matchAll))
+      await countAndDelete('certificates', adminClient.from('certificates').delete().neq('id', matchAll))
+      await countAndDelete('invoices', adminClient.from('invoices').delete().neq('id', matchAll))
+      await countAndDelete('subscriptions', adminClient.from('subscriptions').delete().neq('id', matchAll))
+      await countAndDelete('lessons', adminClient.from('lessons').delete().neq('id', matchAll))
+      await countAndDelete('course_sections', adminClient.from('course_sections').delete().neq('id', matchAll))
+      await countAndDelete('courses', adminClient.from('courses').delete().neq('id', matchAll))
+      await countAndDelete('notifications', adminClient.from('notifications').delete().neq('id', matchAll))
+      await countAndDelete('announcements', adminClient.from('announcements').delete().neq('id', matchAll))
+      await countAndDelete('support_tickets', adminClient.from('support_tickets').delete().neq('id', matchAll))
+      await countAndDelete('students', adminClient.from('students').delete().not('user_id', 'in', `(${adminIds.join(',')})`))
+      await countAndDelete('teachers', adminClient.from('teachers').delete().not('user_id', 'in', `(${adminIds.join(',')})`))
+      await countAndDelete('profiles', adminClient.from('profiles').delete().not('id', 'in', `(${adminIds.join(',')})`))
+      await countAndDelete('user_roles', adminClient.from('user_roles').delete().not('user_id', 'in', `(${adminIds.join(',')})`))
 
       // Delete non-admin auth users
       const { data: { users } } = await adminClient.auth.admin.listUsers()
@@ -352,8 +356,11 @@ Deno.serve(async (req) => {
           }
         }
       }
+      counts['auth_users'] = deletedUsers
 
-      return new Response(JSON.stringify({ success: true, deleted_users: deletedUsers, preserved_admins: adminIds.length, errors: errors.length > 0 ? errors : undefined }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      const totalDeleted = Object.values(counts).reduce((sum, c) => sum + c, 0)
+
+      return new Response(JSON.stringify({ success: true, deleted_users: deletedUsers, preserved_admins: adminIds.length, counts, total_deleted: totalDeleted, errors: errors.length > 0 ? errors : undefined }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     // ==================== CLEAR SEED (sample data only) ====================
