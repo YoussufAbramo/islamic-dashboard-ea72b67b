@@ -168,7 +168,7 @@ const AppearanceSettings = () => {
             <Label>{isAr ? 'شعار التطبيق' : 'App Logo'}</Label>
             <div className="flex items-center gap-4">
               {appLogo ? (
-                <img src={appLogo} alt="Logo" className="h-14 w-14 rounded-lg object-cover border border-border" />
+                <img src={appLogo} alt="Logo" className="h-14 max-w-[200px] rounded-lg object-contain border border-border" />
               ) : (
                 <div className="h-14 w-14 rounded-lg border-2 border-dashed border-border flex items-center justify-center">
                   <Upload className="h-5 w-5 text-muted-foreground" />

@@ -15,13 +15,22 @@ interface DataManagementCardProps {
   isAr: boolean;
 }
 
+const SEED_LOG_KEY = 'app_seed_log_history';
+
 const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const { appName } = useAppSettings();
   const [seedLoading, setSeedLoading] = useState(false);
   const [eraseSeedLoading, setEraseSeedLoading] = useState(false);
-  const [seedLog, setSeedLog] = useState<string[]>([]);
+  const [seedLog, setSeedLog] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(SEED_LOG_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
   const [showSeedLog, setShowSeedLog] = useState(false);
-  const [clearStep, setClearStep] = useState(0); // 0=hidden, 1=first, 2=second, 3=final
+  const [scanLoading, setScanLoading] = useState(false);
+  const [confirmEraseSeed, setConfirmEraseSeed] = useState(false);
+  const [clearStep, setClearStep] = useState(0);
   const [clearLoading, setClearLoading] = useState(false);
   const [backupDownloaded, setBackupDownloaded] = useState(false);
   const [backupLoading, setBackupLoading] = useState(false);
@@ -29,13 +38,17 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const [deleteCodeInput, setDeleteCodeInput] = useState('');
   const [understandCheck, setUnderstandCheck] = useState(false);
 
+  const persistLog = (log: string[]) => {
+    setSeedLog(log);
+    localStorage.setItem(SEED_LOG_KEY, JSON.stringify(log));
+  };
+
   const handleSeedData = async () => {
     setSeedLoading(true);
-    setSeedLog([]);
-    const log: string[] = [];
+    const log = [...seedLog];
     const addLog = (msg: string) => {
       log.push(`[${new Date().toLocaleTimeString()}] ${msg}`);
-      setSeedLog([...log]);
+      persistLog([...log]);
     };
     try {
       addLog(isAr ? '🚀 بدء إضافة البيانات التجريبية...' : '🚀 Starting seed process...');
@@ -64,11 +77,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       addLog(isAr ? '✅ تمت العملية بنجاح!' : '✅ Seed completed successfully!');
       setShowSeedLog(true);
 
-      toast.success(
-        isAr
-          ? `تم إضافة البيانات التجريبية بنجاح`
-          : `Sample data added successfully`
-      );
+      toast.success(isAr ? 'تم إضافة البيانات التجريبية بنجاح' : 'Sample data added successfully');
     } catch (err: any) {
       addLog(`❌ ${err.message || 'Failed to seed data'}`);
       setShowSeedLog(true);
@@ -78,16 +87,57 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
     }
   };
 
+  const handleScanSampleData = async () => {
+    setScanLoading(true);
+    const log = [...seedLog];
+    const addLog = (msg: string) => {
+      log.push(`[${new Date().toLocaleTimeString()}] ${msg}`);
+      persistLog([...log]);
+    };
+    try {
+      addLog(isAr ? '🔍 جاري فحص البيانات التجريبية...' : '🔍 Scanning for sample data...');
+      
+      // Check for sample users (emails ending with @sample.edu)
+      const { data: sampleProfiles } = await supabase.from('profiles').select('id, email').like('email', '%@sample.edu');
+      const sampleCount = sampleProfiles?.length || 0;
+      
+      if (sampleCount > 0) {
+        addLog(isAr ? `📊 تم العثور على ${sampleCount} مستخدمين تجريبيين (@sample.edu)` : `📊 Found ${sampleCount} sample users (@sample.edu)`);
+        sampleProfiles?.forEach(p => {
+          addLog(`   • ${p.email}`);
+        });
+      } else {
+        addLog(isAr ? '✅ لا توجد بيانات تجريبية' : '✅ No sample data found');
+      }
+      
+      setShowSeedLog(true);
+    } catch (err: any) {
+      addLog(`❌ ${err.message || 'Scan failed'}`);
+      setShowSeedLog(true);
+    } finally {
+      setScanLoading(false);
+    }
+  };
+
   const handleEraseSeedData = async () => {
     setEraseSeedLoading(true);
+    setConfirmEraseSeed(false);
+    const log = [...seedLog];
+    const addLog = (msg: string) => {
+      log.push(`[${new Date().toLocaleTimeString()}] ${msg}`);
+      persistLog([...log]);
+    };
     try {
+      addLog(isAr ? '🗑️ جاري مسح البيانات التجريبية...' : '🗑️ Erasing sample data...');
       const { data, error } = await supabase.functions.invoke('manage-accounts', {
         body: { action: 'clear_seed' },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+      addLog(isAr ? '✅ تم مسح البيانات التجريبية بنجاح' : '✅ Sample data erased successfully');
       toast.success(isAr ? 'تم مسح البيانات التجريبية بنجاح' : 'Sample data erased successfully');
     } catch (err: any) {
+      addLog(`❌ ${err.message || 'Failed to erase sample data'}`);
       toast.error(err.message || 'Failed to erase sample data');
     } finally {
       setEraseSeedLoading(false);
@@ -199,17 +249,23 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
                   ? 'إنشاء دورات ودروس وطلاب ومعلمين واشتراكات وحضور وإعلانات وإشعارات ومحادثات وتذاكر دعم وشهادات تجريبية'
                   : 'Create sample courses, lessons, students, teachers, subscriptions, attendance, announcements, notifications, chats, support tickets, and certificates'}
               </p>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Button onClick={handleSeedData} disabled={seedLoading} size="sm">
                   {seedLoading && <Loader2 className="h-4 w-4 me-1 animate-spin" />}
                   {isAr ? 'إضافة بيانات تجريبية' : 'Seed Sample Data'}
                 </Button>
-                {seedLog.length > 0 && (
-                  <Button variant="outline" size="sm" onClick={() => setShowSeedLog(true)}>
-                    <ScrollText className="h-4 w-4 me-1" />
-                    {isAr ? 'عرض السجل' : 'View Log'}
-                  </Button>
-                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    handleScanSampleData();
+                    setShowSeedLog(true);
+                  }}
+                  disabled={scanLoading}
+                >
+                  {scanLoading ? <Loader2 className="h-4 w-4 me-1 animate-spin" /> : <ScrollText className="h-4 w-4 me-1" />}
+                  {isAr ? 'عرض السجل' : 'View Log'}
+                </Button>
               </div>
             </div>
           </div>
@@ -224,7 +280,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
                   ? 'مسح البيانات التجريبية التي تم إضافتها فقط. لن يتأثر أي بيانات مستخدمين حقيقية.'
                   : 'Erase only the sample data that was seeded. No real user data will be affected.'}
               </p>
-              <Button variant="outline" size="sm" onClick={handleEraseSeedData} disabled={eraseSeedLoading}>
+              <Button variant="outline" size="sm" onClick={() => setConfirmEraseSeed(true)} disabled={eraseSeedLoading}>
                 {eraseSeedLoading && <Loader2 className="h-4 w-4 me-1 animate-spin" />}
                 {isAr ? 'مسح البيانات التجريبية' : 'Erase Sample Data'}
               </Button>
@@ -249,25 +305,58 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
         </CardContent>
       </Card>
 
+      {/* Confirm Erase Sample Data */}
+      <AlertDialog open={confirmEraseSeed} onOpenChange={setConfirmEraseSeed}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              {isAr ? 'تأكيد مسح البيانات التجريبية' : 'Confirm Erase Sample Data'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {isAr
+                ? 'سيتم حذف جميع المستخدمين التجريبيين (@sample.edu) وبياناتهم المرتبطة. هل أنت متأكد؟'
+                : 'This will delete all sample users (@sample.edu) and their associated data. Are you sure?'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleEraseSeedData}
+            >
+              {isAr ? 'نعم، مسح البيانات التجريبية' : 'Yes, Erase Sample Data'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Seed Log Dialog */}
       <Dialog open={showSeedLog} onOpenChange={setShowSeedLog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ScrollText className="h-5 w-5 text-primary" />
-              {isAr ? 'سجل البيانات التجريبية' : 'Seed Data Log'}
+              {isAr ? 'سجل البيانات التجريبية' : 'Data Log History'}
             </DialogTitle>
           </DialogHeader>
           <ScrollArea className="h-[300px] rounded-lg border border-border bg-muted/30 p-3">
             <div className="space-y-1 font-mono text-xs">
-              {seedLog.map((line, i) => (
+              {seedLog.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">{isAr ? 'لا يوجد سجل بعد' : 'No log entries yet'}</p>
+              ) : seedLog.map((line, i) => (
                 <p key={i} className={line.includes('❌') ? 'text-destructive' : line.includes('✅') ? 'text-primary' : 'text-foreground'}>
                   {line}
                 </p>
               ))}
             </div>
           </ScrollArea>
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0">
+            {seedLog.length > 0 && (
+              <Button variant="ghost" size="sm" onClick={() => { persistLog([]); }}>
+                {isAr ? 'مسح السجل' : 'Clear Log'}
+              </Button>
+            )}
             <Button variant="outline" onClick={() => setShowSeedLog(false)}>
               {isAr ? 'إغلاق' : 'Close'}
             </Button>
@@ -285,8 +374,8 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
             </AlertDialogTitle>
             <AlertDialogDescription>
               {isAr
-                ? 'أنت على وشك مسح جميع البيانات من النظام. هذا يشمل جميع الدورات والطلاب والمعلمين والاشتراكات. هل تريد المتابعة؟'
-                : 'You are about to erase all data from the system. This includes all courses, students, teachers, and subscriptions. Do you want to continue?'}
+                ? 'أنت على وشك مسح جميع البيانات من النظام. هذا يشمل جميع الدورات والطلاب والمعلمين والاشتراكات والفواتير والمحادثات والإعلانات والإشعارات والشهادات وتذاكر الدعم. هل تريد المتابعة؟'
+                : 'You are about to erase all data from the system. This includes all courses, sections, lessons, timetable entries, attendance records, certificates, support tickets, chats, messages, announcements, notifications, teachers, students, subscriptions, and invoices. Do you want to continue?'}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

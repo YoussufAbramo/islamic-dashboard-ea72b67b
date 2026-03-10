@@ -144,6 +144,7 @@ const LandingPage = () => {
   };
 
   const navLinks = [
+    { label: t('Home', 'الرئيسية'), id: 'top' },
     { label: t('Features', 'المميزات'), id: 'features' },
     { label: t('Why Us', 'لماذا نحن'), id: 'whyus' },
     { label: t('Pricing', 'الأسعار'), id: 'pricing' },
@@ -157,16 +158,15 @@ const LandingPage = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-lg">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center gap-2">
+            <button onClick={() => scrollTo('top')} className="flex items-center gap-2">
               {appLogo ? (
-                <img src={appLogo} alt={appName} className="h-8 w-8 rounded-lg object-cover" />
+                <img src={appLogo} alt={appName} className="h-8 max-w-[160px] object-contain" />
               ) : (
                 <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
                   <BookOpen className="h-5 w-5 text-primary" />
                 </div>
               )}
-              <span className="text-xl font-bold font-amiri text-foreground">{appName}</span>
-            </div>
+            </button>
             <div className="hidden md:flex items-center gap-1">
               {navLinks.map(link => (
                 <button
@@ -244,7 +244,7 @@ const LandingPage = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-16 overflow-hidden">
+      <section id="top" className="relative pt-16 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img src={islamicPatternHero} alt="" className="w-full h-full object-cover opacity-20 dark:opacity-10" />
           <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
