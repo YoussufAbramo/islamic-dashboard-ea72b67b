@@ -258,7 +258,9 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    handleScanSampleData();
+                    if (!showSeedLog) {
+                      handleScanSampleData();
+                    }
                     setShowSeedLog(true);
                   }}
                   disabled={scanLoading}

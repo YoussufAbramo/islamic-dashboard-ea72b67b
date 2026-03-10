@@ -95,6 +95,20 @@ const LandingPage = () => {
 
   const appName = pending.appName || 'Islamic Dashboard';
   const appLogo = pending.appLogo;
+  const favicon = localStorage.getItem('app_favicon') || '';
+
+  // Apply favicon on landing page
+  useEffect(() => {
+    if (favicon) {
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+      }
+      link.href = favicon;
+    }
+  }, [favicon]);
 
   const toggleDark = () => {
     document.documentElement.classList.toggle('dark');
