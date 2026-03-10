@@ -31,6 +31,7 @@ import Announcements from "./pages/Announcements";
 import Notifications from "./pages/Notifications";
 import Invoices from "./pages/Invoices";
 import InvoiceView from "./pages/InvoiceView";
+import LandingPage from "./pages/LandingPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
