@@ -126,7 +126,7 @@ const Courses = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((course) => (
+            {paginatedItems.map((course) => (
               <TableRow key={course.id}>
                 <TableCell className="font-medium">{language === 'ar' && course.title_ar ? course.title_ar : course.title}</TableCell>
                 <TableCell><Badge variant={statusColor[course.status] as any}>{t(`courses.${course.status}`)}</Badge></TableCell>
@@ -142,6 +142,7 @@ const Courses = () => {
           </TableBody>
         </Table>
       </div>
+      <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
     </div>
   );
 };

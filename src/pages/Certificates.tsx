@@ -233,7 +233,7 @@ const Certificates = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCerts.map(cert => (
+                {paginatedItems.map(cert => (
                   <TableRow key={cert.id}>
                     <TableCell><Badge variant="outline">{cert.certificate_number}</Badge></TableCell>
                     <TableCell>{isAr && cert.title_ar ? cert.title_ar : cert.title}</TableCell>
@@ -256,6 +256,7 @@ const Certificates = () => {
           </CardContent>
         </Card>
       )}
+      <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
     </div>
   );
 };

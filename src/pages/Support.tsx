@@ -146,7 +146,7 @@ const Support = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((ticket) => (
+            {paginatedItems.map((ticket) => (
               <TableRow key={ticket.id}>
                 <TableCell className="font-medium">{ticket.subject}</TableCell>
                 <TableCell>{ticket.name}</TableCell>
@@ -162,6 +162,7 @@ const Support = () => {
           </TableBody>
         </Table>
       </div>
+      <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
 
       {/* Enhanced Detail Dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>

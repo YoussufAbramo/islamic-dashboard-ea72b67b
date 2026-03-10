@@ -136,7 +136,7 @@ const Subscriptions = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((sub) => (
+            {paginatedItems.map((sub) => (
               <TableRow key={sub.id}>
                 <TableCell className="font-medium">{sub.students?.profiles?.full_name || '-'}</TableCell>
                 <TableCell>{sub.courses?.title || '-'}</TableCell>
@@ -152,6 +152,7 @@ const Subscriptions = () => {
           </TableBody>
         </Table>
       </div>
+      <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
 
       {/* Detail dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>

@@ -172,7 +172,7 @@ const Chats = () => {
           </CardHeader>
           <CardContent className="p-0">
             <ScrollArea className="h-[calc(100vh-320px)]">
-              {filteredChats.map((chat) => (
+              {paginatedChats.map((chat) => (
                 <div
                   key={chat.id}
                   className={`p-3 border-b cursor-pointer hover:bg-muted/50 transition-colors ${selectedChat?.id === chat.id ? 'bg-muted' : ''}`}
@@ -193,6 +193,7 @@ const Chats = () => {
                 </p>
               )}
             </ScrollArea>
+            <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
           </CardContent>
         </Card>
 

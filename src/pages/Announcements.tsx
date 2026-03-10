@@ -85,28 +85,31 @@ const Announcements = () => {
       {filtered.length === 0 ? (
         <Card><CardContent className="pt-6 text-center text-muted-foreground">{isAr ? 'لا توجد إعلانات' : 'No announcements'}</CardContent></Card>
       ) : (
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-          {filtered.map(a => (
-            <Card key={a.id} className="cursor-pointer hover:shadow-md hover:border-primary/30 transition-all" onClick={() => { setSelected(a); setDetailOpen(true); }}>
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Megaphone className="h-4 w-4 text-primary" />
-                    {isAr && a.title_ar ? a.title_ar : a.title}
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    {a.target_audience !== 'all' && <Badge variant="outline" className="text-[10px]">{a.target_audience}</Badge>}
-                    {!a.is_active && <Badge variant="secondary" className="text-[10px]">{isAr ? 'غير نشط' : 'Inactive'}</Badge>}
+        <>
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+            {paginatedItems.map(a => (
+              <Card key={a.id} className="cursor-pointer hover:shadow-md hover:border-primary/30 transition-all" onClick={() => { setSelected(a); setDetailOpen(true); }}>
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Megaphone className="h-4 w-4 text-primary" />
+                      {isAr && a.title_ar ? a.title_ar : a.title}
+                    </CardTitle>
+                    <div className="flex items-center gap-2">
+                      {a.target_audience !== 'all' && <Badge variant="outline" className="text-[10px]">{a.target_audience}</Badge>}
+                      {!a.is_active && <Badge variant="secondary" className="text-[10px]">{isAr ? 'غير نشط' : 'Inactive'}</Badge>}
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground line-clamp-2">{isAr && a.content_ar ? a.content_ar : a.content}</p>
-                <p className="text-xs text-muted-foreground mt-2">{format(new Date(a.created_at), 'PPp')}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{isAr && a.content_ar ? a.content_ar : a.content}</p>
+                  <p className="text-xs text-muted-foreground mt-2">{format(new Date(a.created_at), 'PPp')}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
+        </>
       )}
 
       {/* Detail Dialog */}
