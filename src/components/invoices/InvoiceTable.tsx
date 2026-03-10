@@ -163,6 +163,11 @@ const InvoiceTable = ({ invoices, loading, isAr, formatPrice, onPreview, onCopyU
                       <Button variant="ghost" size="icon" onClick={() => onCopyUrl(inv)} title={isAr ? 'نسخ الرابط' : 'Copy URL'}>
                         <Copy className="h-4 w-4" />
                       </Button>
+                      {isAdmin && onDelete && (
+                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(inv)} title={isAr ? 'حذف' : 'Delete'}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
