@@ -234,15 +234,9 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    if (!showSeedLog) {
-                      handleScanSampleData();
-                    }
-                    setShowSeedLog(true);
-                  }}
-                  disabled={scanLoading}
+                  onClick={() => setShowSeedLog(true)}
                 >
-                  {scanLoading ? <Loader2 className="h-4 w-4 me-1 animate-spin" /> : <ScrollText className="h-4 w-4 me-1" />}
+                  <ScrollText className="h-4 w-4 me-1" />
                   {isAr ? 'عرض السجل' : 'View Log'}
                 </Button>
               </div>
