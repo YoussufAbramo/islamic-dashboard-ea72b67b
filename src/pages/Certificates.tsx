@@ -16,10 +16,11 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Award, Plus, Check, Search, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
+import { Award, Plus, Check, Search, ArrowUp, ArrowDown, Trash2, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { certificateStatusLabels, getLabel } from '@/lib/statusLabels';
+import { exportCertificatePdf } from '@/lib/certificatePdf';
 
 type CertDesign = 'classic' | 'modern' | 'elegant';
 
@@ -81,6 +82,26 @@ const Certificates = () => {
   };
 
   const esc = (s: string) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  const handleExportPdf = async (cert: any, design: CertDesign) => {
+    toast.info(isAr ? 'جاري تصدير PDF...' : 'Exporting PDF...');
+    try {
+      await exportCertificatePdf({
+        title: isAr && cert.title_ar ? cert.title_ar : cert.title,
+        recipientName: getProfileName(cert.recipient_id),
+        description: cert.description || '',
+        courseName: cert.course_id ? getCourseName(cert.course_id) : '',
+        date: format(new Date(cert.issued_at), 'PP'),
+        certNumber: cert.certificate_number,
+        appName,
+        design,
+        isAr,
+      });
+      toast.success(isAr ? 'تم تصدير الشهادة' : 'Certificate exported');
+    } catch {
+      toast.error(isAr ? 'فشل التصدير' : 'Export failed');
+    }
+  };
 
   const handlePrint = (cert: any, design: CertDesign = 'classic') => {
     setTimeout(() => {
@@ -294,10 +315,15 @@ const Certificates = () => {
                     <TableCell><Badge variant={statusColors[cert.status] as any}>{getLabel(certificateStatusLabels, cert.status, isAr)}</Badge></TableCell>
                     <TableCell>{format(new Date(cert.issued_at), 'PP')}</TableCell>
                     <TableCell>
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 flex-wrap">
                         {designOptions.map(d => (
-                          <Button key={d.value} variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={() => handlePrint(cert, d.value)} title={isAr ? d.labelAr : d.label}>
+                          <Button key={`print-${d.value}`} variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={() => handlePrint(cert, d.value)} title={`${isAr ? 'طباعة' : 'Print'}: ${isAr ? d.labelAr : d.label}`}>
                             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: d.color }} />
+                          </Button>
+                        ))}
+                        {designOptions.map(d => (
+                          <Button key={`pdf-${d.value}`} variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={() => handleExportPdf(cert, d.value)} title={`PDF: ${isAr ? d.labelAr : d.label}`}>
+                            <Download className="h-3.5 w-3.5" style={{ color: d.color }} />
                           </Button>
                         ))}
                         {isAdmin && (
