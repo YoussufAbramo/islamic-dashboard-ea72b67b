@@ -130,12 +130,12 @@ function loadSaved(): PendingSettings {
   // Clear stale settings when defaults change
   const storedVersion = localStorage.getItem('app_settings_version');
   if (storedVersion !== SETTINGS_VERSION) {
-    const keysToReset = [
+  const keysToReset = [
       'app_currency', 'app_color_theme', 'app_name', 'app_description',
       'app_logo', 'app_signature_image', 'app_stamp_image', 'app_signature_position',
       'app_stamp_position', 'app_ltr_font', 'app_rtl_font', 'app_button_shape',
       'app_currency_decimals', 'app_payment_gateway', 'app_default_language',
-      'app_default_timezone', 'app_favicon', 'app_active_gateways',
+      'app_default_timezone', 'app_favicon', 'app_active_gateways', 'app_sidebar_mode',
     ];
     keysToReset.forEach(k => localStorage.removeItem(k));
     localStorage.setItem('app_settings_version', SETTINGS_VERSION);
