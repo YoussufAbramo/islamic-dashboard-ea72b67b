@@ -130,7 +130,8 @@ const Invoices = () => {
   };
 
   const copyInvoiceUrl = (invoice: any) => {
-    navigator.clipboard.writeText(`${window.location.origin}/invoice/${invoice.id}`);
+    const token = invoice.share_token || '';
+    navigator.clipboard.writeText(`${window.location.origin}/invoice/${invoice.id}?token=${token}`);
     toast.success(isAr ? 'تم نسخ الرابط' : 'Invoice URL copied');
   };
 
