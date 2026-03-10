@@ -25,9 +25,11 @@ interface Props {
   appName: string;
   onCopyUrl: (inv: any) => void;
   role: string | null;
+  signatureImage?: string;
+  stampImage?: string;
 }
 
-const InvoicePreviewDialog = ({ open, onOpenChange, invoice, isAr, formatPrice, paymentGateway, appLogo, appName, onCopyUrl, role }: Props) => {
+const InvoicePreviewDialog = ({ open, onOpenChange, invoice, isAr, formatPrice, paymentGateway, appLogo, appName, onCopyUrl, role, signatureImage, stampImage }: Props) => {
   if (!invoice) return null;
 
   const sc = statusConfig[invoice.status] || statusConfig.pending;
@@ -202,7 +204,28 @@ const InvoicePreviewDialog = ({ open, onOpenChange, invoice, isAr, formatPrice, 
             </div>
           )}
 
-          {/* Signature / Stamp / Brand Footer */}
+        {/* Signature & Stamp */}
+          {(signatureImage || stampImage) && (
+            <div className="pt-4 border-t border-border">
+              <h4 className="font-medium text-sm mb-3">{isAr ? 'التوقيع والختم' : 'Signature & Stamp'}</h4>
+              <div className="flex items-end justify-between gap-4">
+                {signatureImage && (
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">{isAr ? 'التوقيع' : 'Signature'}</p>
+                    <img src={signatureImage} alt="Signature" className="h-16 w-auto object-contain" />
+                  </div>
+                )}
+                {stampImage && (
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">{isAr ? 'الختم' : 'Stamp'}</p>
+                    <img src={stampImage} alt="Stamp" className="h-16 w-auto object-contain" />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Brand Footer */}
           <div className="pt-4 border-t border-border flex items-center justify-between">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Stamp className="h-4 w-4" />

@@ -59,6 +59,8 @@ interface PendingSettings {
   appName: string;
   appDescription: string;
   appLogo: string;
+  signatureImage: string;
+  stampImage: string;
   ltrFont: string;
   rtlFont: string;
   buttonShape: ButtonShape;
@@ -79,6 +81,10 @@ interface AppSettingsContextType {
   setAppDescription: (d: string) => void;
   appLogo: string;
   setAppLogo: (l: string) => void;
+  signatureImage: string;
+  setSignatureImage: (s: string) => void;
+  stampImage: string;
+  setStampImage: (s: string) => void;
   ltrFont: string;
   setLtrFont: (f: string) => void;
   rtlFont: string;
@@ -105,6 +111,8 @@ function loadSaved(): PendingSettings {
     appName: localStorage.getItem('app_name') || 'EduDash',
     appDescription: localStorage.getItem('app_description') || 'Islamic Educational Dashboard',
     appLogo: localStorage.getItem('app_logo') || '',
+    signatureImage: localStorage.getItem('app_signature_image') || '',
+    stampImage: localStorage.getItem('app_stamp_image') || '',
     ltrFont: localStorage.getItem('app_ltr_font') || 'Inter',
     rtlFont: localStorage.getItem('app_rtl_font') || 'Cairo',
     buttonShape: (localStorage.getItem('app_button_shape') as ButtonShape) || 'rounded',
@@ -157,6 +165,8 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     localStorage.setItem('app_name', pending.appName);
     localStorage.setItem('app_description', pending.appDescription);
     localStorage.setItem('app_logo', pending.appLogo);
+    localStorage.setItem('app_signature_image', pending.signatureImage);
+    localStorage.setItem('app_stamp_image', pending.stampImage);
     localStorage.setItem('app_ltr_font', pending.ltrFont);
     localStorage.setItem('app_rtl_font', pending.rtlFont);
     localStorage.setItem('app_button_shape', pending.buttonShape);
@@ -182,6 +192,16 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setSaved(s => ({ ...s, appLogo: l }));
     setPending(p => ({ ...p, appLogo: l }));
   }, []);
+  const setSignatureImage = useCallback((s: string) => {
+    localStorage.setItem('app_signature_image', s);
+    setSaved(prev => ({ ...prev, signatureImage: s }));
+    setPending(prev => ({ ...prev, signatureImage: s }));
+  }, []);
+  const setStampImage = useCallback((s: string) => {
+    localStorage.setItem('app_stamp_image', s);
+    setSaved(prev => ({ ...prev, stampImage: s }));
+    setPending(prev => ({ ...prev, stampImage: s }));
+  }, []);
   const setLtrFont = useCallback((f: string) => { setPending(p => ({ ...p, ltrFont: f })); }, []);
   const setRtlFont = useCallback((f: string) => { setPending(p => ({ ...p, rtlFont: f })); }, []);
   const setButtonShape = useCallback((s: ButtonShape) => { setPending(p => ({ ...p, buttonShape: s })); }, []);
@@ -195,6 +215,8 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       appName: saved.appName, setAppName,
       appDescription: saved.appDescription, setAppDescription,
       appLogo: saved.appLogo, setAppLogo,
+      signatureImage: saved.signatureImage, setSignatureImage,
+      stampImage: saved.stampImage, setStampImage,
       ltrFont: saved.ltrFont, setLtrFont,
       rtlFont: saved.rtlFont, setRtlFont,
       buttonShape: saved.buttonShape, setButtonShape,
