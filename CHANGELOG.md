@@ -2,6 +2,60 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [2.0.0] - 2026-03-10
+
+### Added
+- Global `ErrorBoundary` component to prevent white-screen crashes
+- JSON-LD structured data for SEO (WebApplication schema)
+- Canonical URL and full Open Graph / Twitter Card metadata
+- `share_token` column on invoices for secure public link sharing
+- `get_invoice_by_share_token` RPC function for unauthenticated invoice access
+
+### Changed
+- Invoice public URLs now use `?token=` query param for secure access
+- SEO title updated to keyword-rich format (<60 chars)
+- Meta description expanded with actionable copy (<160 chars)
+
+### Security
+- **CRITICAL**: Removed dangerous anon RLS policy (`USING (true)`) on invoices table — was exposing all student PII and financial data to unauthenticated users
+- Enabled Row Level Security on `pricing_packages` and `landing_content` tables (policies existed but RLS was not enabled)
+- Draft courses now hidden from students (only published courses visible to non-admin/teacher roles)
+- Added error handling to `AppSettingsContext` to prevent provider crashes from corrupt localStorage
+
+### Fixed
+- `useAppSettings must be used within AppSettingsProvider` crash caused by corrupt localStorage JSON
+
+## [1.9.0] - 2026-03-10
+
+### Added
+- Language switcher on Landing Page (EN/AR toggle)
+- Home button in dashboard TopBar to navigate to Landing Page
+- Logout icon button in sidebar profile section
+- Invoice creation: original price, sale price, and course selection fields
+- Public invoice page (`/invoice/:id`) shows app branding (logo + name)
+- Payment method selection on public invoice page with "Pay Now" action
+
+### Changed
+- Removed profile icon from TopBar (moved to sidebar)
+- Invoice preview dialog no longer shows payment methods (moved to public page)
+- Logout moved from TopBar dropdown to sidebar as inline icon
+
+## [1.8.0] - 2026-03-10
+
+### Added
+- Decimal Places dropdown now shows inline examples (e.g., `2 — $1234.57`)
+- Favicon upload field in Settings > Appearance > Branding
+- Dynamic favicon updates via `useEffect` hook
+- "Get Started" button on Landing Page (replaces Login/Signup buttons)
+- Authenticated users see avatar + name on Landing Page (click navigates to dashboard)
+- App Name & App Description moved to General Settings
+
+### Changed
+- Sidebar header shows only app logo (centered), no text name
+- Dashboard "Upcoming Lessons" and "Recent Subscriptions" widgets side-by-side (50% width)
+- Sorting (Newest/Oldest) added to Support Help Center and Chats pages
+- Sort button height matched to adjacent search bar (`h-9`)
+
 ## [1.6.3] - 2026-03-10
 
 ### Added
