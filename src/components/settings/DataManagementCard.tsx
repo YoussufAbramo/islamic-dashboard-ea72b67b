@@ -88,37 +88,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
     }
   };
 
-  const handleScanSampleData = async () => {
-    setScanLoading(true);
-    const log = [...seedLog];
-    const addLog = (msg: string) => {
-      log.push(`[${new Date().toLocaleTimeString()}] ${msg}`);
-      persistLog([...log]);
-    };
-    try {
-      addLog(isAr ? '🔍 جاري فحص البيانات التجريبية...' : '🔍 Scanning for sample data...');
-      
-      // Check for sample users (emails ending with @sample.edu)
-      const { data: sampleProfiles } = await supabase.from('profiles').select('id, email').like('email', '%@sample.edu');
-      const sampleCount = sampleProfiles?.length || 0;
-      
-      if (sampleCount > 0) {
-        addLog(isAr ? `📊 تم العثور على ${sampleCount} مستخدمين تجريبيين (@sample.edu)` : `📊 Found ${sampleCount} sample users (@sample.edu)`);
-        sampleProfiles?.forEach(p => {
-          addLog(`   • ${p.email}`);
-        });
-      } else {
-        addLog(isAr ? '✅ لا توجد بيانات تجريبية' : '✅ No sample data found');
-      }
-      
-      setShowSeedLog(true);
-    } catch (err: any) {
-      addLog(`❌ ${err.message || 'Scan failed'}`);
-      setShowSeedLog(true);
-    } finally {
-      setScanLoading(false);
-    }
-  };
+  // Removed handleScanSampleData - View Log now just shows the persistent log history
 
   const handleEraseSeedData = async () => {
     setEraseSeedLoading(true);
