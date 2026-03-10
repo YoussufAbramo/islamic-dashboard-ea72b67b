@@ -37,6 +37,40 @@ const BackupsSettings = () => {
   const [backupName, setBackupName] = useState('');
   const [backupFormat, setBackupFormat] = useState<'json' | 'sql' | 'csv'>('json');
 
+  const ALL_BACKUP_TABLES = [
+    { key: 'courses', label: 'Courses', labelAr: 'الدورات' },
+    { key: 'course_sections', label: 'Course Sections', labelAr: 'أقسام الدورات' },
+    { key: 'lessons', label: 'Lessons', labelAr: 'الدروس' },
+    { key: 'students', label: 'Students', labelAr: 'الطلاب' },
+    { key: 'teachers', label: 'Teachers', labelAr: 'المعلمين' },
+    { key: 'profiles', label: 'Profiles', labelAr: 'الملفات الشخصية' },
+    { key: 'user_roles', label: 'User Roles', labelAr: 'أدوار المستخدمين' },
+    { key: 'subscriptions', label: 'Subscriptions', labelAr: 'الاشتراكات' },
+    { key: 'invoices', label: 'Invoices', labelAr: 'الفواتير' },
+    { key: 'timetable_entries', label: 'Timetable', labelAr: 'الجداول الزمنية' },
+    { key: 'attendance', label: 'Attendance', labelAr: 'الحضور' },
+    { key: 'certificates', label: 'Certificates', labelAr: 'الشهادات' },
+    { key: 'announcements', label: 'Announcements', labelAr: 'الإعلانات' },
+    { key: 'notifications', label: 'Notifications', labelAr: 'الإشعارات' },
+    { key: 'chats', label: 'Chats', labelAr: 'المحادثات' },
+    { key: 'chat_messages', label: 'Chat Messages', labelAr: 'رسائل المحادثات' },
+    { key: 'support_tickets', label: 'Support Tickets', labelAr: 'تذاكر الدعم' },
+    { key: 'student_progress', label: 'Student Progress', labelAr: 'تقدم الطلاب' },
+    { key: 'pricing_packages', label: 'Pricing Packages', labelAr: 'باقات الأسعار' },
+    { key: 'landing_content', label: 'Landing Content', labelAr: 'محتوى الصفحة' },
+  ];
+
+  const [selectedTables, setSelectedTables] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(ALL_BACKUP_TABLES.map(t => [t.key, true]))
+  );
+
+  const toggleTable = (key: string) => {
+    setSelectedTables(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const selectAll = () => setSelectedTables(Object.fromEntries(ALL_BACKUP_TABLES.map(t => [t.key, true])));
+  const deselectAll = () => setSelectedTables(Object.fromEntries(ALL_BACKUP_TABLES.map(t => [t.key, false])));
+
   const fetchBackups = useCallback(async () => {
     setLoading(true);
     try {
