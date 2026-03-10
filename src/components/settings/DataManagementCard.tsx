@@ -176,15 +176,27 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
 
   const handleEraseAll = async () => {
     setClearLoading(true);
+    const log = [...seedLog];
+    const addLog = (msg: string) => {
+      log.push(`[${new Date().toLocaleTimeString()}] ${msg}`);
+      persistLog([...log]);
+    };
     try {
+      addLog(isAr ? '⚠️ جاري مسح جميع البيانات...' : '⚠️ Erasing all data...');
       const { data, error } = await supabase.functions.invoke('manage-accounts', {
         body: { action: 'clear_all' },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       
+      const counts = data.counts || {};
+      Object.entries(counts).filter(([, v]) => (v as number) > 0).forEach(([table, count]) => {
+        addLog(`   🗑️ ${table}: -${count}`);
+      });
+      addLog(isAr ? `✅ تم مسح جميع البيانات (${data.total_deleted || 0} سجل، تم حفظ ${data.preserved_admins || 0} مدير)` : `✅ All data erased (${data.total_deleted || 0} records, preserved ${data.preserved_admins || 0} admin(s))`);
+
       setEraseSummary({
-        counts: data.counts || {},
+        counts,
         total: data.total_deleted || 0,
       });
       
@@ -195,6 +207,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       );
       resetClearState();
     } catch (err: any) {
+      addLog(`❌ ${err.message || 'Failed to erase data'}`);
       toast.error(err.message || 'Failed to erase data');
     } finally {
       setClearLoading(false);
