@@ -28,7 +28,6 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
     } catch { return []; }
   });
   const [showSeedLog, setShowSeedLog] = useState(false);
-  const [scanLoading, setScanLoading] = useState(false);
   const [confirmEraseSeed, setConfirmEraseSeed] = useState(false);
   const [clearStep, setClearStep] = useState(0);
   const [clearLoading, setClearLoading] = useState(false);
