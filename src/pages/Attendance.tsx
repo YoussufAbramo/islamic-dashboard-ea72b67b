@@ -43,7 +43,7 @@ const Attendance = () => {
   const [teachers, setTeachers] = useState<TeacherInfo[]>([]);
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
-  const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
+  
 
   const isAr = language === 'ar';
 
