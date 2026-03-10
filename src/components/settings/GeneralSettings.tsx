@@ -39,29 +39,14 @@ const GeneralSettings = () => {
             </div>
             <div className="space-y-2">
               <Label>{isAr ? 'عدد الأرقام العشرية' : 'Decimal Places'}</Label>
-              <RadioGroup
-                value={String(pending.currencyDecimals)}
-                onValueChange={(v) => updatePending({ currencyDecimals: Number(v) })}
-                className="flex gap-3"
-              >
-                {[0, 1, 2].map((d) => (
-                  <Label
-                    key={d}
-                    htmlFor={`decimal-${d}`}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all ${
-                      pending.currencyDecimals === d
-                        ? 'border-primary bg-primary/5 shadow-sm'
-                        : 'border-border hover:border-muted-foreground/30'
-                    }`}
-                  >
-                    <RadioGroupItem value={String(d)} id={`decimal-${d}`} />
-                    <div className="flex flex-col">
-                      <span className="text-sm font-mono font-bold">{d === 0 ? '1' : d === 1 ? '1.0' : '1.00'}</span>
-                      <span className="text-[10px] text-muted-foreground">{d} {isAr ? 'أرقام' : 'digits'}</span>
-                    </div>
-                  </Label>
-                ))}
-              </RadioGroup>
+              <Select value={String(pending.currencyDecimals)} onValueChange={(v) => updatePending({ currencyDecimals: Number(v) })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {[0, 1, 2, 3].map((d) => (
+                    <SelectItem key={d} value={String(d)}>{d} — {(1234.5678).toFixed(d)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <p className="text-xs text-muted-foreground">{isAr ? 'مثال' : 'Example'}: {pending.currency.symbol}{(1234.56).toFixed(pending.currencyDecimals)}</p>
             </div>
           </div>
