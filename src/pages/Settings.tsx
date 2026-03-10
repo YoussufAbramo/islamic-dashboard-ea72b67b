@@ -3,15 +3,17 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { Button } from '@/components/ui/button';
-import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2 } from 'lucide-react';
+import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 import AppearanceSettings from '@/components/settings/AppearanceSettings';
 import PaymentGatewayCard from '@/components/settings/PaymentGatewayCard';
 import DataManagementCard from '@/components/settings/DataManagementCard';
 import AuthenticationSettings from '@/components/settings/AuthenticationSettings';
 import GeneralSettings from '@/components/settings/GeneralSettings';
+import LandingContentSettings from '@/components/settings/LandingContentSettings';
+import SaaSPricingSettings from '@/components/settings/SaaSPricingSettings';
 
-type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data';
+type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing';
 
 const Settings = () => {
   const { language } = useLanguage();
@@ -29,6 +31,8 @@ const Settings = () => {
   const tabs: { value: SettingsTab; label: string; labelAr: string; icon: any; adminOnly?: boolean }[] = [
     { value: 'general', label: 'General', labelAr: 'عام', icon: Settings2 },
     { value: 'appearance', label: 'Appearance', labelAr: 'المظهر', icon: Palette },
+    { value: 'landing', label: 'Landing Page', labelAr: 'صفحة الهبوط', icon: Globe, adminOnly: true },
+    { value: 'pricing', label: 'SaaS Pricing', labelAr: 'باقات الأسعار', icon: DollarSign, adminOnly: true },
     { value: 'auth', label: 'Authentication', labelAr: 'المصادقة', icon: ShieldCheck, adminOnly: true },
     { value: 'payment', label: 'Payment Methods', labelAr: 'طرق الدفع', icon: CreditCard, adminOnly: true },
     { value: 'data', label: 'Data Management', labelAr: 'إدارة البيانات', icon: Database, adminOnly: true },
@@ -81,6 +85,8 @@ const Settings = () => {
         <div className="flex-1 min-w-0">
           {activeTab === 'general' && <GeneralSettings />}
           {activeTab === 'appearance' && <AppearanceSettings />}
+          {activeTab === 'landing' && isAdmin && <LandingContentSettings />}
+          {activeTab === 'pricing' && isAdmin && <SaaSPricingSettings />}
           {activeTab === 'auth' && isAdmin && <AuthenticationSettings />}
           {activeTab === 'payment' && isAdmin && <PaymentGatewayCard isAr={isAr} />}
           {activeTab === 'data' && isAdmin && <DataManagementCard isAr={isAr} />}
