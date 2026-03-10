@@ -203,6 +203,11 @@
     --sidebar-accent: 270 30% 18%;
     --sidebar-border: 270 25% 20%;
     --sidebar-ring: 290 55% 55%;
+    --sidebar-light-background: 270 15% 96%;
+    --sidebar-light-foreground: 270 25% 12%;
+    --sidebar-light-accent: 270 12% 90%;
+    --sidebar-light-accent-foreground: 270 25% 12%;
+    --sidebar-light-border: 270 12% 85%;
   }
   /* Purple - Dark */
   .dark.theme-purple {
