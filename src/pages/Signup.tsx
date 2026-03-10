@@ -23,6 +23,7 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
   const { t, language, setLanguage } = useLanguage();
+  const { appName, appDescription, appLogo } = useAppSettings();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
