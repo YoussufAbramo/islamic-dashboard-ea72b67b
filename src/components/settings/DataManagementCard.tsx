@@ -224,6 +224,38 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
     setUnderstandCheck(false);
   };
 
+  const handleDeleteTablesData = async () => {
+    setDeleteTablesLoading(true);
+    const log = [...seedLog];
+    const addLog = (msg: string) => {
+      log.push(`[${new Date().toLocaleTimeString()}] ${msg}`);
+      persistLog([...log]);
+    };
+    try {
+      addLog(isAr ? '🗑️ جاري حذف بيانات جداول قاعدة البيانات...' : '🗑️ Deleting database tables data...');
+      const { data, error } = await supabase.functions.invoke('manage-accounts', {
+        body: { action: 'clear_tables' },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      
+      const counts = data.counts || {};
+      Object.entries(counts).filter(([, v]) => (v as number) > 0).forEach(([table, count]) => {
+        addLog(`   🗑️ ${table}: -${count}`);
+      });
+      addLog(isAr ? `✅ تم حذف بيانات الجداول (${data.total_deleted || 0} سجل)` : `✅ Tables data deleted (${data.total_deleted || 0} records)`);
+
+      setEraseSummary({ counts, total: data.total_deleted || 0 });
+      setDeleteTablesOpen(false);
+      toast.success(isAr ? `تم حذف ${data.total_deleted} سجل` : `Deleted ${data.total_deleted} records`);
+    } catch (err: any) {
+      addLog(`❌ ${err.message || 'Failed to delete tables data'}`);
+      toast.error(err.message || 'Failed to delete tables data');
+    } finally {
+      setDeleteTablesLoading(false);
+    }
+  };
+
   const canDelete = backupDownloaded && appNameInput === appName && deleteCodeInput === 'ERASE NOW';
 
   return (
