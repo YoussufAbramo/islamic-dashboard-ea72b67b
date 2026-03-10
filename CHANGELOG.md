@@ -2,6 +2,24 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [2.6.0] - 2026-03-10
+
+### Added
+- Invoice deletion: Admin can delete invoices from the actions column with confirmation dialog
+- Dashboard overview: Added "Invoices" and "Pending Invoices" cards to the overview section
+- Landing page: Added logout icon button next to the user profile in the navbar
+- Invoice view: Both original price and sale price are now clearly displayed when a discount is applied
+
+### Changed
+- Auth page logo: Displayed as full image instead of circular/clipped
+- Dashboard sidebar logo: Displayed as full image instead of rounded square
+- Invoice view logo: App logo now renders as full image
+- TopBar icon buttons: Improved hover effect colors using semantic design tokens
+- Message deletion: Deleted messages stay in original order without re-fetching (preserves position and timestamp)
+- Timezone settings: Fixed selector — current value always visible, search works correctly with scrollable content
+- Subscription editing: Teacher and course assignments can now be edited on existing subscriptions
+- Version bumped to 2.6.0
+
 ## [2.5.0] - 2026-03-10
 
 ### Added
