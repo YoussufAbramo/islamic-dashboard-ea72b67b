@@ -414,6 +414,11 @@
     --sidebar-accent: 180 35% 16%;
     --sidebar-border: 180 30% 18%;
     --sidebar-ring: 170 55% 48%;
+    --sidebar-light-background: 180 15% 96%;
+    --sidebar-light-foreground: 180 30% 12%;
+    --sidebar-light-accent: 180 12% 90%;
+    --sidebar-light-accent-foreground: 180 30% 12%;
+    --sidebar-light-border: 180 12% 85%;
   }
   .dark.theme-teal {
     --background: 180 25% 6%;
