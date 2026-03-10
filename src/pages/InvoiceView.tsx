@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { FileText, CreditCard, Printer, ArrowLeft, BookOpen } from 'lucide-react';
 import { format } from 'date-fns';
 import type { FooterPosition } from '@/contexts/AppSettingsContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const statusConfig: Record<string, { bg: string; label: string }> = {
   pending: { bg: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30', label: 'Pending' },
@@ -58,6 +59,8 @@ const InvoiceView = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
   const [invoice, setInvoice] = useState<any>(null);
+  const { language } = useLanguage();
+  const isAr = language === 'ar';
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [selectedGateway, setSelectedGateway] = useState<string | null>(null);
@@ -215,48 +218,58 @@ const InvoiceView = () => {
         </div>
 
         {/* Payment Methods */}
-        {invoice.status !== 'paid' && invoice.status !== 'cancelled' && activeGateways.length > 0 && (
+        {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
           <div className="space-y-3 print:hidden">
             <h4 className="font-medium text-sm flex items-center gap-2">
               <CreditCard className="h-4 w-4" />
               Available Payment Methods
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {activeGateways.map((gw) => (
-                <button
-                  key={gw.id}
-                  onClick={() => setSelectedGateway(gw.id)}
-                  className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-start ${
-                    selectedGateway === gw.id
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-primary/30 hover:bg-muted/50'
-                  }`}
-                >
-                  <div className="h-10 w-14 flex items-center justify-center rounded-lg bg-background border border-border overflow-hidden">
-                    {logoErrors[gw.id] ? (
-                      <span className="text-xs font-bold text-muted-foreground">{gw.name}</span>
-                    ) : (
-                      <img
-                        src={gw.logo}
-                        alt={gw.name}
-                        className="h-8 w-12 object-contain"
-                        onError={() => setLogoErrors(prev => ({ ...prev, [gw.id]: true }))}
-                      />
+            {activeGateways.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {activeGateways.map((gw) => (
+                  <button
+                    key={gw.id}
+                    onClick={() => setSelectedGateway(gw.id)}
+                    className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-start ${
+                      selectedGateway === gw.id
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-primary/30 hover:bg-muted/50'
+                    }`}
+                  >
+                    <div className="h-10 w-14 flex items-center justify-center rounded-lg bg-background border border-border overflow-hidden">
+                      {logoErrors[gw.id] ? (
+                        <span className="text-xs font-bold text-muted-foreground">{gw.name}</span>
+                      ) : (
+                        <img
+                          src={gw.logo}
+                          alt={gw.name}
+                          className="h-8 w-12 object-contain"
+                          onError={() => setLogoErrors(prev => ({ ...prev, [gw.id]: true }))}
+                        />
+                      )}
+                    </div>
+                    <span className="text-sm font-medium">{gw.name}</span>
+                    {selectedGateway === gw.id && (
+                      <Badge className="ms-auto text-[10px]">Selected</Badge>
                     )}
-                  </div>
-                  <span className="text-sm font-medium">{gw.name}</span>
-                  {selectedGateway === gw.id && (
-                    <Badge className="ms-auto text-[10px]">Selected</Badge>
-                  )}
-                </button>
-              ))}
-            </div>
-            {selectedGateway && (
-              <Button className="w-full" size="lg" onClick={() => window.open(`#pay/${invoice.id}/${selectedGateway}`, '_blank')}>
-                <CreditCard className="h-4 w-4 me-2" />
-                Pay Now with {GATEWAYS.find(g => g.id === selectedGateway)?.name}
-              </Button>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">{isAr ? 'لم يتم تفعيل أي طريقة دفع بعد' : 'No payment methods configured yet.'}</p>
             )}
+            <Button
+              className="w-full"
+              size="lg"
+              disabled={!selectedGateway}
+              onClick={() => selectedGateway && window.open(`#pay/${invoice.id}/${selectedGateway}`, '_blank')}
+            >
+              <CreditCard className="h-4 w-4 me-2" />
+              {selectedGateway
+                ? `Pay Now with ${GATEWAYS.find(g => g.id === selectedGateway)?.name}`
+                : (isAr ? 'اختر طريقة الدفع' : 'Select a payment method')
+              }
+            </Button>
           </div>
         )}
 

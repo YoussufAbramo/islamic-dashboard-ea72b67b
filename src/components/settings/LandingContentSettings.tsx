@@ -7,10 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Save, Plus, Trash2, Globe, Megaphone, Star, Sparkles } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Save, Plus, Trash2, Globe, Megaphone, Star, Sparkles, Settings2, Search } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
-type ContentSection = 'hero' | 'features' | 'whyus' | 'cta';
+type ContentSection = 'general' | 'hero' | 'features' | 'whyus' | 'cta';
 
 interface SectionTab {
   key: ContentSection;
@@ -20,6 +21,7 @@ interface SectionTab {
 }
 
 const sectionTabs: SectionTab[] = [
+  { key: 'general', label: 'General & SEO', labelAr: 'عام وSEO', icon: Settings2 },
   { key: 'hero', label: 'Hero Section', labelAr: 'القسم الرئيسي', icon: Star },
   { key: 'features', label: 'Features Section', labelAr: 'قسم الميزات', icon: Sparkles },
   { key: 'whyus', label: 'Why Us Section', labelAr: 'قسم لماذا نحن', icon: Globe },
@@ -27,6 +29,23 @@ const sectionTabs: SectionTab[] = [
 ];
 
 const defaultContent: Record<string, Record<string, any>> = {
+  general: {
+    meta_title: '',
+    meta_title_ar: '',
+    meta_description: '',
+    meta_description_ar: '',
+    meta_keywords: '',
+    og_title: '',
+    og_description: '',
+    og_image: '',
+    sections_visible: {
+      hero: true,
+      features: true,
+      whyus: true,
+      pricing: true,
+      cta: true,
+    },
+  },
   hero: { title: 'Islamic Education Platform', title_ar: 'منصة التعليم الإسلامي', subtitle: 'Empower your institution with a comprehensive learning management system designed for Islamic education', subtitle_ar: 'مكّن مؤسستك بنظام إدارة تعليمي شامل مصمم للتعليم الإسلامي', cta: 'Get Started', cta_ar: 'ابدأ الآن' },
   features: { title: 'Everything You Need', title_ar: 'كل ما تحتاجه', subtitle: 'A complete suite of tools for modern Islamic education', subtitle_ar: 'مجموعة كاملة من الأدوات للتعليم الإسلامي الحديث' },
   whyus: {
@@ -44,7 +63,7 @@ const defaultContent: Record<string, Record<string, any>> = {
 const LandingContentSettings = () => {
   const { language } = useLanguage();
   const isAr = language === 'ar';
-  const [activeSection, setActiveSection] = useState<ContentSection>('hero');
+  const [activeSection, setActiveSection] = useState<ContentSection>('general');
   const [content, setContent] = useState<Record<string, Record<string, any>>>(defaultContent);
   const [saving, setSaving] = useState(false);
 
@@ -54,7 +73,11 @@ const LandingContentSettings = () => {
       if (data) {
         const merged = { ...defaultContent };
         data.forEach((item: any) => {
-          merged[item.section_key] = { ...defaultContent[item.section_key], ...item.content };
+          if (item.section_key === 'general') {
+            merged.general = { ...defaultContent.general, ...item.content };
+          } else {
+            merged[item.section_key] = { ...defaultContent[item.section_key], ...item.content };
+          }
         });
         setContent(merged);
       }
@@ -66,6 +89,19 @@ const LandingContentSettings = () => {
     setContent(prev => ({
       ...prev,
       [section]: { ...prev[section], [field]: value },
+    }));
+  };
+
+  const updateSectionVisibility = (sectionId: string, visible: boolean) => {
+    setContent(prev => ({
+      ...prev,
+      general: {
+        ...prev.general,
+        sections_visible: {
+          ...prev.general.sections_visible,
+          [sectionId]: visible,
+        },
+      },
     }));
   };
 
@@ -101,9 +137,72 @@ const LandingContentSettings = () => {
     updateField('whyus', 'reasons', reasons);
   };
 
+  const sectionVisibility = content.general?.sections_visible || { hero: true, features: true, whyus: true, pricing: true, cta: true };
+
   const renderSection = () => {
     const s = content[activeSection];
     switch (activeSection) {
+      case 'general':
+        return (
+          <div className="space-y-6">
+            {/* Section Visibility */}
+            <div>
+              <h3 className="font-medium mb-3">{isAr ? 'إظهار/إخفاء الأقسام' : 'Show/Hide Sections'}</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {[
+                  { id: 'hero', label: 'Hero', labelAr: 'الرئيسي' },
+                  { id: 'features', label: 'Features', labelAr: 'الميزات' },
+                  { id: 'whyus', label: 'Why Us', labelAr: 'لماذا نحن' },
+                  { id: 'pricing', label: 'Pricing', labelAr: 'الأسعار' },
+                  { id: 'cta', label: 'CTA', labelAr: 'دعوة للعمل' },
+                ].map(sec => (
+                  <div key={sec.id} className="flex items-center justify-between gap-2 p-3 rounded-lg border border-border">
+                    <span className="text-sm">{isAr ? sec.labelAr : sec.label}</span>
+                    <Switch
+                      checked={sectionVisibility[sec.id] !== false}
+                      onCheckedChange={(v) => updateSectionVisibility(sec.id, v)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Meta Data */}
+            <div>
+              <h3 className="font-medium mb-3 flex items-center gap-2">
+                <Search className="h-4 w-4" />
+                {isAr ? 'بيانات SEO' : 'SEO Meta Data'}
+              </h3>
+              <div className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div><Label>Meta Title (EN)</Label><Input value={s.meta_title || ''} onChange={e => updateField('general', 'meta_title', e.target.value)} placeholder="Islamic Education Platform" /></div>
+                  <div><Label>Meta Title (AR)</Label><Input dir="rtl" value={s.meta_title_ar || ''} onChange={e => updateField('general', 'meta_title_ar', e.target.value)} placeholder="منصة التعليم الإسلامي" /></div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div><Label>Meta Description (EN)</Label><Textarea value={s.meta_description || ''} onChange={e => updateField('general', 'meta_description', e.target.value)} placeholder="Describe your platform..." rows={2} /></div>
+                  <div><Label>Meta Description (AR)</Label><Textarea dir="rtl" value={s.meta_description_ar || ''} onChange={e => updateField('general', 'meta_description_ar', e.target.value)} placeholder="وصف المنصة..." rows={2} /></div>
+                </div>
+                <div>
+                  <Label>{isAr ? 'الكلمات المفتاحية' : 'Keywords'}</Label>
+                  <Input value={s.meta_keywords || ''} onChange={e => updateField('general', 'meta_keywords', e.target.value)} placeholder="islamic, education, quran, learning" />
+                </div>
+              </div>
+            </div>
+
+            {/* Open Graph */}
+            <div>
+              <h3 className="font-medium mb-3 flex items-center gap-2">
+                <Globe className="h-4 w-4" />
+                {isAr ? 'بيانات المشاركة (OG)' : 'Open Graph (OG) Data'}
+              </h3>
+              <div className="space-y-4">
+                <div><Label>OG Title</Label><Input value={s.og_title || ''} onChange={e => updateField('general', 'og_title', e.target.value)} placeholder="Title for social sharing" /></div>
+                <div><Label>OG Description</Label><Textarea value={s.og_description || ''} onChange={e => updateField('general', 'og_description', e.target.value)} placeholder="Description for social sharing" rows={2} /></div>
+                <div><Label>OG Image URL</Label><Input value={s.og_image || ''} onChange={e => updateField('general', 'og_image', e.target.value)} placeholder="https://..." /></div>
+              </div>
+            </div>
+          </div>
+        );
       case 'hero':
         return (
           <div className="space-y-4">
@@ -199,7 +298,7 @@ const LandingContentSettings = () => {
       <Card>
         <CardHeader>
           <CardTitle>{isAr ? sectionTabs.find(t => t.key === activeSection)?.labelAr : sectionTabs.find(t => t.key === activeSection)?.label}</CardTitle>
-          <CardDescription>{isAr ? 'تعديل محتوى هذا القسم من صفحة الهبوط' : 'Edit the content for this landing page section'}</CardDescription>
+          <CardDescription>{isAr ? 'تعديل محتوى وإعدادات صفحة الهبوط' : 'Edit landing page content and settings'}</CardDescription>
         </CardHeader>
         <CardContent>
           {renderSection()}
