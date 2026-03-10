@@ -83,6 +83,26 @@ const Certificates = () => {
 
   const esc = (s: string) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
+  const handleExportPdf = async (cert: any, design: CertDesign) => {
+    toast.info(isAr ? 'جاري تصدير PDF...' : 'Exporting PDF...');
+    try {
+      await exportCertificatePdf({
+        title: isAr && cert.title_ar ? cert.title_ar : cert.title,
+        recipientName: getProfileName(cert.recipient_id),
+        description: cert.description || '',
+        courseName: cert.course_id ? getCourseName(cert.course_id) : '',
+        date: format(new Date(cert.issued_at), 'PP'),
+        certNumber: cert.certificate_number,
+        appName,
+        design,
+        isAr,
+      });
+      toast.success(isAr ? 'تم تصدير الشهادة' : 'Certificate exported');
+    } catch {
+      toast.error(isAr ? 'فشل التصدير' : 'Export failed');
+    }
+  };
+
   const handlePrint = (cert: any, design: CertDesign = 'classic') => {
     setTimeout(() => {
       const printWindow = window.open('', '_blank', 'width=800,height=600');
