@@ -147,7 +147,10 @@ const Certificates = () => {
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-3xl font-bold shrink-0">{isAr ? 'الشهادات' : 'Certificates'}</h1>
         <div className="flex items-center gap-2 ms-auto">
-          <div className="relative">
+          <Button variant="outline" size="sm" onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')} className="gap-1">
+            {sortOrder === 'newest' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}
+            {sortOrder === 'newest' ? (isAr ? 'الأحدث' : 'Newest') : (isAr ? 'الأقدم' : 'Oldest')}
+          </Button>
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={isAr ? 'بحث...' : 'Search...'}
