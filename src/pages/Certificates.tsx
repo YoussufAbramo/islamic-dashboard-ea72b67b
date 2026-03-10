@@ -132,6 +132,8 @@ const Certificates = () => {
     return title.includes(q) || recipient.includes(q) || course.includes(q) || number.includes(q);
   });
 
+  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filteredCerts);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3">
