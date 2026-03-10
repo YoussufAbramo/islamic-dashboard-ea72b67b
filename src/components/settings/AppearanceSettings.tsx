@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Palette, Building2, Upload, Check, Type, RectangleHorizontal, Circle, Square, Search, Plus, AlignLeft, AlignCenter, AlignRight, Image, Moon, Sun } from 'lucide-react';
+import { Palette, Building2, Upload, Check, Type, RectangleHorizontal, Circle, Square, Search, Plus, AlignLeft, AlignCenter, AlignRight, Image, Moon, Sun, PanelLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
