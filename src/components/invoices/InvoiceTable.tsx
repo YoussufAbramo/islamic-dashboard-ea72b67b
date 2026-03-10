@@ -30,7 +30,7 @@ interface Props {
   isAdmin?: boolean;
 }
 
-const InvoiceTable = ({ invoices, loading, isAr, formatPrice, onPreview, onCopyUrl }: Props) => {
+const InvoiceTable = ({ invoices, loading, isAr, formatPrice, onPreview, onCopyUrl, onDelete, isAdmin }: Props) => {
   if (loading) {
     return (
       <div className="rounded-md border">
