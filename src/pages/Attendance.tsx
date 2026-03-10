@@ -31,7 +31,7 @@ interface TeacherInfo {
   profile?: { full_name: string };
 }
 
-type SortOrder = 'newest' | 'oldest';
+
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--destructive))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
