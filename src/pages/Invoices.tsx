@@ -36,7 +36,7 @@ const Invoices = () => {
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
 
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
-  const [courses, setCourses] = useState<any[]>([]);
+  const [courses, setCourses] = useState<any[]>([]); // kept for compatibility
   const [createForm, setCreateForm] = useState({
     subscription_id: '', billing_cycle: 'monthly', notes: '',
     original_price: '', sale_price: '', course_id: '',
