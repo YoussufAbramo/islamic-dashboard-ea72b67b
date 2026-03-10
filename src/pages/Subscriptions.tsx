@@ -112,11 +112,17 @@ const Subscriptions = () => {
     return result;
   }, [subscriptions, search, sortOrder]);
 
+  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold shrink-0">{t('subscriptions.title')}</h1>
         <div className="flex items-center gap-2 ms-auto">
+          <Button variant="outline" size="sm" onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')} className="gap-1">
+            {sortOrder === 'newest' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}
+            {sortOrder === 'newest' ? (language === 'ar' ? 'الأحدث' : 'Newest') : (language === 'ar' ? 'الأقدم' : 'Oldest')}
+          </Button>
           <div className="relative">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="ps-9 w-48 sm:w-64" />

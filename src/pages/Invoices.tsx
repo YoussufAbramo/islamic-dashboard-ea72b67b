@@ -142,12 +142,18 @@ const Invoices = () => {
     { value: 'cancelled', label: isAr ? 'ملغية' : 'Cancelled' },
   ];
 
+  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold shrink-0">{isAr ? 'الفواتير' : 'Invoices'}</h1>
         <div className="flex items-center gap-2 ms-auto">
+          <Button variant="outline" size="sm" onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')} className="gap-1">
+            {sortOrder === 'newest' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}
+            {sortOrder === 'newest' ? (isAr ? 'الأحدث' : 'Newest') : (isAr ? 'الأقدم' : 'Oldest')}
+          </Button>
           <div className="relative">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
