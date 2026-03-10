@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { usePagination } from '@/hooks/use-pagination';
+import PaginationControls from '@/components/PaginationControls';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
