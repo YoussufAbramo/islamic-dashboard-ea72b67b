@@ -117,6 +117,8 @@ function loadSaved(): PendingSettings {
     appLogo: localStorage.getItem('app_logo') || '',
     signatureImage: localStorage.getItem('app_signature_image') || '',
     stampImage: localStorage.getItem('app_stamp_image') || '',
+    signaturePosition: (localStorage.getItem('app_signature_position') as FooterPosition) || 'left',
+    stampPosition: (localStorage.getItem('app_stamp_position') as FooterPosition) || 'right',
     ltrFont: localStorage.getItem('app_ltr_font') || 'Inter',
     rtlFont: localStorage.getItem('app_rtl_font') || 'Cairo',
     buttonShape: (localStorage.getItem('app_button_shape') as ButtonShape) || 'rounded',
