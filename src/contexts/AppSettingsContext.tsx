@@ -103,6 +103,8 @@ interface AppSettingsContextType {
   setCurrencyDecimals: (d: number) => void;
   paymentGateway: string;
   setPaymentGateway: (g: string) => void;
+  favicon: string;
+  setFavicon: (f: string) => void;
   pending: PendingSettings;
   updatePending: (partial: Partial<PendingSettings>) => void;
   saveSettings: () => void;
@@ -135,6 +137,25 @@ function loadSaved(): PendingSettings {
 export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [saved, setSaved] = useState<PendingSettings>(loadSaved);
   const [pending, setPending] = useState<PendingSettings>(loadSaved);
+  const [favicon, setFaviconState] = useState(() => localStorage.getItem('app_favicon') || '');
+
+  // Apply favicon
+  useEffect(() => {
+    if (favicon) {
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+      }
+      link.href = favicon;
+    }
+  }, [favicon]);
+
+  const setFavicon = useCallback((url: string) => {
+    localStorage.setItem('app_favicon', url);
+    setFaviconState(url);
+  }, []);
 
   // Apply theme class to root
   useEffect(() => {
@@ -240,6 +261,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       buttonShape: saved.buttonShape, setButtonShape,
       currencyDecimals: saved.currencyDecimals, setCurrencyDecimals,
       paymentGateway: saved.paymentGateway, setPaymentGateway,
+      favicon, setFavicon,
       pending, updatePending, saveSettings, hasPendingChanges, discardChanges,
     }}>
       {children}

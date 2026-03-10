@@ -3,10 +3,8 @@ import { useAppSettings, LTR_FONTS, RTL_FONTS, type ButtonShape, type FooterPosi
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Palette, Building2, Upload, Check, Type, RectangleHorizontal, Circle, Square, Search, Plus, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Palette, Building2, Upload, Check, Type, RectangleHorizontal, Circle, Square, Search, Plus, AlignLeft, AlignCenter, AlignRight, Image } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -15,11 +13,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 
 const AppearanceSettings = () => {
   const { language } = useLanguage();
-  const { pending, updatePending, themes, setAppLogo, appLogo, signatureImage, setSignatureImage, stampImage, setStampImage, signaturePosition, stampPosition } = useAppSettings();
+  const { pending, updatePending, themes, setAppLogo, appLogo, signatureImage, setSignatureImage, stampImage, setStampImage, signaturePosition, stampPosition, setFavicon, favicon } = useAppSettings();
   const isAr = language === 'ar';
   const fileRef = useRef<HTMLInputElement>(null);
   const signatureRef = useRef<HTMLInputElement>(null);
   const stampRef = useRef<HTMLInputElement>(null);
+  const faviconRef = useRef<HTMLInputElement>(null);
 
   const [ltrSearch, setLtrSearch] = useState('');
   const [rtlSearch, setRtlSearch] = useState('');
@@ -31,7 +30,6 @@ const AppearanceSettings = () => {
     const saved = localStorage.getItem('app_custom_fonts');
     return saved ? JSON.parse(saved) : { ltr: [], rtl: [] };
   });
-
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -55,6 +53,18 @@ const AppearanceSettings = () => {
     if (uploadErr) { toast.error(uploadErr); return; }
     setter(signedUrl);
     toast.success(isAr ? 'تم الرفع بنجاح' : 'Uploaded successfully');
+  };
+
+  const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const ext = file.name.split('.').pop();
+    const path = `branding/favicon-${Date.now()}.${ext}`;
+    const { uploadAndGetSignedUrl } = await import('@/lib/storage');
+    const { signedUrl, error: uploadErr } = await uploadAndGetSignedUrl(path, file);
+    if (uploadErr) { toast.error(uploadErr); return; }
+    setFavicon(signedUrl);
+    toast.success(isAr ? 'تم رفع الأيقونة' : 'Favicon uploaded');
   };
 
   const shapeOptions: { value: ButtonShape; label: string; labelAr: string; icon: any }[] = [
@@ -93,7 +103,6 @@ const AppearanceSettings = () => {
     setCustomFonts(updated);
     localStorage.setItem('app_custom_fonts', JSON.stringify(updated));
     updatePending({ [type === 'ltr' ? 'ltrFont' : 'rtlFont']: customFontName.trim() });
-    // Load the new font
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = `https://fonts.googleapis.com/css2?family=${customFontName.trim().replace(/ /g, '+')}:wght@400;600&display=swap`;
@@ -104,23 +113,12 @@ const AppearanceSettings = () => {
   };
 
   const FontPicker = ({
-    fonts,
-    search,
-    setSearch,
-    open,
-    setOpen,
-    selected,
-    onSelect,
-    type,
+    fonts, search, setSearch, open, setOpen, selected, onSelect, type,
   }: {
     fonts: { value: string; label: string }[];
-    search: string;
-    setSearch: (s: string) => void;
-    open: boolean;
-    setOpen: (o: boolean) => void;
-    selected: string;
-    onSelect: (v: string) => void;
-    type: 'ltr' | 'rtl';
+    search: string; setSearch: (s: string) => void;
+    open: boolean; setOpen: (o: boolean) => void;
+    selected: string; onSelect: (v: string) => void; type: 'ltr' | 'rtl';
   }) => (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -132,46 +130,24 @@ const AppearanceSettings = () => {
         <div className="p-2 border-b border-border">
           <div className="relative">
             <Search className="absolute start-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={isAr ? 'ابحث عن خط...' : 'Search fonts...'}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="ps-8 h-8 text-sm"
-            />
+            <Input placeholder={isAr ? 'ابحث عن خط...' : 'Search fonts...'} value={search} onChange={(e) => setSearch(e.target.value)} className="ps-8 h-8 text-sm" />
           </div>
         </div>
         <ScrollArea className="h-[240px]">
           <div className="p-1">
             {fonts.map((f) => (
-              <button
-                key={f.value}
-                onClick={() => { onSelect(f.value); setOpen(false); }}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors ${
-                  selected === f.value
-                    ? 'bg-primary/10 text-primary'
-                    : 'hover:bg-muted'
-                }`}
-              >
+              <button key={f.value} onClick={() => { onSelect(f.value); setOpen(false); }}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors ${selected === f.value ? 'bg-primary/10 text-primary' : 'hover:bg-muted'}`}>
                 <span style={{ fontFamily: `'${f.value}', sans-serif` }}>{f.label}</span>
                 {selected === f.value && <Check className="h-4 w-4" />}
               </button>
             ))}
-            {fonts.length === 0 && (
-              <p className="text-center text-sm text-muted-foreground py-4">
-                {isAr ? 'لا توجد نتائج' : 'No results'}
-              </p>
-            )}
+            {fonts.length === 0 && <p className="text-center text-sm text-muted-foreground py-4">{isAr ? 'لا توجد نتائج' : 'No results'}</p>}
           </div>
         </ScrollArea>
         <div className="p-2 border-t border-border">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start text-xs"
-            onClick={() => { setOpen(false); setCustomFontDialog(type); }}
-          >
-            <Plus className="h-3 w-3 me-1" />
-            {isAr ? 'إضافة خط مخصص' : 'Add custom font'}
+          <Button variant="ghost" size="sm" className="w-full justify-start text-xs" onClick={() => { setOpen(false); setCustomFontDialog(type); }}>
+            <Plus className="h-3 w-3 me-1" />{isAr ? 'إضافة خط مخصص' : 'Add custom font'}
           </Button>
         </div>
       </PopoverContent>
@@ -184,17 +160,10 @@ const AppearanceSettings = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><Building2 className="h-5 w-5 text-primary" />{isAr ? 'العلامة التجارية' : 'Branding'}</CardTitle>
-          <CardDescription>{isAr ? 'خصص اسم التطبيق والشعار والوصف' : 'Customize app name, logo, and description'}</CardDescription>
+          <CardDescription>{isAr ? 'خصص الشعار والأيقونة والتوقيع' : 'Customize logo, favicon, signature and stamp'}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>{isAr ? 'اسم التطبيق' : 'App Name'}</Label>
-            <Input value={pending.appName} onChange={(e) => updatePending({ appName: e.target.value })} />
-          </div>
-          <div className="space-y-2">
-            <Label>{isAr ? 'وصف التطبيق' : 'App Description'}</Label>
-            <Textarea value={pending.appDescription} onChange={(e) => updatePending({ appDescription: e.target.value })} rows={2} />
-          </div>
+          {/* App Logo */}
           <div className="space-y-2">
             <Label>{isAr ? 'شعار التطبيق' : 'App Logo'}</Label>
             <div className="flex items-center gap-4">
@@ -212,6 +181,27 @@ const AppearanceSettings = () => {
               </div>
             </div>
           </div>
+
+          {/* Favicon */}
+          <div className="space-y-2">
+            <Label>{isAr ? 'أيقونة الموقع (Favicon)' : 'Favicon'}</Label>
+            <p className="text-xs text-muted-foreground">{isAr ? 'الأيقونة التي تظهر في تبويب المتصفح' : 'The icon shown in the browser tab'}</p>
+            <div className="flex items-center gap-4">
+              {favicon ? (
+                <img src={favicon} alt="Favicon" className="h-10 w-10 rounded object-contain border border-border bg-background p-0.5" />
+              ) : (
+                <div className="h-10 w-10 rounded border-2 border-dashed border-border flex items-center justify-center">
+                  <Image className="h-4 w-4 text-muted-foreground" />
+                </div>
+              )}
+              <div className="flex gap-2">
+                <input ref={faviconRef} type="file" accept="image/*" className="hidden" onChange={handleFaviconUpload} />
+                <Button variant="outline" size="sm" onClick={() => faviconRef.current?.click()}>{isAr ? 'رفع أيقونة' : 'Upload Favicon'}</Button>
+                {favicon && <Button variant="ghost" size="sm" onClick={() => setFavicon('')}>{isAr ? 'إزالة' : 'Remove'}</Button>}
+              </div>
+            </div>
+          </div>
+
           {/* Signature Image */}
           <div className="space-y-2">
             <Label>{isAr ? 'صورة التوقيع' : 'Signature Image'}</Label>
@@ -231,6 +221,7 @@ const AppearanceSettings = () => {
               </div>
             </div>
           </div>
+
           {/* Stamp Image */}
           <div className="space-y-2">
             <Label>{isAr ? 'صورة الختم' : 'Stamp Image'}</Label>
@@ -261,15 +252,8 @@ const AppearanceSettings = () => {
                     <p className="text-xs text-muted-foreground">{isAr ? 'موضع التوقيع' : 'Signature Position'}</p>
                     <div className="flex gap-1">
                       {([['left', AlignLeft, 'Left', 'يسار'], ['center', AlignCenter, 'Center', 'وسط'], ['right', AlignRight, 'Right', 'يمين']] as const).map(([pos, Icon, label, labelAr]) => (
-                        <Button
-                          key={pos}
-                          variant={pending.signaturePosition === pos ? 'default' : 'outline'}
-                          size="sm"
-                          className="flex-1 gap-1"
-                          onClick={() => updatePending({ signaturePosition: pos })}
-                        >
-                          <Icon className="h-3 w-3" />
-                          <span className="text-xs">{isAr ? labelAr : label}</span>
+                        <Button key={pos} variant={pending.signaturePosition === pos ? 'default' : 'outline'} size="sm" className="flex-1 gap-1" onClick={() => updatePending({ signaturePosition: pos })}>
+                          <Icon className="h-3 w-3" /><span className="text-xs">{isAr ? labelAr : label}</span>
                         </Button>
                       ))}
                     </div>
@@ -280,15 +264,8 @@ const AppearanceSettings = () => {
                     <p className="text-xs text-muted-foreground">{isAr ? 'موضع الختم' : 'Stamp Position'}</p>
                     <div className="flex gap-1">
                       {([['left', AlignLeft, 'Left', 'يسار'], ['center', AlignCenter, 'Center', 'وسط'], ['right', AlignRight, 'Right', 'يمين']] as const).map(([pos, Icon, label, labelAr]) => (
-                        <Button
-                          key={pos}
-                          variant={pending.stampPosition === pos ? 'default' : 'outline'}
-                          size="sm"
-                          className="flex-1 gap-1"
-                          onClick={() => updatePending({ stampPosition: pos })}
-                        >
-                          <Icon className="h-3 w-3" />
-                          <span className="text-xs">{isAr ? labelAr : label}</span>
+                        <Button key={pos} variant={pending.stampPosition === pos ? 'default' : 'outline'} size="sm" className="flex-1 gap-1" onClick={() => updatePending({ stampPosition: pos })}>
+                          <Icon className="h-3 w-3" /><span className="text-xs">{isAr ? labelAr : label}</span>
                         </Button>
                       ))}
                     </div>
@@ -356,29 +333,11 @@ const AppearanceSettings = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>{isAr ? 'خط LTR (الإنجليزية)' : 'LTR Font (English)'}</Label>
-              <FontPicker
-                fonts={filteredLtrFonts}
-                search={ltrSearch}
-                setSearch={setLtrSearch}
-                open={ltrOpen}
-                setOpen={setLtrOpen}
-                selected={pending.ltrFont}
-                onSelect={(v) => updatePending({ ltrFont: v })}
-                type="ltr"
-              />
+              <FontPicker fonts={filteredLtrFonts} search={ltrSearch} setSearch={setLtrSearch} open={ltrOpen} setOpen={setLtrOpen} selected={pending.ltrFont} onSelect={(v) => updatePending({ ltrFont: v })} type="ltr" />
             </div>
             <div className="space-y-2">
               <Label>{isAr ? 'خط RTL (العربية)' : 'RTL Font (Arabic)'}</Label>
-              <FontPicker
-                fonts={filteredRtlFonts}
-                search={rtlSearch}
-                setSearch={setRtlSearch}
-                open={rtlOpen}
-                setOpen={setRtlOpen}
-                selected={pending.rtlFont}
-                onSelect={(v) => updatePending({ rtlFont: v })}
-                type="rtl"
-              />
+              <FontPicker fonts={filteredRtlFonts} search={rtlSearch} setSearch={setRtlSearch} open={rtlOpen} setOpen={setRtlOpen} selected={pending.rtlFont} onSelect={(v) => updatePending({ rtlFont: v })} type="rtl" />
             </div>
           </div>
           <p className="text-sm text-muted-foreground">
@@ -397,24 +356,12 @@ const AppearanceSettings = () => {
             <DialogTitle>{isAr ? 'إضافة خط مخصص' : 'Add Custom Font'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              {isAr
-                ? 'أدخل اسم خط Google Fonts بالضبط'
-                : 'Enter the exact Google Fonts name'}
-            </p>
-            <Input
-              value={customFontName}
-              onChange={(e) => setCustomFontName(e.target.value)}
-              placeholder={isAr ? 'مثال: Amiri' : 'e.g. Playfair Display'}
-            />
+            <p className="text-sm text-muted-foreground">{isAr ? 'أدخل اسم خط Google Fonts بالضبط' : 'Enter the exact Google Fonts name'}</p>
+            <Input value={customFontName} onChange={(e) => setCustomFontName(e.target.value)} placeholder={isAr ? 'مثال: Amiri' : 'e.g. Playfair Display'} />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCustomFontDialog(null)}>
-              {isAr ? 'إلغاء' : 'Cancel'}
-            </Button>
-            <Button onClick={addCustomFont} disabled={!customFontName.trim()}>
-              {isAr ? 'إضافة' : 'Add'}
-            </Button>
+            <Button variant="outline" onClick={() => setCustomFontDialog(null)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
+            <Button onClick={addCustomFont} disabled={!customFontName.trim()}>{isAr ? 'إضافة' : 'Add'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
