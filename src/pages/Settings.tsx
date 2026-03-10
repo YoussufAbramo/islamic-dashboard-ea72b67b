@@ -85,6 +85,8 @@ const Settings = () => {
         <div className="flex-1 min-w-0">
           {activeTab === 'general' && <GeneralSettings />}
           {activeTab === 'appearance' && <AppearanceSettings />}
+          {activeTab === 'landing' && isAdmin && <LandingContentSettings />}
+          {activeTab === 'pricing' && isAdmin && <SaaSPricingSettings />}
           {activeTab === 'auth' && isAdmin && <AuthenticationSettings />}
           {activeTab === 'payment' && isAdmin && <PaymentGatewayCard isAr={isAr} />}
           {activeTab === 'data' && isAdmin && <DataManagementCard isAr={isAr} />}
