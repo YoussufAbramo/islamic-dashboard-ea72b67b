@@ -25,9 +25,11 @@ interface Props {
   appName: string;
   onCopyUrl: (inv: any) => void;
   role: string | null;
+  signatureImage?: string;
+  stampImage?: string;
 }
 
-const InvoicePreviewDialog = ({ open, onOpenChange, invoice, isAr, formatPrice, paymentGateway, appLogo, appName, onCopyUrl, role }: Props) => {
+const InvoicePreviewDialog = ({ open, onOpenChange, invoice, isAr, formatPrice, paymentGateway, appLogo, appName, onCopyUrl, role, signatureImage, stampImage }: Props) => {
   if (!invoice) return null;
 
   const sc = statusConfig[invoice.status] || statusConfig.pending;
