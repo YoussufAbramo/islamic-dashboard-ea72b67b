@@ -309,6 +309,11 @@
     --sidebar-accent: 220 35% 16%;
     --sidebar-border: 220 30% 18%;
     --sidebar-ring: 240 50% 55%;
+    --sidebar-light-background: 220 15% 96%;
+    --sidebar-light-foreground: 220 30% 12%;
+    --sidebar-light-accent: 220 12% 90%;
+    --sidebar-light-accent-foreground: 220 30% 12%;
+    --sidebar-light-border: 220 12% 85%;
   }
   /* Midnight - Dark */
   .dark.theme-midnight {
