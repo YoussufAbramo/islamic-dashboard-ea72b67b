@@ -510,6 +510,33 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_gateway_config: {
+        Row: {
+          encrypted_keys: Json
+          gateway_id: string
+          id: string
+          is_active: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          encrypted_keys?: Json
+          gateway_id: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          encrypted_keys?: Json
+          gateway_id?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       pricing_packages: {
         Row: {
           billing_cycle: string
