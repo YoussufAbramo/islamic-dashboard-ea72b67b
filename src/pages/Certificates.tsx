@@ -192,6 +192,8 @@ const Certificates = () => {
   }, [certs, searchQuery, sortOrder, isAr, statusFilter]);
 
   const [form, setForm] = useState({ recipient_id: '', recipient_type: 'student', title: '', title_ar: '', description: '', course_id: '', design: 'classic' as CertDesign });
+  const [recipientOpen, setRecipientOpen] = useState(false);
+  const [certCourseOpen, setCertCourseOpen] = useState(false);
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filteredCerts);
 
