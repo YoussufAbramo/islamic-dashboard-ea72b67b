@@ -70,6 +70,7 @@ const App = () => (
                     <Route path="notifications" element={<Notifications />} />
                     <Route path="profile" element={<Profile />} />
                   </Route>
+                  <Route path="/invoice/:id" element={<InvoiceView />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
