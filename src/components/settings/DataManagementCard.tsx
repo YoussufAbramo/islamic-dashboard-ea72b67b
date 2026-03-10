@@ -538,6 +538,43 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* Erase Summary Report */}
+      <Dialog open={!!eraseSummary} onOpenChange={(open) => !open && setEraseSummary(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-primary">
+              <CheckCircle2 className="h-5 w-5" />
+              {isAr ? 'تقرير المسح' : 'Erase Summary Report'}
+            </DialogTitle>
+            <DialogDescription>
+              {isAr
+                ? `تم حذف ${eraseSummary?.total || 0} سجل بنجاح`
+                : `Successfully deleted ${eraseSummary?.total || 0} records`}
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="h-[300px] rounded-lg border border-border bg-muted/30 p-3">
+            <div className="space-y-1">
+              {eraseSummary && Object.entries(eraseSummary.counts)
+                .filter(([, count]) => count > 0)
+                .sort(([, a], [, b]) => b - a)
+                .map(([table, count]) => (
+                  <div key={table} className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted">
+                    <span className="text-sm font-medium">{table.replace(/_/g, ' ')}</span>
+                    <span className="text-sm font-mono text-destructive">-{count}</span>
+                  </div>
+                ))}
+              {eraseSummary && Object.values(eraseSummary.counts).every(c => c === 0) && (
+                <p className="text-center text-muted-foreground py-4">{isAr ? 'لا توجد بيانات للحذف' : 'No data to delete'}</p>
+              )}
+            </div>
+          </ScrollArea>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEraseSummary(null)}>
+              {isAr ? 'إغلاق' : 'Close'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
