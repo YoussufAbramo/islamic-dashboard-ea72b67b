@@ -37,6 +37,8 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const [appNameInput, setAppNameInput] = useState('');
   const [deleteCodeInput, setDeleteCodeInput] = useState('');
   const [understandCheck, setUnderstandCheck] = useState(false);
+  const [deleteTablesOpen, setDeleteTablesOpen] = useState(false);
+  const [deleteTablesLoading, setDeleteTablesLoading] = useState(false);
 
   const persistLog = (log: string[]) => {
     setSeedLog(log);
