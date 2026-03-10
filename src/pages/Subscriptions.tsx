@@ -21,6 +21,7 @@ const Subscriptions = () => {
   const { currency } = useAppSettings();
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [search, setSearch] = useState('');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [detailOpen, setDetailOpen] = useState(false);
   const [selected, setSelected] = useState<any>(null);
   const [editing, setEditing] = useState(false);
