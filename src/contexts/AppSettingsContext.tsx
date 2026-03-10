@@ -69,6 +69,7 @@ interface PendingSettings {
   buttonShape: ButtonShape;
   currencyDecimals: number;
   paymentGateway: string;
+  defaultLanguage: 'en' | 'ar';
 }
 
 interface AppSettingsContextType {
@@ -127,6 +128,7 @@ function loadSaved(): PendingSettings {
     buttonShape: (localStorage.getItem('app_button_shape') as ButtonShape) || 'rounded',
     currencyDecimals: parseInt(localStorage.getItem('app_currency_decimals') || '2', 10),
     paymentGateway: localStorage.getItem('app_payment_gateway') || '',
+    defaultLanguage: (localStorage.getItem('app_default_language') as 'en' | 'ar') || 'en',
   };
 }
 
@@ -183,6 +185,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     localStorage.setItem('app_button_shape', pending.buttonShape);
     localStorage.setItem('app_currency_decimals', String(pending.currencyDecimals));
     localStorage.setItem('app_payment_gateway', pending.paymentGateway);
+    localStorage.setItem('app_default_language', pending.defaultLanguage);
     setSaved({ ...pending });
   }, [pending]);
 

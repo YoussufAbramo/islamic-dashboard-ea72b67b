@@ -4,9 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Coins, Check, MessageSquare } from 'lucide-react';
+import { Coins, MessageSquare, Globe } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const GeneralSettings = () => {
   const { language } = useLanguage();
@@ -40,29 +39,14 @@ const GeneralSettings = () => {
             </div>
             <div className="space-y-2">
               <Label>{isAr ? 'عدد الأرقام العشرية' : 'Decimal Places'}</Label>
-              <RadioGroup
-                value={String(pending.currencyDecimals)}
-                onValueChange={(v) => updatePending({ currencyDecimals: Number(v) })}
-                className="flex gap-3"
-              >
-                {[0, 1, 2].map((d) => (
-                  <Label
-                    key={d}
-                    htmlFor={`decimal-${d}`}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 cursor-pointer transition-all ${
-                      pending.currencyDecimals === d
-                        ? 'border-primary bg-primary/5 shadow-sm'
-                        : 'border-border hover:border-muted-foreground/30'
-                    }`}
-                  >
-                    <RadioGroupItem value={String(d)} id={`decimal-${d}`} />
-                    <div className="flex flex-col">
-                      <span className="text-sm font-mono font-bold">{d === 0 ? '1' : d === 1 ? '1.0' : '1.00'}</span>
-                      <span className="text-[10px] text-muted-foreground">{d} {isAr ? 'أرقام' : 'digits'}</span>
-                    </div>
-                  </Label>
-                ))}
-              </RadioGroup>
+              <Select value={String(pending.currencyDecimals)} onValueChange={(v) => updatePending({ currencyDecimals: Number(v) })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {[0, 1, 2, 3].map((d) => (
+                    <SelectItem key={d} value={String(d)}>{d} — {(1234.5678).toFixed(d)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <p className="text-xs text-muted-foreground">{isAr ? 'مثال' : 'Example'}: {pending.currency.symbol}{(1234.56).toFixed(pending.currencyDecimals)}</p>
             </div>
           </div>
@@ -82,6 +66,26 @@ const GeneralSettings = () => {
               <p className="text-sm text-muted-foreground">{isAr ? 'عند التفعيل، يمكن للمعلمين بدء محادثات مع طلابهم' : 'When enabled, teachers can initiate chats with their students'}</p>
             </div>
             <Switch checked={teacherCanChat} onCheckedChange={setTeacherCanChat} />
+          </div>
+        </CardContent>
+      </Card>
+      {/* Default Language */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Globe className="h-5 w-5 text-primary" />{isAr ? 'اللغة الافتراضية' : 'Default Language'}</CardTitle>
+          <CardDescription>{isAr ? 'اختر اللغة الافتراضية للتطبيق' : 'Choose the default language for the app'}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Label>{isAr ? 'اللغة' : 'Language'}</Label>
+            <Select value={pending.defaultLanguage} onValueChange={(v) => updatePending({ defaultLanguage: v as 'en' | 'ar' })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="ar">العربية (Arabic)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">{isAr ? 'اللغة التي سيتم استخدامها افتراضياً عند فتح التطبيق' : 'The language used by default when the app is opened'}</p>
           </div>
         </CardContent>
       </Card>

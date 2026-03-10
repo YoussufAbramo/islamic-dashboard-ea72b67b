@@ -328,30 +328,31 @@
     font-family: var(--font-rtl);
   }
 
-  /* Button shape system - only affects actual buttons and inputs */
+  /* Button shape system - only affects actual button elements */
   .btn-rounded button,
   .btn-rounded .btn,
-  .btn-rounded [role="button"],
-  .btn-rounded input,
-  .btn-rounded select,
-  .btn-rounded textarea {
+  .btn-rounded [role="button"]:not([data-radix-collection-item]) {
     border-radius: 0.5rem !important;
   }
   .btn-circular button,
   .btn-circular .btn,
-  .btn-circular [role="button"],
-  .btn-circular input,
-  .btn-circular select,
-  .btn-circular textarea {
+  .btn-circular [role="button"]:not([data-radix-collection-item]) {
     border-radius: 9999px !important;
   }
   .btn-square button,
   .btn-square .btn,
-  .btn-square [role="button"],
-  .btn-square input,
-  .btn-square select,
-  .btn-square textarea {
+  .btn-square [role="button"]:not([data-radix-collection-item]) {
     border-radius: 0px !important;
+  }
+
+  /* Text selection style */
+  ::selection {
+    background: hsl(var(--primary) / 0.25);
+    color: hsl(var(--foreground));
+  }
+  ::-moz-selection {
+    background: hsl(var(--primary) / 0.25);
+    color: hsl(var(--foreground));
   }
 
   /* Custom scrollbar */

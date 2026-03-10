@@ -32,24 +32,6 @@ const AppearanceSettings = () => {
     return saved ? JSON.parse(saved) : { ltr: [], rtl: [] };
   });
 
-  // Preload all font previews
-  useEffect(() => {
-    const allFonts = [
-      ...LTR_FONTS, ...RTL_FONTS,
-      ...customFonts.ltr.map(f => ({ value: f, label: f })),
-      ...customFonts.rtl.map(f => ({ value: f, label: f })),
-    ].map(f => f.value.replace(/ /g, '+')).join('&family=');
-    const linkId = 'settings-preview-fonts';
-    let link = document.getElementById(linkId) as HTMLLinkElement;
-    if (!link) {
-      link = document.createElement('link');
-      link.id = linkId;
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
-    }
-    link.href = `https://fonts.googleapis.com/css2?${allFonts.split('&family=').map(f => `family=${f}`).join('&family=')}:wght@400;600&display=swap`;
-    return () => { const el = document.getElementById(linkId); if (el) el.remove(); };
-  }, [customFonts]);
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -384,9 +366,6 @@ const AppearanceSettings = () => {
                 onSelect={(v) => updatePending({ ltrFont: v })}
                 type="ltr"
               />
-              <div className="p-3 rounded-lg border border-border bg-muted/30">
-                <p className="text-sm" style={{ fontFamily: `'${pending.ltrFont}', sans-serif` }}>The quick brown fox jumps over the lazy dog. 0123456789</p>
-              </div>
             </div>
             <div className="space-y-2">
               <Label>{isAr ? 'خط RTL (العربية)' : 'RTL Font (Arabic)'}</Label>
@@ -400,11 +379,14 @@ const AppearanceSettings = () => {
                 onSelect={(v) => updatePending({ rtlFont: v })}
                 type="rtl"
               />
-              <div className="p-3 rounded-lg border border-border bg-muted/30">
-                <p className="text-sm" dir="rtl" style={{ fontFamily: `'${pending.rtlFont}', sans-serif` }}>هذا نص تجريبي لمعاينة الخط العربي المختار. ٠١٢٣٤٥٦٧٨٩</p>
-              </div>
             </div>
           </div>
+          <p className="text-sm text-muted-foreground">
+            {isAr ? 'إذا كنت ترغب في معاينة الخطوط أو الحصول على المزيد، ' : 'If you want to preview the fonts or get more, '}
+            <a href="https://fonts.google.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+              {isAr ? 'اذهب إلى Google Fonts' : 'Go to Google Fonts'}
+            </a>
+          </p>
         </CardContent>
       </Card>
 
