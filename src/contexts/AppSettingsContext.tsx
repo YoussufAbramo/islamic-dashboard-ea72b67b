@@ -18,6 +18,7 @@ const CURRENCIES: Currency[] = [
 
 export type ColorTheme = 'emerald' | 'ocean' | 'purple' | 'desert' | 'midnight';
 export type ButtonShape = 'rounded' | 'circular' | 'square';
+export type FooterPosition = 'left' | 'center' | 'right';
 
 const THEMES: { value: ColorTheme; label: string; labelAr: string; color: string }[] = [
   { value: 'emerald', label: 'Emerald Gold', labelAr: 'الزمرد الذهبي', color: 'hsl(160 45% 28%)' },
@@ -61,6 +62,8 @@ interface PendingSettings {
   appLogo: string;
   signatureImage: string;
   stampImage: string;
+  signaturePosition: FooterPosition;
+  stampPosition: FooterPosition;
   ltrFont: string;
   rtlFont: string;
   buttonShape: ButtonShape;
@@ -85,6 +88,10 @@ interface AppSettingsContextType {
   setSignatureImage: (s: string) => void;
   stampImage: string;
   setStampImage: (s: string) => void;
+  signaturePosition: FooterPosition;
+  setSignaturePosition: (p: FooterPosition) => void;
+  stampPosition: FooterPosition;
+  setStampPosition: (p: FooterPosition) => void;
   ltrFont: string;
   setLtrFont: (f: string) => void;
   rtlFont: string;
@@ -113,6 +120,8 @@ function loadSaved(): PendingSettings {
     appLogo: localStorage.getItem('app_logo') || '',
     signatureImage: localStorage.getItem('app_signature_image') || '',
     stampImage: localStorage.getItem('app_stamp_image') || '',
+    signaturePosition: (localStorage.getItem('app_signature_position') as FooterPosition) || 'left',
+    stampPosition: (localStorage.getItem('app_stamp_position') as FooterPosition) || 'right',
     ltrFont: localStorage.getItem('app_ltr_font') || 'Inter',
     rtlFont: localStorage.getItem('app_rtl_font') || 'Cairo',
     buttonShape: (localStorage.getItem('app_button_shape') as ButtonShape) || 'rounded',
@@ -167,6 +176,8 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     localStorage.setItem('app_logo', pending.appLogo);
     localStorage.setItem('app_signature_image', pending.signatureImage);
     localStorage.setItem('app_stamp_image', pending.stampImage);
+    localStorage.setItem('app_signature_position', pending.signaturePosition);
+    localStorage.setItem('app_stamp_position', pending.stampPosition);
     localStorage.setItem('app_ltr_font', pending.ltrFont);
     localStorage.setItem('app_rtl_font', pending.rtlFont);
     localStorage.setItem('app_button_shape', pending.buttonShape);
@@ -202,6 +213,8 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setSaved(prev => ({ ...prev, stampImage: s }));
     setPending(prev => ({ ...prev, stampImage: s }));
   }, []);
+  const setSignaturePosition = useCallback((p: FooterPosition) => { setPending(prev => ({ ...prev, signaturePosition: p })); }, []);
+  const setStampPosition = useCallback((p: FooterPosition) => { setPending(prev => ({ ...prev, stampPosition: p })); }, []);
   const setLtrFont = useCallback((f: string) => { setPending(p => ({ ...p, ltrFont: f })); }, []);
   const setRtlFont = useCallback((f: string) => { setPending(p => ({ ...p, rtlFont: f })); }, []);
   const setButtonShape = useCallback((s: ButtonShape) => { setPending(p => ({ ...p, buttonShape: s })); }, []);
@@ -217,6 +230,8 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       appLogo: saved.appLogo, setAppLogo,
       signatureImage: saved.signatureImage, setSignatureImage,
       stampImage: saved.stampImage, setStampImage,
+      signaturePosition: saved.signaturePosition, setSignaturePosition,
+      stampPosition: saved.stampPosition, setStampPosition,
       ltrFont: saved.ltrFont, setLtrFont,
       rtlFont: saved.rtlFont, setRtlFont,
       buttonShape: saved.buttonShape, setButtonShape,

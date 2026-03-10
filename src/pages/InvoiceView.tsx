@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { FileText, CreditCard, Clock, CheckCircle, Printer, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
+import type { FooterPosition } from '@/contexts/AppSettingsContext';
 
 const statusConfig: Record<string, { bg: string; label: string }> = {
   pending: { bg: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30', label: 'Pending' },
@@ -20,6 +21,11 @@ const InvoiceView = () => {
   const [invoice, setInvoice] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  const signatureImage = typeof window !== 'undefined' ? localStorage.getItem('app_signature_image') || '' : '';
+  const stampImage = typeof window !== 'undefined' ? localStorage.getItem('app_stamp_image') || '' : '';
+  const signaturePosition = (typeof window !== 'undefined' ? localStorage.getItem('app_signature_position') : 'left') as FooterPosition || 'left';
+  const stampPosition = (typeof window !== 'undefined' ? localStorage.getItem('app_stamp_position') : 'right') as FooterPosition || 'right';
 
   useEffect(() => {
     const fetchInvoice = async () => {
@@ -166,6 +172,26 @@ const InvoiceView = () => {
           <div className="space-y-1">
             <h4 className="font-medium text-sm">Notes</h4>
             <p className="text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">{invoice.notes}</p>
+          </div>
+        )}
+
+        {/* Signature & Stamp */}
+        {(signatureImage || stampImage) && (
+          <div className="pt-4 border-t border-border print:border-border">
+            <div className="flex items-end gap-4">
+              {signatureImage && (
+                <div className={`space-y-1 ${signaturePosition === 'center' ? 'mx-auto' : signaturePosition === 'right' ? 'ms-auto' : ''}`}>
+                  <p className="text-xs text-muted-foreground">Signature</p>
+                  <img src={signatureImage} alt="Signature" className="h-16 w-auto object-contain" />
+                </div>
+              )}
+              {stampImage && (
+                <div className={`space-y-1 ${stampPosition === 'center' ? 'mx-auto' : stampPosition === 'right' ? 'ms-auto' : ''}`}>
+                  <p className="text-xs text-muted-foreground">Stamp</p>
+                  <img src={stampImage} alt="Stamp" className="h-16 w-auto object-contain" />
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

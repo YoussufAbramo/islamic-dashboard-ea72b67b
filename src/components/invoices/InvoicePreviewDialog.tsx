@@ -14,6 +14,8 @@ const statusConfig: Record<string, { bg: string; label: string; labelAr: string 
   cancelled: { bg: 'bg-muted text-muted-foreground border-border', label: 'Cancelled', labelAr: 'ملغية' },
 };
 
+type FooterPosition = 'left' | 'center' | 'right';
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -27,11 +29,13 @@ interface Props {
   role: string | null;
   signatureImage?: string;
   stampImage?: string;
+  signaturePosition?: FooterPosition;
+  stampPosition?: FooterPosition;
 }
 
 const esc = (s: string) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-const InvoicePreviewDialog = ({ open, onOpenChange, invoice, isAr, formatPrice, paymentGateway, appLogo, appName, onCopyUrl, role, signatureImage, stampImage }: Props) => {
+const InvoicePreviewDialog = ({ open, onOpenChange, invoice, isAr, formatPrice, paymentGateway, appLogo, appName, onCopyUrl, role, signatureImage, stampImage, signaturePosition = 'left', stampPosition = 'right' }: Props) => {
   if (!invoice) return null;
 
   const sc = statusConfig[invoice.status] || statusConfig.pending;
@@ -210,15 +214,15 @@ const InvoicePreviewDialog = ({ open, onOpenChange, invoice, isAr, formatPrice, 
           {(signatureImage || stampImage) && (
             <div className="pt-4 border-t border-border">
               <h4 className="font-medium text-sm mb-3">{isAr ? 'التوقيع والختم' : 'Signature & Stamp'}</h4>
-              <div className="flex items-end justify-between gap-4">
+              <div className="flex items-end gap-4">
                 {signatureImage && (
-                  <div className="space-y-1">
+                  <div className={`space-y-1 ${signaturePosition === 'center' ? 'mx-auto' : signaturePosition === 'right' ? 'ms-auto' : ''}`}>
                     <p className="text-xs text-muted-foreground">{isAr ? 'التوقيع' : 'Signature'}</p>
                     <img src={signatureImage} alt="Signature" className="h-16 w-auto object-contain" />
                   </div>
                 )}
                 {stampImage && (
-                  <div className="space-y-1">
+                  <div className={`space-y-1 ${stampPosition === 'center' ? 'mx-auto' : stampPosition === 'right' ? 'ms-auto' : ''}`}>
                     <p className="text-xs text-muted-foreground">{isAr ? 'الختم' : 'Stamp'}</p>
                     <img src={stampImage} alt="Stamp" className="h-16 w-auto object-contain" />
                   </div>

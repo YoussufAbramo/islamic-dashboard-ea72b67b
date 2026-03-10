@@ -1,11 +1,11 @@
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAppSettings, LTR_FONTS, RTL_FONTS, type ButtonShape } from '@/contexts/AppSettingsContext';
+import { useAppSettings, LTR_FONTS, RTL_FONTS, type ButtonShape, type FooterPosition } from '@/contexts/AppSettingsContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Palette, Building2, Upload, Check, Type, RectangleHorizontal, Circle, Square, Search, Plus } from 'lucide-react';
+import { Palette, Building2, Upload, Check, Type, RectangleHorizontal, Circle, Square, Search, Plus, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useRef, useEffect, useState, useMemo } from 'react';
@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 
 const AppearanceSettings = () => {
   const { language } = useLanguage();
-  const { pending, updatePending, themes, setAppLogo, appLogo, signatureImage, setSignatureImage, stampImage, setStampImage } = useAppSettings();
+  const { pending, updatePending, themes, setAppLogo, appLogo, signatureImage, setSignatureImage, stampImage, setStampImage, signaturePosition, stampPosition } = useAppSettings();
   const isAr = language === 'ar';
   const fileRef = useRef<HTMLInputElement>(null);
   const signatureRef = useRef<HTMLInputElement>(null);
@@ -268,6 +268,53 @@ const AppearanceSettings = () => {
               </div>
             </div>
           </div>
+
+          {/* Position Controls */}
+          {(signatureImage || stampImage) && (
+            <div className="space-y-3 pt-2 border-t border-border">
+              <Label>{isAr ? 'موضع التوقيع والختم' : 'Signature & Stamp Position'}</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {signatureImage && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">{isAr ? 'موضع التوقيع' : 'Signature Position'}</p>
+                    <div className="flex gap-1">
+                      {([['left', AlignLeft, 'Left', 'يسار'], ['center', AlignCenter, 'Center', 'وسط'], ['right', AlignRight, 'Right', 'يمين']] as const).map(([pos, Icon, label, labelAr]) => (
+                        <Button
+                          key={pos}
+                          variant={pending.signaturePosition === pos ? 'default' : 'outline'}
+                          size="sm"
+                          className="flex-1 gap-1"
+                          onClick={() => updatePending({ signaturePosition: pos })}
+                        >
+                          <Icon className="h-3 w-3" />
+                          <span className="text-xs">{isAr ? labelAr : label}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {stampImage && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">{isAr ? 'موضع الختم' : 'Stamp Position'}</p>
+                    <div className="flex gap-1">
+                      {([['left', AlignLeft, 'Left', 'يسار'], ['center', AlignCenter, 'Center', 'وسط'], ['right', AlignRight, 'Right', 'يمين']] as const).map(([pos, Icon, label, labelAr]) => (
+                        <Button
+                          key={pos}
+                          variant={pending.stampPosition === pos ? 'default' : 'outline'}
+                          size="sm"
+                          className="flex-1 gap-1"
+                          onClick={() => updatePending({ stampPosition: pos })}
+                        >
+                          <Icon className="h-3 w-3" />
+                          <span className="text-xs">{isAr ? labelAr : label}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
