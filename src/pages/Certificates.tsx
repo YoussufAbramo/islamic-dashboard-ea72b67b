@@ -1,9 +1,9 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Award, Plus, Printer, Check } from 'lucide-react';
+import { Award, Plus, Check, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -29,8 +29,7 @@ const Certificates = () => {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [previewCert, setPreviewCert] = useState<any>(null);
-  const [selectedDesign, setSelectedDesign] = useState<CertDesign>('classic');
+  const [searchQuery, setSearchQuery] = useState('');
   const [form, setForm] = useState({ recipient_id: '', recipient_type: 'student', title: '', title_ar: '', description: '', course_id: '', design: 'classic' as CertDesign });
 
   const fetchData = async () => {
@@ -67,23 +66,18 @@ const Certificates = () => {
   };
 
   const handlePrint = (cert: any, design: CertDesign = 'classic') => {
-    setPreviewCert(cert);
-    setSelectedDesign(design);
-    // Use a new window for printing to isolate certificate
     setTimeout(() => {
       const printWindow = window.open('', '_blank', 'width=800,height=600');
       if (!printWindow) { window.print(); return; }
       const certTitle = isAr && cert.title_ar ? cert.title_ar : cert.title;
       const recipientName = getProfileName(cert.recipient_id);
       const courseName = cert.course_id ? getCourseName(cert.course_id) : '';
-
       const designStyles: Record<CertDesign, { border: string; bg: string; accent: string }> = {
         classic: { border: '4px double #c8a84e', bg: '#fffef7', accent: '#287a5e' },
         modern: { border: '3px solid #2563eb', bg: '#f8fafc', accent: '#2563eb' },
         elegant: { border: '5px double #7c3aed', bg: '#faf5ff', accent: '#7c3aed' },
       };
       const ds = designStyles[design];
-
       printWindow.document.write(`
         <html><head><title>Certificate</title>
         <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -125,6 +119,16 @@ const Certificates = () => {
     { value: 'modern', label: 'Modern', labelAr: 'حديث', color: '#2563eb' },
     { value: 'elegant', label: 'Elegant', labelAr: 'أنيق', color: '#7c3aed' },
   ];
+
+  const filteredCerts = certs.filter(cert => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    const title = (isAr && cert.title_ar ? cert.title_ar : cert.title).toLowerCase();
+    const recipient = getProfileName(cert.recipient_id).toLowerCase();
+    const course = cert.course_id ? getCourseName(cert.course_id).toLowerCase() : '';
+    const number = cert.certificate_number.toLowerCase();
+    return title.includes(q) || recipient.includes(q) || course.includes(q) || number.includes(q);
+  });
 
   return (
     <div className="space-y-6">
@@ -193,8 +197,23 @@ const Certificates = () => {
         )}
       </div>
 
-      {certs.length === 0 ? (
-        <Card><CardContent className="pt-6 text-center text-muted-foreground">{isAr ? 'لا توجد شهادات' : 'No certificates'}</CardContent></Card>
+      {/* Search Bar */}
+      <div className="relative">
+        <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder={isAr ? 'بحث بالعنوان، المستلم، الدورة، أو الرقم...' : 'Search by title, recipient, course, or number...'}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="ps-9"
+        />
+      </div>
+
+      {filteredCerts.length === 0 ? (
+        <Card><CardContent className="pt-6 text-center text-muted-foreground">
+          {searchQuery
+            ? (isAr ? 'لا توجد نتائج مطابقة' : 'No matching results')
+            : (isAr ? 'لا توجد شهادات' : 'No certificates')}
+        </CardContent></Card>
       ) : (
         <Card>
           <CardContent className="p-0">
@@ -210,7 +229,7 @@ const Certificates = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {certs.map(cert => (
+                {filteredCerts.map(cert => (
                   <TableRow key={cert.id}>
                     <TableCell><Badge variant="outline">{cert.certificate_number}</Badge></TableCell>
                     <TableCell>{isAr && cert.title_ar ? cert.title_ar : cert.title}</TableCell>

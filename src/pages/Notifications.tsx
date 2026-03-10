@@ -5,7 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, CheckCheck, ExternalLink } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Bell, CheckCheck, ExternalLink, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +18,7 @@ const Notifications = () => {
   const navigate = useNavigate();
 
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchNotifications = async () => {
     if (!user) return;
@@ -44,12 +46,16 @@ const Notifications = () => {
 
   const handleClick = (n: any) => {
     markRead(n.id);
-    if (n.link) {
-      navigate(n.link);
-    }
+    if (n.link) navigate(n.link);
   };
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
+
+  const filteredNotifications = notifications.filter(n => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return n.title.toLowerCase().includes(q) || n.message.toLowerCase().includes(q);
+  });
 
   return (
     <div className="space-y-6">
@@ -63,11 +69,24 @@ const Notifications = () => {
         </div>
       </div>
 
-      {notifications.length === 0 ? (
-        <Card><CardContent className="pt-6 text-center text-muted-foreground">{isAr ? 'لا توجد إشعارات' : 'No notifications'}</CardContent></Card>
+      {/* Search Bar */}
+      <div className="relative">
+        <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder={isAr ? 'بحث في الإشعارات...' : 'Search notifications...'}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="ps-9"
+        />
+      </div>
+
+      {filteredNotifications.length === 0 ? (
+        <Card><CardContent className="pt-6 text-center text-muted-foreground">
+          {searchQuery ? (isAr ? 'لا توجد نتائج مطابقة' : 'No matching results') : (isAr ? 'لا توجد إشعارات' : 'No notifications')}
+        </CardContent></Card>
       ) : (
         <div className="space-y-2">
-          {notifications.map(n => (
+          {filteredNotifications.map(n => (
             <Card
               key={n.id}
               className={`cursor-pointer hover:shadow-md hover:border-primary/30 transition-all ${!n.is_read ? 'border-primary/40 bg-primary/5' : ''}`}
