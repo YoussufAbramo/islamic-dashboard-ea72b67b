@@ -7,6 +7,8 @@ const DEFAULT_APP_DESCRIPTION = 'An interactive Quran learning platform offering
 const DEFAULT_LTR_FONT = 'Montserrat';
 const DEFAULT_RTL_FONT = 'Noto Kufi Arabic';
 const DEFAULT_ACTIVE_GATEWAYS = { paypal: true, paymob: true };
+const DEFAULT_SIGNATURE = '/signature.png';
+const DEFAULT_STAMP = '/stamp.jpg';
 
 interface Currency {
   name: string;
