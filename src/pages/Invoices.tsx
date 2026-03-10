@@ -69,7 +69,7 @@ const Invoices = () => {
 
   useEffect(() => { fetchInvoices(); }, []);
 
-  // Auto-fill price when subscription is selected
+  // Auto-fill price and billing cycle when subscription is selected
   const handleSubscriptionChange = (subId: string) => {
     const sub = subscriptions.find(s => s.id === subId);
     setCreateForm(prev => ({
@@ -78,6 +78,7 @@ const Invoices = () => {
       original_price: sub?.price?.toString() || '',
       sale_price: '',
       course_id: '',
+      billing_cycle: sub?.subscription_type || 'monthly',
     }));
   };
 
