@@ -128,6 +128,7 @@ function loadSaved(): PendingSettings {
     buttonShape: (localStorage.getItem('app_button_shape') as ButtonShape) || 'rounded',
     currencyDecimals: parseInt(localStorage.getItem('app_currency_decimals') || '2', 10),
     paymentGateway: localStorage.getItem('app_payment_gateway') || '',
+    defaultLanguage: (localStorage.getItem('app_default_language') as 'en' | 'ar') || 'en',
   };
 }
 
