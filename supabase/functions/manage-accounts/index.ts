@@ -322,6 +322,8 @@ Deno.serve(async (req) => {
       await adminClient.from('chats').delete().gte('created_at', '1970-01-01')
       // 6. certificates
       await adminClient.from('certificates').delete().gte('created_at', '1970-01-01')
+      // 6b. invoices (before subscriptions due to FK)
+      await adminClient.from('invoices').delete().gte('created_at', '1970-01-01')
       // 7. subscriptions
       await adminClient.from('subscriptions').delete().gte('created_at', '1970-01-01')
       // 8. lessons
