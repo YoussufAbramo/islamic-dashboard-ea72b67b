@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { FileText, CreditCard, Clock, CheckCircle, Printer, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
+import type { FooterPosition } from '@/contexts/AppSettingsContext';
 
 const statusConfig: Record<string, { bg: string; label: string }> = {
   pending: { bg: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30', label: 'Pending' },
