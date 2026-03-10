@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 
 const AppearanceSettings = () => {
   const { language } = useLanguage();
-  const { pending, updatePending, themes, setAppLogo, appLogo, signatureImage, setSignatureImage, stampImage, setStampImage } = useAppSettings();
+  const { pending, updatePending, themes, setAppLogo, appLogo, signatureImage, setSignatureImage, stampImage, setStampImage, signaturePosition, stampPosition } = useAppSettings();
   const isAr = language === 'ar';
   const fileRef = useRef<HTMLInputElement>(null);
   const signatureRef = useRef<HTMLInputElement>(null);
