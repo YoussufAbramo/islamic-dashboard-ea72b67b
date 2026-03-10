@@ -32,7 +32,7 @@ const Certificates = () => {
   const [courses, setCourses] = useState<any[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [form, setForm] = useState({ recipient_id: '', recipient_type: 'student', title: '', title_ar: '', description: '', course_id: '', design: 'classic' as CertDesign });
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
 
   const fetchData = async () => {
     const [certsRes, profilesRes, coursesRes] = await Promise.all([
