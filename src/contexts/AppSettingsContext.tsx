@@ -81,6 +81,10 @@ interface AppSettingsContextType {
   setAppDescription: (d: string) => void;
   appLogo: string;
   setAppLogo: (l: string) => void;
+  signatureImage: string;
+  setSignatureImage: (s: string) => void;
+  stampImage: string;
+  setStampImage: (s: string) => void;
   ltrFont: string;
   setLtrFont: (f: string) => void;
   rtlFont: string;
