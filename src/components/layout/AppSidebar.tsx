@@ -97,7 +97,7 @@ const AppSidebar = () => {
       <SidebarHeader className="p-4 border-b border-sidebar-border">
         <div className="flex items-center justify-center">
           {appLogo ? (
-            <img src={appLogo} alt="Logo" className="h-9 w-9 rounded object-cover" />
+            <img src={appLogo} alt="Logo" className="max-h-9 w-auto object-contain" />
           ) : (
             <span className="text-sm font-bold text-foreground truncate max-w-[160px]">{appName || 'Islamic Dashboard'}</span>
           )}

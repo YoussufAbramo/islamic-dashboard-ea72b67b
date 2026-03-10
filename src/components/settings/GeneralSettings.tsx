@@ -98,20 +98,28 @@ const GeneralSettings = () => {
         <CardContent>
           <div className="space-y-2">
             <Label>{isAr ? 'المنطقة الزمنية' : 'Timezone'}</Label>
-            <Input
-              placeholder={isAr ? 'ابحث عن منطقة زمنية...' : 'Search timezone...'}
-              value={tzSearch}
-              onChange={(e) => setTzSearch(e.target.value)}
-              className="mb-2"
-            />
-            <Select value={pending.defaultTimezone} onValueChange={(v) => updatePending({ defaultTimezone: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {filteredTimezones.map((tz) => (
-                  <SelectItem key={tz} value={tz}>{tz}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="space-y-2">
+              <Input
+                placeholder={isAr ? 'ابحث عن منطقة زمنية...' : 'Search timezone...'}
+                value={tzSearch}
+                onChange={(e) => setTzSearch(e.target.value)}
+              />
+              <Select 
+                value={pending.defaultTimezone} 
+                onValueChange={(v) => updatePending({ defaultTimezone: v })}
+              >
+                <SelectTrigger><SelectValue placeholder={pending.defaultTimezone} /></SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {/* Always show current value first */}
+                  {pending.defaultTimezone && !filteredTimezones.includes(pending.defaultTimezone) && (
+                    <SelectItem key={pending.defaultTimezone} value={pending.defaultTimezone}>{pending.defaultTimezone}</SelectItem>
+                  )}
+                  {filteredTimezones.map((tz) => (
+                    <SelectItem key={tz} value={tz}>{tz}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <p className="text-xs text-muted-foreground">{isAr ? 'المنطقة الزمنية المستخدمة في أسماء النسخ الاحتياطية والتقارير' : 'Timezone used for backup names and reports'}</p>
           </div>
         </CardContent>

@@ -148,15 +148,20 @@ const InvoiceView = () => {
         </div>
 
         <div className="p-6 rounded-xl border border-border bg-muted/30 text-center">
-          {hasDiscount && (
-            <p className="text-sm text-muted-foreground line-through mb-1">{isAr ? 'السعر الأصلي:' : 'Original:'} {formatAmount(originalPrice!)}</p>
+          {hasDiscount ? (
+            <>
+              <p className="text-sm text-muted-foreground">{isAr ? 'السعر الأصلي' : 'Original Price'}</p>
+              <p className="text-2xl font-bold text-muted-foreground line-through">{formatAmount(originalPrice!)}</p>
+              <p className="text-sm text-primary mt-2">{isAr ? 'سعر البيع' : 'Sale Price'}</p>
+              <p className="text-4xl font-bold mt-1 text-primary">{formatAmount(invoice.amount)}</p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">{isAr ? 'المبلغ المستحق' : 'Amount Due'}</p>
+              <p className="text-4xl font-bold mt-1">{formatAmount(invoice.amount)}</p>
+            </>
           )}
-          <p className="text-sm text-muted-foreground">{isAr ? 'المبلغ المستحق' : 'Amount Due'}</p>
-          <p className="text-4xl font-bold mt-1">{formatAmount(invoice.amount)}</p>
-          {hasDiscount && (
-            <p className="text-sm text-primary mt-1">{isAr ? 'سعر مخفض' : 'Discounted Price'}</p>
-          )}
-          <p className="text-sm text-muted-foreground mt-2">Due: {invoice.due_date ? format(new Date(invoice.due_date), 'MMM dd, yyyy') : '-'}</p>
+          <p className="text-sm text-muted-foreground mt-2">{isAr ? 'تاريخ الاستحقاق:' : 'Due:'} {invoice.due_date ? format(new Date(invoice.due_date), 'MMM dd, yyyy') : '-'}</p>
         </div>
 
         {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (

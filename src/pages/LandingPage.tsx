@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Users, GraduationCap, Calendar, Award, BarChart3, MessageSquare, Shield, Star, ChevronRight, Check, Menu, X, BookOpen, Moon, Sun } from 'lucide-react';
+import { Users, GraduationCap, Calendar, Award, BarChart3, MessageSquare, Shield, Star, ChevronRight, Check, Menu, X, BookOpen, Moon, Sun, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -84,7 +84,7 @@ const LandingPage = () => {
   const navigate = useNavigate();
   const { language, setLanguage } = useLanguage();
   const { pending } = useAppSettings();
-  const { user, profile } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const isAr = language === 'ar';
   const [packages, setPackages] = useState<PricingPackage[]>([]);
   const [content, setContent] = useState<Record<string, Record<string, any>>>(defaultContent);
@@ -200,18 +200,27 @@ const LandingPage = () => {
               </button>
               <div className="mx-2 h-6 w-px bg-border" />
               {user ? (
-                <button
-                  onClick={() => navigate('/dashboard')}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-accent/50 transition-colors"
-                >
-                  <Avatar className="h-7 w-7">
-                    <AvatarImage src={avatarUrl} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
-                      {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm font-medium text-foreground">{profile?.full_name || 'User'}</span>
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => navigate('/dashboard')}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-accent/50 transition-colors"
+                  >
+                    <Avatar className="h-7 w-7">
+                      <AvatarImage src={avatarUrl} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                        {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-medium text-foreground">{profile?.full_name || 'User'}</span>
+                  </button>
+                  <button
+                    onClick={async () => { await signOut(); navigate('/login'); }}
+                    className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                    title={isAr ? 'تسجيل الخروج' : 'Logout'}
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </button>
+                </div>
               ) : (
                 <Button size="sm" onClick={() => navigate('/login')}>
                   {t('Get Started', 'ابدأ الآن')} <ChevronRight className="h-4 w-4 ms-1" />

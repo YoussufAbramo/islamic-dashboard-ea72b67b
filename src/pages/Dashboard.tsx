@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { BookOpen, Users, GraduationCap, CreditCard, HeadphonesIcon, Calendar as CalendarIcon, DollarSign, AlertTriangle, Pencil, Award, ClipboardCheck, MessageSquare, UserCheck, Megaphone, ArrowUp, ArrowDown, GripVertical, ChevronLeft, ChevronRight } from 'lucide-react';
+import { BookOpen, Users, GraduationCap, CreditCard, HeadphonesIcon, Calendar as CalendarIcon, DollarSign, AlertTriangle, Pencil, Award, ClipboardCheck, MessageSquare, UserCheck, Megaphone, ArrowUp, ArrowDown, GripVertical, ChevronLeft, ChevronRight, FileText, TrendingUp } from 'lucide-react';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -122,7 +122,7 @@ const Dashboard = () => {
   const { t, language } = useLanguage();
   const { currency } = useAppSettings();
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ courses: 0, students: 0, teachers: 0, subscriptions: 0, tickets: 0, lessons: 0, mri: 0, weeklyLessons: 0, teacherAbsences: 0, certificates: 0, attendance: 0, chats: 0, announcements: 0 });
+  const [stats, setStats] = useState({ courses: 0, students: 0, teachers: 0, subscriptions: 0, tickets: 0, lessons: 0, mri: 0, weeklyLessons: 0, teacherAbsences: 0, certificates: 0, attendance: 0, chats: 0, announcements: 0, invoices: 0, pendingInvoices: 0 });
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [calendarMode, setCalendarMode] = useState<'monthly' | 'weekly'>('monthly');
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -175,7 +175,7 @@ const Dashboard = () => {
     const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
 
     const fetchStats = async () => {
-      const [courses, students, teachers, subs, tickets, timetable, weeklyEntries, certs, attendanceCount, chatCount, announcementsCount] = await Promise.all([
+      const [courses, students, teachers, subs, tickets, timetable, weeklyEntries, certs, attendanceCount, chatCount, announcementsCount, invoicesCount, pendingInvoicesCount] = await Promise.all([
         supabase.from('courses').select('id', { count: 'exact', head: true }),
         supabase.from('students').select('id', { count: 'exact', head: true }),
         supabase.from('teachers').select('id', { count: 'exact', head: true }),
@@ -187,6 +187,8 @@ const Dashboard = () => {
         supabase.from('attendance').select('id', { count: 'exact', head: true }),
         supabase.from('chats').select('id', { count: 'exact', head: true }),
         supabase.from('announcements').select('id', { count: 'exact', head: true }).eq('is_active', true),
+        supabase.from('invoices').select('id', { count: 'exact', head: true }),
+        supabase.from('invoices').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
       ]);
 
       const subsData = subs.data || [];
@@ -200,6 +202,7 @@ const Dashboard = () => {
         mri, weeklyLessons: weekData.length, teacherAbsences: absences,
         certificates: certs.count || 0, attendance: attendanceCount.count || 0,
         chats: chatCount.count || 0, announcements: announcementsCount.count || 0,
+        invoices: invoicesCount.count || 0, pendingInvoices: pendingInvoicesCount.count || 0,
       });
 
       // Build sales data by month (last 6 months)
@@ -456,6 +459,20 @@ const Dashboard = () => {
                     </CardContent>
                   </Card>
                 )}
+                {/* Invoices overview card */}
+                <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/invoices')}>
+                  <CardContent className="pt-4 flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><FileText className="h-5 w-5 text-primary" /></div>
+                    <div><p className="text-sm font-medium">{isAr ? 'الفواتير' : 'Invoices'}</p><p className="text-xs text-muted-foreground">{stats.invoices} {isAr ? 'فاتورة' : 'total'}</p></div>
+                  </CardContent>
+                </Card>
+                {/* Pending Invoices card */}
+                <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/invoices')}>
+                  <CardContent className="pt-4 flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><TrendingUp className="h-5 w-5 text-primary" /></div>
+                    <div><p className="text-sm font-medium">{isAr ? 'فواتير معلقة' : 'Pending Invoices'}</p><p className="text-xs text-muted-foreground">{stats.pendingInvoices} {isAr ? 'معلقة' : 'pending'}</p></div>
+                  </CardContent>
+                </Card>
               </div>
             );
 

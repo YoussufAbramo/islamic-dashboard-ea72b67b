@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Eye, Copy, ExternalLink } from 'lucide-react';
+import { Eye, Copy, ExternalLink, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 const statusConfig: Record<string, { bg: string; label: string; labelAr: string }> = {
@@ -26,9 +26,11 @@ interface Props {
   formatPrice: (n: number) => string;
   onPreview: (inv: any) => void;
   onCopyUrl: (inv: any) => void;
+  onDelete?: (inv: any) => void;
+  isAdmin?: boolean;
 }
 
-const InvoiceTable = ({ invoices, loading, isAr, formatPrice, onPreview, onCopyUrl }: Props) => {
+const InvoiceTable = ({ invoices, loading, isAr, formatPrice, onPreview, onCopyUrl, onDelete, isAdmin }: Props) => {
   if (loading) {
     return (
       <div className="rounded-md border">
@@ -94,6 +96,11 @@ const InvoiceTable = ({ invoices, loading, isAr, formatPrice, onPreview, onCopyU
               <Button variant="ghost" size="sm" className="flex-1" onClick={() => onCopyUrl(inv)}>
                 <Copy className="h-4 w-4 me-1" />{isAr ? 'نسخ' : 'Copy'}
               </Button>
+              {isAdmin && onDelete && (
+                <Button variant="ghost" size="sm" className="flex-1 text-destructive hover:text-destructive" onClick={() => onDelete(inv)}>
+                  <Trash2 className="h-4 w-4 me-1" />{isAr ? 'حذف' : 'Delete'}
+                </Button>
+              )}
             </div>
           </div>
         );
@@ -156,6 +163,11 @@ const InvoiceTable = ({ invoices, loading, isAr, formatPrice, onPreview, onCopyU
                       <Button variant="ghost" size="icon" onClick={() => onCopyUrl(inv)} title={isAr ? 'نسخ الرابط' : 'Copy URL'}>
                         <Copy className="h-4 w-4" />
                       </Button>
+                      {isAdmin && onDelete && (
+                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(inv)} title={isAr ? 'حذف' : 'Delete'}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

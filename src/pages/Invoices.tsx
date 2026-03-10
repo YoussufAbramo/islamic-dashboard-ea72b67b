@@ -13,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Search, Plus, FileText, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, Plus, FileText, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import InvoiceStatsCards from '@/components/invoices/InvoiceStatsCards';
 import InvoiceTable from '@/components/invoices/InvoiceTable';
@@ -42,6 +43,7 @@ const Invoices = () => {
     original_price: '', sale_price: '', course_id: '',
   });
   const [createLoading, setCreateLoading] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const formatPrice = (amount: number) => `${currency.symbol}${amount.toFixed(currencyDecimals)}`;
 
@@ -130,6 +132,14 @@ const Invoices = () => {
     const token = invoice.share_token || '';
     navigator.clipboard.writeText(`${window.location.origin}/invoice/${invoice.id}?token=${token}`);
     toast.success(isAr ? 'تم نسخ الرابط' : 'Invoice URL copied');
+  };
+
+  const handleDeleteInvoice = async () => {
+    if (!deleteTarget) return;
+    await supabase.from('invoices').delete().eq('id', deleteTarget);
+    toast.success(isAr ? 'تم حذف الفاتورة' : 'Invoice deleted');
+    setDeleteTarget(null);
+    fetchInvoices();
   };
 
   const statusCounts = {
@@ -225,6 +235,8 @@ const Invoices = () => {
             formatPrice={formatPrice}
             onPreview={openPreview}
             onCopyUrl={copyInvoiceUrl}
+            onDelete={(inv) => setDeleteTarget(inv.id)}
+            isAdmin={role === 'admin'}
           />
           <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
         </>
@@ -339,6 +351,20 @@ const Invoices = () => {
         signaturePosition={signaturePosition}
         stampPosition={stampPosition}
       />
+
+      {/* Delete Invoice Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{isAr ? 'حذف الفاتورة' : 'Delete Invoice'}</AlertDialogTitle>
+            <AlertDialogDescription>{isAr ? 'هل أنت متأكد من حذف هذه الفاتورة؟' : 'Are you sure you want to delete this invoice?'}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDeleteInvoice}>{isAr ? 'حذف' : 'Delete'}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
