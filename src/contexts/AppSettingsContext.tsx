@@ -218,6 +218,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     localStorage.setItem('app_payment_gateway', pending.paymentGateway);
     localStorage.setItem('app_default_language', pending.defaultLanguage);
     localStorage.setItem('app_default_timezone', pending.defaultTimezone);
+    localStorage.setItem('app_sidebar_mode', pending.sidebarMode);
     setSaved({ ...pending });
   }, [pending]);
 
