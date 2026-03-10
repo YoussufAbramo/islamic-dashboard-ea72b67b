@@ -158,6 +158,7 @@ function loadSaved(): PendingSettings {
     paymentGateway: localStorage.getItem('app_payment_gateway') || 'paypal',
     defaultLanguage: (localStorage.getItem('app_default_language') as 'en' | 'ar') || 'en',
     defaultTimezone: localStorage.getItem('app_default_timezone') || Intl.DateTimeFormat().resolvedOptions().timeZone,
+    sidebarMode: (localStorage.getItem('app_sidebar_mode') as SidebarMode) || 'dark',
   };
 }
 
