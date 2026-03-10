@@ -674,6 +674,23 @@
     --sidebar-primary-foreground: var(--primary-foreground);
     --sidebar-ring: var(--ring);
   }
+  /* Ensure light sidebar text colors are properly applied */
+  [data-sidebar-mode="light"] [data-sidebar="sidebar"] [data-sidebar="group-label"],
+  [data-sidebar-mode="light"] [data-sidebar="sidebar"] .text-sidebar-foreground,
+  [data-sidebar-mode="light"] [data-sidebar="sidebar"] .text-sidebar-foreground\/60,
+  [data-sidebar-mode="light"] [data-sidebar="sidebar"] .text-sidebar-foreground\/80,
+  [data-sidebar-mode="light"] [data-sidebar="sidebar"] .text-sidebar-foreground\/50 {
+    color: hsl(var(--sidebar-light-foreground));
+  }
+  [data-sidebar-mode="light"] [data-sidebar="sidebar"] .text-sidebar-foreground\/60 {
+    color: hsl(var(--sidebar-light-foreground) / 0.6);
+  }
+  [data-sidebar-mode="light"] [data-sidebar="sidebar"] .text-sidebar-foreground\/80 {
+    color: hsl(var(--sidebar-light-foreground) / 0.8);
+  }
+  [data-sidebar-mode="light"] [data-sidebar="sidebar"] .text-sidebar-foreground\/50 {
+    color: hsl(var(--sidebar-light-foreground) / 0.5);
+  }
 
   /* Fix RTL switch positioning */
   [dir="rtl"] [role="switch"] {
