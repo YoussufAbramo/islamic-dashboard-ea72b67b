@@ -230,6 +230,44 @@ const AppearanceSettings = () => {
               </div>
             </div>
           </div>
+          {/* Signature Image */}
+          <div className="space-y-2">
+            <Label>{isAr ? 'صورة التوقيع' : 'Signature Image'}</Label>
+            <p className="text-xs text-muted-foreground">{isAr ? 'تظهر في تذييل الفواتير' : 'Displayed in invoice footer'}</p>
+            <div className="flex items-center gap-4">
+              {signatureImage ? (
+                <img src={signatureImage} alt="Signature" className="h-14 w-28 rounded-lg object-contain border border-border bg-background p-1" />
+              ) : (
+                <div className="h-14 w-28 rounded-lg border-2 border-dashed border-border flex items-center justify-center">
+                  <Upload className="h-5 w-5 text-muted-foreground" />
+                </div>
+              )}
+              <div className="flex gap-2">
+                <input ref={signatureRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, setSignatureImage, 'signature')} />
+                <Button variant="outline" size="sm" onClick={() => signatureRef.current?.click()}>{isAr ? 'رفع توقيع' : 'Upload Signature'}</Button>
+                {signatureImage && <Button variant="ghost" size="sm" onClick={() => setSignatureImage('')}>{isAr ? 'إزالة' : 'Remove'}</Button>}
+              </div>
+            </div>
+          </div>
+          {/* Stamp Image */}
+          <div className="space-y-2">
+            <Label>{isAr ? 'صورة الختم' : 'Stamp Image'}</Label>
+            <p className="text-xs text-muted-foreground">{isAr ? 'تظهر في تذييل الفواتير' : 'Displayed in invoice footer'}</p>
+            <div className="flex items-center gap-4">
+              {stampImage ? (
+                <img src={stampImage} alt="Stamp" className="h-14 w-14 rounded-lg object-contain border border-border bg-background p-1" />
+              ) : (
+                <div className="h-14 w-14 rounded-lg border-2 border-dashed border-border flex items-center justify-center">
+                  <Upload className="h-5 w-5 text-muted-foreground" />
+                </div>
+              )}
+              <div className="flex gap-2">
+                <input ref={stampRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, setStampImage, 'stamp')} />
+                <Button variant="outline" size="sm" onClick={() => stampRef.current?.click()}>{isAr ? 'رفع ختم' : 'Upload Stamp'}</Button>
+                {stampImage && <Button variant="ghost" size="sm" onClick={() => setStampImage('')}>{isAr ? 'إزالة' : 'Remove'}</Button>}
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
