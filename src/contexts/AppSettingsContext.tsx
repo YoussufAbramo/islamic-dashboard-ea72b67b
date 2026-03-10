@@ -118,7 +118,23 @@ interface AppSettingsContextType {
 
 const AppSettingsContext = createContext<AppSettingsContextType | null>(null);
 
+const SETTINGS_VERSION = '2';
+
 function loadSaved(): PendingSettings {
+  // Clear stale settings when defaults change
+  const storedVersion = localStorage.getItem('app_settings_version');
+  if (storedVersion !== SETTINGS_VERSION) {
+    const keysToReset = [
+      'app_currency', 'app_color_theme', 'app_name', 'app_description',
+      'app_logo', 'app_signature_image', 'app_stamp_image', 'app_signature_position',
+      'app_stamp_position', 'app_ltr_font', 'app_rtl_font', 'app_button_shape',
+      'app_currency_decimals', 'app_payment_gateway', 'app_default_language',
+      'app_default_timezone', 'app_favicon', 'app_active_gateways',
+    ];
+    keysToReset.forEach(k => localStorage.removeItem(k));
+    localStorage.setItem('app_settings_version', SETTINGS_VERSION);
+  }
+
   return {
     currency: (() => { try { const s = localStorage.getItem('app_currency'); return s ? JSON.parse(s) : CURRENCIES[0]; } catch { return CURRENCIES[0]; } })(),
     colorTheme: (localStorage.getItem('app_color_theme') as ColorTheme) || 'emerald',
