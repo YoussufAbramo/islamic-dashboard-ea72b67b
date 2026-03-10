@@ -578,6 +578,33 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* Delete Tables Data Confirmation */}
+      <AlertDialog open={deleteTablesOpen} onOpenChange={setDeleteTablesOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <Database className="h-5 w-5" />
+              {isAr ? 'حذف بيانات جداول قاعدة البيانات' : 'Delete Database Tables Data'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {isAr
+                ? 'سيتم حذف جميع الإدخالات في جميع الجداول. لن يتم حذف حسابات المستخدمين. هذا الإجراء يُستخدم عادةً بعد الاختبار فقط.'
+                : 'This will delete all entries in all database tables. User accounts will NOT be deleted. This is typically used after testing with fake/sample data only.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleDeleteTablesData}
+              disabled={deleteTablesLoading}
+            >
+              {deleteTablesLoading && <Loader2 className="h-4 w-4 me-1 animate-spin" />}
+              {isAr ? 'نعم، حذف بيانات الجداول' : 'Yes, Delete Tables Data'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {/* Erase Summary Report */}
       <Dialog open={!!eraseSummary} onOpenChange={(open) => !open && setEraseSummary(null)}>
         <DialogContent className="max-w-md">
