@@ -924,25 +924,16 @@ export type Database = {
         Returns: {
           amount: number
           billing_cycle: string
-          course_id: string | null
+          course_id: string
           created_at: string
           due_date: string
           id: string
           invoice_number: string
-          notes: string | null
-          paid_at: string | null
-          share_token: string
+          notes: string
+          paid_at: string
           status: string
           student_id: string
-          subscription_id: string | null
-          updated_at: string
         }[]
-        SetofOptions: {
-          from: "*"
-          to: "invoices"
-          isOneToOne: false
-          isSetofReturn: true
-        }
       }
       get_user_role: {
         Args: { _user_id: string }
