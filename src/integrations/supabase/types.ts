@@ -344,6 +344,7 @@ export type Database = {
           invoice_number: string
           notes: string | null
           paid_at: string | null
+          share_token: string
           status: string
           student_id: string
           subscription_id: string | null
@@ -359,6 +360,7 @@ export type Database = {
           invoice_number?: string
           notes?: string | null
           paid_at?: string | null
+          share_token?: string
           status?: string
           student_id: string
           subscription_id?: string | null
@@ -374,6 +376,7 @@ export type Database = {
           invoice_number?: string
           notes?: string | null
           paid_at?: string | null
+          share_token?: string
           status?: string
           student_id?: string
           subscription_id?: string | null
