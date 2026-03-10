@@ -12,27 +12,38 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Search, Eye, Plus, ArrowUp, ArrowDown } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
+import { Search, Eye, Plus, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { subscriptionStatusLabels, subscriptionTypeLabels, getLabel } from '@/lib/statusLabels';
+import { addDays, addYears } from 'date-fns';
 
 const Subscriptions = () => {
   const { t, language } = useLanguage();
   const { role } = useAuth();
   const { currency } = useAppSettings();
+  const isAr = language === 'ar';
+  const isAdmin = role === 'admin';
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [detailOpen, setDetailOpen] = useState(false);
   const [selected, setSelected] = useState<any>(null);
   const [editing, setEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ subscription_type: 'monthly', status: 'active', renewal_date: '' });
+  const [editForm, setEditForm] = useState({ subscription_type: 'monthly', status: 'active', renewal_date: '', teacher_id: '', course_id: '' });
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   // Create subscription
   const [createOpen, setCreateOpen] = useState(false);
   const [students, setStudentsList] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [teachers, setTeachersList] = useState<any[]>([]);
-  const [createForm, setCreateForm] = useState({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '' });
+  const [studentSearch, setStudentSearch] = useState('');
+  const [courseSearch, setCourseSearch] = useState('');
+  const [teacherSearch, setTeacherSearch] = useState('');
+  const [createForm, setCreateForm] = useState({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '', weekly_lessons: '1', lesson_duration: '60' });
   const [createLoading, setCreateLoading] = useState(false);
 
   const fetchSubscriptions = async () => {
@@ -56,53 +67,93 @@ const Subscriptions = () => {
 
   useEffect(() => { fetchSubscriptions(); }, []);
 
+  // Auto-calculate renewal date
+  useEffect(() => {
+    if (createForm.start_date && createForm.subscription_type) {
+      const start = new Date(createForm.start_date);
+      const renewal = createForm.subscription_type === 'yearly'
+        ? addYears(start, 1)
+        : addDays(start, 30);
+      setCreateForm(prev => ({ ...prev, renewal_date: renewal.toISOString().split('T')[0] }));
+    }
+  }, [createForm.start_date, createForm.subscription_type]);
+
   const viewDetails = (sub: any) => {
     setSelected(sub);
-    setEditForm({ subscription_type: sub.subscription_type, status: sub.status, renewal_date: sub.renewal_date || '' });
+    setEditForm({ subscription_type: sub.subscription_type, status: sub.status, renewal_date: sub.renewal_date || '', teacher_id: sub.teacher_id || '', course_id: sub.course_id || '' });
     setDetailOpen(true);
     setEditing(false);
+    fetchFormData();
   };
 
   const saveEdit = async () => {
-    await supabase.from('subscriptions').update(editForm).eq('id', selected.id);
-    toast.success(language === 'ar' ? 'تم تحديث الاشتراك' : 'Subscription updated');
+    await supabase.from('subscriptions').update({
+      subscription_type: editForm.subscription_type,
+      status: editForm.status,
+      renewal_date: editForm.renewal_date || null,
+      teacher_id: editForm.teacher_id || null,
+      course_id: editForm.course_id || null,
+    }).eq('id', selected.id);
+    toast.success(isAr ? 'تم تحديث الاشتراك' : 'Subscription updated');
     setEditing(false);
     fetchSubscriptions();
   };
 
   const handleCreate = async () => {
-    if (!createForm.student_id || !createForm.course_id) {
-      toast.error(language === 'ar' ? 'يرجى اختيار الطالب والدورة' : 'Please select student and course');
-      return;
-    }
     setCreateLoading(true);
     const { error } = await supabase.from('subscriptions').insert({
-      student_id: createForm.student_id,
-      course_id: createForm.course_id,
+      student_id: createForm.student_id || null,
+      course_id: createForm.course_id || null,
       teacher_id: createForm.teacher_id || null,
       subscription_type: createForm.subscription_type,
       price: parseFloat(createForm.price) || 0,
       start_date: createForm.start_date,
       renewal_date: createForm.renewal_date || null,
+      weekly_lessons: parseInt(createForm.weekly_lessons) || 1,
+      lesson_duration: parseInt(createForm.lesson_duration) || 60,
     });
     setCreateLoading(false);
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success(language === 'ar' ? 'تم إنشاء الاشتراك' : 'Subscription created');
+      toast.success(isAr ? 'تم إنشاء الاشتراك' : 'Subscription created');
       setCreateOpen(false);
-      setCreateForm({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '' });
+      setCreateForm({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '', weekly_lessons: '1', lesson_duration: '60' });
       fetchSubscriptions();
     }
   };
 
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    await supabase.from('subscriptions').delete().eq('id', deleteTarget);
+    toast.success(isAr ? 'تم حذف الاشتراك' : 'Subscription deleted');
+    setDeleteTarget(null);
+    fetchSubscriptions();
+  };
+
   const statusColors: Record<string, string> = { active: 'default', expired: 'secondary', cancelled: 'destructive' };
+
+  const statusCounts = {
+    all: subscriptions.length,
+    active: subscriptions.filter(s => s.status === 'active').length,
+    expired: subscriptions.filter(s => s.status === 'expired').length,
+    cancelled: subscriptions.filter(s => s.status === 'cancelled').length,
+  };
+
+  const statusTabs = [
+    { value: 'all', label: isAr ? 'الكل' : 'All' },
+    { value: 'active', label: isAr ? 'نشط' : 'Active' },
+    { value: 'expired', label: isAr ? 'منتهي' : 'Expired' },
+    { value: 'cancelled', label: isAr ? 'ملغي' : 'Cancelled' },
+  ];
 
   const filtered = useMemo(() => {
     let result = subscriptions.filter((s) => {
+      const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
       const studentName = s.students?.profiles?.full_name || '';
       const courseName = s.courses?.title || '';
-      return studentName.toLowerCase().includes(search.toLowerCase()) || courseName.toLowerCase().includes(search.toLowerCase());
+      const matchesSearch = studentName.toLowerCase().includes(search.toLowerCase()) || courseName.toLowerCase().includes(search.toLowerCase());
+      return matchesStatus && matchesSearch;
     });
     result.sort((a, b) => {
       const da = new Date(a.created_at).getTime();
@@ -110,9 +161,13 @@ const Subscriptions = () => {
       return sortOrder === 'newest' ? db - da : da - db;
     });
     return result;
-  }, [subscriptions, search, sortOrder]);
+  }, [subscriptions, search, sortOrder, statusFilter]);
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+
+  const filteredStudents = students.filter(s => !studentSearch || (s.profiles?.full_name || '').toLowerCase().includes(studentSearch.toLowerCase()));
+  const filteredCourses = courses.filter(c => !courseSearch || (c.title || '').toLowerCase().includes(courseSearch.toLowerCase()));
+  const filteredTeachers = teachers.filter(t => !teacherSearch || (t.profiles?.full_name || '').toLowerCase().includes(teacherSearch.toLowerCase()));
 
   return (
     <div className="space-y-4">
@@ -121,20 +176,34 @@ const Subscriptions = () => {
         <div className="flex items-center gap-2 ms-auto">
           <Button variant="outline" size="sm" onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')} className="gap-1">
             {sortOrder === 'newest' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}
-            {sortOrder === 'newest' ? (language === 'ar' ? 'الأحدث' : 'Newest') : (language === 'ar' ? 'الأقدم' : 'Oldest')}
+            {sortOrder === 'newest' ? (isAr ? 'الأحدث' : 'Newest') : (isAr ? 'الأقدم' : 'Oldest')}
           </Button>
           <div className="relative">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="ps-9 w-48 sm:w-64" />
           </div>
-          {role === 'admin' && (
+          {isAdmin && (
             <Button onClick={() => { setCreateOpen(true); fetchFormData(); }}>
               <Plus className="h-4 w-4 me-2" />
-              {language === 'ar' ? 'إنشاء اشتراك' : 'Create Subscription'}
+              {isAr ? 'إنشاء اشتراك' : 'Create Subscription'}
             </Button>
           )}
         </div>
       </div>
+
+      {/* Status Filter Tabs */}
+      <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full">
+        <TabsList>
+          {statusTabs.map(tab => (
+            <TabsTrigger key={tab.value} value={tab.value} className="text-xs gap-1.5">
+              {tab.label}
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 min-w-[18px]">
+                {statusCounts[tab.value as keyof typeof statusCounts]}
+              </Badge>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
       <div className="rounded-md border">
         <Table>
@@ -154,10 +223,13 @@ const Subscriptions = () => {
                 <TableCell className="font-medium">{sub.students?.profiles?.full_name || '-'}</TableCell>
                 <TableCell>{sub.courses?.title || '-'}</TableCell>
                 <TableCell>{sub.teachers_rel?.profiles?.full_name || '-'}</TableCell>
-                <TableCell>{sub.subscription_type}</TableCell>
-                <TableCell><Badge variant={statusColors[sub.status] as any}>{sub.status}</Badge></TableCell>
+                <TableCell>{getLabel(subscriptionTypeLabels, sub.subscription_type, isAr)}</TableCell>
+                <TableCell><Badge variant={statusColors[sub.status] as any}>{getLabel(subscriptionStatusLabels, sub.status, isAr)}</Badge></TableCell>
                 <TableCell>
-                  <Button variant="ghost" size="icon" onClick={() => viewDetails(sub)}><Eye className="h-4 w-4" /></Button>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => viewDetails(sub)}><Eye className="h-4 w-4" /></Button>
+                    {isAdmin && <Button variant="ghost" size="icon" className="text-destructive" onClick={() => setDeleteTarget(sub.id)}><Trash2 className="h-4 w-4" /></Button>}
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -166,6 +238,20 @@ const Subscriptions = () => {
         </Table>
       </div>
       <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{isAr ? 'حذف الاشتراك' : 'Delete Subscription'}</AlertDialogTitle>
+            <AlertDialogDescription>{isAr ? 'هل أنت متأكد من حذف هذا الاشتراك؟' : 'Are you sure you want to delete this subscription?'}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDelete}>{isAr ? 'حذف' : 'Delete'}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Detail dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
@@ -186,8 +272,30 @@ const Subscriptions = () => {
                     <Select value={editForm.subscription_type} onValueChange={(v) => setEditForm({ ...editForm, subscription_type: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="monthly">{t('students.monthly')}</SelectItem>
-                        <SelectItem value="yearly">{t('students.yearly')}</SelectItem>
+                        <SelectItem value="monthly">{isAr ? 'شهري' : 'Monthly'}</SelectItem>
+                        <SelectItem value="yearly">{isAr ? 'سنوي' : 'Yearly'}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>{t('subscriptions.course')}</Label>
+                    <Select value={editForm.course_id} onValueChange={(v) => setEditForm({ ...editForm, course_id: v })}>
+                      <SelectTrigger><SelectValue placeholder={isAr ? 'اختر دورة' : 'Select course'} /></SelectTrigger>
+                      <SelectContent>
+                        {courses.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>{t('subscriptions.teacher')}</Label>
+                    <Select value={editForm.teacher_id} onValueChange={(v) => setEditForm({ ...editForm, teacher_id: v })}>
+                      <SelectTrigger><SelectValue placeholder={isAr ? 'اختر معلم' : 'Select teacher'} /></SelectTrigger>
+                      <SelectContent>
+                        {teachers.map((te) => (
+                          <SelectItem key={te.id} value={te.id}>{te.profiles?.full_name || te.id}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -197,9 +305,9 @@ const Subscriptions = () => {
                     <Select value={editForm.status} onValueChange={(v) => setEditForm({ ...editForm, status: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="active">{t('subscriptions.active')}</SelectItem>
-                        <SelectItem value="expired">{t('subscriptions.expired')}</SelectItem>
-                        <SelectItem value="cancelled">{t('subscriptions.cancelled')}</SelectItem>
+                        <SelectItem value="active">{isAr ? 'نشط' : 'Active'}</SelectItem>
+                        <SelectItem value="expired">{isAr ? 'منتهي' : 'Expired'}</SelectItem>
+                        <SelectItem value="cancelled">{isAr ? 'ملغي' : 'Cancelled'}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -211,12 +319,12 @@ const Subscriptions = () => {
               ) : (
                 <div className="border-t pt-3 space-y-2">
                   <div className="grid grid-cols-2 gap-3">
-                    <div><Label>{t('subscriptions.type')}</Label><p>{selected.subscription_type}</p></div>
+                    <div><Label>{t('subscriptions.type')}</Label><p>{getLabel(subscriptionTypeLabels, selected.subscription_type, isAr)}</p></div>
                     <div><Label>{t('subscriptions.renewalDate')}</Label><p>{selected.renewal_date || '-'}</p></div>
-                    <div><Label>{t('subscriptions.status')}</Label><Badge variant={statusColors[selected.status] as any}>{selected.status}</Badge></div>
-                    <div><Label>{language === 'ar' ? 'السعر' : 'Price'}</Label><p>{currency.symbol}{selected.price}</p></div>
+                    <div><Label>{t('subscriptions.status')}</Label><Badge variant={statusColors[selected.status] as any}>{getLabel(subscriptionStatusLabels, selected.status, isAr)}</Badge></div>
+                    <div><Label>{isAr ? 'السعر' : 'Price'}</Label><p>{currency.symbol}{selected.price}</p></div>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => setEditing(true)}>{t('common.edit')}</Button>
+                  {isAdmin && <Button variant="outline" size="sm" onClick={() => setEditing(true)}>{t('common.edit')}</Button>}
                 </div>
               )}
             </div>
@@ -226,26 +334,28 @@ const Subscriptions = () => {
 
       {/* Create subscription dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{language === 'ar' ? 'إنشاء اشتراك جديد' : 'Create New Subscription'}</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>{isAr ? 'إنشاء اشتراك جديد' : 'Create New Subscription'}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label>{t('subscriptions.student')} *</Label>
+              <Label>{t('subscriptions.student')}</Label>
+              <Input placeholder={isAr ? 'بحث عن طالب...' : 'Search student...'} value={studentSearch} onChange={(e) => setStudentSearch(e.target.value)} className="mb-1" />
               <Select value={createForm.student_id} onValueChange={(v) => setCreateForm({ ...createForm, student_id: v })}>
-                <SelectTrigger><SelectValue placeholder={language === 'ar' ? 'اختر طالب' : 'Select student'} /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={isAr ? 'اختر طالب' : 'Select student'} /></SelectTrigger>
                 <SelectContent>
-                  {students.map((s) => (
+                  {filteredStudents.slice(0, 20).map((s) => (
                     <SelectItem key={s.id} value={s.id}>{s.profiles?.full_name || s.id}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>{t('subscriptions.course')} *</Label>
+              <Label>{t('subscriptions.course')}</Label>
+              <Input placeholder={isAr ? 'بحث عن دورة...' : 'Search course...'} value={courseSearch} onChange={(e) => setCourseSearch(e.target.value)} className="mb-1" />
               <Select value={createForm.course_id} onValueChange={(v) => setCreateForm({ ...createForm, course_id: v })}>
-                <SelectTrigger><SelectValue placeholder={language === 'ar' ? 'اختر دورة' : 'Select course'} /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={isAr ? 'اختر دورة' : 'Select course'} /></SelectTrigger>
                 <SelectContent>
-                  {courses.map((c) => (
+                  {filteredCourses.slice(0, 20).map((c) => (
                     <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
                   ))}
                 </SelectContent>
@@ -253,10 +363,11 @@ const Subscriptions = () => {
             </div>
             <div>
               <Label>{t('subscriptions.teacher')}</Label>
+              <Input placeholder={isAr ? 'بحث عن معلم...' : 'Search teacher...'} value={teacherSearch} onChange={(e) => setTeacherSearch(e.target.value)} className="mb-1" />
               <Select value={createForm.teacher_id} onValueChange={(v) => setCreateForm({ ...createForm, teacher_id: v })}>
-                <SelectTrigger><SelectValue placeholder={language === 'ar' ? 'اختر معلم (اختياري)' : 'Select teacher (optional)'} /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={isAr ? 'اختر معلم (اختياري)' : 'Select teacher (optional)'} /></SelectTrigger>
                 <SelectContent>
-                  {teachers.map((te) => (
+                  {filteredTeachers.slice(0, 20).map((te) => (
                     <SelectItem key={te.id} value={te.id}>{te.profiles?.full_name || te.id}</SelectItem>
                   ))}
                 </SelectContent>
@@ -267,16 +378,20 @@ const Subscriptions = () => {
               <Select value={createForm.subscription_type} onValueChange={(v) => setCreateForm({ ...createForm, subscription_type: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="monthly">{t('students.monthly')}</SelectItem>
-                  <SelectItem value="yearly">{t('students.yearly')}</SelectItem>
+                  <SelectItem value="monthly">{isAr ? 'شهري' : 'Monthly'}</SelectItem>
+                  <SelectItem value="yearly">{isAr ? 'سنوي' : 'Yearly'}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>{language === 'ar' ? 'السعر' : 'Price'} ({currency.symbol})</Label><Input type="number" value={createForm.price} onChange={(e) => setCreateForm({ ...createForm, price: e.target.value })} /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>{isAr ? 'الدروس الأسبوعية' : 'Weekly Lessons'}</Label><Input type="number" min="1" value={createForm.weekly_lessons} onChange={(e) => setCreateForm({ ...createForm, weekly_lessons: e.target.value })} /></div>
+              <div><Label>{isAr ? 'مدة الدرس (دقيقة)' : 'Lesson Duration (min)'}</Label><Input type="number" min="15" step="15" value={createForm.lesson_duration} onChange={(e) => setCreateForm({ ...createForm, lesson_duration: e.target.value })} /></div>
+            </div>
+            <div><Label>{isAr ? 'السعر' : 'Price'} ({currency.symbol})</Label><Input type="number" value={createForm.price} onChange={(e) => setCreateForm({ ...createForm, price: e.target.value })} /></div>
             <div><Label>{t('subscriptions.startDate')}</Label><Input type="date" value={createForm.start_date} onChange={(e) => setCreateForm({ ...createForm, start_date: e.target.value })} /></div>
-            <div><Label>{t('subscriptions.renewalDate')}</Label><Input type="date" value={createForm.renewal_date} onChange={(e) => setCreateForm({ ...createForm, renewal_date: e.target.value })} /></div>
+            <div><Label>{t('subscriptions.renewalDate')} ({isAr ? 'محسوب تلقائياً' : 'auto-calculated'})</Label><Input type="date" value={createForm.renewal_date} readOnly className="bg-muted" /></div>
             <Button onClick={handleCreate} disabled={createLoading} className="w-full">
-              {createLoading ? t('common.loading') : (language === 'ar' ? 'إنشاء الاشتراك' : 'Create Subscription')}
+              {createLoading ? t('common.loading') : (isAr ? 'إنشاء الاشتراك' : 'Create Subscription')}
             </Button>
           </div>
         </DialogContent>
