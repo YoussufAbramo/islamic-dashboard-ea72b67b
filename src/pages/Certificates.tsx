@@ -315,10 +315,15 @@ const Certificates = () => {
                     <TableCell><Badge variant={statusColors[cert.status] as any}>{getLabel(certificateStatusLabels, cert.status, isAr)}</Badge></TableCell>
                     <TableCell>{format(new Date(cert.issued_at), 'PP')}</TableCell>
                     <TableCell>
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 flex-wrap">
                         {designOptions.map(d => (
-                          <Button key={d.value} variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={() => handlePrint(cert, d.value)} title={isAr ? d.labelAr : d.label}>
+                          <Button key={`print-${d.value}`} variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={() => handlePrint(cert, d.value)} title={`${isAr ? 'طباعة' : 'Print'}: ${isAr ? d.labelAr : d.label}`}>
                             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: d.color }} />
+                          </Button>
+                        ))}
+                        {designOptions.map(d => (
+                          <Button key={`pdf-${d.value}`} variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={() => handleExportPdf(cert, d.value)} title={`PDF: ${isAr ? d.labelAr : d.label}`}>
+                            <Download className="h-3.5 w-3.5" style={{ color: d.color }} />
                           </Button>
                         ))}
                         {isAdmin && (
