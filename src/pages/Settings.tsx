@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, DollarSign, HardDrive, ArrowDownUp, Construction } from 'lucide-react';
+import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, DollarSign, HardDrive } from 'lucide-react';
 import { toast } from 'sonner';
 import AppearanceSettings from '@/components/settings/AppearanceSettings';
 import PaymentGatewayCard from '@/components/settings/PaymentGatewayCard';
@@ -15,7 +15,7 @@ import LandingContentSettings from '@/components/settings/LandingContentSettings
 import SaaSPricingSettings from '@/components/settings/SaaSPricingSettings';
 import BackupsSettings from '@/components/settings/BackupsSettings';
 
-type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing' | 'backups' | 'export-import';
+type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing' | 'backups';
 
 const Settings = () => {
   const { language } = useLanguage();
@@ -39,22 +39,9 @@ const Settings = () => {
     { value: 'payment', label: 'Payment Methods', labelAr: 'طرق الدفع', icon: CreditCard, adminOnly: true },
     { value: 'data', label: 'Data Management', labelAr: 'إدارة البيانات', icon: Database, adminOnly: true },
     { value: 'backups', label: 'Backups', labelAr: 'النسخ الاحتياطية', icon: HardDrive, adminOnly: true },
-    { value: 'export-import', label: 'Export/Import Setup', labelAr: 'تصدير/استيراد الإعداد', icon: ArrowDownUp, adminOnly: true, comingSoon: true },
   ];
 
   const visibleTabs = tabs.filter(t => !t.adminOnly || isAdmin);
-
-  const ComingSoonCard = ({ title, titleAr }: { title: string; titleAr: string }) => (
-    <Card>
-      <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-        <Construction className="h-12 w-12 text-muted-foreground mb-4" />
-        <CardTitle className="text-xl mb-2">{isAr ? titleAr : title}</CardTitle>
-        <CardDescription className="text-base">
-          {isAr ? 'هذه الميزة قيد التطوير وستكون متاحة قريباً.' : 'This feature is under development and will be available soon.'}
-        </CardDescription>
-      </CardContent>
-    </Card>
-  );
 
   return (
     <div className="space-y-6">
@@ -112,7 +99,6 @@ const Settings = () => {
           {activeTab === 'payment' && isAdmin && <PaymentGatewayCard isAr={isAr} />}
           {activeTab === 'data' && isAdmin && <DataManagementCard isAr={isAr} />}
           {activeTab === 'backups' && isAdmin && <BackupsSettings />}
-          {activeTab === 'export-import' && isAdmin && <ComingSoonCard title="Export/Import Setup" titleAr="تصدير/استيراد الإعداد" />}
         </div>
       </div>
 

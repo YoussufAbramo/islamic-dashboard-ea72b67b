@@ -36,7 +36,7 @@ const Invoices = () => {
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
 
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
-  const [courses, setCourses] = useState<any[]>([]);
+  const [courses, setCourses] = useState<any[]>([]); // kept for compatibility
   const [createForm, setCreateForm] = useState({
     subscription_id: '', billing_cycle: 'monthly', notes: '',
     original_price: '', sale_price: '', course_id: '',
@@ -56,15 +56,11 @@ const Invoices = () => {
   };
 
   const fetchFormData = async () => {
-    const [subRes, courseRes] = await Promise.all([
-      supabase
-        .from('subscriptions')
-        .select('id, price, subscription_type, courses:course_id(title), students:student_id(id, user_id, profiles:students_user_id_profiles_fkey(full_name))')
-        .eq('status', 'active'),
-      supabase.from('courses').select('id, title, title_ar').eq('status', 'published'),
-    ]);
-    setSubscriptions(subRes.data || []);
-    setCourses(courseRes.data || []);
+    const { data: subData } = await supabase
+      .from('subscriptions')
+      .select('id, price, subscription_type, course_id, courses:course_id(id, title, title_ar), students:student_id(id, user_id, profiles:students_user_id_profiles_fkey(full_name))')
+      .eq('status', 'active');
+    setSubscriptions(subData || []);
   };
 
   useEffect(() => { fetchInvoices(); }, []);
@@ -77,7 +73,7 @@ const Invoices = () => {
       subscription_id: subId,
       original_price: sub?.price?.toString() || '',
       sale_price: '',
-      course_id: '',
+      course_id: sub?.course_id || '',
       billing_cycle: sub?.subscription_type || 'monthly',
     }));
   };
@@ -258,22 +254,17 @@ const Invoices = () => {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label>{isAr ? 'الدورة' : 'Course'}</Label>
-              <Select
-                value={createForm.course_id}
-                onValueChange={(v) => setCreateForm({ ...createForm, course_id: v })}
-              >
-                <SelectTrigger><SelectValue placeholder={isAr ? 'اختر دورة' : 'Select course'} /></SelectTrigger>
-                <SelectContent>
-                  {courses.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {isAr ? (c.title_ar || c.title) : c.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Course (read-only from subscription) */}
+            {createForm.subscription_id && (() => {
+              const sub = subscriptions.find(s => s.id === createForm.subscription_id);
+              const courseName = sub?.courses ? (isAr ? (sub.courses.title_ar || sub.courses.title) : sub.courses.title) : '';
+              return courseName ? (
+                <div className="space-y-2">
+                  <Label>{isAr ? 'الدورة' : 'Course'}</Label>
+                  <Input value={courseName} readOnly disabled className="bg-muted" />
+                </div>
+              ) : null;
+            })()}
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">

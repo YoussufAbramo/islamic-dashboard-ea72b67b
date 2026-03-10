@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { HardDrive, Plus, Download, Trash2, Loader2, FileJson, FileText, Database, Clock, AlertTriangle, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -36,6 +37,40 @@ const BackupsSettings = () => {
   const [backupName, setBackupName] = useState('');
   const [backupFormat, setBackupFormat] = useState<'json' | 'sql' | 'csv'>('json');
 
+  const ALL_BACKUP_TABLES = [
+    { key: 'courses', label: 'Courses', labelAr: 'الدورات' },
+    { key: 'course_sections', label: 'Course Sections', labelAr: 'أقسام الدورات' },
+    { key: 'lessons', label: 'Lessons', labelAr: 'الدروس' },
+    { key: 'students', label: 'Students', labelAr: 'الطلاب' },
+    { key: 'teachers', label: 'Teachers', labelAr: 'المعلمين' },
+    { key: 'profiles', label: 'Profiles', labelAr: 'الملفات الشخصية' },
+    { key: 'user_roles', label: 'User Roles', labelAr: 'أدوار المستخدمين' },
+    { key: 'subscriptions', label: 'Subscriptions', labelAr: 'الاشتراكات' },
+    { key: 'invoices', label: 'Invoices', labelAr: 'الفواتير' },
+    { key: 'timetable_entries', label: 'Timetable', labelAr: 'الجداول الزمنية' },
+    { key: 'attendance', label: 'Attendance', labelAr: 'الحضور' },
+    { key: 'certificates', label: 'Certificates', labelAr: 'الشهادات' },
+    { key: 'announcements', label: 'Announcements', labelAr: 'الإعلانات' },
+    { key: 'notifications', label: 'Notifications', labelAr: 'الإشعارات' },
+    { key: 'chats', label: 'Chats', labelAr: 'المحادثات' },
+    { key: 'chat_messages', label: 'Chat Messages', labelAr: 'رسائل المحادثات' },
+    { key: 'support_tickets', label: 'Support Tickets', labelAr: 'تذاكر الدعم' },
+    { key: 'student_progress', label: 'Student Progress', labelAr: 'تقدم الطلاب' },
+    { key: 'pricing_packages', label: 'Pricing Packages', labelAr: 'باقات الأسعار' },
+    { key: 'landing_content', label: 'Landing Content', labelAr: 'محتوى الصفحة' },
+  ];
+
+  const [selectedTables, setSelectedTables] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(ALL_BACKUP_TABLES.map(t => [t.key, true]))
+  );
+
+  const toggleTable = (key: string) => {
+    setSelectedTables(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const selectAll = () => setSelectedTables(Object.fromEntries(ALL_BACKUP_TABLES.map(t => [t.key, true])));
+  const deselectAll = () => setSelectedTables(Object.fromEntries(ALL_BACKUP_TABLES.map(t => [t.key, false])));
+
   const fetchBackups = useCallback(async () => {
     setLoading(true);
     try {
@@ -61,9 +96,15 @@ const BackupsSettings = () => {
     }
     setCreating(true);
     try {
+      const tablesToBackup = Object.keys(selectedTables).filter(k => selectedTables[k]);
+      if (tablesToBackup.length === 0) {
+        toast.error(isAr ? 'اختر جدولاً واحداً على الأقل' : 'Select at least one table');
+        setCreating(false);
+        return;
+      }
       const appSettings = { ...pending };
       const { data, error } = await supabase.functions.invoke('manage-backups', {
-        body: { action: 'create_backup', name: backupName.trim(), format: backupFormat, appSettings },
+        body: { action: 'create_backup', name: backupName.trim(), format: backupFormat, appSettings, tables: tablesToBackup },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -274,11 +315,31 @@ const BackupsSettings = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="p-3 rounded-lg bg-muted text-sm text-muted-foreground">
-              <p className="font-medium mb-1">{isAr ? 'البيانات المشمولة:' : 'Included data:'}</p>
-              <p>{isAr
-                ? 'الدورات، الأقسام، الدروس، الطلاب، المعلمين، الاشتراكات، الفواتير، الجداول الزمنية، الحضور، الشهادات، الإعلانات، الإشعارات، المحادثات، تذاكر الدعم، إعدادات التطبيق'
-                : 'Courses, sections, lessons, students, teachers, subscriptions, invoices, timetable, attendance, certificates, announcements, notifications, chats, support tickets, app settings'}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>{isAr ? 'البيانات المشمولة' : 'Select Data to Backup'}</Label>
+                <div className="flex gap-2">
+                  <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={selectAll}>{isAr ? 'تحديد الكل' : 'Select All'}</Button>
+                  <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={deselectAll}>{isAr ? 'إلغاء الكل' : 'Deselect All'}</Button>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5 max-h-[200px] overflow-y-auto p-3 rounded-lg border border-border bg-muted/30">
+                {ALL_BACKUP_TABLES.map(t => (
+                  <label key={t.key} className="flex items-center gap-2 py-1 cursor-pointer text-sm hover:text-foreground">
+                    <Checkbox
+                      checked={selectedTables[t.key]}
+                      onCheckedChange={() => toggleTable(t.key)}
+                    />
+                    <span className={selectedTables[t.key] ? 'text-foreground' : 'text-muted-foreground'}>
+                      {isAr ? t.labelAr : t.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {isAr
+                  ? `${Object.values(selectedTables).filter(Boolean).length} من ${ALL_BACKUP_TABLES.length} جدول محدد`
+                  : `${Object.values(selectedTables).filter(Boolean).length} of ${ALL_BACKUP_TABLES.length} tables selected`}
               </p>
             </div>
           </div>

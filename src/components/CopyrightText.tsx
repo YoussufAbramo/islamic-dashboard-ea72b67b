@@ -8,7 +8,7 @@ interface CopyrightTextProps {
 
 const CopyrightText = ({
   className = 'text-[10px] text-muted-foreground/60',
-  linkClassName = 'underline hover:text-foreground transition-colors',
+  linkClassName = 'hover:text-foreground transition-colors',
   showVersion = true,
 }: CopyrightTextProps) => (
   <p className={className}>

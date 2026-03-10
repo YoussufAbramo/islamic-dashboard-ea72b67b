@@ -28,7 +28,6 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
     } catch { return []; }
   });
   const [showSeedLog, setShowSeedLog] = useState(false);
-  const [scanLoading, setScanLoading] = useState(false);
   const [confirmEraseSeed, setConfirmEraseSeed] = useState(false);
   const [clearStep, setClearStep] = useState(0);
   const [clearLoading, setClearLoading] = useState(false);
@@ -88,37 +87,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
     }
   };
 
-  const handleScanSampleData = async () => {
-    setScanLoading(true);
-    const log = [...seedLog];
-    const addLog = (msg: string) => {
-      log.push(`[${new Date().toLocaleTimeString()}] ${msg}`);
-      persistLog([...log]);
-    };
-    try {
-      addLog(isAr ? '🔍 جاري فحص البيانات التجريبية...' : '🔍 Scanning for sample data...');
-      
-      // Check for sample users (emails ending with @sample.edu)
-      const { data: sampleProfiles } = await supabase.from('profiles').select('id, email').like('email', '%@sample.edu');
-      const sampleCount = sampleProfiles?.length || 0;
-      
-      if (sampleCount > 0) {
-        addLog(isAr ? `📊 تم العثور على ${sampleCount} مستخدمين تجريبيين (@sample.edu)` : `📊 Found ${sampleCount} sample users (@sample.edu)`);
-        sampleProfiles?.forEach(p => {
-          addLog(`   • ${p.email}`);
-        });
-      } else {
-        addLog(isAr ? '✅ لا توجد بيانات تجريبية' : '✅ No sample data found');
-      }
-      
-      setShowSeedLog(true);
-    } catch (err: any) {
-      addLog(`❌ ${err.message || 'Scan failed'}`);
-      setShowSeedLog(true);
-    } finally {
-      setScanLoading(false);
-    }
-  };
+  // Removed handleScanSampleData - View Log now just shows the persistent log history
 
   const handleEraseSeedData = async () => {
     setEraseSeedLoading(true);
@@ -135,7 +104,16 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      addLog(isAr ? '✅ تم مسح البيانات التجريبية بنجاح' : '✅ Sample data erased successfully');
+      
+      if (data?.counts) {
+        const c = data.counts;
+        Object.entries(c).filter(([, v]) => (v as number) > 0).forEach(([table, count]) => {
+          addLog(`   🗑️ ${table}: -${count}`);
+        });
+        addLog(isAr ? `✅ تم مسح البيانات التجريبية (${data.total_deleted || 0} سجل)` : `✅ Sample data erased (${data.total_deleted || 0} records)`);
+      } else {
+        addLog(isAr ? '✅ تم مسح البيانات التجريبية بنجاح' : '✅ Sample data erased successfully');
+      }
       toast.success(isAr ? 'تم مسح البيانات التجريبية بنجاح' : 'Sample data erased successfully');
     } catch (err: any) {
       addLog(`❌ ${err.message || 'Failed to erase sample data'}`);
@@ -198,15 +176,27 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
 
   const handleEraseAll = async () => {
     setClearLoading(true);
+    const log = [...seedLog];
+    const addLog = (msg: string) => {
+      log.push(`[${new Date().toLocaleTimeString()}] ${msg}`);
+      persistLog([...log]);
+    };
     try {
+      addLog(isAr ? '⚠️ جاري مسح جميع البيانات...' : '⚠️ Erasing all data...');
       const { data, error } = await supabase.functions.invoke('manage-accounts', {
         body: { action: 'clear_all' },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       
+      const counts = data.counts || {};
+      Object.entries(counts).filter(([, v]) => (v as number) > 0).forEach(([table, count]) => {
+        addLog(`   🗑️ ${table}: -${count}`);
+      });
+      addLog(isAr ? `✅ تم مسح جميع البيانات (${data.total_deleted || 0} سجل، تم حفظ ${data.preserved_admins || 0} مدير)` : `✅ All data erased (${data.total_deleted || 0} records, preserved ${data.preserved_admins || 0} admin(s))`);
+
       setEraseSummary({
-        counts: data.counts || {},
+        counts,
         total: data.total_deleted || 0,
       });
       
@@ -217,6 +207,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       );
       resetClearState();
     } catch (err: any) {
+      addLog(`❌ ${err.message || 'Failed to erase data'}`);
       toast.error(err.message || 'Failed to erase data');
     } finally {
       setClearLoading(false);
@@ -264,15 +255,9 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    if (!showSeedLog) {
-                      handleScanSampleData();
-                    }
-                    setShowSeedLog(true);
-                  }}
-                  disabled={scanLoading}
+                  onClick={() => setShowSeedLog(true)}
                 >
-                  {scanLoading ? <Loader2 className="h-4 w-4 me-1 animate-spin" /> : <ScrollText className="h-4 w-4 me-1" />}
+                  <ScrollText className="h-4 w-4 me-1" />
                   {isAr ? 'عرض السجل' : 'View Log'}
                 </Button>
               </div>
