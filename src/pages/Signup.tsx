@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAppSettings } from '@/contexts/AppSettingsContext';
 import CopyrightText from '@/components/CopyrightText';
 import { toast } from 'sonner';
 import { GraduationCap, Users, Eye, EyeOff, BookOpen } from 'lucide-react';
