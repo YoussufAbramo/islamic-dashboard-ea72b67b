@@ -7,6 +7,8 @@ const DEFAULT_APP_DESCRIPTION = 'An interactive Quran learning platform offering
 const DEFAULT_LTR_FONT = 'Montserrat';
 const DEFAULT_RTL_FONT = 'Noto Kufi Arabic';
 const DEFAULT_ACTIVE_GATEWAYS = { paypal: true, paymob: true };
+const DEFAULT_SIGNATURE = '/signature.png';
+const DEFAULT_STAMP = '/stamp.jpg';
 
 interface Currency {
   name: string;
@@ -118,7 +120,7 @@ interface AppSettingsContextType {
 
 const AppSettingsContext = createContext<AppSettingsContextType | null>(null);
 
-const SETTINGS_VERSION = '2';
+const SETTINGS_VERSION = '3';
 
 function loadSaved(): PendingSettings {
   // Clear stale settings when defaults change
@@ -141,8 +143,8 @@ function loadSaved(): PendingSettings {
     appName: localStorage.getItem('app_name') || DEFAULT_APP_NAME,
     appDescription: localStorage.getItem('app_description') || DEFAULT_APP_DESCRIPTION,
     appLogo: localStorage.getItem('app_logo') || DEFAULT_LOGO,
-    signatureImage: localStorage.getItem('app_signature_image') || '',
-    stampImage: localStorage.getItem('app_stamp_image') || '',
+    signatureImage: localStorage.getItem('app_signature_image') || DEFAULT_SIGNATURE,
+    stampImage: localStorage.getItem('app_stamp_image') || DEFAULT_STAMP,
     signaturePosition: (localStorage.getItem('app_signature_position') as FooterPosition) || 'left',
     stampPosition: (localStorage.getItem('app_stamp_position') as FooterPosition) || 'right',
     ltrFont: localStorage.getItem('app_ltr_font') || DEFAULT_LTR_FONT,

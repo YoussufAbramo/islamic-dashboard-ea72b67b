@@ -126,9 +126,9 @@ const Courses = () => {
                 <DialogHeader><DialogTitle>{editCourse ? t('courses.edit') : t('courses.create')}</DialogTitle></DialogHeader>
                 <div className="space-y-3">
                   <div><Label>{t('courses.name')} (EN)</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
-                  <div><Label>{t('courses.name')} (AR)</Label><Input value={form.title_ar} onChange={(e) => setForm({ ...form, title_ar: e.target.value })} dir="rtl" /></div>
+                  <div><Label>{t('courses.name')} (AR)</Label><Input value={form.title_ar} onChange={(e) => setForm({ ...form, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
                   <div><Label>{t('courses.description')} (EN)</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
-                  <div><Label>{t('courses.description')} (AR)</Label><Textarea value={form.description_ar} onChange={(e) => setForm({ ...form, description_ar: e.target.value })} dir="rtl" /></div>
+                  <div><Label>{t('courses.description')} (AR)</Label><Textarea value={form.description_ar} onChange={(e) => setForm({ ...form, description_ar: e.target.value })} dir="rtl" className="text-right" /></div>
                   <div>
                     <Label>{isAr ? 'صورة الدورة' : 'Course Image'}</Label>
                     {(form.image_url || imageFile) && (
@@ -189,9 +189,9 @@ const Courses = () => {
                 </TableCell>
                 <TableCell><Badge variant={statusColor[course.status] as any}>{getLabel(courseStatusLabels, course.status, isAr)}</Badge></TableCell>
                 <TableCell className="flex gap-1">
-                  <Button variant="ghost" size="icon" onClick={() => navigate(`/dashboard/courses/${course.id}`)}><Eye className="h-4 w-4" /></Button>
-                  {canEdit && <Button variant="ghost" size="icon" onClick={() => openEdit(course)}><Edit className="h-4 w-4" /></Button>}
-                  {role === 'admin' && <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => setDeleteTarget(course.id)}><Trash2 className="h-4 w-4" /></Button>}
+                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted" onClick={() => navigate(`/dashboard/courses/${course.id}`)}><Eye className="h-4 w-4" /></Button>
+                  {canEdit && <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted" onClick={() => openEdit(course)}><Edit className="h-4 w-4" /></Button>}
+                  {role === 'admin' && <Button variant="ghost" size="icon" className="rounded-full hover:bg-destructive/10 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(course.id)}><Trash2 className="h-4 w-4" /></Button>}
                 </TableCell>
               </TableRow>
             ))}

@@ -2,6 +2,25 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [2.8.0] - 2026-03-10
+
+### Added
+- Calculator page: Standalone finance calculator in sidebar under Finance category with bi-directional price rate/total calculation
+- Certificate creation: Searchable combobox dropdowns for recipient and course selection
+- Group chat: View group members dialog and redesigned chat header with avatar and member info
+- Default signature and stamp images for invoice branding
+- Default pricing packages: PayPal and Paymob payment methods enabled by default on public invoice page
+
+### Changed
+- Switch components: Forced circular rounded style (`!rounded-full`) regardless of button shape setting
+- Arabic text inputs: Right-aligned (`text-right`) in courses, certificates, and announcements creation forms
+- Announcement cards: Date and time restyled with Badge components instead of plain text
+- Action icon buttons: Unified `rounded-full hover:bg-muted` style across Courses, Timetable, Certificates, Support, Teachers, and Students pages
+- Invoice public page: Payment methods now default to PayPal + Paymob when no localStorage config exists
+- Invoice public page: Default signature and stamp images shown from `/signature.png` and `/stamp.jpg`
+- Settings version bumped to v3 to force-apply new defaults (signature, stamp)
+- Version bumped to 2.8.0
+
 ## [2.7.0] - 2026-03-10
 
 ### Added
