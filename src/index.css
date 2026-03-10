@@ -466,6 +466,11 @@
     --sidebar-accent: 30 35% 18%;
     --sidebar-border: 30 30% 20%;
     --sidebar-ring: 40 75% 50%;
+    --sidebar-light-background: 40 20% 96%;
+    --sidebar-light-foreground: 30 30% 12%;
+    --sidebar-light-accent: 40 15% 90%;
+    --sidebar-light-accent-foreground: 30 30% 12%;
+    --sidebar-light-border: 40 12% 85%;
   }
   .dark.theme-amber {
     --background: 30 25% 6%;
