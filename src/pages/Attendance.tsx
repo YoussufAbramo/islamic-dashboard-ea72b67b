@@ -70,14 +70,13 @@ const Attendance = () => {
   }, []);
 
   const sortedAttendance = useMemo(() => {
-    const sorted = [...attendance];
-    sorted.sort((a, b) => {
+    const sorted = [...attendance].sort((a, b) => {
       const da = new Date(a.created_at).getTime();
       const db = new Date(b.created_at).getTime();
-      return sortOrder === 'newest' ? db - da : da - db;
+      return db - da;
     });
     return sorted;
-  }, [attendance, sortOrder]);
+  }, [attendance]);
 
   // Build per-student stats
   const studentStats = students.map((s) => {
