@@ -151,6 +151,10 @@ const Dashboard = () => {
     const saved = localStorage.getItem('dashboard_widgets');
     return migrateWidgets(saved ? JSON.parse(saved) : null);
   });
+  const [sectionOrder, setSectionOrder] = useState<SectionKey[]>(() => {
+    const saved = localStorage.getItem('dashboard_section_order');
+    return saved ? JSON.parse(saved) : DEFAULT_SECTION_ORDER;
+  });
   const isAr = language === 'ar';
   const isAdmin = role === 'admin';
 
