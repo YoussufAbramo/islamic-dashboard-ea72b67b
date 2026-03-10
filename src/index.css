@@ -362,6 +362,11 @@
     --sidebar-accent: 345 30% 18%;
     --sidebar-border: 345 25% 20%;
     --sidebar-ring: 330 50% 55%;
+    --sidebar-light-background: 345 15% 96%;
+    --sidebar-light-foreground: 345 25% 12%;
+    --sidebar-light-accent: 345 12% 90%;
+    --sidebar-light-accent-foreground: 345 25% 12%;
+    --sidebar-light-border: 345 12% 85%;
   }
   .dark.theme-rose {
     --background: 345 25% 6%;
