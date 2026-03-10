@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Eye, Copy, ExternalLink } from 'lucide-react';
+import { Eye, Copy, ExternalLink, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 const statusConfig: Record<string, { bg: string; label: string; labelAr: string }> = {
