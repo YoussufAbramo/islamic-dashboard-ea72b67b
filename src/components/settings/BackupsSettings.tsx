@@ -1,0 +1,326 @@
+import { useState, useEffect, useCallback } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { HardDrive, Plus, Download, Trash2, Loader2, FileJson, FileText, Database, Clock, AlertTriangle, RefreshCw } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useAppSettings } from '@/contexts/AppSettingsContext';
+
+interface BackupFile {
+  name: string;
+  size: number;
+  created_at: string;
+  format: string;
+}
+
+const BackupsSettings = () => {
+  const { language } = useLanguage();
+  const { pending } = useAppSettings();
+  const isAr = language === 'ar';
+  const [backups, setBackups] = useState<BackupFile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [downloading, setDownloading] = useState<string | null>(null);
+
+  // Create form
+  const [backupName, setBackupName] = useState('');
+  const [backupFormat, setBackupFormat] = useState<'json' | 'sql' | 'csv'>('json');
+
+  const fetchBackups = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('manage-backups', {
+        body: { action: 'list_backups' },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setBackups(data.backups || []);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to load backups');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchBackups(); }, [fetchBackups]);
+
+  const handleCreate = async () => {
+    if (!backupName.trim()) {
+      toast.error(isAr ? 'أدخل اسم الملف' : 'Enter a file name');
+      return;
+    }
+    setCreating(true);
+    try {
+      const appSettings = { ...pending };
+      const { data, error } = await supabase.functions.invoke('manage-backups', {
+        body: { action: 'create_backup', name: backupName.trim(), format: backupFormat, appSettings },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(isAr
+        ? `تم إنشاء النسخة الاحتياطية: ${data.file} (${data.total_records} سجل)`
+        : `Backup created: ${data.file} (${data.total_records} records)`
+      );
+      setShowCreate(false);
+      setBackupName('');
+      fetchBackups();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to create backup');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleDownload = async (fileName: string) => {
+    setDownloading(fileName);
+    try {
+      const { data, error } = await supabase.functions.invoke('manage-backups', {
+        body: { action: 'download_backup', fileName },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      window.open(data.url, '_blank');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to download backup');
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('manage-backups', {
+        body: { action: 'delete_backup', fileName: deleteTarget },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(isAr ? 'تم حذف النسخة الاحتياطية' : 'Backup deleted');
+      setDeleteTarget(null);
+      fetchBackups();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete backup');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const formatSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / 1048576).toFixed(1)} MB`;
+  };
+
+  const formatIcon = (format: string) => {
+    if (format === 'json') return <FileJson className="h-4 w-4 text-primary" />;
+    if (format === 'sql') return <Database className="h-4 w-4 text-primary" />;
+    return <FileText className="h-4 w-4 text-primary" />;
+  };
+
+  return (
+    <>
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <HardDrive className="h-5 w-5 text-primary" />
+                  {isAr ? 'النسخ الاحتياطية' : 'Backups'}
+                </CardTitle>
+                <CardDescription>
+                  {isAr ? 'إنشاء وإدارة النسخ الاحتياطية لبيانات المنصة' : 'Create and manage platform data backups'}
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={fetchBackups} disabled={loading}>
+                  <RefreshCw className={`h-4 w-4 me-1 ${loading ? 'animate-spin' : ''}`} />
+                  {isAr ? 'تحديث' : 'Refresh'}
+                </Button>
+                <Button size="sm" onClick={() => { setShowCreate(true); setBackupName(`backup-${new Date().toISOString().split('T')[0]}`); }}>
+                  <Plus className="h-4 w-4 me-1" />
+                  {isAr ? 'إنشاء نسخة احتياطية' : 'Create Backup'}
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : backups.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <HardDrive className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                <p className="font-medium">{isAr ? 'لا توجد نسخ احتياطية' : 'No backups yet'}</p>
+                <p className="text-sm mt-1">{isAr ? 'أنشئ أول نسخة احتياطية لحماية بياناتك' : 'Create your first backup to protect your data'}</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {backups.map((backup) => (
+                  <div key={backup.name} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                    {formatIcon(backup.format)}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{backup.name}</p>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {new Date(backup.created_at).toLocaleString(isAr ? 'ar-SA' : 'en-US')}
+                        </span>
+                        <span>{formatSize(backup.size)}</span>
+                        <span className="uppercase font-mono">{backup.format}</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDownload(backup.name)}
+                        disabled={downloading === backup.name}
+                      >
+                        {downloading === backup.name
+                          ? <Loader2 className="h-4 w-4 animate-spin" />
+                          : <Download className="h-4 w-4" />}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteTarget(backup.name)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Auto Backups */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Clock className="h-4 w-4 text-primary" />
+              {isAr ? 'النسخ الاحتياطي التلقائي' : 'Auto Backups'}
+            </CardTitle>
+            <CardDescription>
+              {isAr ? 'هذه الميزة قيد التطوير وستكون متاحة قريباً' : 'This feature is under development and will be available soon'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between opacity-50 pointer-events-none">
+              <div>
+                <p className="text-sm font-medium">{isAr ? 'تفعيل النسخ الاحتياطي التلقائي' : 'Enable Auto Backups'}</p>
+                <p className="text-xs text-muted-foreground">{isAr ? 'إنشاء نسخة احتياطية تلقائياً كل يوم/أسبوع' : 'Automatically create backups daily/weekly'}</p>
+              </div>
+              <Switch disabled />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Create Backup Dialog */}
+      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5 text-primary" />
+              {isAr ? 'إنشاء نسخة احتياطية' : 'Create Backup'}
+            </DialogTitle>
+            <DialogDescription>
+              {isAr
+                ? 'سيتم تصدير جميع بيانات المنصة وحفظها في ملف نسخة احتياطية'
+                : 'All platform data will be exported and saved as a backup file'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>{isAr ? 'اسم الملف' : 'File Name'}</Label>
+              <Input
+                value={backupName}
+                onChange={(e) => setBackupName(e.target.value)}
+                placeholder={isAr ? 'اسم النسخة الاحتياطية' : 'Backup name'}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{isAr ? 'التنسيق' : 'Format'}</Label>
+              <Select value={backupFormat} onValueChange={(v) => setBackupFormat(v as any)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="json">
+                    <span className="flex items-center gap-2"><FileJson className="h-4 w-4" /> JSON</span>
+                  </SelectItem>
+                  <SelectItem value="sql">
+                    <span className="flex items-center gap-2"><Database className="h-4 w-4" /> SQL</span>
+                  </SelectItem>
+                  <SelectItem value="csv">
+                    <span className="flex items-center gap-2"><FileText className="h-4 w-4" /> CSV</span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="p-3 rounded-lg bg-muted text-sm text-muted-foreground">
+              <p className="font-medium mb-1">{isAr ? 'البيانات المشمولة:' : 'Included data:'}</p>
+              <p>{isAr
+                ? 'الدورات، الأقسام، الدروس، الطلاب، المعلمين، الاشتراكات، الفواتير، الجداول الزمنية، الحضور، الشهادات، الإعلانات، الإشعارات، المحادثات، تذاكر الدعم، إعدادات التطبيق'
+                : 'Courses, sections, lessons, students, teachers, subscriptions, invoices, timetable, attendance, certificates, announcements, notifications, chats, support tickets, app settings'}
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreate(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
+            <Button onClick={handleCreate} disabled={creating || !backupName.trim()}>
+              {creating && <Loader2 className="h-4 w-4 me-1 animate-spin" />}
+              {isAr ? 'إنشاء الآن' : 'Create Now'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              {isAr ? 'حذف النسخة الاحتياطية' : 'Delete Backup'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {isAr
+                ? `هل أنت متأكد من حذف "${deleteTarget}"؟ لا يمكن التراجع عن هذا الإجراء.`
+                : `Are you sure you want to delete "${deleteTarget}"? This cannot be undone.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              {deleting && <Loader2 className="h-4 w-4 me-1 animate-spin" />}
+              {isAr ? 'نعم، حذف' : 'Yes, Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+};
+
+export default BackupsSettings;
