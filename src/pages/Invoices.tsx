@@ -281,6 +281,8 @@ const Invoices = () => {
         role={role}
         signatureImage={signatureImage}
         stampImage={stampImage}
+        signaturePosition={signaturePosition}
+        stampPosition={stampPosition}
       />
     </div>
   );
