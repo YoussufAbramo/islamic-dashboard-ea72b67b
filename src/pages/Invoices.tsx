@@ -73,7 +73,7 @@ const Invoices = () => {
       subscription_id: subId,
       original_price: sub?.price?.toString() || '',
       sale_price: '',
-      course_id: '',
+      course_id: sub?.course_id || '',
       billing_cycle: sub?.subscription_type || 'monthly',
     }));
   };
