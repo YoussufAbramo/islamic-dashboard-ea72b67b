@@ -6,7 +6,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { BookOpen, Users, GraduationCap, CreditCard, HeadphonesIcon, Calendar as CalendarIcon, DollarSign, AlertTriangle, Pencil, Award, ClipboardCheck, MessageSquare, UserCheck, Megaphone } from 'lucide-react';
+import { BookOpen, Users, GraduationCap, CreditCard, HeadphonesIcon, Calendar as CalendarIcon, DollarSign, AlertTriangle, Pencil, Award, ClipboardCheck, MessageSquare, UserCheck, Megaphone, ArrowUp, ArrowDown, GripVertical } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -79,6 +79,20 @@ interface WidgetCategory {
   keys: WidgetKey[];
 }
 
+// Section keys for ordering
+type SectionKey = 'stats' | 'overview' | 'upcomingLessons' | 'recentSubscriptions' | 'calendar' | 'recentActivity';
+
+const DEFAULT_SECTION_ORDER: SectionKey[] = ['stats', 'overview', 'upcomingLessons', 'recentSubscriptions', 'calendar', 'recentActivity'];
+
+const SECTION_LABELS: Record<SectionKey, { en: string; ar: string }> = {
+  stats: { en: '📊 Statistics Cards', ar: '📊 بطاقات الإحصائيات' },
+  overview: { en: '📋 Overview Cards', ar: '📋 بطاقات النظرة العامة' },
+  upcomingLessons: { en: '📅 Upcoming Lessons', ar: '📅 الدروس القادمة' },
+  recentSubscriptions: { en: '💳 Recent Subscriptions', ar: '💳 أحدث الاشتراكات' },
+  calendar: { en: '🗓️ Lessons Calendar', ar: '🗓️ تقويم الدروس' },
+  recentActivity: { en: '⚡ Recent Activity', ar: '⚡ النشاط الأخير' },
+};
+
 const WIDGET_CATEGORIES: WidgetCategory[] = [
   {
     label: '📊 Statistics Cards',
@@ -137,6 +151,10 @@ const Dashboard = () => {
     const saved = localStorage.getItem('dashboard_widgets');
     return migrateWidgets(saved ? JSON.parse(saved) : null);
   });
+  const [sectionOrder, setSectionOrder] = useState<SectionKey[]>(() => {
+    const saved = localStorage.getItem('dashboard_section_order');
+    return saved ? JSON.parse(saved) : DEFAULT_SECTION_ORDER;
+  });
   const isAr = language === 'ar';
   const isAdmin = role === 'admin';
 
@@ -144,6 +162,17 @@ const Dashboard = () => {
     setWidgets(prev => {
       const next = { ...prev, [key]: !prev[key] };
       localStorage.setItem('dashboard_widgets', JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const moveSection = useCallback((index: number, direction: 'up' | 'down') => {
+    setSectionOrder(prev => {
+      const next = [...prev];
+      const target = direction === 'up' ? index - 1 : index + 1;
+      if (target < 0 || target >= next.length) return prev;
+      [next[index], next[target]] = [next[target], next[index]];
+      localStorage.setItem('dashboard_section_order', JSON.stringify(next));
       return next;
     });
   }, []);
@@ -233,10 +262,32 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* Edit Mode Panel - Categorized */}
+      {/* Edit Mode Panel */}
       {editMode && isAdmin && (
         <Card className="border-primary/30 bg-primary/5">
           <CardContent className="pt-4 space-y-4">
+            {/* Section Order */}
+            <div>
+              <p className="text-sm font-semibold mb-2 text-primary">
+                {isAr ? '🔀 ترتيب الأقسام' : '🔀 Section Order'}
+              </p>
+              <div className="space-y-1">
+                {sectionOrder.map((sKey, idx) => (
+                  <div key={sKey} className="flex items-center gap-2 p-2 rounded-lg border border-border bg-background">
+                    <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <span className="text-xs flex-1">{isAr ? SECTION_LABELS[sKey].ar : SECTION_LABELS[sKey].en}</span>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" disabled={idx === 0} onClick={() => moveSection(idx, 'up')}>
+                      <ArrowUp className="h-3 w-3" />
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" disabled={idx === sectionOrder.length - 1} onClick={() => moveSection(idx, 'down')}>
+                      <ArrowDown className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Widget Toggles */}
             {WIDGET_CATEGORIES.map((cat) => (
               <div key={cat.label}>
                 <p className="text-sm font-semibold mb-2 text-primary">
@@ -256,24 +307,7 @@ const Dashboard = () => {
         </Card>
       )}
 
-      {/* Admin Statistics */}
-      {role === 'admin' && hasAnyStat && (
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {widgets.statCourses && <StatCard title={t('dashboard.totalCourses')} value={stats.courses} icon={BookOpen} onClick={() => navigate('/dashboard/courses')} />}
-          {widgets.statStudents && <StatCard title={t('dashboard.totalStudents')} value={stats.students} icon={GraduationCap} onClick={() => navigate('/dashboard/students')} />}
-          {widgets.statTeachers && <StatCard title={t('dashboard.totalTeachers')} value={stats.teachers} icon={Users} onClick={() => navigate('/dashboard/teachers')} />}
-          {widgets.statSubscriptions && <StatCard title={t('dashboard.activeSubscriptions')} value={stats.subscriptions} icon={CreditCard} onClick={() => navigate('/dashboard/subscriptions')} />}
-          {widgets.statTickets && <StatCard title={t('dashboard.openTickets')} value={stats.tickets} icon={HeadphonesIcon} onClick={() => navigate('/dashboard/support')} />}
-          {widgets.statLessons && <StatCard title={t('dashboard.upcomingLessons')} value={stats.lessons} icon={CalendarIcon} onClick={() => navigate('/dashboard/timetable')} />}
-          {widgets.statWeeklyLessons && <StatCard title={isAr ? 'دروس هذا الأسبوع' : 'Lessons This Week'} value={stats.weeklyLessons} icon={CalendarIcon} onClick={() => navigate('/dashboard/timetable')} />}
-          {widgets.statMri && <StatCard title={isAr ? 'الدخل الشهري المتكرر' : 'Monthly Recurring Income'} value={`${currency.symbol}${stats.mri.toFixed(2)}`} icon={DollarSign} onClick={() => navigate('/dashboard/reports')} />}
-          {stats.teacherAbsences > 0 && (
-            <StatCard title={isAr ? 'غيابات المعلمين' : 'Teacher Absences'} value={stats.teacherAbsences} icon={AlertTriangle} alert onClick={() => navigate('/dashboard/attendance')} />
-          )}
-        </div>
-      )}
-
-      {/* Teacher Stats */}
+      {/* Teacher Stats (always at top, not reorderable) */}
       {role === 'teacher' && (
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <StatCard title={t('dashboard.myStudents')} value={stats.students} icon={GraduationCap} onClick={() => navigate('/dashboard/students')} />
@@ -282,7 +316,7 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Student Stats */}
+      {/* Student Stats (always at top, not reorderable) */}
       {role === 'student' && (
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <StatCard title={t('dashboard.myCourses')} value={stats.courses} icon={BookOpen} onClick={() => navigate('/dashboard/courses')} />
@@ -291,239 +325,176 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Overview Cards */}
-      {isAdmin && (
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {widgets.attendanceOverview && (
-            <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/attendance')}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <ClipboardCheck className="h-4 w-4 text-primary" />
-                  {isAr ? 'الحضور' : 'Attendance'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.attendance}</div>
-                <p className="text-xs text-muted-foreground">{isAr ? 'إجمالي السجلات' : 'Total Records'}</p>
-              </CardContent>
-            </Card>
-          )}
-          {widgets.certificatesIssued && (
-            <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/certificates')}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Award className="h-4 w-4 text-primary" />
-                  {isAr ? 'الشهادات' : 'Certificates'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.certificates}</div>
-                <p className="text-xs text-muted-foreground">{isAr ? 'إجمالي الشهادات' : 'Total Certificates'}</p>
-              </CardContent>
-            </Card>
-          )}
-          {widgets.supportOverview && (
-            <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/support')}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <HeadphonesIcon className="h-4 w-4 text-primary" />
-                  {isAr ? 'الدعم' : 'Support'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.tickets}</div>
-                <p className="text-xs text-muted-foreground">{isAr ? 'تذاكر مفتوحة' : 'Open Tickets'}</p>
-              </CardContent>
-            </Card>
-          )}
-          {widgets.teacherOverview && (
-            <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/teachers')}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Users className="h-4 w-4 text-primary" />
-                  {isAr ? 'المعلمون' : 'Teachers'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.teachers}</div>
-                <p className="text-xs text-muted-foreground">{isAr ? 'إجمالي المعلمين' : 'Total Teachers'}</p>
-              </CardContent>
-            </Card>
-          )}
-          {widgets.announcementsWidget && (
-            <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/announcements')}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Megaphone className="h-4 w-4 text-primary" />
-                  {isAr ? 'الإعلانات' : 'Announcements'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.announcements}</div>
-                <p className="text-xs text-muted-foreground">{isAr ? 'إعلانات نشطة' : 'Active'}</p>
-              </CardContent>
-            </Card>
-          )}
-          {widgets.chatsOverview && (
-            <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/chats')}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4 text-primary" />
-                  {isAr ? 'المحادثات' : 'Chats'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.chats}</div>
-                <p className="text-xs text-muted-foreground">{isAr ? 'إجمالي المحادثات' : 'Total Chats'}</p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      )}
+      {/* Admin sections rendered in custom order */}
+      {isAdmin && sectionOrder.map((sectionKey) => {
+        switch (sectionKey) {
+          case 'stats':
+            return hasAnyStat ? (
+              <div key={sectionKey} className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {widgets.statCourses && <StatCard title={t('dashboard.totalCourses')} value={stats.courses} icon={BookOpen} onClick={() => navigate('/dashboard/courses')} />}
+                {widgets.statStudents && <StatCard title={t('dashboard.totalStudents')} value={stats.students} icon={GraduationCap} onClick={() => navigate('/dashboard/students')} />}
+                {widgets.statTeachers && <StatCard title={t('dashboard.totalTeachers')} value={stats.teachers} icon={Users} onClick={() => navigate('/dashboard/teachers')} />}
+                {widgets.statSubscriptions && <StatCard title={t('dashboard.activeSubscriptions')} value={stats.subscriptions} icon={CreditCard} onClick={() => navigate('/dashboard/subscriptions')} />}
+                {widgets.statTickets && <StatCard title={t('dashboard.openTickets')} value={stats.tickets} icon={HeadphonesIcon} onClick={() => navigate('/dashboard/support')} />}
+                {widgets.statLessons && <StatCard title={t('dashboard.upcomingLessons')} value={stats.lessons} icon={CalendarIcon} onClick={() => navigate('/dashboard/timetable')} />}
+                {widgets.statWeeklyLessons && <StatCard title={isAr ? 'دروس هذا الأسبوع' : 'Lessons This Week'} value={stats.weeklyLessons} icon={CalendarIcon} onClick={() => navigate('/dashboard/timetable')} />}
+                {widgets.statMri && <StatCard title={isAr ? 'الدخل الشهري المتكرر' : 'Monthly Recurring Income'} value={`${currency.symbol}${stats.mri.toFixed(2)}`} icon={DollarSign} onClick={() => navigate('/dashboard/reports')} />}
+                {stats.teacherAbsences > 0 && <StatCard title={isAr ? 'غيابات المعلمين' : 'Teacher Absences'} value={stats.teacherAbsences} icon={AlertTriangle} alert onClick={() => navigate('/dashboard/attendance')} />}
+              </div>
+            ) : null;
 
-      {/* Upcoming Lessons Widget */}
-      {widgets.upcomingLessons && upcomingEntries.length > 0 && (
-        <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/timetable')}>
-          <CardHeader>
-            <CardTitle className="text-sm flex items-center gap-2">
-              <CalendarIcon className="h-4 w-4 text-primary" />
-              {isAr ? 'الدروس القادمة' : 'Upcoming Lessons'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {upcomingEntries.map(entry => (
-                <div key={entry.id} className="flex items-center justify-between p-2 rounded-lg border border-border">
-                  <div>
-                    <p className="text-sm font-medium">{format(new Date(entry.scheduled_at), 'EEE, MMM d')}</p>
-                    <p className="text-xs text-muted-foreground">{format(new Date(entry.scheduled_at), 'HH:mm')} · {entry.duration_minutes} {t('common.minutes')}</p>
-                  </div>
-                  <Badge variant={entry.status === 'cancelled' ? 'destructive' : 'outline'} className="text-[10px]">{entry.status}</Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+          case 'overview':
+            return (
+              <div key={sectionKey} className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {widgets.attendanceOverview && (
+                  <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/attendance')}>
+                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><ClipboardCheck className="h-4 w-4 text-primary" />{isAr ? 'الحضور' : 'Attendance'}</CardTitle></CardHeader>
+                    <CardContent><div className="text-2xl font-bold">{stats.attendance}</div><p className="text-xs text-muted-foreground">{isAr ? 'إجمالي السجلات' : 'Total Records'}</p></CardContent>
+                  </Card>
+                )}
+                {widgets.certificatesIssued && (
+                  <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/certificates')}>
+                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Award className="h-4 w-4 text-primary" />{isAr ? 'الشهادات' : 'Certificates'}</CardTitle></CardHeader>
+                    <CardContent><div className="text-2xl font-bold">{stats.certificates}</div><p className="text-xs text-muted-foreground">{isAr ? 'إجمالي الشهادات' : 'Total Certificates'}</p></CardContent>
+                  </Card>
+                )}
+                {widgets.supportOverview && (
+                  <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/support')}>
+                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><HeadphonesIcon className="h-4 w-4 text-primary" />{isAr ? 'الدعم' : 'Support'}</CardTitle></CardHeader>
+                    <CardContent><div className="text-2xl font-bold">{stats.tickets}</div><p className="text-xs text-muted-foreground">{isAr ? 'تذاكر مفتوحة' : 'Open Tickets'}</p></CardContent>
+                  </Card>
+                )}
+                {widgets.teacherOverview && (
+                  <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/teachers')}>
+                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Users className="h-4 w-4 text-primary" />{isAr ? 'المعلمون' : 'Teachers'}</CardTitle></CardHeader>
+                    <CardContent><div className="text-2xl font-bold">{stats.teachers}</div><p className="text-xs text-muted-foreground">{isAr ? 'إجمالي المعلمين' : 'Total Teachers'}</p></CardContent>
+                  </Card>
+                )}
+                {widgets.announcementsWidget && (
+                  <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/announcements')}>
+                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Megaphone className="h-4 w-4 text-primary" />{isAr ? 'الإعلانات' : 'Announcements'}</CardTitle></CardHeader>
+                    <CardContent><div className="text-2xl font-bold">{stats.announcements}</div><p className="text-xs text-muted-foreground">{isAr ? 'إعلانات نشطة' : 'Active'}</p></CardContent>
+                  </Card>
+                )}
+                {widgets.chatsOverview && (
+                  <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/chats')}>
+                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><MessageSquare className="h-4 w-4 text-primary" />{isAr ? 'المحادثات' : 'Chats'}</CardTitle></CardHeader>
+                    <CardContent><div className="text-2xl font-bold">{stats.chats}</div><p className="text-xs text-muted-foreground">{isAr ? 'إجمالي المحادثات' : 'Total Chats'}</p></CardContent>
+                  </Card>
+                )}
+              </div>
+            );
 
-      {/* Recent Subscriptions Widget */}
-      {widgets.recentSubscriptions && isAdmin && recentSubs.length > 0 && (
-        <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/subscriptions')}>
-          <CardHeader>
-            <CardTitle className="text-sm flex items-center gap-2">
-              <CreditCard className="h-4 w-4 text-primary" />
-              {isAr ? 'أحدث الاشتراكات' : 'Recent Subscriptions'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {recentSubs.map(sub => (
-                <div key={sub.id} className="flex items-center justify-between p-2 rounded-lg border border-border">
-                  <div>
-                    <p className="text-sm font-medium">{(sub.courses as any)?.title || '—'}</p>
-                    <p className="text-xs text-muted-foreground">{sub.subscription_type} · {currency.symbol}{Number(sub.price || 0).toFixed(0)}</p>
-                  </div>
-                  <Badge variant={sub.status === 'active' ? 'default' : 'secondary'} className="text-[10px]">{sub.status}</Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Lessons Calendar */}
-      {widgets.calendar && (
-        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-          <Card>
-            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent rounded-t-lg">
-              <CardTitle className="flex items-center gap-2">
-                <CalendarIcon className="h-5 w-5 text-primary" />
-                {isAr ? 'تقويم الدروس' : 'Lessons Calendar'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-                modifiers={{ hasLesson: hasLessonModifier }}
-                modifiersClassNames={{ hasLesson: 'bg-primary/20 text-primary font-bold ring-2 ring-primary/30' }}
-                className="rounded-md border"
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent rounded-t-lg">
-              <CardTitle>
-                {selectedDate
-                  ? `${isAr ? 'دروس يوم' : 'Lessons on'} ${format(selectedDate, 'PPP')}`
-                  : isAr ? 'اختر يوماً' : 'Select a day'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4">
-              {dayLessons.length === 0 ? (
-                <p className="text-muted-foreground text-sm">
-                  {isAr ? 'لا توجد دروس في هذا اليوم' : 'No lessons on this day'}
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {dayLessons.map((lesson) => (
-                    <div key={lesson.id} className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
-                      <div>
-                        <p className="text-sm font-medium">{format(new Date(lesson.scheduled_at), 'HH:mm')}</p>
-                        <p className="text-xs text-muted-foreground">{lesson.duration_minutes} {t('common.minutes')}</p>
+          case 'upcomingLessons':
+            return widgets.upcomingLessons && upcomingEntries.length > 0 ? (
+              <Card key={sectionKey} className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/timetable')}>
+                <CardHeader><CardTitle className="text-sm flex items-center gap-2"><CalendarIcon className="h-4 w-4 text-primary" />{isAr ? 'الدروس القادمة' : 'Upcoming Lessons'}</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {upcomingEntries.map(entry => (
+                      <div key={entry.id} className="flex items-center justify-between p-2 rounded-lg border border-border">
+                        <div>
+                          <p className="text-sm font-medium">{format(new Date(entry.scheduled_at), 'EEE, MMM d')}</p>
+                          <p className="text-xs text-muted-foreground">{format(new Date(entry.scheduled_at), 'HH:mm')} · {entry.duration_minutes} {t('common.minutes')}</p>
+                        </div>
+                        <Badge variant={entry.status === 'cancelled' ? 'destructive' : 'outline'} className="text-[10px]">{entry.status}</Badge>
                       </div>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        lesson.status === 'completed' ? 'bg-primary/10 text-primary' :
-                        lesson.status === 'cancelled' ? 'bg-destructive/10 text-destructive' :
-                        'bg-accent/20 text-accent-foreground'
-                      }`}>
-                        {t(`timetable.${lesson.status}`)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      )}
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : null;
 
-      {/* Recent Activity */}
-      {widgets.recentActivity && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserCheck className="h-5 w-5 text-primary" />
-              {isAr ? 'النشاط الأخير' : 'Recent Activity'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              {isAr ? 'آخر تسجيل دخول: الآن' : 'Last login: Just now'}
-            </p>
-            <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="text-center p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate('/dashboard/timetable')}>
-                <p className="text-lg font-bold">{stats.weeklyLessons}</p>
-                <p className="text-xs text-muted-foreground">{isAr ? 'دروس الأسبوع' : 'Weekly Lessons'}</p>
+          case 'recentSubscriptions':
+            return widgets.recentSubscriptions && recentSubs.length > 0 ? (
+              <Card key={sectionKey} className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/subscriptions')}>
+                <CardHeader><CardTitle className="text-sm flex items-center gap-2"><CreditCard className="h-4 w-4 text-primary" />{isAr ? 'أحدث الاشتراكات' : 'Recent Subscriptions'}</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {recentSubs.map(sub => (
+                      <div key={sub.id} className="flex items-center justify-between p-2 rounded-lg border border-border">
+                        <div>
+                          <p className="text-sm font-medium">{(sub.courses as any)?.title || '—'}</p>
+                          <p className="text-xs text-muted-foreground">{sub.subscription_type} · {currency.symbol}{Number(sub.price || 0).toFixed(0)}</p>
+                        </div>
+                        <Badge variant={sub.status === 'active' ? 'default' : 'secondary'} className="text-[10px]">{sub.status}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : null;
+
+          case 'calendar':
+            return widgets.calendar ? (
+              <div key={sectionKey} className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+                <Card>
+                  <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent rounded-t-lg">
+                    <CardTitle className="flex items-center gap-2"><CalendarIcon className="h-5 w-5 text-primary" />{isAr ? 'تقويم الدروس' : 'Lessons Calendar'}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} modifiers={{ hasLesson: hasLessonModifier }} modifiersClassNames={{ hasLesson: 'bg-primary/20 text-primary font-bold ring-2 ring-primary/30' }} className="rounded-md border" />
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent rounded-t-lg">
+                    <CardTitle>{selectedDate ? `${isAr ? 'دروس يوم' : 'Lessons on'} ${format(selectedDate, 'PPP')}` : isAr ? 'اختر يوماً' : 'Select a day'}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    {dayLessons.length === 0 ? (
+                      <p className="text-muted-foreground text-sm">{isAr ? 'لا توجد دروس في هذا اليوم' : 'No lessons on this day'}</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {dayLessons.map((lesson) => (
+                          <div key={lesson.id} className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                            <div>
+                              <p className="text-sm font-medium">{format(new Date(lesson.scheduled_at), 'HH:mm')}</p>
+                              <p className="text-xs text-muted-foreground">{lesson.duration_minutes} {t('common.minutes')}</p>
+                            </div>
+                            <span className={`text-xs px-2 py-1 rounded-full ${lesson.status === 'completed' ? 'bg-primary/10 text-primary' : lesson.status === 'cancelled' ? 'bg-destructive/10 text-destructive' : 'bg-accent/20 text-accent-foreground'}`}>
+                              {t(`timetable.${lesson.status}`)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
-              <div className="text-center p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate('/dashboard/support')}>
-                <p className="text-lg font-bold">{stats.tickets}</p>
-                <p className="text-xs text-muted-foreground">{isAr ? 'تذاكر مفتوحة' : 'Open Tickets'}</p>
-              </div>
-              <div className="text-center p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate('/dashboard/subscriptions')}>
-                <p className="text-lg font-bold">{stats.subscriptions}</p>
-                <p className="text-xs text-muted-foreground">{isAr ? 'اشتراكات نشطة' : 'Active Subs'}</p>
-              </div>
-              <div className="text-center p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate('/dashboard/certificates')}>
-                <p className="text-lg font-bold">{stats.certificates}</p>
-                <p className="text-xs text-muted-foreground">{isAr ? 'شهادات' : 'Certificates'}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            ) : null;
+
+          case 'recentActivity':
+            return widgets.recentActivity ? (
+              <Card key={sectionKey}>
+                <CardHeader><CardTitle className="flex items-center gap-2"><UserCheck className="h-5 w-5 text-primary" />{isAr ? 'النشاط الأخير' : 'Recent Activity'}</CardTitle></CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">{isAr ? 'آخر تسجيل دخول: الآن' : 'Last login: Just now'}</p>
+                  <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="text-center p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate('/dashboard/timetable')}>
+                      <p className="text-lg font-bold">{stats.weeklyLessons}</p>
+                      <p className="text-xs text-muted-foreground">{isAr ? 'دروس الأسبوع' : 'Weekly Lessons'}</p>
+                    </div>
+                    <div className="text-center p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate('/dashboard/support')}>
+                      <p className="text-lg font-bold">{stats.tickets}</p>
+                      <p className="text-xs text-muted-foreground">{isAr ? 'تذاكر مفتوحة' : 'Open Tickets'}</p>
+                    </div>
+                    <div className="text-center p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate('/dashboard/subscriptions')}>
+                      <p className="text-lg font-bold">{stats.subscriptions}</p>
+                      <p className="text-xs text-muted-foreground">{isAr ? 'اشتراكات نشطة' : 'Active Subs'}</p>
+                    </div>
+                    <div className="text-center p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate('/dashboard/certificates')}>
+                      <p className="text-lg font-bold">{stats.certificates}</p>
+                      <p className="text-xs text-muted-foreground">{isAr ? 'شهادات' : 'Certificates'}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : null;
+
+          default:
+            return null;
+        }
+      })}
     </div>
   );
 };

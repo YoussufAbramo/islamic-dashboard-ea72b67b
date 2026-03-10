@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAppSettings } from '@/contexts/AppSettingsContext';
 import CopyrightText from '@/components/CopyrightText';
 import { toast } from 'sonner';
 import { GraduationCap, Users, ShieldCheck, Eye, EyeOff, BookOpen, Moon, Sun, Mail, ExternalLink } from 'lucide-react';
@@ -46,6 +47,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
   const { t, language, setLanguage } = useLanguage();
+  const { appName, appDescription, appLogo } = useAppSettings();
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
 
@@ -109,14 +111,18 @@ const Login = () => {
       <div className="relative z-10 w-full max-w-md px-4">
         {/* Header branding */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-4 islamic-arch-glow">
-            <BookOpen className="w-10 h-10 text-gold" />
-          </div>
+          {appLogo ? (
+            <img src={appLogo} alt="Logo" className="w-20 h-20 mx-auto mb-4 rounded-full object-cover border-2 border-primary/20" />
+          ) : (
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-4 islamic-arch-glow">
+              <BookOpen className="w-10 h-10 text-gold" />
+            </div>
+          )}
           <h1 className="text-4xl font-bold font-amiri text-gold">
-            {language === 'ar' ? 'منصة التعليم' : 'EduDash'}
+            {language === 'ar' ? (appName || 'منصة التعليم') : (appName || 'EduDash')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1 font-amiri">
-            {language === 'ar' ? 'بسم الله الرحمن الرحيم' : 'In the Name of Allah, the Most Gracious'}
+            {appDescription || (language === 'ar' ? 'بسم الله الرحمن الرحيم' : 'In the Name of Allah, the Most Gracious')}
           </p>
           <div className="flex items-center justify-center gap-2 mt-3">
             <div className="w-12 h-[1px] bg-gradient-to-r from-transparent to-[hsl(var(--gold))]/60" />
