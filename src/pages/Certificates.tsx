@@ -204,18 +204,8 @@ const Certificates = () => {
               </div>
             </DialogContent>
           </Dialog>
-        )}
-      </div>
-
-      {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder={isAr ? 'بحث بالعنوان، المستلم، الدورة، أو الرقم...' : 'Search by title, recipient, course, or number...'}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="ps-9"
-        />
+          )}
+        </div>
       </div>
 
       {filteredCerts.length === 0 ? (
