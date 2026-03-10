@@ -260,6 +260,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       paymentGateway: saved.paymentGateway, setPaymentGateway,
       favicon, setFavicon,
       defaultTimezone: saved.defaultTimezone, setDefaultTimezone,
+      sidebarMode: saved.sidebarMode, setSidebarMode,
       pending, updatePending, saveSettings, hasPendingChanges, discardChanges,
     }}>
       {children}
