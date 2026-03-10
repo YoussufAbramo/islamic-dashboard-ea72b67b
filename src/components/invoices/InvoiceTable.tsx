@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Eye, Copy, ExternalLink, Trash2 } from 'lucide-react';
+import { Eye, Copy, ExternalLink, Trash2, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 
 const statusConfig: Record<string, { bg: string; label: string; labelAr: string }> = {
@@ -27,10 +27,13 @@ interface Props {
   onPreview: (inv: any) => void;
   onCopyUrl: (inv: any) => void;
   onDelete?: (inv: any) => void;
+  onEdit?: (inv: any) => void;
   isAdmin?: boolean;
 }
 
-const InvoiceTable = ({ invoices, loading, isAr, formatPrice, onPreview, onCopyUrl, onDelete, isAdmin }: Props) => {
+const actionBtnClass = "rounded-full h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted";
+
+const InvoiceTable = ({ invoices, loading, isAr, formatPrice, onPreview, onCopyUrl, onDelete, onEdit, isAdmin }: Props) => {
   if (loading) {
     return (
       <div className="rounded-md border">
@@ -96,6 +99,11 @@ const InvoiceTable = ({ invoices, loading, isAr, formatPrice, onPreview, onCopyU
               <Button variant="ghost" size="sm" className="flex-1" onClick={() => onCopyUrl(inv)}>
                 <Copy className="h-4 w-4 me-1" />{isAr ? 'نسخ' : 'Copy'}
               </Button>
+              {isAdmin && onEdit && (
+                <Button variant="ghost" size="sm" className="flex-1" onClick={() => onEdit(inv)}>
+                  <Pencil className="h-4 w-4 me-1" />{isAr ? 'تعديل' : 'Edit'}
+                </Button>
+              )}
               {isAdmin && onDelete && (
                 <Button variant="ghost" size="sm" className="flex-1 text-destructive hover:text-destructive" onClick={() => onDelete(inv)}>
                   <Trash2 className="h-4 w-4 me-1" />{isAr ? 'حذف' : 'Delete'}
@@ -154,17 +162,22 @@ const InvoiceTable = ({ invoices, loading, isAr, formatPrice, onPreview, onCopyU
                   <TableCell className="text-sm">{inv.due_date ? format(new Date(inv.due_date), 'MMM dd, yyyy') : '-'}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => onPreview(inv)} title={isAr ? 'معاينة' : 'Preview'}>
+                      <Button variant="ghost" size="icon" className={actionBtnClass} onClick={() => onPreview(inv)} title={isAr ? 'معاينة' : 'Preview'}>
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => window.open(getInvoiceUrl(inv), '_blank')} title={isAr ? 'عرض' : 'View'}>
+                      <Button variant="ghost" size="icon" className={actionBtnClass} onClick={() => window.open(getInvoiceUrl(inv), '_blank')} title={isAr ? 'عرض' : 'View'}>
                         <ExternalLink className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => onCopyUrl(inv)} title={isAr ? 'نسخ الرابط' : 'Copy URL'}>
+                      <Button variant="ghost" size="icon" className={actionBtnClass} onClick={() => onCopyUrl(inv)} title={isAr ? 'نسخ الرابط' : 'Copy URL'}>
                         <Copy className="h-4 w-4" />
                       </Button>
+                      {isAdmin && onEdit && (
+                        <Button variant="ghost" size="icon" className={actionBtnClass} onClick={() => onEdit(inv)} title={isAr ? 'تعديل' : 'Edit'}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      )}
                       {isAdmin && onDelete && (
-                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => onDelete(inv)} title={isAr ? 'حذف' : 'Delete'}>
+                        <Button variant="ghost" size="icon" className={`${actionBtnClass} hover:text-destructive hover:bg-destructive/10`} onClick={() => onDelete(inv)} title={isAr ? 'حذف' : 'Delete'}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       )}

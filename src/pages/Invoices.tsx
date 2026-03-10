@@ -36,8 +36,13 @@ const Invoices = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
 
+  // Edit invoice
+  const [editOpen, setEditOpen] = useState(false);
+  const [editInvoice, setEditInvoice] = useState<any>(null);
+  const [editForm, setEditForm] = useState({ status: 'pending', notes: '', amount: '', due_date: '' });
+
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
-  const [courses, setCourses] = useState<any[]>([]); // kept for compatibility
+  const [courses, setCourses] = useState<any[]>([]);
   const [createForm, setCreateForm] = useState({
     subscription_id: '', billing_cycle: 'monthly', notes: '',
     original_price: '', sale_price: '', course_id: '',
@@ -67,7 +72,6 @@ const Invoices = () => {
 
   useEffect(() => { fetchInvoices(); }, []);
 
-  // Auto-fill price and billing cycle when subscription is selected
   const handleSubscriptionChange = (subId: string) => {
     const sub = subscriptions.find(s => s.id === subId);
     setCreateForm(prev => ({
@@ -126,6 +130,41 @@ const Invoices = () => {
   const openPreview = (invoice: any) => {
     setSelectedInvoice(invoice);
     setPreviewOpen(true);
+  };
+
+  const openEdit = (invoice: any) => {
+    setEditInvoice(invoice);
+    setEditForm({
+      status: invoice.status,
+      notes: invoice.notes || '',
+      amount: invoice.amount?.toString() || '',
+      due_date: invoice.due_date || '',
+    });
+    setEditOpen(true);
+  };
+
+  const handleEditSave = async () => {
+    if (!editInvoice) return;
+    const updateData: any = {
+      status: editForm.status,
+      notes: editForm.notes,
+      amount: parseFloat(editForm.amount) || 0,
+      due_date: editForm.due_date,
+    };
+    if (editForm.status === 'paid' && editInvoice.status !== 'paid') {
+      updateData.paid_at = new Date().toISOString();
+    }
+    if (editForm.status !== 'paid') {
+      updateData.paid_at = null;
+    }
+    const { error } = await supabase.from('invoices').update(updateData).eq('id', editInvoice.id);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success(isAr ? 'تم تحديث الفاتورة' : 'Invoice updated');
+      setEditOpen(false);
+      fetchInvoices();
+    }
   };
 
   const copyInvoiceUrl = (invoice: any) => {
@@ -236,6 +275,7 @@ const Invoices = () => {
             onPreview={openPreview}
             onCopyUrl={copyInvoiceUrl}
             onDelete={(inv) => setDeleteTarget(inv.id)}
+            onEdit={role === 'admin' ? openEdit : undefined}
             isAdmin={role === 'admin'}
           />
           <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
@@ -266,7 +306,6 @@ const Invoices = () => {
               </Select>
             </div>
 
-            {/* Course (read-only from subscription) */}
             {createForm.subscription_id && (() => {
               const sub = subscriptions.find(s => s.id === createForm.subscription_id);
               const courseName = sub?.courses ? (isAr ? (sub.courses.title_ar || sub.courses.title) : sub.courses.title) : '';
@@ -281,55 +320,72 @@ const Invoices = () => {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>{isAr ? 'السعر الأصلي' : 'Original Price'}</Label>
-                <Input
-                  type="number"
-                  value={createForm.original_price}
-                  readOnly
-                  disabled
-                  className="bg-muted"
-                />
+                <Input type="number" value={createForm.original_price} readOnly disabled className="bg-muted" />
               </div>
               <div className="space-y-2">
                 <Label>{isAr ? 'سعر البيع' : 'Sale Price'}</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={createForm.sale_price}
-                  onChange={(e) => setCreateForm({ ...createForm, sale_price: e.target.value })}
-                  placeholder={isAr ? 'اختياري' : 'Optional'}
-                />
+                <Input type="number" min="0" step="0.01" value={createForm.sale_price} onChange={(e) => setCreateForm({ ...createForm, sale_price: e.target.value })} placeholder={isAr ? 'اختياري' : 'Optional'} />
               </div>
             </div>
 
             <div className="space-y-2">
               <Label>{isAr ? 'الدورة المالية' : 'Billing Cycle'}</Label>
-              <Input
-                value={createForm.billing_cycle === 'yearly' ? (isAr ? 'سنوي' : 'Yearly') : (isAr ? 'شهري' : 'Monthly')}
-                readOnly
-                disabled
-                className="bg-muted"
-              />
+              <Input value={createForm.billing_cycle === 'yearly' ? (isAr ? 'سنوي' : 'Yearly') : (isAr ? 'شهري' : 'Monthly')} readOnly disabled className="bg-muted" />
             </div>
 
             <div className="space-y-2">
               <Label>{isAr ? 'ملاحظات' : 'Notes'}</Label>
-              <Textarea
-                value={createForm.notes}
-                onChange={(e) => setCreateForm({ ...createForm, notes: e.target.value })}
-                placeholder={isAr ? 'ملاحظات اختيارية' : 'Optional notes'}
-                rows={2}
-              />
+              <Textarea value={createForm.notes} onChange={(e) => setCreateForm({ ...createForm, notes: e.target.value })} placeholder={isAr ? 'ملاحظات اختيارية' : 'Optional notes'} rows={2} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>
-              {isAr ? 'إلغاء' : 'Cancel'}
-            </Button>
+            <Button variant="outline" onClick={() => setCreateOpen(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
             <Button onClick={handleCreate} disabled={createLoading}>
               <FileText className="h-4 w-4 me-2" />
               {createLoading ? (isAr ? 'جاري الإنشاء...' : 'Creating...') : (isAr ? 'إنشاء الفاتورة' : 'Generate Invoice')}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Invoice Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{isAr ? 'تعديل الفاتورة' : 'Edit Invoice'}</DialogTitle>
+          </DialogHeader>
+          {editInvoice && (
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">{editInvoice.invoice_number}</div>
+              <div className="space-y-2">
+                <Label>{isAr ? 'الحالة' : 'Status'}</Label>
+                <Select value={editForm.status} onValueChange={(v) => setEditForm({ ...editForm, status: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">{isAr ? 'قيد الانتظار' : 'Pending'}</SelectItem>
+                    <SelectItem value="paid">{isAr ? 'مدفوع' : 'Paid'}</SelectItem>
+                    <SelectItem value="overdue">{isAr ? 'متأخرة' : 'Overdue'}</SelectItem>
+                    <SelectItem value="cancelled">{isAr ? 'ملغية' : 'Cancelled'}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>{isAr ? 'المبلغ' : 'Amount'}</Label>
+                <Input type="number" min="0" step="0.01" value={editForm.amount} onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>{isAr ? 'تاريخ الاستحقاق' : 'Due Date'}</Label>
+                <Input type="date" value={editForm.due_date} onChange={(e) => setEditForm({ ...editForm, due_date: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>{isAr ? 'ملاحظات' : 'Notes'}</Label>
+                <Textarea value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} rows={2} />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditOpen(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
+            <Button onClick={handleEditSave}>{isAr ? 'حفظ' : 'Save'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

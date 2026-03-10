@@ -6,8 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Coins, MessageSquare, Globe, Building2, Clock } from 'lucide-react';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { Coins, MessageSquare, Globe, Building2, Clock, Check, ChevronsUpDown } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
+import { cn } from '@/lib/utils';
 
 const GeneralSettings = () => {
   const { language } = useLanguage();
@@ -18,7 +22,7 @@ const GeneralSettings = () => {
     return localStorage.getItem('app_teacher_can_chat') !== 'false';
   });
 
-  const [tzSearch, setTzSearch] = useState('');
+  const [tzOpen, setTzOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('app_teacher_can_chat', String(teacherCanChat));
@@ -31,11 +35,6 @@ const GeneralSettings = () => {
       return ['UTC', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'Europe/London', 'Europe/Paris', 'Europe/Berlin', 'Asia/Dubai', 'Asia/Riyadh', 'Asia/Kolkata', 'Asia/Tokyo', 'Africa/Cairo', 'Australia/Sydney', 'Pacific/Auckland'];
     }
   }, []);
-
-  const filteredTimezones = useMemo(() => {
-    if (!tzSearch) return timezones.slice(0, 50);
-    return timezones.filter(tz => tz.toLowerCase().includes(tzSearch.toLowerCase())).slice(0, 50);
-  }, [timezones, tzSearch]);
 
   return (
     <div className="space-y-6">
@@ -98,28 +97,30 @@ const GeneralSettings = () => {
         <CardContent>
           <div className="space-y-2">
             <Label>{isAr ? 'المنطقة الزمنية' : 'Timezone'}</Label>
-            <div className="space-y-2">
-              <Input
-                placeholder={isAr ? 'ابحث عن منطقة زمنية...' : 'Search timezone...'}
-                value={tzSearch}
-                onChange={(e) => setTzSearch(e.target.value)}
-              />
-              <Select 
-                value={pending.defaultTimezone} 
-                onValueChange={(v) => updatePending({ defaultTimezone: v })}
-              >
-                <SelectTrigger><SelectValue placeholder={pending.defaultTimezone} /></SelectTrigger>
-                <SelectContent className="max-h-60">
-                  {/* Always show current value first */}
-                  {pending.defaultTimezone && !filteredTimezones.includes(pending.defaultTimezone) && (
-                    <SelectItem key={pending.defaultTimezone} value={pending.defaultTimezone}>{pending.defaultTimezone}</SelectItem>
-                  )}
-                  {filteredTimezones.map((tz) => (
-                    <SelectItem key={tz} value={tz}>{tz}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Popover open={tzOpen} onOpenChange={setTzOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                  {pending.defaultTimezone || 'UTC'}
+                  <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                <Command>
+                  <CommandInput placeholder={isAr ? 'ابحث عن منطقة زمنية...' : 'Search timezone...'} />
+                  <CommandList>
+                    <CommandEmpty>{isAr ? 'لا توجد نتائج' : 'No results'}</CommandEmpty>
+                    <CommandGroup>
+                      {timezones.map((tz) => (
+                        <CommandItem key={tz} value={tz} onSelect={() => { updatePending({ defaultTimezone: tz }); setTzOpen(false); }}>
+                          <Check className={cn("me-2 h-4 w-4", pending.defaultTimezone === tz ? "opacity-100" : "opacity-0")} />
+                          {tz}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
             <p className="text-xs text-muted-foreground">{isAr ? 'المنطقة الزمنية المستخدمة في أسماء النسخ الاحتياطية والتقارير' : 'Timezone used for backup names and reports'}</p>
           </div>
         </CardContent>

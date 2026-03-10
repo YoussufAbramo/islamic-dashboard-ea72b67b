@@ -47,16 +47,27 @@ const InvoiceView = () => {
   const [logoErrors, setLogoErrors] = useState<Record<string, boolean>>({});
   const [studentInfo, setStudentInfo] = useState<any>(null);
   const [courseInfo, setCourseInfo] = useState<any>(null);
+  const [subscriptionPrice, setSubscriptionPrice] = useState<number | null>(null);
 
   const currencySymbol = getCurrencySymbol();
-  const appName = localStorage.getItem('app_name') || 'Islamic Dashboard';
-  const appLogo = localStorage.getItem('app_logo') || '';
+  const appName = localStorage.getItem('app_name') || 'Quran E-Learning Platform - CodeCom.dev';
+  const appLogo = localStorage.getItem('app_logo') || '/logo.png';
+  const appFavicon = localStorage.getItem('app_favicon') || '/favicon.png';
   const signatureImage = localStorage.getItem('app_signature_image') || '';
   const stampImage = localStorage.getItem('app_stamp_image') || '';
   const signaturePosition = (localStorage.getItem('app_signature_position') || 'left') as FooterPosition;
   const stampPosition = (localStorage.getItem('app_stamp_position') || 'right') as FooterPosition;
   const activeGatewayIds = getActiveGateways();
   const activeGateways = GATEWAYS.filter(g => activeGatewayIds.includes(g.id));
+
+  // Apply favicon
+  useEffect(() => {
+    if (appFavicon) {
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+      if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
+      link.href = appFavicon;
+    }
+  }, [appFavicon]);
 
   useEffect(() => {
     const fetchInvoice = async () => {
@@ -67,6 +78,11 @@ const InvoiceView = () => {
         .eq('id', id).maybeSingle();
       if (data) {
         setInvoice(data); setStudentInfo(data.students?.profiles); setCourseInfo(data.courses);
+        // Fetch subscription price as "old price"
+        if (data.subscription_id) {
+          const { data: subData } = await supabase.from('subscriptions').select('price').eq('id', data.subscription_id).maybeSingle();
+          if (subData) setSubscriptionPrice(subData.price);
+        }
       } else if (token) {
         const { data: rpcData } = await supabase.rpc('get_invoice_by_share_token', { _token: token });
         if (rpcData && rpcData.length > 0) setInvoice(rpcData[0]); else setError(true);
@@ -94,9 +110,9 @@ const InvoiceView = () => {
   const formatAmount = (n: number) => `${currencySymbol}${n.toFixed(2)}`;
   const student = studentInfo || invoice.students?.profiles;
   const course = courseInfo || invoice.courses;
-  const originalPrice = invoice.original_price != null ? Number(invoice.original_price) : null;
-  const salePrice = invoice.sale_price != null ? Number(invoice.sale_price) : null;
-  const hasDiscount = originalPrice != null && salePrice != null && salePrice < originalPrice;
+
+  // Show subscription price as old price if it differs from invoice amount
+  const showOldPrice = subscriptionPrice != null && subscriptionPrice > invoice.amount;
 
   return (
     <div className="min-h-screen bg-background py-8 px-4 print:py-2 print:px-0">
@@ -106,7 +122,7 @@ const InvoiceView = () => {
           <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="h-4 w-4 me-2" />Print</Button>
         </div>
 
-        {/* App Branding - Logo only, full image */}
+        {/* App Branding - Logo from settings */}
         <div className="flex justify-center pb-2">
           {appLogo ? (
             <img src={appLogo} alt={appName} className="max-h-20 w-auto object-contain" />
@@ -148,11 +164,11 @@ const InvoiceView = () => {
         </div>
 
         <div className="p-6 rounded-xl border border-border bg-muted/30 text-center">
-          {hasDiscount ? (
+          {showOldPrice ? (
             <>
-              <p className="text-sm text-muted-foreground">{isAr ? 'السعر الأصلي' : 'Original Price'}</p>
-              <p className="text-2xl font-bold text-muted-foreground line-through">{formatAmount(originalPrice!)}</p>
-              <p className="text-sm text-primary mt-2">{isAr ? 'سعر البيع' : 'Sale Price'}</p>
+              <p className="text-sm text-muted-foreground">{isAr ? 'سعر الاشتراك' : 'Subscription Price'}</p>
+              <p className="text-2xl font-bold text-muted-foreground line-through">{formatAmount(subscriptionPrice!)}</p>
+              <p className="text-sm text-primary mt-2">{isAr ? 'المبلغ المستحق' : 'Amount Due'}</p>
               <p className="text-4xl font-bold mt-1 text-primary">{formatAmount(invoice.amount)}</p>
             </>
           ) : (
@@ -166,7 +182,7 @@ const InvoiceView = () => {
 
         {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
           <div className="space-y-3 print:hidden">
-            <h4 className="font-medium text-sm flex items-center gap-2"><CreditCard className="h-4 w-4" />Available Payment Methods</h4>
+            <h4 className="font-medium text-sm flex items-center gap-2"><CreditCard className="h-4 w-4" />{isAr ? 'طرق الدفع المتاحة' : 'Available Payment Methods'}</h4>
             {activeGateways.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {activeGateways.map((gw) => (

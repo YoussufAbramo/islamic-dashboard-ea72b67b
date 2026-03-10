@@ -14,10 +14,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
-import { Search, Eye, Plus, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Search, Eye, Plus, ArrowUp, ArrowDown, Trash2, Check, ChevronsUpDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { subscriptionStatusLabels, subscriptionTypeLabels, getLabel } from '@/lib/statusLabels';
 import { addDays, addYears } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 const Subscriptions = () => {
   const { t, language } = useLanguage();
@@ -32,7 +35,7 @@ const Subscriptions = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [selected, setSelected] = useState<any>(null);
   const [editing, setEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ subscription_type: 'monthly', status: 'active', renewal_date: '', teacher_id: '', course_id: '' });
+  const [editForm, setEditForm] = useState({ subscription_type: 'monthly', status: 'active', renewal_date: '', teacher_id: '', course_id: '', price: '', weekly_lessons: '', lesson_duration: '' });
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   // Create subscription
@@ -40,10 +43,10 @@ const Subscriptions = () => {
   const [students, setStudentsList] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [teachers, setTeachersList] = useState<any[]>([]);
-  const [studentSearch, setStudentSearch] = useState('');
-  const [courseSearch, setCourseSearch] = useState('');
-  const [teacherSearch, setTeacherSearch] = useState('');
-  const [createForm, setCreateForm] = useState({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '', weekly_lessons: '1', lesson_duration: '60' });
+  const [studentOpen, setStudentOpen] = useState(false);
+  const [courseOpen, setCourseOpen] = useState(false);
+  const [teacherOpen, setTeacherOpen] = useState(false);
+  const [createForm, setCreateForm] = useState({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', price_rate: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '', weekly_lessons: '1', lesson_duration: '60' });
   const [createLoading, setCreateLoading] = useState(false);
 
   const fetchSubscriptions = async () => {
@@ -67,6 +70,14 @@ const Subscriptions = () => {
 
   useEffect(() => { fetchSubscriptions(); }, []);
 
+  // Calculate total hours per period
+  const calcTotalHours = (weeklyLessons: string, lessonDuration: string, subType: string) => {
+    const wl = parseInt(weeklyLessons) || 1;
+    const ld = parseInt(lessonDuration) || 60;
+    const weeks = subType === 'yearly' ? 52 : 4;
+    return (wl * ld * weeks) / 60;
+  };
+
   // Auto-calculate renewal date
   useEffect(() => {
     if (createForm.start_date && createForm.subscription_type) {
@@ -78,9 +89,48 @@ const Subscriptions = () => {
     }
   }, [createForm.start_date, createForm.subscription_type]);
 
+  // Auto-calculate price from rate or vice versa
+  const handlePriceChange = (value: string) => {
+    const totalHours = calcTotalHours(createForm.weekly_lessons, createForm.lesson_duration, createForm.subscription_type);
+    setCreateForm(prev => {
+      const total = parseFloat(value) || 0;
+      const rate = totalHours > 0 ? (total / totalHours).toFixed(2) : '';
+      return { ...prev, price: value, price_rate: total > 0 ? rate : '' };
+    });
+  };
+
+  const handleRateChange = (value: string) => {
+    const totalHours = calcTotalHours(createForm.weekly_lessons, createForm.lesson_duration, createForm.subscription_type);
+    setCreateForm(prev => {
+      const rate = parseFloat(value) || 0;
+      const total = rate > 0 ? (rate * totalHours).toFixed(2) : '';
+      return { ...prev, price_rate: value, price: total };
+    });
+  };
+
+  // Recalculate when lessons/duration/type changes
+  useEffect(() => {
+    if (createForm.price_rate) {
+      const totalHours = calcTotalHours(createForm.weekly_lessons, createForm.lesson_duration, createForm.subscription_type);
+      const rate = parseFloat(createForm.price_rate) || 0;
+      if (rate > 0) {
+        setCreateForm(prev => ({ ...prev, price: (rate * totalHours).toFixed(2) }));
+      }
+    }
+  }, [createForm.weekly_lessons, createForm.lesson_duration, createForm.subscription_type]);
+
   const viewDetails = (sub: any) => {
     setSelected(sub);
-    setEditForm({ subscription_type: sub.subscription_type, status: sub.status, renewal_date: sub.renewal_date || '', teacher_id: sub.teacher_id || '', course_id: sub.course_id || '' });
+    setEditForm({
+      subscription_type: sub.subscription_type,
+      status: sub.status,
+      renewal_date: sub.renewal_date || '',
+      teacher_id: sub.teacher_id || '',
+      course_id: sub.course_id || '',
+      price: sub.price?.toString() || '',
+      weekly_lessons: sub.weekly_lessons?.toString() || '1',
+      lesson_duration: sub.lesson_duration?.toString() || '60',
+    });
     setDetailOpen(true);
     setEditing(false);
     fetchFormData();
@@ -93,6 +143,9 @@ const Subscriptions = () => {
       renewal_date: editForm.renewal_date || null,
       teacher_id: editForm.teacher_id || null,
       course_id: editForm.course_id || null,
+      price: parseFloat(editForm.price) || 0,
+      weekly_lessons: parseInt(editForm.weekly_lessons) || 1,
+      lesson_duration: parseInt(editForm.lesson_duration) || 60,
     }).eq('id', selected.id);
     toast.success(isAr ? 'تم تحديث الاشتراك' : 'Subscription updated');
     setEditing(false);
@@ -118,7 +171,7 @@ const Subscriptions = () => {
     } else {
       toast.success(isAr ? 'تم إنشاء الاشتراك' : 'Subscription created');
       setCreateOpen(false);
-      setCreateForm({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '', weekly_lessons: '1', lesson_duration: '60' });
+      setCreateForm({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', price_rate: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '', weekly_lessons: '1', lesson_duration: '60' });
       fetchSubscriptions();
     }
   };
@@ -165,9 +218,11 @@ const Subscriptions = () => {
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
 
-  const filteredStudents = students.filter(s => !studentSearch || (s.profiles?.full_name || '').toLowerCase().includes(studentSearch.toLowerCase()));
-  const filteredCourses = courses.filter(c => !courseSearch || (c.title || '').toLowerCase().includes(courseSearch.toLowerCase()));
-  const filteredTeachers = teachers.filter(t => !teacherSearch || (t.profiles?.full_name || '').toLowerCase().includes(teacherSearch.toLowerCase()));
+  const getStudentName = (id: string) => students.find(s => s.id === id)?.profiles?.full_name || '';
+  const getCourseName = (id: string) => courses.find(c => c.id === id)?.title || '';
+  const getTeacherName = (id: string) => teachers.find(t => t.id === id)?.profiles?.full_name || '';
+
+  const actionBtnClass = "rounded-full h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted";
 
   return (
     <div className="space-y-4">
@@ -227,8 +282,8 @@ const Subscriptions = () => {
                 <TableCell><Badge variant={statusColors[sub.status] as any}>{getLabel(subscriptionStatusLabels, sub.status, isAr)}</Badge></TableCell>
                 <TableCell>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => viewDetails(sub)}><Eye className="h-4 w-4" /></Button>
-                    {isAdmin && <Button variant="ghost" size="icon" className="text-destructive" onClick={() => setDeleteTarget(sub.id)}><Trash2 className="h-4 w-4" /></Button>}
+                    <Button variant="ghost" size="icon" className={actionBtnClass} onClick={() => viewDetails(sub)}><Eye className="h-4 w-4" /></Button>
+                    {isAdmin && <Button variant="ghost" size="icon" className={`${actionBtnClass} hover:text-destructive hover:bg-destructive/10`} onClick={() => setDeleteTarget(sub.id)}><Trash2 className="h-4 w-4" /></Button>}
                   </div>
                 </TableCell>
               </TableRow>
@@ -253,32 +308,28 @@ const Subscriptions = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Detail dialog */}
+      {/* Detail / Edit dialog - unified view */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{t('subscriptions.title')}</DialogTitle></DialogHeader>
           {selected && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
-                <div><Label>{t('subscriptions.student')}</Label><p>{selected.students?.profiles?.full_name}</p></div>
-                <div><Label>{t('subscriptions.course')}</Label><p>{selected.courses?.title}</p></div>
-                <div><Label>{t('subscriptions.teacher')}</Label><p>{selected.teachers_rel?.profiles?.full_name || '-'}</p></div>
-                <div><Label>{t('subscriptions.startDate')}</Label><p>{selected.start_date}</p></div>
+                <div>
+                  <Label>{t('subscriptions.student')}</Label>
+                  <p className="text-sm">{selected.students?.profiles?.full_name || '-'}</p>
+                </div>
+                <div>
+                  <Label>{t('subscriptions.startDate')}</Label>
+                  <p className="text-sm">{selected.start_date}</p>
+                </div>
               </div>
-              {editing ? (
-                <div className="space-y-3 border-t pt-3">
-                  <div>
-                    <Label>{t('subscriptions.type')}</Label>
-                    <Select value={editForm.subscription_type} onValueChange={(v) => setEditForm({ ...editForm, subscription_type: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="monthly">{isAr ? 'شهري' : 'Monthly'}</SelectItem>
-                        <SelectItem value="yearly">{isAr ? 'سنوي' : 'Yearly'}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>{t('subscriptions.course')}</Label>
+
+              {/* Editable fields */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>{t('subscriptions.course')}</Label>
+                  {editing ? (
                     <Select value={editForm.course_id} onValueChange={(v) => setEditForm({ ...editForm, course_id: v })}>
                       <SelectTrigger><SelectValue placeholder={isAr ? 'اختر دورة' : 'Select course'} /></SelectTrigger>
                       <SelectContent>
@@ -287,9 +338,13 @@ const Subscriptions = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
-                  <div>
-                    <Label>{t('subscriptions.teacher')}</Label>
+                  ) : (
+                    <p className="text-sm">{selected.courses?.title || '-'}</p>
+                  )}
+                </div>
+                <div>
+                  <Label>{t('subscriptions.teacher')}</Label>
+                  {editing ? (
                     <Select value={editForm.teacher_id} onValueChange={(v) => setEditForm({ ...editForm, teacher_id: v })}>
                       <SelectTrigger><SelectValue placeholder={isAr ? 'اختر معلم' : 'Select teacher'} /></SelectTrigger>
                       <SelectContent>
@@ -298,10 +353,30 @@ const Subscriptions = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
-                  <div><Label>{t('subscriptions.renewalDate')}</Label><Input type="date" value={editForm.renewal_date} onChange={(e) => setEditForm({ ...editForm, renewal_date: e.target.value })} /></div>
-                  <div>
-                    <Label>{t('subscriptions.status')}</Label>
+                  ) : (
+                    <p className="text-sm">{selected.teachers_rel?.profiles?.full_name || '-'}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>{t('subscriptions.type')}</Label>
+                  {editing ? (
+                    <Select value={editForm.subscription_type} onValueChange={(v) => setEditForm({ ...editForm, subscription_type: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="monthly">{isAr ? 'شهري' : 'Monthly'}</SelectItem>
+                        <SelectItem value="yearly">{isAr ? 'سنوي' : 'Yearly'}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-sm">{getLabel(subscriptionTypeLabels, selected.subscription_type, isAr)}</p>
+                  )}
+                </div>
+                <div>
+                  <Label>{t('subscriptions.status')}</Label>
+                  {editing ? (
                     <Select value={editForm.status} onValueChange={(v) => setEditForm({ ...editForm, status: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -310,21 +385,60 @@ const Subscriptions = () => {
                         <SelectItem value="cancelled">{isAr ? 'ملغي' : 'Cancelled'}</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button onClick={saveEdit}>{t('common.save')}</Button>
-                    <Button variant="outline" onClick={() => setEditing(false)}>{t('common.cancel')}</Button>
-                  </div>
+                  ) : (
+                    <Badge variant={statusColors[selected.status] as any}>{getLabel(subscriptionStatusLabels, selected.status, isAr)}</Badge>
+                  )}
                 </div>
-              ) : (
-                <div className="border-t pt-3 space-y-2">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div><Label>{t('subscriptions.type')}</Label><p>{getLabel(subscriptionTypeLabels, selected.subscription_type, isAr)}</p></div>
-                    <div><Label>{t('subscriptions.renewalDate')}</Label><p>{selected.renewal_date || '-'}</p></div>
-                    <div><Label>{t('subscriptions.status')}</Label><Badge variant={statusColors[selected.status] as any}>{getLabel(subscriptionStatusLabels, selected.status, isAr)}</Badge></div>
-                    <div><Label>{isAr ? 'السعر' : 'Price'}</Label><p>{currency.symbol}{selected.price}</p></div>
-                  </div>
-                  {isAdmin && <Button variant="outline" size="sm" onClick={() => setEditing(true)}>{t('common.edit')}</Button>}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>{t('subscriptions.renewalDate')}</Label>
+                  {editing ? (
+                    <Input type="date" value={editForm.renewal_date} onChange={(e) => setEditForm({ ...editForm, renewal_date: e.target.value })} />
+                  ) : (
+                    <p className="text-sm">{selected.renewal_date || '-'}</p>
+                  )}
+                </div>
+                <div>
+                  <Label>{isAr ? 'السعر' : 'Price'}</Label>
+                  {editing ? (
+                    <Input type="number" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} />
+                  ) : (
+                    <p className="text-sm">{currency.symbol}{selected.price}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>{isAr ? 'الدروس الأسبوعية' : 'Weekly Lessons'}</Label>
+                  {editing ? (
+                    <Input type="number" min="1" value={editForm.weekly_lessons} onChange={(e) => setEditForm({ ...editForm, weekly_lessons: e.target.value })} />
+                  ) : (
+                    <p className="text-sm">{selected.weekly_lessons || 1}</p>
+                  )}
+                </div>
+                <div>
+                  <Label>{isAr ? 'مدة الدرس (دقيقة)' : 'Lesson Duration (min)'}</Label>
+                  {editing ? (
+                    <Input type="number" min="15" step="15" value={editForm.lesson_duration} onChange={(e) => setEditForm({ ...editForm, lesson_duration: e.target.value })} />
+                  ) : (
+                    <p className="text-sm">{selected.lesson_duration || 60}</p>
+                  )}
+                </div>
+              </div>
+
+              {isAdmin && (
+                <div className="flex gap-2 pt-2 border-t">
+                  {editing ? (
+                    <>
+                      <Button onClick={saveEdit}>{t('common.save')}</Button>
+                      <Button variant="outline" onClick={() => setEditing(false)}>{t('common.cancel')}</Button>
+                    </>
+                  ) : (
+                    <Button variant="outline" size="sm" onClick={() => setEditing(true)}>{t('common.edit')}</Button>
+                  )}
                 </div>
               )}
             </div>
@@ -337,42 +451,93 @@ const Subscriptions = () => {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{isAr ? 'إنشاء اشتراك جديد' : 'Create New Subscription'}</DialogTitle></DialogHeader>
           <div className="space-y-3">
+            {/* Student - Combobox with search inside */}
             <div>
               <Label>{t('subscriptions.student')}</Label>
-              <Input placeholder={isAr ? 'بحث عن طالب...' : 'Search student...'} value={studentSearch} onChange={(e) => setStudentSearch(e.target.value)} className="mb-1" />
-              <Select value={createForm.student_id} onValueChange={(v) => setCreateForm({ ...createForm, student_id: v })}>
-                <SelectTrigger><SelectValue placeholder={isAr ? 'اختر طالب' : 'Select student'} /></SelectTrigger>
-                <SelectContent>
-                  {filteredStudents.slice(0, 20).map((s) => (
-                    <SelectItem key={s.id} value={s.id}>{s.profiles?.full_name || s.id}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={studentOpen} onOpenChange={setStudentOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                    {createForm.student_id ? getStudentName(createForm.student_id) || createForm.student_id : (isAr ? 'اختر طالب' : 'Select student')}
+                    <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder={isAr ? 'بحث عن طالب...' : 'Search student...'} />
+                    <CommandList>
+                      <CommandEmpty>{isAr ? 'لا توجد نتائج' : 'No results'}</CommandEmpty>
+                      <CommandGroup>
+                        {students.map((s) => (
+                          <CommandItem key={s.id} value={s.profiles?.full_name || s.id} onSelect={() => { setCreateForm(prev => ({ ...prev, student_id: s.id })); setStudentOpen(false); }}>
+                            <Check className={cn("me-2 h-4 w-4", createForm.student_id === s.id ? "opacity-100" : "opacity-0")} />
+                            {s.profiles?.full_name || s.id}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
+
+            {/* Course - Combobox with search inside */}
             <div>
               <Label>{t('subscriptions.course')}</Label>
-              <Input placeholder={isAr ? 'بحث عن دورة...' : 'Search course...'} value={courseSearch} onChange={(e) => setCourseSearch(e.target.value)} className="mb-1" />
-              <Select value={createForm.course_id} onValueChange={(v) => setCreateForm({ ...createForm, course_id: v })}>
-                <SelectTrigger><SelectValue placeholder={isAr ? 'اختر دورة' : 'Select course'} /></SelectTrigger>
-                <SelectContent>
-                  {filteredCourses.slice(0, 20).map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={courseOpen} onOpenChange={setCourseOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                    {createForm.course_id ? getCourseName(createForm.course_id) || createForm.course_id : (isAr ? 'اختر دورة' : 'Select course')}
+                    <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder={isAr ? 'بحث عن دورة...' : 'Search course...'} />
+                    <CommandList>
+                      <CommandEmpty>{isAr ? 'لا توجد نتائج' : 'No results'}</CommandEmpty>
+                      <CommandGroup>
+                        {courses.map((c) => (
+                          <CommandItem key={c.id} value={c.title || c.id} onSelect={() => { setCreateForm(prev => ({ ...prev, course_id: c.id })); setCourseOpen(false); }}>
+                            <Check className={cn("me-2 h-4 w-4", createForm.course_id === c.id ? "opacity-100" : "opacity-0")} />
+                            {c.title}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
+
+            {/* Teacher - Combobox with search inside */}
             <div>
               <Label>{t('subscriptions.teacher')}</Label>
-              <Input placeholder={isAr ? 'بحث عن معلم...' : 'Search teacher...'} value={teacherSearch} onChange={(e) => setTeacherSearch(e.target.value)} className="mb-1" />
-              <Select value={createForm.teacher_id} onValueChange={(v) => setCreateForm({ ...createForm, teacher_id: v })}>
-                <SelectTrigger><SelectValue placeholder={isAr ? 'اختر معلم (اختياري)' : 'Select teacher (optional)'} /></SelectTrigger>
-                <SelectContent>
-                  {filteredTeachers.slice(0, 20).map((te) => (
-                    <SelectItem key={te.id} value={te.id}>{te.profiles?.full_name || te.id}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={teacherOpen} onOpenChange={setTeacherOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                    {createForm.teacher_id ? getTeacherName(createForm.teacher_id) || createForm.teacher_id : (isAr ? 'اختر معلم (اختياري)' : 'Select teacher (optional)')}
+                    <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder={isAr ? 'بحث عن معلم...' : 'Search teacher...'} />
+                    <CommandList>
+                      <CommandEmpty>{isAr ? 'لا توجد نتائج' : 'No results'}</CommandEmpty>
+                      <CommandGroup>
+                        {teachers.map((te) => (
+                          <CommandItem key={te.id} value={te.profiles?.full_name || te.id} onSelect={() => { setCreateForm(prev => ({ ...prev, teacher_id: te.id })); setTeacherOpen(false); }}>
+                            <Check className={cn("me-2 h-4 w-4", createForm.teacher_id === te.id ? "opacity-100" : "opacity-0")} />
+                            {te.profiles?.full_name || te.id}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
+
             <div>
               <Label>{t('subscriptions.type')}</Label>
               <Select value={createForm.subscription_type} onValueChange={(v) => setCreateForm({ ...createForm, subscription_type: v })}>
@@ -387,9 +552,14 @@ const Subscriptions = () => {
               <div><Label>{isAr ? 'الدروس الأسبوعية' : 'Weekly Lessons'}</Label><Input type="number" min="1" value={createForm.weekly_lessons} onChange={(e) => setCreateForm({ ...createForm, weekly_lessons: e.target.value })} /></div>
               <div><Label>{isAr ? 'مدة الدرس (دقيقة)' : 'Lesson Duration (min)'}</Label><Input type="number" min="15" step="15" value={createForm.lesson_duration} onChange={(e) => setCreateForm({ ...createForm, lesson_duration: e.target.value })} /></div>
             </div>
-            <div><Label>{isAr ? 'السعر' : 'Price'} ({currency.symbol})</Label><Input type="number" value={createForm.price} onChange={(e) => setCreateForm({ ...createForm, price: e.target.value })} /></div>
-            <div><Label>{t('subscriptions.startDate')}</Label><Input type="date" value={createForm.start_date} onChange={(e) => setCreateForm({ ...createForm, start_date: e.target.value })} /></div>
-            <div><Label>{t('subscriptions.renewalDate')} ({isAr ? 'محسوب تلقائياً' : 'auto-calculated'})</Label><Input type="date" value={createForm.renewal_date} readOnly className="bg-muted" /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>{isAr ? 'سعر الساعة' : 'Price Rate/hr'} ({currency.symbol})</Label><Input type="number" min="0" step="0.01" value={createForm.price_rate} onChange={(e) => handleRateChange(e.target.value)} placeholder={isAr ? 'سعر الساعة' : 'Hourly rate'} /></div>
+              <div><Label>{isAr ? 'السعر الإجمالي' : 'Total Price'} ({currency.symbol})</Label><Input type="number" min="0" step="0.01" value={createForm.price} onChange={(e) => handlePriceChange(e.target.value)} placeholder={isAr ? 'السعر الإجمالي' : 'Total price'} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>{t('subscriptions.startDate')}</Label><Input type="date" value={createForm.start_date} onChange={(e) => setCreateForm({ ...createForm, start_date: e.target.value })} /></div>
+              <div><Label>{t('subscriptions.renewalDate')}</Label><Input type="date" value={createForm.renewal_date} readOnly className="bg-muted" /></div>
+            </div>
             <Button onClick={handleCreate} disabled={createLoading} className="w-full">
               {createLoading ? t('common.loading') : (isAr ? 'إنشاء الاشتراك' : 'Create Subscription')}
             </Button>
