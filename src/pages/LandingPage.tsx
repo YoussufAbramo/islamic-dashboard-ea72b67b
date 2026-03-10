@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { BookOpen, Users, GraduationCap, Calendar, Award, BarChart3, MessageSquare, Shield, Star, ChevronRight, Check, Menu, X } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useAppSettings } from '@/contexts/AppSettingsContext';
+import { Users, GraduationCap, Calendar, Award, BarChart3, MessageSquare, Shield, Star, ChevronRight, Check, Menu, X, BookOpen, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import CopyrightText from '@/components/CopyrightText';
 import islamicPatternHero from '@/assets/islamic-pattern-hero.jpg';
 import dashboardMockup from '@/assets/dashboard-mockup.png';
 
@@ -64,7 +67,7 @@ const defaultContent: Record<string, Record<string, any>> = {
   },
 };
 
-const features = [
+const featuresData = [
   { icon: BookOpen, title: 'Course Management', titleAr: 'إدارة الدورات', desc: 'Create and manage courses with sections, lessons, and progress tracking', descAr: 'إنشاء وإدارة الدورات مع الأقسام والدروس وتتبع التقدم' },
   { icon: Users, title: 'Teacher Management', titleAr: 'إدارة المعلمين', desc: 'Manage teachers, schedules, and assign students seamlessly', descAr: 'إدارة المعلمين والجداول وتعيين الطلاب بسلاسة' },
   { icon: GraduationCap, title: 'Student Tracking', titleAr: 'تتبع الطلاب', desc: 'Monitor student progress, attendance, and performance analytics', descAr: 'مراقبة تقدم الطلاب والحضور وتحليلات الأداء' },
@@ -77,10 +80,22 @@ const features = [
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const { language, setLanguage } = useLanguage();
+  const { pending } = useAppSettings();
+  const isAr = language === 'ar';
   const [packages, setPackages] = useState<PricingPackage[]>([]);
   const [content, setContent] = useState<Record<string, Record<string, any>>>(defaultContent);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
+
+  const appName = pending.appName || 'Islamic Dashboard';
+  const appLogo = pending.appLogo;
+
+  const toggleDark = () => {
+    document.documentElement.classList.toggle('dark');
+    setDarkMode(!darkMode);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -100,41 +115,70 @@ const LandingPage = () => {
     fetchData();
   }, []);
 
+  const scrollTo = useCallback((id: string) => {
+    setMobileMenuOpen(false);
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  }, []);
+
   const filteredPackages = packages.filter(p => p.billing_cycle === billingCycle);
   const c = content;
 
+  const t = (en: string, ar: string) => isAr ? ar : en;
+  const ct = (key: string, field: string) => {
+    const section = c[key];
+    if (!section) return '';
+    return isAr ? (section[`${field}_ar`] || section[field]) : section[field];
+  };
+
+  const navLinks = [
+    { label: t('Features', 'المميزات'), id: 'features' },
+    { label: t('Why Us', 'لماذا نحن'), id: 'whyus' },
+    { label: t('Pricing', 'الأسعار'), id: 'pricing' },
+  ];
+
+  // Read currency from pending settings
+  const currencySymbol = pending.currency?.symbol || '$';
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Islamic Navbar */}
+      {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-lg">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                <BookOpen className="h-5 w-5 text-primary" />
-              </div>
-              <span className="text-xl font-bold font-amiri text-foreground">EduDash</span>
+              {appLogo ? (
+                <img src={appLogo} alt={appName} className="h-8 w-8 rounded-lg object-cover" />
+              ) : (
+                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <BookOpen className="h-5 w-5 text-primary" />
+                </div>
+              )}
+              <span className="text-xl font-bold font-amiri text-foreground">{appName}</span>
             </div>
             <div className="hidden md:flex items-center gap-1">
-              {[
-                { label: 'Features', href: '#features' },
-                { label: 'Why Us', href: '#whyus' },
-                { label: 'Pricing', href: '#pricing' },
-              ].map(link => (
-                <a
-                  key={link.href}
-                  href={link.href}
+              {navLinks.map(link => (
+                <button
+                  key={link.id}
+                  onClick={() => scrollTo(link.id)}
                   className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-accent/50"
                 >
                   {link.label}
-                </a>
+                </button>
               ))}
-              <div className="ml-4 h-6 w-px bg-border" />
+              <div className="mx-2 h-6 w-px bg-border" />
+              <button onClick={toggleDark} className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors hover:bg-accent/50">
+                {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </button>
+              <button onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')} className="text-sm font-medium px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground transition-colors hover:bg-accent/50">
+                {language === 'en' ? 'العربية' : 'English'}
+              </button>
+              <div className="mx-2 h-6 w-px bg-border" />
               <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
-                Log In
+                {t('Log In', 'تسجيل الدخول')}
               </Button>
               <Button size="sm" onClick={() => navigate('/signup')}>
-                Sign Up <ChevronRight className="h-4 w-4 ml-1" />
+                {t('Sign Up', 'إنشاء حساب')} <ChevronRight className="h-4 w-4 ms-1" />
               </Button>
             </div>
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
@@ -143,17 +187,26 @@ const LandingPage = () => {
           </div>
           {mobileMenuOpen && (
             <div className="md:hidden pb-4 space-y-2">
-              <a href="#features" className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground" onClick={() => setMobileMenuOpen(false)}>Features</a>
-              <a href="#whyus" className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground" onClick={() => setMobileMenuOpen(false)}>Why Us</a>
-              <a href="#pricing" className="block px-4 py-2 text-sm text-muted-foreground hover:text-foreground" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
+              {navLinks.map(link => (
+                <button key={link.id} onClick={() => scrollTo(link.id)} className="block w-full text-start px-4 py-2 text-sm text-muted-foreground hover:text-foreground">
+                  {link.label}
+                </button>
+              ))}
               <div className="flex gap-2 px-4">
-                <Button variant="outline" size="sm" className="flex-1" onClick={() => navigate('/login')}>Log In</Button>
-                <Button size="sm" className="flex-1" onClick={() => navigate('/signup')}>Sign Up</Button>
+                <button onClick={toggleDark} className="p-2 rounded-lg border border-border text-muted-foreground">
+                  {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                </button>
+                <button onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')} className="text-sm px-3 py-1.5 rounded-lg border border-border text-muted-foreground">
+                  {language === 'en' ? 'العربية' : 'English'}
+                </button>
+              </div>
+              <div className="flex gap-2 px-4">
+                <Button variant="outline" size="sm" className="flex-1" onClick={() => navigate('/login')}>{t('Log In', 'تسجيل الدخول')}</Button>
+                <Button size="sm" className="flex-1" onClick={() => navigate('/signup')}>{t('Sign Up', 'إنشاء حساب')}</Button>
               </div>
             </div>
           )}
         </div>
-        {/* Islamic pattern border */}
         <div className="h-1 w-full bg-gradient-to-r from-primary/0 via-primary to-primary/0" />
       </nav>
 
@@ -166,39 +219,38 @@ const LandingPage = () => {
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-24 md:py-32 lg:py-40">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
-              {/* Islamic ornamental accent */}
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/30 bg-primary/5 text-primary text-sm">
                 <Star className="h-4 w-4" />
-                <span>Built for Islamic Education</span>
+                <span>{t('Built for Islamic Education', 'مصمم للتعليم الإسلامي')}</span>
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-amiri leading-tight text-foreground">
-                {c.hero?.title}
+                {ct('hero', 'title')}
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
-                {c.hero?.subtitle}
+                {ct('hero', 'subtitle')}
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button size="lg" onClick={() => navigate('/signup')} className="text-base">
-                  {c.hero?.cta} <ChevronRight className="h-5 w-5 ml-2" />
+                  {ct('hero', 'cta')} <ChevronRight className="h-5 w-5 ms-2" />
                 </Button>
-                <Button variant="outline" size="lg" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="text-base">
-                  Learn More
+                <Button variant="outline" size="lg" onClick={() => scrollTo('features')} className="text-base">
+                  {t('Learn More', 'اعرف المزيد')}
                 </Button>
               </div>
               <div className="flex items-center gap-6 pt-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-foreground">500+</div>
-                  <div className="text-xs text-muted-foreground">Institutions</div>
+                  <div className="text-xs text-muted-foreground">{t('Institutions', 'مؤسسة')}</div>
                 </div>
                 <div className="h-8 w-px bg-border" />
                 <div className="text-center">
                   <div className="text-2xl font-bold text-foreground">10k+</div>
-                  <div className="text-xs text-muted-foreground">Students</div>
+                  <div className="text-xs text-muted-foreground">{t('Students', 'طالب')}</div>
                 </div>
                 <div className="h-8 w-px bg-border" />
                 <div className="text-center">
                   <div className="text-2xl font-bold text-foreground">99.9%</div>
-                  <div className="text-xs text-muted-foreground">Uptime</div>
+                  <div className="text-xs text-muted-foreground">{t('Uptime', 'وقت التشغيل')}</div>
                 </div>
               </div>
             </div>
@@ -210,7 +262,6 @@ const LandingPage = () => {
             </div>
           </div>
         </div>
-        {/* Islamic arch pattern divider */}
         <div className="relative h-16">
           <svg viewBox="0 0 1440 60" className="absolute bottom-0 w-full" preserveAspectRatio="none">
             <path d="M0,60 C240,0 480,0 720,30 C960,60 1200,0 1440,60 L1440,60 L0,60 Z" className="fill-background" />
@@ -222,19 +273,19 @@ const LandingPage = () => {
       <section id="features" className="py-20 md:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <Badge variant="secondary" className="mb-4">Features</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold font-amiri text-foreground mb-4">{c.features?.title}</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{c.features?.subtitle}</p>
+            <Badge variant="secondary" className="mb-4">{t('Features', 'المميزات')}</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold font-amiri text-foreground mb-4">{ct('features', 'title')}</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{ct('features', 'subtitle')}</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {features.map((feature, i) => (
+            {featuresData.map((feature, i) => (
               <Card key={i} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border/50">
                 <CardContent className="pt-6">
                   <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                     <feature.icon className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="font-semibold text-foreground mb-2">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
+                  <h3 className="font-semibold text-foreground mb-2">{isAr ? feature.titleAr : feature.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{isAr ? feature.descAr : feature.desc}</p>
                 </CardContent>
               </Card>
             ))}
@@ -261,9 +312,9 @@ const LandingPage = () => {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <Badge variant="secondary" className="mb-4">Why Us</Badge>
-              <h2 className="text-3xl md:text-4xl font-bold font-amiri text-foreground mb-4">{c.whyus?.title}</h2>
-              <p className="text-lg text-muted-foreground mb-8">{c.whyus?.subtitle}</p>
+              <Badge variant="secondary" className="mb-4">{t('Why Us', 'لماذا نحن')}</Badge>
+              <h2 className="text-3xl md:text-4xl font-bold font-amiri text-foreground mb-4">{ct('whyus', 'title')}</h2>
+              <p className="text-lg text-muted-foreground mb-8">{ct('whyus', 'subtitle')}</p>
               <div className="space-y-6">
                 {(c.whyus?.reasons || []).map((reason: any, i: number) => (
                   <div key={i} className="flex gap-4">
@@ -271,8 +322,8 @@ const LandingPage = () => {
                       <Check className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-foreground mb-1">{reason.title}</h3>
-                      <p className="text-sm text-muted-foreground">{reason.desc}</p>
+                      <h3 className="font-semibold text-foreground mb-1">{isAr ? (reason.title_ar || reason.title) : reason.title}</h3>
+                      <p className="text-sm text-muted-foreground">{isAr ? (reason.desc_ar || reason.desc) : reason.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -285,15 +336,15 @@ const LandingPage = () => {
                   <div className="inline-flex h-16 w-16 rounded-2xl bg-primary/10 items-center justify-center mx-auto">
                     <BookOpen className="h-8 w-8 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold font-amiri text-foreground">All-in-One Platform</h3>
-                  <p className="text-sm text-muted-foreground">Everything you need to run your Islamic educational institution</p>
+                  <h3 className="text-xl font-bold font-amiri text-foreground">{t('All-in-One Platform', 'منصة شاملة')}</h3>
+                  <p className="text-sm text-muted-foreground">{t('Everything you need to run your Islamic educational institution', 'كل ما تحتاجه لإدارة مؤسستك التعليمية الإسلامية')}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    { label: 'Courses', value: 'Unlimited' },
-                    { label: 'Storage', value: '100GB' },
-                    { label: 'Support', value: '24/7' },
-                    { label: 'Updates', value: 'Free' },
+                    { label: t('Courses', 'الدورات'), value: t('Unlimited', 'غير محدود') },
+                    { label: t('Storage', 'التخزين'), value: '100GB' },
+                    { label: t('Support', 'الدعم'), value: '24/7' },
+                    { label: t('Updates', 'التحديثات'), value: t('Free', 'مجاني') },
                   ].map(stat => (
                     <div key={stat.label} className="text-center p-3 rounded-lg bg-muted/50">
                       <div className="text-lg font-bold text-foreground">{stat.value}</div>
@@ -312,22 +363,21 @@ const LandingPage = () => {
         <div className="absolute inset-0 bg-muted/30" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <Badge variant="secondary" className="mb-4">Pricing</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold font-amiri text-foreground mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">Choose the plan that fits your institution's needs</p>
-            {/* Billing Toggle */}
+            <Badge variant="secondary" className="mb-4">{t('Pricing', 'الأسعار')}</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold font-amiri text-foreground mb-4">{t('Simple, Transparent Pricing', 'أسعار بسيطة وشفافة')}</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">{t("Choose the plan that fits your institution's needs", 'اختر الخطة المناسبة لاحتياجات مؤسستك')}</p>
             <div className="inline-flex items-center gap-2 p-1 rounded-lg bg-muted border border-border">
               <button
                 onClick={() => setBillingCycle('monthly')}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${billingCycle === 'monthly' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}
               >
-                Monthly
+                {t('Monthly', 'شهري')}
               </button>
               <button
                 onClick={() => setBillingCycle('yearly')}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${billingCycle === 'yearly' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}
               >
-                Yearly <Badge variant="secondary" className="ml-1 text-[10px]">Save 20%</Badge>
+                {t('Yearly', 'سنوي')} <Badge variant="secondary" className="ms-1 text-[10px]">{t('Save 20%', 'وفر 20%')}</Badge>
               </button>
             </div>
           </div>
@@ -337,40 +387,40 @@ const LandingPage = () => {
               {filteredPackages.map(pkg => (
                 <Card key={pkg.id} className={`relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${pkg.is_featured ? 'border-primary shadow-lg ring-2 ring-primary/20' : 'border-border/50'}`}>
                   {pkg.is_featured && (
-                    <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-bl-lg">
-                      Popular
+                    <div className="absolute top-0 end-0 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-es-lg">
+                      {t('Popular', 'الأكثر طلباً')}
                     </div>
                   )}
                   <CardHeader className="pb-4">
-                    <CardTitle className="text-xl font-amiri">{pkg.title}</CardTitle>
-                    <CardDescription>{pkg.subtitle}</CardDescription>
+                    <CardTitle className="text-xl font-amiri">{isAr ? (pkg.title_ar || pkg.title) : pkg.title}</CardTitle>
+                    <CardDescription>{isAr ? (pkg.subtitle_ar || pkg.subtitle) : pkg.subtitle}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div>
                       {pkg.sale_price != null ? (
                         <div className="flex items-baseline gap-2">
-                          <span className="text-4xl font-bold text-foreground">${pkg.sale_price}</span>
-                          <span className="text-lg text-muted-foreground line-through">${pkg.regular_price}</span>
-                          <span className="text-sm text-muted-foreground">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+                          <span className="text-4xl font-bold text-foreground">{currencySymbol}{pkg.sale_price}</span>
+                          <span className="text-lg text-muted-foreground line-through">{currencySymbol}{pkg.regular_price}</span>
+                          <span className="text-sm text-muted-foreground">/{billingCycle === 'monthly' ? t('mo', 'شهر') : t('yr', 'سنة')}</span>
                         </div>
                       ) : (
                         <div className="flex items-baseline gap-1">
-                          <span className="text-4xl font-bold text-foreground">${pkg.regular_price}</span>
-                          <span className="text-sm text-muted-foreground">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+                          <span className="text-4xl font-bold text-foreground">{currencySymbol}{pkg.regular_price}</span>
+                          <span className="text-sm text-muted-foreground">/{billingCycle === 'monthly' ? t('mo', 'شهر') : t('yr', 'سنة')}</span>
                         </div>
                       )}
                     </div>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between py-2 border-b border-border/50">
-                        <span className="text-muted-foreground">Teachers</span>
+                        <span className="text-muted-foreground">{t('Teachers', 'المعلمين')}</span>
                         <span className="font-medium text-foreground">{pkg.max_teachers}</span>
                       </div>
                       <div className="flex justify-between py-2 border-b border-border/50">
-                        <span className="text-muted-foreground">Students</span>
+                        <span className="text-muted-foreground">{t('Students', 'الطلاب')}</span>
                         <span className="font-medium text-foreground">{pkg.max_students}</span>
                       </div>
                       <div className="flex justify-between py-2 border-b border-border/50">
-                        <span className="text-muted-foreground">Courses</span>
+                        <span className="text-muted-foreground">{t('Courses', 'الدورات')}</span>
                         <span className="font-medium text-foreground">{pkg.max_courses}</span>
                       </div>
                     </div>
@@ -385,7 +435,7 @@ const LandingPage = () => {
                   </CardContent>
                   <CardFooter>
                     <Button className="w-full" variant={pkg.is_featured ? 'default' : 'outline'} onClick={() => navigate('/signup')}>
-                      Get Started
+                      {t('Get Started', 'ابدأ الآن')}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -393,7 +443,7 @@ const LandingPage = () => {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">Pricing packages coming soon. Contact us for custom quotes.</p>
+              <p className="text-muted-foreground">{t('Pricing packages coming soon. Contact us for custom quotes.', 'باقات الأسعار قريباً. تواصل معنا للحصول على عروض مخصصة.')}</p>
             </div>
           )}
         </div>
@@ -405,14 +455,14 @@ const LandingPage = () => {
           <img src={islamicPatternHero} alt="" className="w-full h-full object-cover opacity-10 dark:opacity-5" />
         </div>
         <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold font-amiri text-foreground mb-4">{c.cta?.title}</h2>
-          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">{c.cta?.subtitle}</p>
+          <h2 className="text-3xl md:text-4xl font-bold font-amiri text-foreground mb-4">{ct('cta', 'title')}</h2>
+          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">{ct('cta', 'subtitle')}</p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Button size="lg" onClick={() => navigate('/signup')} className="text-base">
-              Start Free Trial <ChevronRight className="h-5 w-5 ml-2" />
+              {t('Start Free Trial', 'ابدأ تجربة مجانية')} <ChevronRight className="h-5 w-5 ms-2" />
             </Button>
             <Button variant="outline" size="lg" className="text-base">
-              Contact Sales
+              {t('Contact Sales', 'تواصل مع المبيعات')}
             </Button>
           </div>
         </div>
@@ -424,35 +474,39 @@ const LandingPage = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <BookOpen className="h-6 w-6 text-primary" />
-                <span className="text-lg font-bold font-amiri text-foreground">EduDash</span>
+                {appLogo ? (
+                  <img src={appLogo} alt={appName} className="h-6 w-6 rounded object-cover" />
+                ) : (
+                  <BookOpen className="h-6 w-6 text-primary" />
+                )}
+                <span className="text-lg font-bold font-amiri text-foreground">{appName}</span>
               </div>
-              <p className="text-sm text-muted-foreground">Comprehensive Islamic education management platform.</p>
+              <p className="text-sm text-muted-foreground">{t('Comprehensive Islamic education management platform.', 'منصة شاملة لإدارة التعليم الإسلامي.')}</p>
             </div>
             <div>
-              <h4 className="font-semibold text-foreground mb-3">Product</h4>
+              <h4 className="font-semibold text-foreground mb-3">{t('Product', 'المنتج')}</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#features" className="hover:text-foreground transition-colors">Features</a></li>
-                <li><a href="#pricing" className="hover:text-foreground transition-colors">Pricing</a></li>
+                <li><button onClick={() => scrollTo('features')} className="hover:text-foreground transition-colors">{t('Features', 'المميزات')}</button></li>
+                <li><button onClick={() => scrollTo('pricing')} className="hover:text-foreground transition-colors">{t('Pricing', 'الأسعار')}</button></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-foreground mb-3">Company</h4>
+              <h4 className="font-semibold text-foreground mb-3">{t('Company', 'الشركة')}</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#whyus" className="hover:text-foreground transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Contact</a></li>
+                <li><button onClick={() => scrollTo('whyus')} className="hover:text-foreground transition-colors">{t('About Us', 'من نحن')}</button></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">{t('Contact', 'تواصل معنا')}</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-foreground mb-3">Legal</h4>
+              <h4 className="font-semibold text-foreground mb-3">{t('Legal', 'قانوني')}</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Terms of Service</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">{t('Privacy Policy', 'سياسة الخصوصية')}</a></li>
+                <li><a href="#" className="hover:text-foreground transition-colors">{t('Terms of Service', 'شروط الخدمة')}</a></li>
               </ul>
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-            © {new Date().getFullYear()} EduDash. All rights reserved.
+          <div className="mt-8 pt-8 border-t border-border text-center">
+            <CopyrightText />
           </div>
         </div>
       </footer>

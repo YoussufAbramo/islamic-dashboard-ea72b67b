@@ -11,7 +11,6 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import RoleGuard from "@/components/RoleGuard";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import Courses from "./pages/Courses";
@@ -50,7 +49,7 @@ const App = () => (
                   <Route path="/" element={<LandingPage />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/signup" element={<Signup />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/reset-password" element={<Navigate to="/forgot-password" replace />}/>
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/dashboard" element={<DashboardLayout />}>
                     <Route index element={<Dashboard />} />
