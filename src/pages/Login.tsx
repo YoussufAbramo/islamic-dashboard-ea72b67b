@@ -242,6 +242,16 @@ const Login = () => {
                     {t('auth.signup')}
                   </Link>
                 </p>
+
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="w-full gap-2 border-primary/30 hover:bg-primary/5"
+                  onClick={() => window.open('/', '_blank')}
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  {language === 'ar' ? 'زيارة صفحة الهبوط' : 'Visit Landing Page'}
+                </Button>
               </CardFooter>
             </form>
           </Card>
