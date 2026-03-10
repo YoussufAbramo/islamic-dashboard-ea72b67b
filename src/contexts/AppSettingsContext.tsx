@@ -177,27 +177,32 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const setFavicon = useCallback((url: string) => { localStorage.setItem('app_favicon', url); setFaviconState(url); }, []);
 
+  // Apply appearance changes from PENDING for instant preview
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.remove('theme-ocean', 'theme-purple', 'theme-desert', 'theme-midnight');
-    if (saved.colorTheme !== 'emerald') root.classList.add(`theme-${saved.colorTheme}`);
-  }, [saved.colorTheme]);
+    root.classList.remove('theme-ocean', 'theme-purple', 'theme-desert', 'theme-midnight', 'theme-rose', 'theme-teal', 'theme-amber', 'theme-slate', 'theme-crimson');
+    if (pending.colorTheme !== 'emerald') root.classList.add(`theme-${pending.colorTheme}`);
+  }, [pending.colorTheme]);
 
   useEffect(() => {
     const root = document.documentElement;
     root.classList.remove('btn-rounded', 'btn-circular', 'btn-square');
-    root.classList.add(`btn-${saved.buttonShape}`);
-  }, [saved.buttonShape]);
+    root.classList.add(`btn-${pending.buttonShape}`);
+  }, [pending.buttonShape]);
 
   useEffect(() => {
-    document.documentElement.style.setProperty('--font-ltr', `'${saved.ltrFont}', sans-serif`);
-    document.documentElement.style.setProperty('--font-rtl', `'${saved.rtlFont}', sans-serif`);
-    const families = [saved.ltrFont, saved.rtlFont].map(f => f.replace(/ /g, '+')).join('&family=');
+    document.documentElement.style.setProperty('--font-ltr', `'${pending.ltrFont}', sans-serif`);
+    document.documentElement.style.setProperty('--font-rtl', `'${pending.rtlFont}', sans-serif`);
+    const families = [pending.ltrFont, pending.rtlFont].map(f => f.replace(/ /g, '+')).join('&family=');
     const linkId = 'dynamic-google-fonts';
     let link = document.getElementById(linkId) as HTMLLinkElement;
     if (!link) { link = document.createElement('link'); link.id = linkId; link.rel = 'stylesheet'; document.head.appendChild(link); }
     link.href = `https://fonts.googleapis.com/css2?family=${families}:wght@300;400;500;600;700&display=swap`;
-  }, [saved.ltrFont, saved.rtlFont]);
+  }, [pending.ltrFont, pending.rtlFont]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-sidebar-mode', pending.sidebarMode);
+  }, [pending.sidebarMode]);
 
   const hasPendingChanges = JSON.stringify(saved) !== JSON.stringify(pending);
 
