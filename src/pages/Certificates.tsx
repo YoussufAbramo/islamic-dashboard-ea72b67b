@@ -122,17 +122,25 @@ const Certificates = () => {
     { value: 'elegant', label: 'Elegant', labelAr: 'أنيق', color: '#7c3aed' },
   ];
 
-  const filteredCerts = certs.filter(cert => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    const title = (isAr && cert.title_ar ? cert.title_ar : cert.title).toLowerCase();
-    const recipient = getProfileName(cert.recipient_id).toLowerCase();
-    const course = cert.course_id ? getCourseName(cert.course_id).toLowerCase() : '';
-    const number = cert.certificate_number.toLowerCase();
-    return title.includes(q) || recipient.includes(q) || course.includes(q) || number.includes(q);
-  });
+  const filteredCerts = useMemo(() => {
+    let result = certs.filter(cert => {
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      const title = (isAr && cert.title_ar ? cert.title_ar : cert.title).toLowerCase();
+      const recipient = getProfileName(cert.recipient_id).toLowerCase();
+      const course = cert.course_id ? getCourseName(cert.course_id).toLowerCase() : '';
+      const number = cert.certificate_number.toLowerCase();
+      return title.includes(q) || recipient.includes(q) || course.includes(q) || number.includes(q);
+    });
+    result.sort((a, b) => {
+      const da = new Date(a.issued_at).getTime();
+      const db = new Date(b.issued_at).getTime();
+      return sortOrder === 'newest' ? db - da : da - db;
+    });
+    return result;
+  }, [certs, searchQuery, sortOrder, isAr]);
 
-  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filteredCerts);
+  const [form, setForm] = useState({ recipient_id: '', recipient_type: 'student', title: '', title_ar: '', description: '', course_id: '', design: 'classic' as CertDesign });
 
   return (
     <div className="space-y-6">
