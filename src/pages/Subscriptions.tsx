@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Search, Eye, Plus } from 'lucide-react';
+import { Search, Eye, Plus, ArrowUp, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Subscriptions = () => {
