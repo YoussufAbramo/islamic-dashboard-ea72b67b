@@ -39,7 +39,6 @@ const Settings = () => {
     { value: 'payment', label: 'Payment Methods', labelAr: 'طرق الدفع', icon: CreditCard, adminOnly: true },
     { value: 'data', label: 'Data Management', labelAr: 'إدارة البيانات', icon: Database, adminOnly: true },
     { value: 'backups', label: 'Backups', labelAr: 'النسخ الاحتياطية', icon: HardDrive, adminOnly: true },
-    { value: 'export-import', label: 'Export/Import Setup', labelAr: 'تصدير/استيراد الإعداد', icon: ArrowDownUp, adminOnly: true, comingSoon: true },
   ];
 
   const visibleTabs = tabs.filter(t => !t.adminOnly || isAdmin);
