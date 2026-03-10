@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -55,36 +55,56 @@ const getActiveGateways = (): string[] => {
 
 const InvoiceView = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
   const [invoice, setInvoice] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [selectedGateway, setSelectedGateway] = useState<string | null>(null);
   const [logoErrors, setLogoErrors] = useState<Record<string, boolean>>({});
+  const [studentInfo, setStudentInfo] = useState<any>(null);
+  const [courseInfo, setCourseInfo] = useState<any>(null);
 
   const currencySymbol = getCurrencySymbol();
-  const appName = typeof window !== 'undefined' ? localStorage.getItem('app_name') || 'Islamic Dashboard' : 'Islamic Dashboard';
-  const appLogo = typeof window !== 'undefined' ? localStorage.getItem('app_logo') || '' : '';
-  const signatureImage = typeof window !== 'undefined' ? localStorage.getItem('app_signature_image') || '' : '';
-  const stampImage = typeof window !== 'undefined' ? localStorage.getItem('app_stamp_image') || '' : '';
-  const signaturePosition = (typeof window !== 'undefined' ? localStorage.getItem('app_signature_position') : 'left') as FooterPosition || 'left';
-  const stampPosition = (typeof window !== 'undefined' ? localStorage.getItem('app_stamp_position') : 'right') as FooterPosition || 'right';
+  const appName = localStorage.getItem('app_name') || 'Islamic Dashboard';
+  const appLogo = localStorage.getItem('app_logo') || '';
+  const signatureImage = localStorage.getItem('app_signature_image') || '';
+  const stampImage = localStorage.getItem('app_stamp_image') || '';
+  const signaturePosition = (localStorage.getItem('app_signature_position') || 'left') as FooterPosition;
+  const stampPosition = (localStorage.getItem('app_stamp_position') || 'right') as FooterPosition;
   const activeGatewayIds = getActiveGateways();
   const activeGateways = GATEWAYS.filter(g => activeGatewayIds.includes(g.id));
 
   useEffect(() => {
     const fetchInvoice = async () => {
       if (!id) { setError(true); setLoading(false); return; }
+      
+      // Try authenticated query first (for logged-in users)
       const { data, error: err } = await supabase
         .from('invoices')
         .select('*, courses:invoices_course_id_fkey(title, title_ar), students:invoices_student_id_fkey(user_id, profiles:students_user_id_profiles_fkey(full_name, email, phone))')
         .eq('id', id)
         .maybeSingle();
 
-      if (err || !data) { setError(true); } else { setInvoice(data); }
+      if (data) {
+        setInvoice(data);
+        setStudentInfo(data.students?.profiles);
+        setCourseInfo(data.courses);
+      } else if (token) {
+        // Fallback: use share_token via RPC for unauthenticated access
+        const { data: rpcData } = await supabase.rpc('get_invoice_by_share_token', { _token: token });
+        if (rpcData && rpcData.length > 0) {
+          setInvoice(rpcData[0]);
+        } else {
+          setError(true);
+        }
+      } else {
+        setError(true);
+      }
       setLoading(false);
     };
     fetchInvoice();
-  }, [id]);
+  }, [id, token]);
 
   const handlePrint = () => window.print();
 
@@ -115,6 +135,8 @@ const InvoiceView = () => {
 
   const sc = statusConfig[invoice.status] || statusConfig.pending;
   const formatAmount = (n: number) => `${currencySymbol}${n.toFixed(2)}`;
+  const student = studentInfo || invoice.students?.profiles;
+  const course = courseInfo || invoice.courses;
 
   return (
     <div className="min-h-screen bg-background py-8 px-4 print:py-2 print:px-0">
@@ -166,9 +188,9 @@ const InvoiceView = () => {
               <CardTitle className="text-sm">Student Info</CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-3 space-y-1">
-              <p className="font-medium">{invoice.students?.profiles?.full_name || '-'}</p>
-              <p className="text-sm text-muted-foreground">{invoice.students?.profiles?.email || '-'}</p>
-              <p className="text-sm text-muted-foreground">{invoice.students?.profiles?.phone || '-'}</p>
+              <p className="font-medium">{student?.full_name || '-'}</p>
+              <p className="text-sm text-muted-foreground">{student?.email || '-'}</p>
+              <p className="text-sm text-muted-foreground">{student?.phone || '-'}</p>
             </CardContent>
           </Card>
           <Card>
@@ -176,7 +198,7 @@ const InvoiceView = () => {
               <CardTitle className="text-sm">Course Details</CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-3 space-y-1">
-              <p className="font-medium">{invoice.courses?.title || '-'}</p>
+              <p className="font-medium">{course?.title || '-'}</p>
               <p className="text-sm text-muted-foreground">
                 {invoice.billing_cycle === 'yearly' ? 'Yearly subscription' : 'Monthly subscription'}
               </p>
@@ -186,14 +208,7 @@ const InvoiceView = () => {
 
         <div className="p-6 rounded-xl border border-border bg-muted/30 text-center">
           <p className="text-sm text-muted-foreground">Amount Due</p>
-          {invoice.original_amount && invoice.original_amount > invoice.amount ? (
-            <div className="mt-1">
-              <span className="text-lg text-muted-foreground line-through me-2">{formatAmount(invoice.original_amount)}</span>
-              <span className="text-4xl font-bold">{formatAmount(invoice.amount)}</span>
-            </div>
-          ) : (
-            <p className="text-4xl font-bold mt-1">{formatAmount(invoice.amount)}</p>
-          )}
+          <p className="text-4xl font-bold mt-1">{formatAmount(invoice.amount)}</p>
           <p className="text-sm text-muted-foreground mt-2">
             Due: {invoice.due_date ? format(new Date(invoice.due_date), 'MMM dd, yyyy') : '-'}
           </p>

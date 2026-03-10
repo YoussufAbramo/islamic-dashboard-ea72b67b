@@ -344,6 +344,7 @@ export type Database = {
           invoice_number: string
           notes: string | null
           paid_at: string | null
+          share_token: string
           status: string
           student_id: string
           subscription_id: string | null
@@ -359,6 +360,7 @@ export type Database = {
           invoice_number?: string
           notes?: string | null
           paid_at?: string | null
+          share_token?: string
           status?: string
           student_id: string
           subscription_id?: string | null
@@ -374,6 +376,7 @@ export type Database = {
           invoice_number?: string
           notes?: string | null
           paid_at?: string | null
+          share_token?: string
           status?: string
           student_id?: string
           subscription_id?: string | null
@@ -916,6 +919,31 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_invoice_by_share_token: {
+        Args: { _token: string }
+        Returns: {
+          amount: number
+          billing_cycle: string
+          course_id: string | null
+          created_at: string
+          due_date: string
+          id: string
+          invoice_number: string
+          notes: string | null
+          paid_at: string | null
+          share_token: string
+          status: string
+          student_id: string
+          subscription_id: string | null
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "invoices"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
