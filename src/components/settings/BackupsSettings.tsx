@@ -96,9 +96,15 @@ const BackupsSettings = () => {
     }
     setCreating(true);
     try {
+      const tablesToBackup = Object.keys(selectedTables).filter(k => selectedTables[k]);
+      if (tablesToBackup.length === 0) {
+        toast.error(isAr ? 'اختر جدولاً واحداً على الأقل' : 'Select at least one table');
+        setCreating(false);
+        return;
+      }
       const appSettings = { ...pending };
       const { data, error } = await supabase.functions.invoke('manage-backups', {
-        body: { action: 'create_backup', name: backupName.trim(), format: backupFormat, appSettings },
+        body: { action: 'create_backup', name: backupName.trim(), format: backupFormat, appSettings, tables: tablesToBackup },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
