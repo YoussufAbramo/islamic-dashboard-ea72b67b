@@ -16,10 +16,11 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Award, Plus, Check, Search, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
+import { Award, Plus, Check, Search, ArrowUp, ArrowDown, Trash2, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { certificateStatusLabels, getLabel } from '@/lib/statusLabels';
+import { exportCertificatePdf } from '@/lib/certificatePdf';
 
 type CertDesign = 'classic' | 'modern' | 'elegant';
 
