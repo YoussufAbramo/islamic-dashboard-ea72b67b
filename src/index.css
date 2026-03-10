@@ -121,6 +121,12 @@
 
     --chart-1: 38 65% 55%;
     --chart-2: 160 35% 45%;
+
+    --sidebar-light-background: 160 15% 14%;
+    --sidebar-light-foreground: 40 30% 90%;
+    --sidebar-light-accent: 160 20% 18%;
+    --sidebar-light-accent-foreground: 40 30% 90%;
+    --sidebar-light-border: 160 15% 20%;
     --chart-3: 200 50% 45%;
     --chart-4: 280 40% 50%;
     --chart-5: 340 50% 45%;
