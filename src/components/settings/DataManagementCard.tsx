@@ -18,6 +18,7 @@ interface DataManagementCardProps {
 const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const { appName } = useAppSettings();
   const [seedLoading, setSeedLoading] = useState(false);
+  const [eraseSeedLoading, setEraseSeedLoading] = useState(false);
   const [seedLog, setSeedLog] = useState<string[]>([]);
   const [showSeedLog, setShowSeedLog] = useState(false);
   const [clearStep, setClearStep] = useState(0); // 0=hidden, 1=first, 2=second, 3=final
