@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Send, Ban, CheckCircle, Trash2, Plus } from 'lucide-react';
+import { Send, Ban, CheckCircle, Trash2, Plus, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -21,6 +21,7 @@ const Chats = () => {
   const [selectedChat, setSelectedChat] = useState<any>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Create chat
   const [createOpen, setCreateOpen] = useState(false);
@@ -132,6 +133,11 @@ const Chats = () => {
     return `${teacher}${teacher && student ? ' ↔ ' : ''}${student}` || (language === 'ar' ? 'محادثة' : 'Chat');
   };
 
+  const filteredChats = chats.filter(chat => {
+    if (!searchQuery) return true;
+    return getChatLabel(chat).toLowerCase().includes(searchQuery.toLowerCase());
+  });
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -146,10 +152,21 @@ const Chats = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-200px)]">
         <Card className="md:col-span-1">
-          <CardHeader className="pb-2"><CardTitle className="text-sm">{t('chats.title')}</CardTitle></CardHeader>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">{t('chats.title')}</CardTitle>
+            <div className="relative mt-2">
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={language === 'ar' ? 'بحث في المحادثات...' : 'Search chats...'}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="ps-9 h-8 text-sm"
+              />
+            </div>
+          </CardHeader>
           <CardContent className="p-0">
-            <ScrollArea className="h-[calc(100vh-280px)]">
-              {chats.map((chat) => (
+            <ScrollArea className="h-[calc(100vh-320px)]">
+              {filteredChats.map((chat) => (
                 <div
                   key={chat.id}
                   className={`p-3 border-b cursor-pointer hover:bg-muted/50 transition-colors ${selectedChat?.id === chat.id ? 'bg-muted' : ''}`}
@@ -164,7 +181,11 @@ const Chats = () => {
                   </div>
                 </div>
               ))}
-              {chats.length === 0 && <p className="p-4 text-center text-muted-foreground text-sm">{t('common.noData')}</p>}
+              {filteredChats.length === 0 && (
+                <p className="p-4 text-center text-muted-foreground text-sm">
+                  {searchQuery ? (language === 'ar' ? 'لا توجد نتائج' : 'No results') : t('common.noData')}
+                </p>
+              )}
             </ScrollArea>
           </CardContent>
         </Card>
@@ -227,7 +248,6 @@ const Chats = () => {
         </Card>
       </div>
 
-      {/* Create chat dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{language === 'ar' ? 'إنشاء محادثة جديدة' : 'Create New Chat'}</DialogTitle></DialogHeader>
@@ -235,45 +255,28 @@ const Chats = () => {
             <div>
               <Label>{language === 'ar' ? 'نوع المحادثة' : 'Chat Type'}</Label>
               <div className="grid grid-cols-2 gap-2 mt-1">
-                <button
-                  type="button"
-                  onClick={() => setChatType('direct')}
-                  className={`p-3 rounded-lg border-2 text-sm transition-all ${chatType === 'direct' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'}`}
-                >
+                <button type="button" onClick={() => setChatType('direct')} className={`p-3 rounded-lg border-2 text-sm transition-all ${chatType === 'direct' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'}`}>
                   {language === 'ar' ? 'محادثة مباشرة' : '1-on-1 Chat'}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setChatType('group')}
-                  className={`p-3 rounded-lg border-2 text-sm transition-all ${chatType === 'group' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'}`}
-                >
+                <button type="button" onClick={() => setChatType('group')} className={`p-3 rounded-lg border-2 text-sm transition-all ${chatType === 'group' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'}`}>
                   {language === 'ar' ? 'مجموعة' : 'Group Chat'}
                 </button>
               </div>
             </div>
-
             {chatType === 'direct' ? (
               <>
                 <div>
                   <Label>{t('subscriptions.student')}</Label>
                   <Select value={createForm.student_id} onValueChange={(v) => setCreateForm({ ...createForm, student_id: v })}>
                     <SelectTrigger><SelectValue placeholder={language === 'ar' ? 'اختر طالب' : 'Select student'} /></SelectTrigger>
-                    <SelectContent>
-                      {studentsList.map((s) => (
-                        <SelectItem key={s.id} value={s.id}>{s.profiles?.full_name || s.id}</SelectItem>
-                      ))}
-                    </SelectContent>
+                    <SelectContent>{studentsList.map((s) => <SelectItem key={s.id} value={s.id}>{s.profiles?.full_name || s.id}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label>{t('subscriptions.teacher')}</Label>
                   <Select value={createForm.teacher_id} onValueChange={(v) => setCreateForm({ ...createForm, teacher_id: v })}>
                     <SelectTrigger><SelectValue placeholder={language === 'ar' ? 'اختر معلم' : 'Select teacher'} /></SelectTrigger>
-                    <SelectContent>
-                      {teachersList.map((te) => (
-                        <SelectItem key={te.id} value={te.id}>{te.profiles?.full_name || te.id}</SelectItem>
-                      ))}
-                    </SelectContent>
+                    <SelectContent>{teachersList.map((te) => <SelectItem key={te.id} value={te.id}>{te.profiles?.full_name || te.id}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
               </>
@@ -287,18 +290,11 @@ const Chats = () => {
                   <Label>{language === 'ar' ? 'الاشتراك المرتبط' : 'Linked Subscription'} *</Label>
                   <Select value={createForm.subscription_id} onValueChange={(v) => setCreateForm({ ...createForm, subscription_id: v })}>
                     <SelectTrigger><SelectValue placeholder={language === 'ar' ? 'اختر اشتراك' : 'Select subscription'} /></SelectTrigger>
-                    <SelectContent>
-                      {subscriptionsList.map((sub) => (
-                        <SelectItem key={sub.id} value={sub.id}>
-                          {sub.students?.profiles?.full_name || ''} - {sub.courses?.title || ''}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
+                    <SelectContent>{subscriptionsList.map((sub) => <SelectItem key={sub.id} value={sub.id}>{sub.students?.profiles?.full_name || ''} - {sub.courses?.title || ''}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
               </>
             )}
-
             <Button onClick={handleCreateChat} disabled={createLoading} className="w-full">
               {createLoading ? t('common.loading') : (language === 'ar' ? 'إنشاء المحادثة' : 'Create Chat')}
             </Button>
