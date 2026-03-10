@@ -2,6 +2,14 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [1.6.3] - 2026-03-10
+
+### Added
+- Signature image upload field in Settings > Appearance > Branding
+- Stamp image upload field in Settings > Appearance > Branding
+- Signature and stamp images displayed in invoice preview footer
+- Both images stored in Supabase avatars bucket under `branding/` prefix
+
 ## [1.6.2] - 2026-03-10
 
 ### Changed
