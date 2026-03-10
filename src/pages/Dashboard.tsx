@@ -2,15 +2,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { BookOpen, Users, GraduationCap, CreditCard, HeadphonesIcon, Calendar as CalendarIcon, DollarSign, AlertTriangle, Pencil, Award, ClipboardCheck, MessageSquare, UserCheck, Megaphone, ArrowUp, ArrowDown, GripVertical } from 'lucide-react';
-import { useEffect, useState, useCallback } from 'react';
+import { BookOpen, Users, GraduationCap, CreditCard, HeadphonesIcon, Calendar as CalendarIcon, DollarSign, AlertTriangle, Pencil, Award, ClipboardCheck, MessageSquare, UserCheck, Megaphone, ArrowUp, ArrowDown, GripVertical, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { format, isSameDay, startOfWeek, endOfWeek } from 'date-fns';
+import { format, isSameDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addMonths, addWeeks, eachDayOfInterval, isToday, isSameMonth } from 'date-fns';
 
 const StatCard = ({ title, value, icon: Icon, alert, onClick }: { title: string; value: number | string; icon: any; alert?: boolean; onClick?: () => void }) => (
   <Card className={`hover:shadow-lg hover:scale-[1.02] hover:-translate-y-1 transition-all duration-200 cursor-pointer hover:border-primary/40 hover:shadow-primary/10 ${alert ? 'border-destructive/50' : ''}`} onClick={onClick}>
@@ -114,7 +113,9 @@ const Dashboard = () => {
   const { currency } = useAppSettings();
   const navigate = useNavigate();
   const [stats, setStats] = useState({ courses: 0, students: 0, teachers: 0, subscriptions: 0, tickets: 0, lessons: 0, mri: 0, weeklyLessons: 0, teacherAbsences: 0, certificates: 0, attendance: 0, chats: 0, announcements: 0 });
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [calendarMode, setCalendarMode] = useState<'monthly' | 'weekly'>('monthly');
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [timetableEntries, setTimetableEntries] = useState<TimetableEntry[]>([]);
   const [dayLessons, setDayLessons] = useState<TimetableEntry[]>([]);
   const [recentSubs, setRecentSubs] = useState<any[]>([]);
@@ -207,11 +208,38 @@ const Dashboard = () => {
     }
   }, [selectedDate, timetableEntries]);
 
-  const lessonDates = timetableEntries.map(e => new Date(e.scheduled_at));
-  const hasLessonModifier = (date: Date) => lessonDates.some(d => isSameDay(d, date));
   const upcomingEntries = timetableEntries.filter(e => new Date(e.scheduled_at) >= new Date()).slice(0, 5);
 
   const hasAnyStat = (['statCourses', 'statStudents', 'statTeachers', 'statSubscriptions', 'statTickets', 'statLessons', 'statWeeklyLessons', 'statMri'] as WidgetKey[]).some(k => widgets[k]);
+
+  // Calendar logic (matching Timetable page)
+  const calendarDays = useMemo(() => {
+    if (calendarMode === 'monthly') {
+      const monthStart = startOfMonth(currentDate);
+      const monthEnd = endOfMonth(currentDate);
+      const calStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+      const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+      return eachDayOfInterval({ start: calStart, end: calEnd });
+    } else {
+      const wStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+      const wEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
+      return eachDayOfInterval({ start: wStart, end: wEnd });
+    }
+  }, [currentDate, calendarMode]);
+
+  const navigateCalendar = (dir: 'prev' | 'next') => {
+    if (calendarMode === 'monthly') {
+      setCurrentDate(prev => addMonths(prev, dir === 'next' ? 1 : -1));
+    } else {
+      setCurrentDate(prev => addWeeks(prev, dir === 'next' ? 1 : -1));
+    }
+  };
+
+  const getLessonCountForDay = (date: Date) => timetableEntries.filter(e => isSameDay(new Date(e.scheduled_at), date)).length;
+
+  const weekDays = isAr
+    ? ['اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت', 'أحد']
+    : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   return (
     <div className="space-y-6">
@@ -300,48 +328,58 @@ const Dashboard = () => {
               <div key={sectionKey} className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {widgets.attendanceOverview && (
                   <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/attendance')}>
-                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><ClipboardCheck className="h-4 w-4 text-primary" />{isAr ? 'الحضور' : 'Attendance'}</CardTitle></CardHeader>
-                    <CardContent><div className="text-2xl font-bold">{stats.attendance}</div><p className="text-xs text-muted-foreground">{isAr ? 'إجمالي السجلات' : 'Total Records'}</p></CardContent>
+                    <CardContent className="pt-4 flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><ClipboardCheck className="h-5 w-5 text-primary" /></div>
+                      <div><p className="text-sm font-medium">{isAr ? 'الحضور' : 'Attendance'}</p><p className="text-xs text-muted-foreground">{stats.attendance} {isAr ? 'سجل' : 'records'}</p></div>
+                    </CardContent>
                   </Card>
                 )}
                 {widgets.certificatesIssued && (
                   <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/certificates')}>
-                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Award className="h-4 w-4 text-primary" />{isAr ? 'الشهادات' : 'Certificates'}</CardTitle></CardHeader>
-                    <CardContent><div className="text-2xl font-bold">{stats.certificates}</div><p className="text-xs text-muted-foreground">{isAr ? 'إجمالي الشهادات' : 'Total Certificates'}</p></CardContent>
+                    <CardContent className="pt-4 flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><Award className="h-5 w-5 text-primary" /></div>
+                      <div><p className="text-sm font-medium">{isAr ? 'الشهادات' : 'Certificates'}</p><p className="text-xs text-muted-foreground">{stats.certificates} {isAr ? 'صادرة' : 'issued'}</p></div>
+                    </CardContent>
                   </Card>
                 )}
                 {widgets.supportOverview && (
                   <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/support')}>
-                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><HeadphonesIcon className="h-4 w-4 text-primary" />{isAr ? 'الدعم' : 'Support'}</CardTitle></CardHeader>
-                    <CardContent><div className="text-2xl font-bold">{stats.tickets}</div><p className="text-xs text-muted-foreground">{isAr ? 'تذاكر مفتوحة' : 'Open Tickets'}</p></CardContent>
+                    <CardContent className="pt-4 flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><HeadphonesIcon className="h-5 w-5 text-primary" /></div>
+                      <div><p className="text-sm font-medium">{isAr ? 'الدعم الفني' : 'Support'}</p><p className="text-xs text-muted-foreground">{stats.tickets} {isAr ? 'تذاكر مفتوحة' : 'open tickets'}</p></div>
+                    </CardContent>
                   </Card>
                 )}
                 {widgets.teacherOverview && (
                   <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/teachers')}>
-                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Users className="h-4 w-4 text-primary" />{isAr ? 'المعلمون' : 'Teachers'}</CardTitle></CardHeader>
-                    <CardContent><div className="text-2xl font-bold">{stats.teachers}</div><p className="text-xs text-muted-foreground">{isAr ? 'إجمالي المعلمين' : 'Total Teachers'}</p></CardContent>
+                    <CardContent className="pt-4 flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><Users className="h-5 w-5 text-primary" /></div>
+                      <div><p className="text-sm font-medium">{isAr ? 'المعلمون' : 'Teachers'}</p><p className="text-xs text-muted-foreground">{stats.teachers} {isAr ? 'معلم' : 'teachers'}</p></div>
+                    </CardContent>
                   </Card>
                 )}
                 {widgets.announcementsWidget && (
                   <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/announcements')}>
-                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Megaphone className="h-4 w-4 text-primary" />{isAr ? 'الإعلانات' : 'Announcements'}</CardTitle></CardHeader>
-                    <CardContent><div className="text-2xl font-bold">{stats.announcements}</div><p className="text-xs text-muted-foreground">{isAr ? 'إعلانات نشطة' : 'Active'}</p></CardContent>
+                    <CardContent className="pt-4 flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><Megaphone className="h-5 w-5 text-primary" /></div>
+                      <div><p className="text-sm font-medium">{isAr ? 'الإعلانات' : 'Announcements'}</p><p className="text-xs text-muted-foreground">{stats.announcements} {isAr ? 'نشط' : 'active'}</p></div>
+                    </CardContent>
                   </Card>
                 )}
                 {widgets.chatsOverview && (
                   <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/dashboard/chats')}>
-                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><MessageSquare className="h-4 w-4 text-primary" />{isAr ? 'المحادثات' : 'Chats'}</CardTitle></CardHeader>
-                    <CardContent><div className="text-2xl font-bold">{stats.chats}</div><p className="text-xs text-muted-foreground">{isAr ? 'إجمالي المحادثات' : 'Total Chats'}</p></CardContent>
+                    <CardContent className="pt-4 flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><MessageSquare className="h-5 w-5 text-primary" /></div>
+                      <div><p className="text-sm font-medium">{isAr ? 'المحادثات' : 'Chats'}</p><p className="text-xs text-muted-foreground">{stats.chats} {isAr ? 'محادثة' : 'chats'}</p></div>
+                    </CardContent>
                   </Card>
                 )}
               </div>
             );
 
-          case 'upcomingLessons':
-            // Upcoming Lessons and Recent Subscriptions side by side
+          case 'upcomingLessons': {
             const showUpcoming = widgets.upcomingLessons && upcomingEntries.length > 0;
             const showRecentSubs = widgets.recentSubscriptions && recentSubs.length > 0;
-            // If this is the upcomingLessons section, render both side by side
             if (!showUpcoming && !showRecentSubs) return null;
             return (
               <div key={sectionKey} className="grid gap-4 grid-cols-1 lg:grid-cols-2">
@@ -383,46 +421,131 @@ const Dashboard = () => {
                 )}
               </div>
             );
+          }
 
           case 'recentSubscriptions':
-            // Already rendered in upcomingLessons section side-by-side
             return null;
 
           case 'calendar':
             return widgets.calendar ? (
-              <div key={sectionKey} className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-                <Card>
-                  <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent rounded-t-lg">
-                    <CardTitle className="flex items-center gap-2"><CalendarIcon className="h-5 w-5 text-primary" />{isAr ? 'تقويم الدروس' : 'Lessons Calendar'}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} modifiers={{ hasLesson: hasLessonModifier }} modifiersClassNames={{ hasLesson: 'bg-primary/20 text-primary font-bold ring-2 ring-primary/30' }} className="rounded-md border" />
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent rounded-t-lg">
-                    <CardTitle>{selectedDate ? `${isAr ? 'دروس يوم' : 'Lessons on'} ${format(selectedDate, 'PPP')}` : isAr ? 'اختر يوماً' : 'Select a day'}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    {dayLessons.length === 0 ? (
-                      <p className="text-muted-foreground text-sm">{isAr ? 'لا توجد دروس في هذا اليوم' : 'No lessons on this day'}</p>
-                    ) : (
-                      <div className="space-y-3">
-                        {dayLessons.map((lesson) => (
-                          <div key={lesson.id} className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
-                            <div>
-                              <p className="text-sm font-medium">{format(new Date(lesson.scheduled_at), 'HH:mm')}</p>
-                              <p className="text-xs text-muted-foreground">{lesson.duration_minutes} {t('common.minutes')}</p>
-                            </div>
-                            <span className={`text-xs px-2 py-1 rounded-full ${lesson.status === 'completed' ? 'bg-primary/10 text-primary' : lesson.status === 'cancelled' ? 'bg-destructive/10 text-destructive' : 'bg-accent/20 text-accent-foreground'}`}>
-                              {t(`timetable.${lesson.status}`)}
-                            </span>
-                          </div>
+              <div key={sectionKey} className="space-y-4">
+                {/* Calendar Controls */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="h-5 w-5 text-primary" />
+                    <h2 className="text-lg font-semibold">{isAr ? 'تقويم الدروس' : 'Lessons Calendar'}</h2>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1 border rounded-lg p-1">
+                      <Button variant={calendarMode === 'monthly' ? 'default' : 'ghost'} size="sm" onClick={() => setCalendarMode('monthly')}>
+                        {isAr ? 'شهري' : 'Monthly'}
+                      </Button>
+                      <Button variant={calendarMode === 'weekly' ? 'default' : 'ghost'} size="sm" onClick={() => setCalendarMode('weekly')}>
+                        {isAr ? 'أسبوعي' : 'Weekly'}
+                      </Button>
+                    </div>
+                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => navigateCalendar('prev')}>
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <span className="text-sm font-medium min-w-[140px] text-center">
+                      {calendarMode === 'monthly'
+                        ? format(currentDate, 'MMMM yyyy')
+                        : `${format(startOfWeek(currentDate, { weekStartsOn: 1 }), 'MMM d')} - ${format(endOfWeek(currentDate, { weekStartsOn: 1 }), 'MMM d, yyyy')}`
+                      }
+                    </span>
+                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => navigateCalendar('next')}>
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => { setCurrentDate(new Date()); setSelectedDate(new Date()); }}>
+                      {isAr ? 'اليوم' : 'Today'}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
+                  {/* Calendar Grid */}
+                  <Card className="lg:col-span-2">
+                    <CardContent className="pt-4">
+                      <div className="grid grid-cols-7 gap-1 mb-1">
+                        {weekDays.map(d => (
+                          <div key={d} className="text-center text-xs font-medium text-muted-foreground py-2">{d}</div>
                         ))}
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
+                      <div className="grid grid-cols-7 gap-1">
+                        {calendarDays.map((day) => {
+                          const count = getLessonCountForDay(day);
+                          const isSelected = isSameDay(day, selectedDate);
+                          const isCurrentMonth = calendarMode === 'monthly' ? isSameMonth(day, currentDate) : true;
+                          return (
+                            <button
+                              key={day.toISOString()}
+                              onClick={() => setSelectedDate(day)}
+                              className={`relative flex flex-col items-center justify-center p-2 rounded-lg transition-all min-h-[60px] ${
+                                isSelected
+                                  ? 'bg-primary text-primary-foreground shadow-md'
+                                  : isToday(day)
+                                  ? 'bg-primary/10 text-primary border border-primary/30'
+                                  : isCurrentMonth
+                                  ? 'hover:bg-muted text-foreground'
+                                  : 'text-muted-foreground/40'
+                              }`}
+                            >
+                              <span className="text-sm font-medium">{format(day, 'd')}</span>
+                              {count > 0 && (
+                                <div className="flex gap-0.5 mt-1">
+                                  {Array.from({ length: Math.min(count, 3) }).map((_, i) => (
+                                    <div
+                                      key={i}
+                                      className={`w-1.5 h-1.5 rounded-full ${
+                                        isSelected ? 'bg-primary-foreground' : 'bg-primary'
+                                      }`}
+                                    />
+                                  ))}
+                                  {count > 3 && (
+                                    <span className={`text-[8px] ${isSelected ? 'text-primary-foreground' : 'text-primary'}`}>+{count - 3}</span>
+                                  )}
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Day Details */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">
+                        {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+                      </CardTitle>
+                      <p className="text-xs text-muted-foreground">
+                        {dayLessons.length} {isAr ? 'دروس' : 'lessons'}
+                      </p>
+                    </CardHeader>
+                    <CardContent>
+                      {dayLessons.length === 0 ? (
+                        <p className="text-muted-foreground text-sm py-8 text-center">
+                          {isAr ? 'لا توجد دروس في هذا اليوم' : 'No lessons on this day'}
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          {dayLessons.map((lesson) => (
+                            <div key={lesson.id} className="p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-sm font-semibold">{format(new Date(lesson.scheduled_at), 'HH:mm')}</span>
+                                <Badge variant={lesson.status === 'completed' ? 'secondary' : lesson.status === 'cancelled' ? 'destructive' : 'default'} className="text-[10px]">
+                                  {t(`timetable.${lesson.status}`)}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground">{lesson.duration_minutes} {t('common.minutes')}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             ) : null;
 

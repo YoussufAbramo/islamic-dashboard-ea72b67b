@@ -90,10 +90,6 @@ const Reports = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">{isAr ? 'التقارير والتحليلات' : 'Reports & Analytics'}</h1>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')} className="gap-1">
-            {sortOrder === 'newest' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}
-            {sortOrder === 'newest' ? (isAr ? 'الأحدث' : 'Newest') : (isAr ? 'الأقدم' : 'Oldest')}
-          </Button>
           <Button variant="outline" onClick={() => window.print()}>
             <Printer className="h-4 w-4 me-2" />{isAr ? 'طباعة' : 'Print'}
           </Button>
