@@ -34,6 +34,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const [clearLoading, setClearLoading] = useState(false);
   const [backupDownloaded, setBackupDownloaded] = useState(false);
   const [backupLoading, setBackupLoading] = useState(false);
+  const [eraseSummary, setEraseSummary] = useState<{ counts: Record<string, number>; total: number } | null>(null);
   const [appNameInput, setAppNameInput] = useState('');
   const [deleteCodeInput, setDeleteCodeInput] = useState('');
   const [understandCheck, setUnderstandCheck] = useState(false);
