@@ -56,15 +56,11 @@ const Invoices = () => {
   };
 
   const fetchFormData = async () => {
-    const [subRes, courseRes] = await Promise.all([
-      supabase
-        .from('subscriptions')
-        .select('id, price, subscription_type, courses:course_id(title), students:student_id(id, user_id, profiles:students_user_id_profiles_fkey(full_name))')
-        .eq('status', 'active'),
-      supabase.from('courses').select('id, title, title_ar').eq('status', 'published'),
-    ]);
-    setSubscriptions(subRes.data || []);
-    setCourses(courseRes.data || []);
+    const { data: subData } = await supabase
+      .from('subscriptions')
+      .select('id, price, subscription_type, course_id, courses:course_id(id, title, title_ar), students:student_id(id, user_id, profiles:students_user_id_profiles_fkey(full_name))')
+      .eq('status', 'active');
+    setSubscriptions(subData || []);
   };
 
   useEffect(() => { fetchInvoices(); }, []);
