@@ -476,7 +476,7 @@ const Dashboard = () => {
                               <p className="text-sm font-medium">{format(new Date(entry.scheduled_at), 'EEE, MMM d')}</p>
                               <p className="text-xs text-muted-foreground">{format(new Date(entry.scheduled_at), 'HH:mm')} · {entry.duration_minutes} {t('common.minutes')}</p>
                             </div>
-                            <Badge variant={entry.status === 'cancelled' ? 'destructive' : 'outline'} className="text-[10px]">{entry.status}</Badge>
+                            <Badge variant={entry.status === 'cancelled' ? 'destructive' : 'outline'} className="text-[10px]">{entry.status === 'scheduled' ? (isAr ? 'مجدول' : 'Scheduled') : entry.status === 'completed' ? (isAr ? 'مكتمل' : 'Completed') : entry.status === 'cancelled' ? (isAr ? 'ملغي' : 'Cancelled') : entry.status}</Badge>
                           </div>
                         ))}
                       </div>
