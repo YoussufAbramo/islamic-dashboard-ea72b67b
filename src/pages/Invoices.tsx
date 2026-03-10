@@ -254,22 +254,17 @@ const Invoices = () => {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label>{isAr ? 'الدورة' : 'Course'}</Label>
-              <Select
-                value={createForm.course_id}
-                onValueChange={(v) => setCreateForm({ ...createForm, course_id: v })}
-              >
-                <SelectTrigger><SelectValue placeholder={isAr ? 'اختر دورة' : 'Select course'} /></SelectTrigger>
-                <SelectContent>
-                  {courses.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {isAr ? (c.title_ar || c.title) : c.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Course (read-only from subscription) */}
+            {createForm.subscription_id && (() => {
+              const sub = subscriptions.find(s => s.id === createForm.subscription_id);
+              const courseName = sub?.courses ? (isAr ? (sub.courses.title_ar || sub.courses.title) : sub.courses.title) : '';
+              return courseName ? (
+                <div className="space-y-2">
+                  <Label>{isAr ? 'الدورة' : 'Course'}</Label>
+                  <Input value={courseName} readOnly disabled className="bg-muted" />
+                </div>
+              ) : null;
+            })()}
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
