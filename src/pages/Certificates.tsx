@@ -218,7 +218,7 @@ const Certificates = () => {
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 me-2" />{isAr ? 'شهادة جديدة' : 'New Certificate'}</Button>
               </DialogTrigger>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-2xl">
               <DialogHeader><DialogTitle>{isAr ? 'إنشاء شهادة' : 'Create Certificate'}</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div>
