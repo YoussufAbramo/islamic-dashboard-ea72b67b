@@ -144,6 +144,7 @@ const LandingPage = () => {
   };
 
   const navLinks = [
+    { label: t('Home', 'الرئيسية'), id: 'top' },
     { label: t('Features', 'المميزات'), id: 'features' },
     { label: t('Why Us', 'لماذا نحن'), id: 'whyus' },
     { label: t('Pricing', 'الأسعار'), id: 'pricing' },
