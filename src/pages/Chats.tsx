@@ -83,7 +83,10 @@ const Chats = () => {
   };
 
   const deleteMessage = async (messageId: string) => {
-    await supabase.from('chat_messages').update({ is_deleted: true }).eq('id', messageId);
+    const deletedText = language === 'ar' 
+      ? `تم حذف هذه الرسالة بواسطة ${role === 'admin' ? 'المسؤول' : 'المعلم'}`
+      : `This message was deleted by ${role === 'admin' ? 'admin' : 'teacher'}`;
+    await supabase.from('chat_messages').update({ message: deletedText, is_deleted: true }).eq('id', messageId);
     fetchMessages(selectedChat.id);
     toast.success(language === 'ar' ? 'تم حذف الرسالة' : 'Message deleted');
   };
