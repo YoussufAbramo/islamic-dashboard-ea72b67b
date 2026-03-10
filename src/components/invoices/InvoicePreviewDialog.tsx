@@ -14,6 +14,8 @@ const statusConfig: Record<string, { bg: string; label: string; labelAr: string 
   cancelled: { bg: 'bg-muted text-muted-foreground border-border', label: 'Cancelled', labelAr: 'ملغية' },
 };
 
+type FooterPosition = 'left' | 'center' | 'right';
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -27,11 +29,13 @@ interface Props {
   role: string | null;
   signatureImage?: string;
   stampImage?: string;
+  signaturePosition?: FooterPosition;
+  stampPosition?: FooterPosition;
 }
 
 const esc = (s: string) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-const InvoicePreviewDialog = ({ open, onOpenChange, invoice, isAr, formatPrice, paymentGateway, appLogo, appName, onCopyUrl, role, signatureImage, stampImage }: Props) => {
+const InvoicePreviewDialog = ({ open, onOpenChange, invoice, isAr, formatPrice, paymentGateway, appLogo, appName, onCopyUrl, role, signatureImage, stampImage, signaturePosition = 'left', stampPosition = 'right' }: Props) => {
   if (!invoice) return null;
 
   const sc = statusConfig[invoice.status] || statusConfig.pending;
