@@ -103,7 +103,14 @@ const Announcements = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground line-clamp-2">{isAr && a.content_ar ? a.content_ar : a.content}</p>
-                  <p className="text-xs text-muted-foreground mt-2">{format(new Date(a.created_at), 'PPp')}</p>
+                  <div className="flex items-center gap-2 mt-3">
+                    <Badge variant="outline" className="text-[10px] font-normal">
+                      {format(new Date(a.created_at), 'MMM dd, yyyy')}
+                    </Badge>
+                    <Badge variant="secondary" className="text-[10px] font-normal">
+                      {format(new Date(a.created_at), 'hh:mm a')}
+                    </Badge>
+                  </div>
                 </CardContent>
               </Card>
             ))}
