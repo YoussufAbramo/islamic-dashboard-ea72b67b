@@ -104,7 +104,16 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      addLog(isAr ? '✅ تم مسح البيانات التجريبية بنجاح' : '✅ Sample data erased successfully');
+      
+      if (data?.counts) {
+        const c = data.counts;
+        Object.entries(c).filter(([, v]) => (v as number) > 0).forEach(([table, count]) => {
+          addLog(`   🗑️ ${table}: -${count}`);
+        });
+        addLog(isAr ? `✅ تم مسح البيانات التجريبية (${data.total_deleted || 0} سجل)` : `✅ Sample data erased (${data.total_deleted || 0} records)`);
+      } else {
+        addLog(isAr ? '✅ تم مسح البيانات التجريبية بنجاح' : '✅ Sample data erased successfully');
+      }
       toast.success(isAr ? 'تم مسح البيانات التجريبية بنجاح' : 'Sample data erased successfully');
     } catch (err: any) {
       addLog(`❌ ${err.message || 'Failed to erase sample data'}`);
