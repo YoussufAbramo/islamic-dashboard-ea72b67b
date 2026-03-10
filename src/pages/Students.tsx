@@ -110,7 +110,7 @@ const Students = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((student) => (
+            {paginatedItems.map((student) => (
               <TableRow key={student.id}>
                 <TableCell className="font-medium">{student.profiles?.full_name}</TableCell>
                 <TableCell>{student.profiles?.phone}</TableCell>
@@ -125,6 +125,7 @@ const Students = () => {
           </TableBody>
         </Table>
       </div>
+      <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
 
       {/* Detail dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
