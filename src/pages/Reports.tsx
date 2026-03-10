@@ -62,6 +62,26 @@ const Reports = () => {
     URL.revokeObjectURL(url);
   };
 
+  const sortedSubscriptions = useMemo(() => {
+    const sorted = [...subscriptions];
+    sorted.sort((a, b) => {
+      const da = new Date(a.created_at).getTime();
+      const db = new Date(b.created_at).getTime();
+      return sortOrder === 'newest' ? db - da : da - db;
+    });
+    return sorted;
+  }, [subscriptions, sortOrder]);
+
+  const sortedAttendance = useMemo(() => {
+    const sorted = [...attendance];
+    sorted.sort((a, b) => {
+      const da = new Date(a.created_at).getTime();
+      const db = new Date(b.created_at).getTime();
+      return sortOrder === 'newest' ? db - da : da - db;
+    });
+    return sorted;
+  }, [attendance, sortOrder]);
+
   const totalRevenue = subscriptions.reduce((s, sub) => s + (Number(sub.price) || 0), 0);
   const activeSubs = subscriptions.filter(s => s.status === 'active').length;
 
