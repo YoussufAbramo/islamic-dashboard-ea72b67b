@@ -18,12 +18,14 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Award, Plus, Check, Search, ArrowUp, ArrowDown, Trash2, Download, ChevronsUpDown } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
+import { Award, Plus, Check, Search, ArrowUp, ArrowDown, Trash2, Download, ChevronsUpDown, Printer, LayoutGrid, List, MoreHorizontal, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { certificateStatusLabels, getLabel } from '@/lib/statusLabels';
 import { exportCertificatePdf } from '@/lib/certificatePdf';
 import { cn } from '@/lib/utils';
+import { TableSkeleton, CertificateGridSkeleton } from '@/components/PageSkeleton';
 
 type CertDesign = 'classic' | 'modern' | 'elegant';
 
@@ -42,8 +44,12 @@ const Certificates = () => {
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [statusFilter, setStatusFilter] = useState('all');
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [loading, setLoading] = useState(true);
+  const [previewCert, setPreviewCert] = useState<any>(null);
 
   const fetchData = async () => {
+    setLoading(true);
     const [certsRes, profilesRes, coursesRes] = await Promise.all([
       supabase.from('certificates').select('*').order('issued_at', { ascending: false }),
       supabase.from('profiles').select('id, full_name'),
@@ -52,6 +58,7 @@ const Certificates = () => {
     setCerts(certsRes.data || []);
     setProfiles(profilesRes.data || []);
     setCourses(coursesRes.data || []);
+    setLoading(false);
   };
 
   useEffect(() => { fetchData(); }, []);
@@ -100,7 +107,6 @@ const Certificates = () => {
         design,
         isAr,
       });
-      toast.success(isAr ? 'تم تصدير الشهادة' : 'Certificate exported');
     } catch {
       toast.error(isAr ? 'فشل التصدير' : 'Export failed');
     }
@@ -195,122 +201,206 @@ const Certificates = () => {
 
   const statusColors: Record<string, string> = { active: 'default', revoked: 'destructive' };
 
+  const CertActionsMenu = ({ cert }: { cert: any }) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuLabel>{isAr ? 'طباعة' : 'Print'}</DropdownMenuLabel>
+        {designOptions.map(d => (
+          <DropdownMenuItem key={`print-${d.value}`} onClick={() => handlePrint(cert, d.value)}>
+            <Printer className="h-3.5 w-3.5 me-2" style={{ color: d.color }} />
+            {isAr ? d.labelAr : d.label}
+          </DropdownMenuItem>
+        ))}
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>{isAr ? 'تصدير PDF' : 'Export PDF'}</DropdownMenuLabel>
+        {designOptions.map(d => (
+          <DropdownMenuItem key={`pdf-${d.value}`} onClick={() => handleExportPdf(cert, d.value)}>
+            <Download className="h-3.5 w-3.5 me-2" style={{ color: d.color }} />
+            {isAr ? d.labelAr : d.label}
+          </DropdownMenuItem>
+        ))}
+        {isAdmin && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setDeleteTarget(cert.id)}>
+              <Trash2 className="h-3.5 w-3.5 me-2" />
+              {isAr ? 'حذف' : 'Delete'}
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
+  // Certificate preview card for grid view
+  const CertPreviewCard = ({ cert }: { cert: any }) => {
+    const certTitle = isAr && cert.title_ar ? cert.title_ar : cert.title;
+    const recipientName = getProfileName(cert.recipient_id);
+    const courseName = cert.course_id ? getCourseName(cert.course_id) : '';
+    return (
+      <Card className="group hover:shadow-lg transition-all duration-200 hover:border-primary/30 overflow-hidden">
+        {/* Mini certificate preview */}
+        <div
+          className="p-4 text-center border-b cursor-pointer"
+          style={{ background: 'linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--background)) 100%)' }}
+          onClick={() => setPreviewCert(cert)}
+        >
+          <div className="border-2 border-dashed border-primary/20 rounded-lg p-4 space-y-1">
+            <Award className="h-6 w-6 text-primary mx-auto" />
+            <p className="text-xs font-semibold text-primary truncate">{certTitle}</p>
+            <p className="text-[10px] text-muted-foreground">{isAr ? 'مقدمة إلى' : 'Presented to'}</p>
+            <p className="text-sm font-bold truncate">{recipientName}</p>
+            {courseName && <p className="text-[10px] text-muted-foreground truncate">{courseName}</p>}
+          </div>
+        </div>
+        <CardContent className="p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <Badge variant={statusColors[cert.status] as any} className="text-[10px]">
+              {getLabel(certificateStatusLabels, cert.status, isAr)}
+            </Badge>
+            <span className="text-[10px] text-muted-foreground">{format(new Date(cert.issued_at), 'PP')}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-muted-foreground font-mono">{cert.certificate_number}</span>
+            <CertActionsMenu cert={cert} />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <Award className="h-6 w-6 text-primary" />
+          <h1 className="text-3xl font-bold">{isAr ? 'الشهادات' : 'Certificates'}</h1>
+        </div>
+        {viewMode === 'grid' ? <CertificateGridSkeleton /> : <TableSkeleton cols={7} />}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-3xl font-bold shrink-0">{isAr ? 'الشهادات' : 'Certificates'}</h1>
         <div className="flex items-center gap-2 ms-auto">
+          {/* View toggle */}
+          <div className="flex border rounded-lg overflow-hidden">
+            <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="icon" className="h-8 w-8 rounded-none" onClick={() => setViewMode('list')}>
+              <List className="h-3.5 w-3.5" />
+            </Button>
+            <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="icon" className="h-8 w-8 rounded-none" onClick={() => setViewMode('grid')}>
+              <LayoutGrid className="h-3.5 w-3.5" />
+            </Button>
+          </div>
           <Button variant="outline" size="sm" onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')} className="gap-1">
             {sortOrder === 'newest' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}
             {sortOrder === 'newest' ? (isAr ? 'الأحدث' : 'Newest') : (isAr ? 'الأقدم' : 'Oldest')}
           </Button>
           <div className="relative">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={isAr ? 'بحث...' : 'Search...'}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="ps-9 w-48 sm:w-64"
-            />
+            <Input placeholder={isAr ? 'بحث...' : 'Search...'} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="ps-9 w-48 sm:w-64" />
           </div>
           {isAdmin && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 me-2" />{isAr ? 'شهادة جديدة' : 'New Certificate'}</Button>
               </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader><DialogTitle>{isAr ? 'إنشاء شهادة' : 'Create Certificate'}</DialogTitle></DialogHeader>
-              <div className="space-y-3">
-                <div>
-                  <Label>{isAr ? 'نوع المستلم' : 'Recipient Type'}</Label>
-                  <Select value={form.recipient_type} onValueChange={(v) => setForm({ ...form, recipient_type: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="student">{isAr ? 'طالب' : 'Student'}</SelectItem>
-                      <SelectItem value="teacher">{isAr ? 'معلم' : 'Teacher'}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>{isAr ? 'المستلم' : 'Recipient'}</Label>
-                  <Popover open={recipientOpen} onOpenChange={setRecipientOpen}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
-                        {form.recipient_id ? getProfileName(form.recipient_id) : (isAr ? 'اختر...' : 'Select...')}
-                        <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                      <Command>
-                        <CommandInput placeholder={isAr ? 'بحث...' : 'Search...'} />
-                        <CommandList>
-                          <CommandEmpty>{isAr ? 'لا توجد نتائج' : 'No results'}</CommandEmpty>
-                          <CommandGroup>
-                            {profiles.map(p => (
-                              <CommandItem key={p.id} value={p.full_name} onSelect={() => { setForm({ ...form, recipient_id: p.id }); setRecipientOpen(false); }}>
-                                <Check className={cn("me-2 h-4 w-4", form.recipient_id === p.id ? "opacity-100" : "opacity-0")} />
-                                {p.full_name}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div>
-                  <Label>{isAr ? 'الدورة (اختياري)' : 'Course (optional)'}</Label>
-                  <Popover open={certCourseOpen} onOpenChange={setCertCourseOpen}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
-                        {form.course_id ? getCourseName(form.course_id) : (isAr ? 'اختر...' : 'Select...')}
-                        <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                      <Command>
-                        <CommandInput placeholder={isAr ? 'بحث...' : 'Search...'} />
-                        <CommandList>
-                          <CommandEmpty>{isAr ? 'لا توجد نتائج' : 'No results'}</CommandEmpty>
-                          <CommandGroup>
-                            {courses.map(c => (
-                              <CommandItem key={c.id} value={isAr && c.title_ar ? c.title_ar : c.title} onSelect={() => { setForm({ ...form, course_id: c.id }); setCertCourseOpen(false); }}>
-                                <Check className={cn("me-2 h-4 w-4", form.course_id === c.id ? "opacity-100" : "opacity-0")} />
-                                {isAr && c.title_ar ? c.title_ar : c.title}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div><Label>{isAr ? 'العنوان' : 'Title'}</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} /></div>
-                  <div><Label>{isAr ? 'العنوان بالعربية' : 'Title (AR)'}</Label><Input value={form.title_ar} onChange={e => setForm({ ...form, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
-                </div>
-                <div><Label>{isAr ? 'الوصف' : 'Description'}</Label><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} /></div>
-                <div>
-                  <Label>{isAr ? 'تصميم الشهادة' : 'Certificate Design'}</Label>
-                  <div className="grid grid-cols-3 gap-2 mt-2">
-                    {designOptions.map(d => (
-                      <button
-                        key={d.value}
-                        type="button"
-                        onClick={() => setForm({ ...form, design: d.value })}
-                        className={`relative p-3 rounded-lg border-2 text-center transition-all ${form.design === d.value ? 'border-primary shadow-md' : 'border-border'}`}
-                      >
-                        <div className="w-6 h-6 rounded-full mx-auto mb-1" style={{ backgroundColor: d.color }} />
-                        <span className="text-xs">{isAr ? d.labelAr : d.label}</span>
-                        {form.design === d.value && <Check className="absolute top-1 end-1 h-3 w-3 text-primary" />}
-                      </button>
-                    ))}
+              <DialogContent className="max-w-2xl">
+                <DialogHeader><DialogTitle>{isAr ? 'إنشاء شهادة' : 'Create Certificate'}</DialogTitle></DialogHeader>
+                <div className="space-y-3">
+                  <div>
+                    <Label>{isAr ? 'نوع المستلم' : 'Recipient Type'}</Label>
+                    <Select value={form.recipient_type} onValueChange={(v) => setForm({ ...form, recipient_type: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="student">{isAr ? 'طالب' : 'Student'}</SelectItem>
+                        <SelectItem value="teacher">{isAr ? 'معلم' : 'Teacher'}</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
+                  <div>
+                    <Label>{isAr ? 'المستلم' : 'Recipient'}</Label>
+                    <Popover open={recipientOpen} onOpenChange={setRecipientOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                          {form.recipient_id ? getProfileName(form.recipient_id) : (isAr ? 'اختر...' : 'Select...')}
+                          <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder={isAr ? 'بحث...' : 'Search...'} />
+                          <CommandList>
+                            <CommandEmpty>{isAr ? 'لا توجد نتائج' : 'No results'}</CommandEmpty>
+                            <CommandGroup>
+                              {profiles.map(p => (
+                                <CommandItem key={p.id} value={p.full_name} onSelect={() => { setForm({ ...form, recipient_id: p.id }); setRecipientOpen(false); }}>
+                                  <Check className={cn("me-2 h-4 w-4", form.recipient_id === p.id ? "opacity-100" : "opacity-0")} />
+                                  {p.full_name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div>
+                    <Label>{isAr ? 'الدورة (اختياري)' : 'Course (optional)'}</Label>
+                    <Popover open={certCourseOpen} onOpenChange={setCertCourseOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                          {form.course_id ? getCourseName(form.course_id) : (isAr ? 'اختر...' : 'Select...')}
+                          <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder={isAr ? 'بحث...' : 'Search...'} />
+                          <CommandList>
+                            <CommandEmpty>{isAr ? 'لا توجد نتائج' : 'No results'}</CommandEmpty>
+                            <CommandGroup>
+                              {courses.map(c => (
+                                <CommandItem key={c.id} value={isAr && c.title_ar ? c.title_ar : c.title} onSelect={() => { setForm({ ...form, course_id: c.id }); setCertCourseOpen(false); }}>
+                                  <Check className={cn("me-2 h-4 w-4", form.course_id === c.id ? "opacity-100" : "opacity-0")} />
+                                  {isAr && c.title_ar ? c.title_ar : c.title}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><Label>{isAr ? 'العنوان' : 'Title'}</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} /></div>
+                    <div><Label>{isAr ? 'العنوان بالعربية' : 'Title (AR)'}</Label><Input value={form.title_ar} onChange={e => setForm({ ...form, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
+                  </div>
+                  <div><Label>{isAr ? 'الوصف' : 'Description'}</Label><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} /></div>
+                  <div>
+                    <Label>{isAr ? 'تصميم الشهادة' : 'Certificate Design'}</Label>
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      {designOptions.map(d => (
+                        <button key={d.value} type="button" onClick={() => setForm({ ...form, design: d.value })} className={`relative p-3 rounded-lg border-2 text-center transition-all ${form.design === d.value ? 'border-primary shadow-md' : 'border-border'}`}>
+                          <div className="w-6 h-6 rounded-full mx-auto mb-1" style={{ backgroundColor: d.color }} />
+                          <span className="text-xs">{isAr ? d.labelAr : d.label}</span>
+                          {form.design === d.value && <Check className="absolute top-1 end-1 h-3 w-3 text-primary" />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <Button onClick={handleCreate} className="w-full">{isAr ? 'إنشاء' : 'Create'}</Button>
                 </div>
-                <Button onClick={handleCreate} className="w-full">{isAr ? 'إنشاء' : 'Create'}</Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
           )}
         </div>
       </div>
@@ -329,10 +419,14 @@ const Certificates = () => {
 
       {filteredCerts.length === 0 ? (
         <Card><CardContent className="pt-6 text-center text-muted-foreground">
-          {searchQuery
-            ? (isAr ? 'لا توجد نتائج مطابقة' : 'No matching results')
-            : (isAr ? 'لا توجد شهادات' : 'No certificates')}
+          {searchQuery ? (isAr ? 'لا توجد نتائج مطابقة' : 'No matching results') : (isAr ? 'لا توجد شهادات' : 'No certificates')}
         </CardContent></Card>
+      ) : viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {paginatedItems.map(cert => (
+            <CertPreviewCard key={cert.id} cert={cert} />
+          ))}
+        </div>
       ) : (
         <Card>
           <CardContent className="p-0">
@@ -358,22 +452,11 @@ const Certificates = () => {
                     <TableCell><Badge variant={statusColors[cert.status] as any}>{getLabel(certificateStatusLabels, cert.status, isAr)}</Badge></TableCell>
                     <TableCell>{format(new Date(cert.issued_at), 'PP')}</TableCell>
                     <TableCell>
-                      <div className="flex gap-1 flex-wrap">
-                        {designOptions.map(d => (
-                          <Button key={`print-${d.value}`} variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={() => handlePrint(cert, d.value)} title={`${isAr ? 'طباعة' : 'Print'}: ${isAr ? d.labelAr : d.label}`}>
-                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: d.color }} />
-                          </Button>
-                        ))}
-                        {designOptions.map(d => (
-                          <Button key={`pdf-${d.value}`} variant="ghost" size="icon" className="rounded-full h-8 w-8" onClick={() => handleExportPdf(cert, d.value)} title={`PDF: ${isAr ? d.labelAr : d.label}`}>
-                            <Download className="h-3.5 w-3.5" style={{ color: d.color }} />
-                          </Button>
-                        ))}
-                        {isAdmin && (
-                          <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(cert.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setPreviewCert(cert)}>
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <CertActionsMenu cert={cert} />
                       </div>
                     </TableCell>
                   </TableRow>
@@ -384,6 +467,42 @@ const Certificates = () => {
         </Card>
       )}
       <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
+
+      {/* Certificate Preview Dialog */}
+      <Dialog open={!!previewCert} onOpenChange={(open) => !open && setPreviewCert(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader><DialogTitle>{isAr ? 'معاينة الشهادة' : 'Certificate Preview'}</DialogTitle></DialogHeader>
+          {previewCert && (
+            <div className="space-y-4">
+              <div className="border-2 border-dashed border-primary/20 rounded-xl p-8 text-center" style={{ background: 'linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--background)) 100%)' }}>
+                <Award className="h-10 w-10 text-primary mx-auto mb-3" />
+                <p className="text-xs tracking-widest text-primary uppercase mb-2">{isAr ? '✦ شهادة ✦' : '✦ Certificate ✦'}</p>
+                <h2 className="text-xl font-bold text-primary mb-1">{appName}</h2>
+                <p className="text-sm text-muted-foreground mb-4">{isAr ? 'شهادة تقدير' : 'Certificate of Achievement'}</p>
+                <div className="border-t border-b border-border py-4 space-y-2">
+                  <p className="text-lg font-semibold">{isAr && previewCert.title_ar ? previewCert.title_ar : previewCert.title}</p>
+                  <p className="text-sm text-muted-foreground">{isAr ? 'مقدمة إلى' : 'Presented to'}</p>
+                  <p className="text-2xl font-bold text-primary">{getProfileName(previewCert.recipient_id)}</p>
+                  {previewCert.description && <p className="text-sm text-muted-foreground">{previewCert.description}</p>}
+                  {previewCert.course_id && <p className="text-xs text-muted-foreground">{isAr ? 'الدورة:' : 'Course:'} {getCourseName(previewCert.course_id)}</p>}
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground mt-4">
+                  <span>{isAr ? 'التاريخ:' : 'Date:'} {format(new Date(previewCert.issued_at), 'PP')}</span>
+                  <span>{previewCert.certificate_number}</span>
+                </div>
+              </div>
+              <div className="flex gap-2 justify-end">
+                {designOptions.map(d => (
+                  <Button key={d.value} variant="outline" size="sm" onClick={() => handlePrint(previewCert, d.value)}>
+                    <Printer className="h-3.5 w-3.5 me-1.5" style={{ color: d.color }} />
+                    {isAr ? d.labelAr : d.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Delete confirmation */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>

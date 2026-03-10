@@ -21,6 +21,8 @@ import { toast } from 'sonner';
 import { subscriptionStatusLabels, subscriptionTypeLabels, getLabel } from '@/lib/statusLabels';
 import { addDays, addYears } from 'date-fns';
 import { cn } from '@/lib/utils';
+import SchedulePicker from '@/components/SchedulePicker';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Subscriptions = () => {
   const { t, language } = useLanguage();
@@ -37,6 +39,7 @@ const Subscriptions = () => {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ subscription_type: 'monthly', status: 'active', renewal_date: '', teacher_id: '', course_id: '', price: '', weekly_lessons: '', lesson_duration: '' });
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // Create subscription
   const [createOpen, setCreateOpen] = useState(false);
@@ -46,15 +49,17 @@ const Subscriptions = () => {
   const [studentOpen, setStudentOpen] = useState(false);
   const [courseOpen, setCourseOpen] = useState(false);
   const [teacherOpen, setTeacherOpen] = useState(false);
-  const [createForm, setCreateForm] = useState({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', price_rate: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '', weekly_lessons: '1', lesson_duration: '60' });
+  const [createForm, setCreateForm] = useState({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', price_rate: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '', weekly_lessons: '1', lesson_duration: '60', schedule_days: [] as string[], schedule_time: '' });
   const [createLoading, setCreateLoading] = useState(false);
 
   const fetchSubscriptions = async () => {
+    setLoading(true);
     const { data } = await supabase
       .from('subscriptions')
       .select('*, courses:course_id(title), students:student_id(user_id, profiles:students_user_id_profiles_fkey(full_name)), teachers_rel:teacher_id(user_id, profiles:teachers_user_id_profiles_fkey(full_name))')
       .order('created_at', { ascending: false });
     setSubscriptions(data || []);
+    setLoading(false);
   };
 
   const fetchFormData = async () => {
@@ -70,7 +75,6 @@ const Subscriptions = () => {
 
   useEffect(() => { fetchSubscriptions(); }, []);
 
-  // Calculate total hours per period
   const calcTotalHours = (weeklyLessons: string, lessonDuration: string, subType: string) => {
     const wl = parseInt(weeklyLessons) || 1;
     const ld = parseInt(lessonDuration) || 60;
@@ -78,18 +82,14 @@ const Subscriptions = () => {
     return (wl * ld * weeks) / 60;
   };
 
-  // Auto-calculate renewal date
   useEffect(() => {
     if (createForm.start_date && createForm.subscription_type) {
       const start = new Date(createForm.start_date);
-      const renewal = createForm.subscription_type === 'yearly'
-        ? addYears(start, 1)
-        : addDays(start, 30);
+      const renewal = createForm.subscription_type === 'yearly' ? addYears(start, 1) : addDays(start, 30);
       setCreateForm(prev => ({ ...prev, renewal_date: renewal.toISOString().split('T')[0] }));
     }
   }, [createForm.start_date, createForm.subscription_type]);
 
-  // Auto-calculate price from rate or vice versa
   const handlePriceChange = (value: string) => {
     const totalHours = calcTotalHours(createForm.weekly_lessons, createForm.lesson_duration, createForm.subscription_type);
     setCreateForm(prev => {
@@ -108,7 +108,6 @@ const Subscriptions = () => {
     });
   };
 
-  // Recalculate when lessons/duration/type changes
   useEffect(() => {
     if (createForm.price_rate) {
       const totalHours = calcTotalHours(createForm.weekly_lessons, createForm.lesson_duration, createForm.subscription_type);
@@ -164,6 +163,8 @@ const Subscriptions = () => {
       renewal_date: createForm.renewal_date || null,
       weekly_lessons: parseInt(createForm.weekly_lessons) || 1,
       lesson_duration: parseInt(createForm.lesson_duration) || 60,
+      schedule_days: createForm.schedule_days,
+      schedule_time: createForm.schedule_time || null,
     });
     setCreateLoading(false);
     if (error) {
@@ -171,7 +172,7 @@ const Subscriptions = () => {
     } else {
       toast.success(isAr ? 'تم إنشاء الاشتراك' : 'Subscription created');
       setCreateOpen(false);
-      setCreateForm({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', price_rate: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '', weekly_lessons: '1', lesson_duration: '60' });
+      setCreateForm({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', price_rate: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '', weekly_lessons: '1', lesson_duration: '60', schedule_days: [], schedule_time: '' });
       fetchSubscriptions();
     }
   };
@@ -224,6 +225,15 @@ const Subscriptions = () => {
 
   const actionBtnClass = "rounded-full h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted";
 
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <h1 className="text-2xl font-bold">{t('subscriptions.title')}</h1>
+        <TableSkeleton cols={6} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
@@ -246,7 +256,6 @@ const Subscriptions = () => {
         </div>
       </div>
 
-      {/* Status Filter Tabs */}
       <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full">
         <TabsList>
           {statusTabs.map(tab => (
@@ -308,7 +317,7 @@ const Subscriptions = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Detail / Edit dialog - unified view */}
+      {/* Detail / Edit dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{t('subscriptions.title')}</DialogTitle></DialogHeader>
@@ -324,19 +333,13 @@ const Subscriptions = () => {
                   <p className="text-sm">{selected.start_date}</p>
                 </div>
               </div>
-
-              {/* Editable fields */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>{t('subscriptions.course')}</Label>
                   {editing ? (
                     <Select value={editForm.course_id} onValueChange={(v) => setEditForm({ ...editForm, course_id: v })}>
                       <SelectTrigger><SelectValue placeholder={isAr ? 'اختر دورة' : 'Select course'} /></SelectTrigger>
-                      <SelectContent>
-                        {courses.map((c) => (
-                          <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
-                        ))}
-                      </SelectContent>
+                      <SelectContent>{courses.map((c) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}</SelectContent>
                     </Select>
                   ) : (
                     <p className="text-sm">{selected.courses?.title || '-'}</p>
@@ -347,18 +350,13 @@ const Subscriptions = () => {
                   {editing ? (
                     <Select value={editForm.teacher_id} onValueChange={(v) => setEditForm({ ...editForm, teacher_id: v })}>
                       <SelectTrigger><SelectValue placeholder={isAr ? 'اختر معلم' : 'Select teacher'} /></SelectTrigger>
-                      <SelectContent>
-                        {teachers.map((te) => (
-                          <SelectItem key={te.id} value={te.id}>{te.profiles?.full_name || te.id}</SelectItem>
-                        ))}
-                      </SelectContent>
+                      <SelectContent>{teachers.map((te) => <SelectItem key={te.id} value={te.id}>{te.profiles?.full_name || te.id}</SelectItem>)}</SelectContent>
                     </Select>
                   ) : (
                     <p className="text-sm">{selected.teachers_rel?.profiles?.full_name || '-'}</p>
                   )}
                 </div>
               </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>{t('subscriptions.type')}</Label>
@@ -390,7 +388,6 @@ const Subscriptions = () => {
                   )}
                 </div>
               </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>{t('subscriptions.renewalDate')}</Label>
@@ -409,7 +406,6 @@ const Subscriptions = () => {
                   )}
                 </div>
               </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>{isAr ? 'الدروس الأسبوعية' : 'Weekly Lessons'}</Label>
@@ -428,7 +424,20 @@ const Subscriptions = () => {
                   )}
                 </div>
               </div>
-
+              {/* Schedule info */}
+              {(selected.schedule_days?.length > 0 || selected.schedule_time) && (
+                <div className="p-3 rounded-lg bg-muted/50 space-y-1">
+                  <Label className="text-xs">{isAr ? 'الجدول' : 'Schedule'}</Label>
+                  {selected.schedule_days?.length > 0 && (
+                    <div className="flex gap-1 flex-wrap">
+                      {selected.schedule_days.map((d: string) => (
+                        <Badge key={d} variant="outline" className="text-[10px]">{d}</Badge>
+                      ))}
+                    </div>
+                  )}
+                  {selected.schedule_time && <p className="text-sm">{selected.schedule_time}</p>}
+                </div>
+              )}
               {isAdmin && (
                 <div className="flex gap-2 pt-2 border-t">
                   {editing ? (
@@ -451,7 +460,6 @@ const Subscriptions = () => {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{isAr ? 'إنشاء اشتراك جديد' : 'Create New Subscription'}</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            {/* Student - Combobox with search inside */}
             <div>
               <Label>{t('subscriptions.student')}</Label>
               <Popover open={studentOpen} onOpenChange={setStudentOpen}>
@@ -480,7 +488,6 @@ const Subscriptions = () => {
               </Popover>
             </div>
 
-            {/* Course - Combobox with search inside */}
             <div>
               <Label>{t('subscriptions.course')}</Label>
               <Popover open={courseOpen} onOpenChange={setCourseOpen}>
@@ -509,7 +516,6 @@ const Subscriptions = () => {
               </Popover>
             </div>
 
-            {/* Teacher - Combobox with search inside */}
             <div>
               <Label>{t('subscriptions.teacher')}</Label>
               <Popover open={teacherOpen} onOpenChange={setTeacherOpen}>
@@ -560,6 +566,17 @@ const Subscriptions = () => {
               <div><Label>{t('subscriptions.startDate')}</Label><Input type="date" value={createForm.start_date} onChange={(e) => setCreateForm({ ...createForm, start_date: e.target.value })} /></div>
               <div><Label>{t('subscriptions.renewalDate')}</Label><Input type="date" value={createForm.renewal_date} readOnly className="bg-muted" /></div>
             </div>
+
+            {/* Schedule Picker */}
+            <div className="border-t pt-3">
+              <SchedulePicker
+                selectedDays={createForm.schedule_days}
+                onDaysChange={(days) => setCreateForm(prev => ({ ...prev, schedule_days: days }))}
+                time={createForm.schedule_time}
+                onTimeChange={(time) => setCreateForm(prev => ({ ...prev, schedule_time: time }))}
+              />
+            </div>
+
             <Button onClick={handleCreate} disabled={createLoading} className="w-full">
               {createLoading ? t('common.loading') : (isAr ? 'إنشاء الاشتراك' : 'Create Subscription')}
             </Button>
