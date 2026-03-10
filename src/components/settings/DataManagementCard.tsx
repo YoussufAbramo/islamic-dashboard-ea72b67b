@@ -78,6 +78,22 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
     }
   };
 
+  const handleEraseSeedData = async () => {
+    setEraseSeedLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('manage-accounts', {
+        body: { action: 'clear_seed' },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(isAr ? 'تم مسح البيانات التجريبية بنجاح' : 'Sample data erased successfully');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to erase sample data');
+    } finally {
+      setEraseSeedLoading(false);
+    }
+  };
+
   const handleBackup = async (format: 'json' | 'csv') => {
     setBackupLoading(true);
     try {
