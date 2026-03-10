@@ -204,10 +204,16 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+      
+      setEraseSummary({
+        counts: data.counts || {},
+        total: data.total_deleted || 0,
+      });
+      
       toast.success(
         isAr
-          ? `تم مسح جميع البيانات. تم حذف ${data.deleted_users} مستخدمين وحفظ ${data.preserved_admins} مدير`
-          : `All data erased. Deleted ${data.deleted_users} users, preserved ${data.preserved_admins} admin(s).`
+          ? `تم مسح جميع البيانات. تم حذف ${data.total_deleted} سجل وحفظ ${data.preserved_admins} مدير`
+          : `All data erased. Deleted ${data.total_deleted} records, preserved ${data.preserved_admins} admin(s).`
       );
       resetClearState();
     } catch (err: any) {
