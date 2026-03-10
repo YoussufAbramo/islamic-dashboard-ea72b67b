@@ -77,55 +77,56 @@ const Support = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('support.title')}</h1>
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogTrigger asChild><Button><Plus className="h-4 w-4 me-2" />{t('support.createTicket')}</Button></DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader><DialogTitle>{t('support.createTicket')}</DialogTitle></DialogHeader>
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div><Label>{t('students.name')}</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-                <div><Label>{t('students.email')}</Label><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
-              </div>
-              <div><Label>{t('students.phone')}</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
-              <div><Label>{t('support.subject')}</Label><Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} /></div>
-              <div><Label>{t('support.message')}</Label><Textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} /></div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>{t('support.department')}</Label>
-                  <Select value={form.department} onValueChange={(v) => setForm({ ...form, department: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="general">{t('support.general')}</SelectItem>
-                      <SelectItem value="technical">{t('support.technical')}</SelectItem>
-                      <SelectItem value="billing">{t('support.billing')}</SelectItem>
-                      <SelectItem value="academic">{t('support.academic')}</SelectItem>
-                    </SelectContent>
-                  </Select>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold shrink-0">{t('support.title')}</h1>
+        <div className="flex items-center gap-2 ms-auto">
+          <div className="relative">
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="ps-9 w-48 sm:w-64" />
+          </div>
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+            <DialogTrigger asChild><Button><Plus className="h-4 w-4 me-2" />{t('support.createTicket')}</Button></DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader><DialogTitle>{t('support.createTicket')}</DialogTitle></DialogHeader>
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div><Label>{t('students.name')}</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+                  <div><Label>{t('students.email')}</Label><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
                 </div>
-                <div>
-                  <Label>{t('support.priority')}</Label>
-                  <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">{t('support.low')}</SelectItem>
-                      <SelectItem value="medium">{t('support.medium')}</SelectItem>
-                      <SelectItem value="high">{t('support.high')}</SelectItem>
-                      <SelectItem value="urgent">{t('support.urgent')}</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div><Label>{t('students.phone')}</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+                <div><Label>{t('support.subject')}</Label><Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} /></div>
+                <div><Label>{t('support.message')}</Label><Textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} /></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>{t('support.department')}</Label>
+                    <Select value={form.department} onValueChange={(v) => setForm({ ...form, department: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="general">{t('support.general')}</SelectItem>
+                        <SelectItem value="technical">{t('support.technical')}</SelectItem>
+                        <SelectItem value="billing">{t('support.billing')}</SelectItem>
+                        <SelectItem value="academic">{t('support.academic')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>{t('support.priority')}</Label>
+                    <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">{t('support.low')}</SelectItem>
+                        <SelectItem value="medium">{t('support.medium')}</SelectItem>
+                        <SelectItem value="high">{t('support.high')}</SelectItem>
+                        <SelectItem value="urgent">{t('support.urgent')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
+                <Button onClick={createTicket} className="w-full">{t('common.create')}</Button>
               </div>
-              <Button onClick={createTicket} className="w-full">{t('common.create')}</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <div className="relative max-w-sm">
-        <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="ps-9" />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="rounded-md border">

@@ -74,41 +74,42 @@ const Courses = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('courses.title')}</h1>
-        {canEdit && (
-          <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setEditCourse(null); setForm({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft' }); } }}>
-            <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 me-2" />{t('courses.create')}</Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg">
-              <DialogHeader><DialogTitle>{editCourse ? t('courses.edit') : t('courses.create')}</DialogTitle></DialogHeader>
-              <div className="space-y-3">
-                <div><Label>{t('courses.name')} (EN)</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
-                <div><Label>{t('courses.name')} (AR)</Label><Input value={form.title_ar} onChange={(e) => setForm({ ...form, title_ar: e.target.value })} dir="rtl" /></div>
-                <div><Label>{t('courses.description')} (EN)</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
-                <div><Label>{t('courses.description')} (AR)</Label><Textarea value={form.description_ar} onChange={(e) => setForm({ ...form, description_ar: e.target.value })} dir="rtl" /></div>
-                <div>
-                  <Label>{t('courses.status')}</Label>
-                  <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="draft">{t('courses.draft')}</SelectItem>
-                      <SelectItem value="published">{t('courses.published')}</SelectItem>
-                      <SelectItem value="archived">{t('courses.archived')}</SelectItem>
-                    </SelectContent>
-                  </Select>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold shrink-0">{t('courses.title')}</h1>
+        <div className="flex items-center gap-2 ms-auto">
+          <div className="relative">
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="ps-9 w-48 sm:w-64" />
+          </div>
+          {canEdit && (
+            <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setEditCourse(null); setForm({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft' }); } }}>
+              <DialogTrigger asChild>
+                <Button><Plus className="h-4 w-4 me-2" />{t('courses.create')}</Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg">
+                <DialogHeader><DialogTitle>{editCourse ? t('courses.edit') : t('courses.create')}</DialogTitle></DialogHeader>
+                <div className="space-y-3">
+                  <div><Label>{t('courses.name')} (EN)</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+                  <div><Label>{t('courses.name')} (AR)</Label><Input value={form.title_ar} onChange={(e) => setForm({ ...form, title_ar: e.target.value })} dir="rtl" /></div>
+                  <div><Label>{t('courses.description')} (EN)</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+                  <div><Label>{t('courses.description')} (AR)</Label><Textarea value={form.description_ar} onChange={(e) => setForm({ ...form, description_ar: e.target.value })} dir="rtl" /></div>
+                  <div>
+                    <Label>{t('courses.status')}</Label>
+                    <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="draft">{t('courses.draft')}</SelectItem>
+                        <SelectItem value="published">{t('courses.published')}</SelectItem>
+                        <SelectItem value="archived">{t('courses.archived')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button onClick={handleSave} className="w-full">{t('common.save')}</Button>
                 </div>
-                <Button onClick={handleSave} className="w-full">{t('common.save')}</Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
-      </div>
-
-      <div className="relative max-w-sm">
-        <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="ps-9" />
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
       </div>
 
       <div className="rounded-md border">
