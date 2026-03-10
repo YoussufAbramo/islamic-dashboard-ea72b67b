@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
       for (const s of studentData) {
         try {
           const { data, error } = await adminClient.auth.admin.createUser({
-            email: s.email, password: 'sample123456', email_confirm: true,
+            email: s.email, password: crypto.randomUUID(), email_confirm: true,
             user_metadata: { full_name: s.name, phone: s.phone }
           })
           if (!error && data.user) { studentUserIds.push(data.user.id); counts.students++ }
