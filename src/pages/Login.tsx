@@ -47,6 +47,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
   const { t, language, setLanguage } = useLanguage();
+  const { appName, appDescription, appLogo } = useAppSettings();
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
 
