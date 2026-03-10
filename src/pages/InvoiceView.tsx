@@ -142,31 +142,6 @@ const InvoiceView = () => {
           </Button>
         )}
 
-        {/* Activity */}
-        <div className="space-y-2">
-          <h4 className="font-medium text-sm">Activity</h4>
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-3 text-sm">
-              <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
-                <Clock className="h-3 w-3 text-primary" />
-              </div>
-              <span className="text-muted-foreground">
-                Created — {format(new Date(invoice.created_at), 'MMM dd, yyyy HH:mm')}
-              </span>
-            </div>
-            {invoice.paid_at && (
-              <div className="flex items-center gap-3 text-sm">
-                <div className="h-6 w-6 rounded-full bg-green-500/10 flex items-center justify-center">
-                  <CheckCircle className="h-3 w-3 text-green-500" />
-                </div>
-                <span className="text-muted-foreground">
-                  Paid — {format(new Date(invoice.paid_at), 'MMM dd, yyyy HH:mm')}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-
         {/* Notes */}
         {invoice.notes && (
           <div className="space-y-1">

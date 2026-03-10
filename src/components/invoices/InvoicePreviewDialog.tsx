@@ -248,9 +248,9 @@ const InvoicePreviewDialog = ({ open, onOpenChange, invoice, isAr, formatPrice, 
               <Copy className="h-4 w-4 me-1" />
               {isAr ? 'نسخ الرابط' : 'Copy URL'}
             </Button>
-            <Button size="sm" onClick={handlePrint}>
+            <Button size="sm" onClick={() => window.open(`${window.location.origin}/invoice/${invoice.id}`, '_blank')}>
               <ExternalLink className="h-4 w-4 me-1" />
-              {isAr ? 'طباعة الفاتورة' : 'Print Invoice'}
+              {isAr ? 'فتح الفاتورة' : 'View Invoice'}
             </Button>
           </div>
         </div>
