@@ -166,7 +166,6 @@ const Chats = () => {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">{t('chats.title')}</CardTitle>
           </CardHeader>
-          </CardHeader>
           <CardContent className="p-0">
             <ScrollArea className="h-[calc(100vh-320px)]">
               {filteredChats.map((chat) => (
