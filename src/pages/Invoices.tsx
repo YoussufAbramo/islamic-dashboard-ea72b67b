@@ -176,15 +176,6 @@ const Invoices = () => {
                 ))}
               </TabsList>
             </Tabs>
-            <div className="relative w-full sm:max-w-xs sm:ms-auto">
-              <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder={isAr ? 'بحث...' : 'Search...'}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="ps-9"
-              />
-            </div>
           </div>
 
           {/* Table */}
