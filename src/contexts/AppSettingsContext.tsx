@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
-const DEFAULT_LOGO = 'https://codecom.dev/wp-content/uploads/2023/07/logo-base.png';
-const DEFAULT_FAVICON = 'https://portal.codecom.dev/uploads/company/favicon.png';
+const DEFAULT_LOGO = '/logo.png';
+const DEFAULT_FAVICON = '/favicon.png';
 const DEFAULT_APP_NAME = 'Quran E-Learning Platform - CodeCom.dev';
 const DEFAULT_APP_DESCRIPTION = 'An interactive Quran learning platform offering courses in Tajweed, memorization, and Quran reading with qualified teachers. Study from anywhere and follow a structured path to improve your recitation and understanding.';
 const DEFAULT_LTR_FONT = 'Montserrat';
