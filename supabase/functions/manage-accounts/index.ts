@@ -476,6 +476,62 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ success: true, deleted_users: deletedUsers }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
+    // ==================== STORE PAYMENT KEYS ====================
+    if (action === 'store_payment_keys') {
+      const { gateway, keys } = body
+      if (!gateway || typeof gateway !== 'string') {
+        return new Response(JSON.stringify({ error: 'Missing gateway id' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+
+      // Mask secret values for storage (store actual keys server-side only)
+      const { error } = await adminClient
+        .from('payment_gateway_config')
+        .upsert({
+          gateway_id: gateway,
+          encrypted_keys: keys || {},
+          is_active: true,
+          updated_at: new Date().toISOString(),
+          updated_by: caller.id,
+        }, { onConflict: 'gateway_id' })
+
+      if (error) {
+        return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+
+      return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
+    // ==================== GET PAYMENT KEYS (masked) ====================
+    if (action === 'get_payment_keys') {
+      const { data, error } = await adminClient
+        .from('payment_gateway_config')
+        .select('gateway_id, encrypted_keys, is_active, updated_at')
+
+      if (error) {
+        return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+
+      // Return masked versions of the keys
+      const masked = (data || []).map(row => {
+        const maskedKeys: Record<string, string> = {}
+        for (const [key, value] of Object.entries(row.encrypted_keys as Record<string, string>)) {
+          if (typeof value === 'string' && value.length > 4) {
+            maskedKeys[key] = '•'.repeat(value.length - 4) + value.slice(-4)
+          } else if (typeof value === 'string') {
+            maskedKeys[key] = '••••'
+          }
+        }
+        return {
+          gateway_id: row.gateway_id,
+          masked_keys: maskedKeys,
+          is_active: row.is_active,
+          updated_at: row.updated_at,
+        }
+      })
+
+      return new Response(JSON.stringify({ success: true, gateways: masked }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
     return new Response(JSON.stringify({ error: 'Invalid action' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (err) {
     console.error('manage-accounts error:', err)
