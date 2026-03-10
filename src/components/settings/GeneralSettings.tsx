@@ -4,9 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Coins, Check, MessageSquare } from 'lucide-react';
+import { Coins, MessageSquare, Globe } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const GeneralSettings = () => {
   const { language } = useLanguage();
