@@ -242,7 +242,7 @@ const Chats = () => {
                 </div>
                 <div className="flex items-center gap-1">
                   {selectedChat.is_group && (
-                    <Dialog>
+                    <Dialog onOpenChange={(open) => { if (open) fetchFormData(); }}>
                       <DialogTrigger asChild>
                         <Button variant="ghost" size="sm" className="gap-1 text-xs">
                           <Users className="h-3 w-3" />
@@ -251,17 +251,95 @@ const Chats = () => {
                       </DialogTrigger>
                       <DialogContent className="max-w-sm">
                         <DialogHeader><DialogTitle>{isAr ? 'أعضاء المجموعة' : 'Group Members'}</DialogTitle></DialogHeader>
-                        <div className="space-y-2">
-                          {selectedChat.teachers?.profiles?.full_name && (
-                            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
-                              <Avatar className="h-7 w-7"><AvatarFallback className="text-xs bg-primary/10 text-primary">{selectedChat.teachers.profiles.full_name.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
-                              <div><p className="text-sm font-medium">{selectedChat.teachers.profiles.full_name}</p><p className="text-[10px] text-muted-foreground">{isAr ? 'معلم' : 'Teacher'}</p></div>
-                            </div>
-                          )}
-                          {selectedChat.students?.profiles?.full_name && (
-                            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
-                              <Avatar className="h-7 w-7"><AvatarFallback className="text-xs bg-primary/10 text-primary">{selectedChat.students.profiles.full_name.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
-                              <div><p className="text-sm font-medium">{selectedChat.students.profiles.full_name}</p><p className="text-[10px] text-muted-foreground">{isAr ? 'طالب' : 'Student'}</p></div>
+                        <div className="space-y-3">
+                          {/* Current Members */}
+                          <div className="space-y-2">
+                            {selectedChat.teachers?.profiles?.full_name && (
+                              <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/50">
+                                <div className="flex items-center gap-2">
+                                  <Avatar className="h-7 w-7"><AvatarFallback className="text-xs bg-primary/10 text-primary">{selectedChat.teachers.profiles.full_name.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
+                                  <div><p className="text-sm font-medium">{selectedChat.teachers.profiles.full_name}</p><p className="text-[10px] text-muted-foreground">{isAr ? 'معلم' : 'Teacher'}</p></div>
+                                </div>
+                                {role === 'admin' && (
+                                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={async () => {
+                                    await supabase.from('chats').update({ teacher_id: null }).eq('id', selectedChat.id);
+                                    setSelectedChat({ ...selectedChat, teacher_id: null, teachers: null });
+                                    fetchChats();
+                                    toast.success(isAr ? 'تمت إزالة المعلم' : 'Teacher removed');
+                                  }}>
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                )}
+                              </div>
+                            )}
+                            {selectedChat.students?.profiles?.full_name && (
+                              <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/50">
+                                <div className="flex items-center gap-2">
+                                  <Avatar className="h-7 w-7"><AvatarFallback className="text-xs bg-primary/10 text-primary">{selectedChat.students.profiles.full_name.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
+                                  <div><p className="text-sm font-medium">{selectedChat.students.profiles.full_name}</p><p className="text-[10px] text-muted-foreground">{isAr ? 'طالب' : 'Student'}</p></div>
+                                </div>
+                                {role === 'admin' && (
+                                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={async () => {
+                                    await supabase.from('chats').update({ student_id: null }).eq('id', selectedChat.id);
+                                    setSelectedChat({ ...selectedChat, student_id: null, students: null });
+                                    fetchChats();
+                                    toast.success(isAr ? 'تمت إزالة الطالب' : 'Student removed');
+                                  }}>
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                )}
+                              </div>
+                            )}
+                            {!selectedChat.teachers?.profiles?.full_name && !selectedChat.students?.profiles?.full_name && (
+                              <p className="text-sm text-muted-foreground text-center py-2">{isAr ? 'لا يوجد أعضاء' : 'No members yet'}</p>
+                            )}
+                          </div>
+
+                          {/* Add Members (admin only) */}
+                          {role === 'admin' && (
+                            <div className="border-t border-border pt-3 space-y-3">
+                              <p className="text-xs font-medium text-muted-foreground">{isAr ? 'إضافة أعضاء' : 'Add Members'}</p>
+                              {!selectedChat.teacher_id && (
+                                <div className="space-y-1">
+                                  <Label className="text-xs">{isAr ? 'معلم' : 'Teacher'}</Label>
+                                  <Select onValueChange={async (v) => {
+                                    await supabase.from('chats').update({ teacher_id: v }).eq('id', selectedChat.id);
+                                    fetchChats();
+                                    const teacher = teachersList.find(t => t.id === v);
+                                    setSelectedChat({ ...selectedChat, teacher_id: v, teachers: teacher ? { profiles: teacher.profiles } : selectedChat.teachers });
+                                    toast.success(isAr ? 'تمت إضافة المعلم' : 'Teacher added');
+                                  }}>
+                                    <SelectTrigger className="h-8 text-xs"><SelectValue placeholder={isAr ? 'اختر معلم...' : 'Select teacher...'} /></SelectTrigger>
+                                    <SelectContent>
+                                      {teachersList.map(t => (
+                                        <SelectItem key={t.id} value={t.id}>{t.profiles?.full_name || t.id}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              )}
+                              {!selectedChat.student_id && (
+                                <div className="space-y-1">
+                                  <Label className="text-xs">{isAr ? 'طالب' : 'Student'}</Label>
+                                  <Select onValueChange={async (v) => {
+                                    await supabase.from('chats').update({ student_id: v }).eq('id', selectedChat.id);
+                                    fetchChats();
+                                    const student = studentsList.find(s => s.id === v);
+                                    setSelectedChat({ ...selectedChat, student_id: v, students: student ? { profiles: student.profiles } : selectedChat.students });
+                                    toast.success(isAr ? 'تمت إضافة الطالب' : 'Student added');
+                                  }}>
+                                    <SelectTrigger className="h-8 text-xs"><SelectValue placeholder={isAr ? 'اختر طالب...' : 'Select student...'} /></SelectTrigger>
+                                    <SelectContent>
+                                      {studentsList.map(s => (
+                                        <SelectItem key={s.id} value={s.id}>{s.profiles?.full_name || s.id}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              )}
+                              {selectedChat.teacher_id && selectedChat.student_id && (
+                                <p className="text-xs text-muted-foreground text-center">{isAr ? 'جميع الأدوار مشغولة' : 'All member slots filled'}</p>
+                              )}
                             </div>
                           )}
                         </div>
