@@ -18,6 +18,7 @@ const CURRENCIES: Currency[] = [
 
 export type ColorTheme = 'emerald' | 'ocean' | 'purple' | 'desert' | 'midnight';
 export type ButtonShape = 'rounded' | 'circular' | 'square';
+export type FooterPosition = 'left' | 'center' | 'right';
 
 const THEMES: { value: ColorTheme; label: string; labelAr: string; color: string }[] = [
   { value: 'emerald', label: 'Emerald Gold', labelAr: 'الزمرد الذهبي', color: 'hsl(160 45% 28%)' },
