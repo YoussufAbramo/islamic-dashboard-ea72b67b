@@ -674,6 +674,11 @@
     --sidebar-primary-foreground: var(--primary-foreground);
     --sidebar-ring: var(--ring);
   }
+
+  /* Fix RTL switch positioning */
+  [dir="rtl"] [role="switch"] {
+    direction: ltr;
+  }
 }
 
 @layer utilities {

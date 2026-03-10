@@ -227,7 +227,18 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setSaved({ ...pending });
   }, [pending]);
 
-  const discardChanges = useCallback(() => { setPending({ ...saved }); }, [saved]);
+  const discardChanges = useCallback(() => {
+    setPending({ ...saved });
+    // Re-apply saved visual settings on discard
+    const root = document.documentElement;
+    root.classList.remove('theme-ocean', 'theme-purple', 'theme-desert', 'theme-midnight', 'theme-rose', 'theme-teal', 'theme-amber', 'theme-slate', 'theme-crimson');
+    if (saved.colorTheme !== 'emerald') root.classList.add(`theme-${saved.colorTheme}`);
+    root.classList.remove('btn-rounded', 'btn-circular', 'btn-square');
+    root.classList.add(`btn-${saved.buttonShape}`);
+    document.documentElement.style.setProperty('--font-ltr', `'${saved.ltrFont}', sans-serif`);
+    document.documentElement.style.setProperty('--font-rtl', `'${saved.rtlFont}', sans-serif`);
+    document.documentElement.setAttribute('data-sidebar-mode', saved.sidebarMode);
+  }, [saved]);
   const updatePending = useCallback((partial: Partial<PendingSettings>) => { setPending(prev => ({ ...prev, ...partial })); }, []);
 
   const setCurrency = useCallback((c: Currency) => { setPending(p => ({ ...p, currency: c })); }, []);
