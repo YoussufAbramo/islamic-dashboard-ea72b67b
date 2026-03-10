@@ -111,7 +111,7 @@ const Settings = () => {
           {activeTab === 'auth' && isAdmin && <AuthenticationSettings />}
           {activeTab === 'payment' && isAdmin && <PaymentGatewayCard isAr={isAr} />}
           {activeTab === 'data' && isAdmin && <DataManagementCard isAr={isAr} />}
-          {activeTab === 'backups' && isAdmin && <ComingSoonCard title="Backups" titleAr="النسخ الاحتياطية" />}
+          {activeTab === 'backups' && isAdmin && <BackupsSettings />}
           {activeTab === 'export-import' && isAdmin && <ComingSoonCard title="Export/Import Setup" titleAr="تصدير/استيراد الإعداد" />}
         </div>
       </div>
