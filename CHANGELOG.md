@@ -2,6 +2,27 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [2.2.0] - 2026-03-10
+
+### Added
+- 5 new color themes: Rose Garden, Teal Breeze, Amber Glow, Slate Steel, Crimson Fire
+- OG image upload support in Landing Page settings (upload or URL)
+- Separated SEO and Open Graph into distinct bordered sections in General & SEO tab
+- Selective backup: choose which tables to include when creating a backup
+- Erase operations (sample data and all data) now log reports to View Log history
+- Course auto-populated from subscription when creating invoices
+
+### Changed
+- CodeCom.dev copyright link no longer has underline
+- Invoice creation shows assigned course from subscription (read-only) instead of course dropdown
+- View Log button opens log directly without re-querying database
+- Removed Export/Import Settings tab from App Settings
+- Version bumped to 2.2.0
+
+### Security
+- RPC `get_invoice_by_share_token` now returns limited columns (excludes `share_token`, `subscription_id`, `updated_at`)
+- Edge functions return generic error messages instead of raw `err.message`
+
 ## [2.1.0] - 2026-03-10
 
 ### Added
