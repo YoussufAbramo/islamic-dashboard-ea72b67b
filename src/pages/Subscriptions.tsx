@@ -98,13 +98,19 @@ const Subscriptions = () => {
 
   const statusColors: Record<string, string> = { active: 'default', expired: 'secondary', cancelled: 'destructive' };
 
-  const filtered = subscriptions.filter((s) => {
-    const studentName = s.students?.profiles?.full_name || '';
-    const courseName = s.courses?.title || '';
-    return studentName.toLowerCase().includes(search.toLowerCase()) || courseName.toLowerCase().includes(search.toLowerCase());
-  });
-
-  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+  const filtered = useMemo(() => {
+    let result = subscriptions.filter((s) => {
+      const studentName = s.students?.profiles?.full_name || '';
+      const courseName = s.courses?.title || '';
+      return studentName.toLowerCase().includes(search.toLowerCase()) || courseName.toLowerCase().includes(search.toLowerCase());
+    });
+    result.sort((a, b) => {
+      const da = new Date(a.created_at).getTime();
+      const db = new Date(b.created_at).getTime();
+      return sortOrder === 'newest' ? db - da : da - db;
+    });
+    return result;
+  }, [subscriptions, search, sortOrder]);
 
   return (
     <div className="space-y-4">
