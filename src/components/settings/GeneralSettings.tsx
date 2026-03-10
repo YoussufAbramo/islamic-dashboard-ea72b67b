@@ -126,23 +126,6 @@ const GeneralSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Chat Permissions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><MessageSquare className="h-5 w-5 text-primary" />{isAr ? 'صلاحيات المحادثة' : 'Chat Permissions'}</CardTitle>
-          <CardDescription>{isAr ? 'التحكم في إمكانية بدء المعلمين للمحادثات' : 'Control whether teachers can initiate chats with students'}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>{isAr ? 'السماح للمعلمين ببدء محادثات' : 'Allow teachers to start chats'}</Label>
-              <p className="text-sm text-muted-foreground">{isAr ? 'عند التفعيل، يمكن للمعلمين بدء محادثات مع طلابهم' : 'When enabled, teachers can initiate chats with their students'}</p>
-            </div>
-            <Switch checked={teacherCanChat} onCheckedChange={setTeacherCanChat} />
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Default Language */}
       <Card>
         <CardHeader>
