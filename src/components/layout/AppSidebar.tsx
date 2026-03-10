@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText, LogOut, Calculator, ShieldCheck, Shield } from 'lucide-react';
+import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText, LogOut, Calculator, ShieldCheck, Shield, Sparkles } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { getAvatarSignedUrl } from '@/lib/storage';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
@@ -17,6 +19,8 @@ interface MenuItem {
   icon: any;
   path: string;
   roles: string[];
+  comingSoon?: boolean;
+  badgeKey?: string;
 }
 
 interface MenuCategory {
@@ -26,13 +30,14 @@ interface MenuCategory {
 }
 
 const AppSidebar = () => {
-  const { role, profile, signOut } = useAuth();
+  const { role, profile, signOut, user } = useAuth();
   const { t, language } = useLanguage();
-  const { appLogo, appName, sidebarMode } = useAppSettings();
+  const { appLogo, appName, sidebarMode, darkLogo } = useAppSettings();
   const navigate = useNavigate();
   const isAr = language === 'ar';
   const location = useLocation();
   const [resolvedAvatarUrl, setResolvedAvatarUrl] = useState('');
+  const [unreadChats, setUnreadChats] = useState(0);
 
   useEffect(() => {
     if (profile?.avatar_url) {
@@ -40,10 +45,33 @@ const AppSidebar = () => {
     }
   }, [profile?.avatar_url]);
 
+  // Check for unread chat messages
+  useEffect(() => {
+    if (!user) return;
+    const checkUnread = async () => {
+      // Simple: count chats with messages newer than last check
+      const lastCheck = localStorage.getItem('chat_last_check') || new Date(0).toISOString();
+      const { count } = await supabase
+        .from('chat_messages')
+        .select('*', { count: 'exact', head: true })
+        .gt('created_at', lastCheck)
+        .neq('sender_id', user.id);
+      setUnreadChats(count || 0);
+    };
+    checkUnread();
+    const interval = setInterval(checkUnread, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
+
   const handleLogout = async () => {
     await signOut();
     navigate('/login');
   };
+
+  // Determine which logo to show based on sidebar mode and dark mode
+  const isDarkMode = document.documentElement.classList.contains('dark');
+  const showDarkLogo = (sidebarMode === 'dark' || isDarkMode) && darkLogo;
+  const displayLogo = showDarkLogo ? darkLogo : appLogo;
 
   const categories: MenuCategory[] = [
     {
@@ -68,7 +96,7 @@ const AppSidebar = () => {
       labelAr: 'الرسائل',
       items: [
         { key: 'support', label: t('nav.support'), icon: HeadphonesIcon, path: '/dashboard/support', roles: ['admin'] },
-        { key: 'chats', label: t('nav.chats'), icon: MessageSquare, path: '/dashboard/chats', roles: ['admin', 'teacher', 'student'] },
+        { key: 'chats', label: t('nav.chats'), icon: MessageSquare, path: '/dashboard/chats', roles: ['admin', 'teacher', 'student'], badgeKey: 'chats' },
         { key: 'announcements', label: isAr ? 'الإعلانات' : 'Announcements', icon: Megaphone, path: '/dashboard/announcements', roles: ['admin', 'teacher', 'student'] },
         { key: 'notifications', label: isAr ? 'الإشعارات' : 'Notifications', icon: Bell, path: '/dashboard/notifications', roles: ['admin', 'teacher', 'student'] },
       ],
@@ -80,7 +108,7 @@ const AppSidebar = () => {
         { key: 'admins', label: isAr ? 'المشرفون' : 'Admins', icon: ShieldCheck, path: '/dashboard/admins', roles: ['admin'] },
         { key: 'teachers', label: t('nav.teachers'), icon: Users, path: '/dashboard/teachers', roles: ['admin'] },
         { key: 'students', label: t('nav.students'), icon: GraduationCap, path: '/dashboard/students', roles: ['admin', 'teacher'] },
-        { key: 'roles', label: isAr ? 'إدارة الأدوار' : 'Role Management', icon: Shield, path: '/dashboard/roles', roles: ['admin'] },
+        { key: 'roles', label: isAr ? 'إدارة الأدوار' : 'Manage Roles', icon: Shield, path: '/dashboard/roles', roles: ['admin'], comingSoon: true },
       ],
     },
     {
@@ -104,8 +132,8 @@ const AppSidebar = () => {
     <Sidebar side={isAr ? 'right' : 'left'}>
       <SidebarHeader className="p-4 border-b border-sidebar-border">
         <div className="flex items-center justify-center">
-          {appLogo ? (
-            <img src={appLogo} alt="Logo" className="max-h-9 w-auto object-contain" />
+          {displayLogo ? (
+            <img src={displayLogo} alt="Logo" className="max-h-9 w-auto object-contain" />
           ) : (
             <span className="text-sm font-bold text-foreground truncate max-w-[160px]">{appName || 'Islamic Dashboard'}</span>
           )}
@@ -124,11 +152,23 @@ const AppSidebar = () => {
                     <SidebarMenuItem key={item.key}>
                       <SidebarMenuButton
                         isActive={location.pathname === item.path}
-                        onClick={() => navigate(item.path)}
+                        onClick={() => !item.comingSoon && navigate(item.path)}
                         tooltip={item.label}
+                        className={item.comingSoon ? 'opacity-60 cursor-default' : ''}
                       >
                         <item.icon className="h-4 w-4" />
-                        <span>{item.label}</span>
+                        <span className="flex-1">{item.label}</span>
+                        {item.comingSoon && (
+                          <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 shrink-0 ms-auto">
+                            <Sparkles className="h-2 w-2 me-0.5" />
+                            {isAr ? 'قريباً' : 'Soon'}
+                          </Badge>
+                        )}
+                        {item.badgeKey === 'chats' && unreadChats > 0 && (
+                          <Badge variant="destructive" className="text-[9px] px-1.5 py-0 h-4 min-w-[18px] shrink-0 ms-auto">
+                            {unreadChats > 99 ? '99+' : unreadChats}
+                          </Badge>
+                        )}
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}

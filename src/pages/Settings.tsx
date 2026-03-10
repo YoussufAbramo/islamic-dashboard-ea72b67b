@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
@@ -24,6 +24,14 @@ const Settings = () => {
   const isAr = language === 'ar';
   const isAdmin = role === 'admin';
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
+
+  // Auto-discard pending changes when leaving settings
+  useEffect(() => {
+    return () => {
+      // On unmount, discard any unsaved changes
+      discardChanges();
+    };
+  }, [discardChanges]);
 
   const handleSave = () => {
     saveSettings();
