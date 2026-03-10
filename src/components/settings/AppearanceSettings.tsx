@@ -268,6 +268,53 @@ const AppearanceSettings = () => {
               </div>
             </div>
           </div>
+
+          {/* Position Controls */}
+          {(signatureImage || stampImage) && (
+            <div className="space-y-3 pt-2 border-t border-border">
+              <Label>{isAr ? 'موضع التوقيع والختم' : 'Signature & Stamp Position'}</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {signatureImage && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">{isAr ? 'موضع التوقيع' : 'Signature Position'}</p>
+                    <div className="flex gap-1">
+                      {([['left', AlignLeft, 'Left', 'يسار'], ['center', AlignCenter, 'Center', 'وسط'], ['right', AlignRight, 'Right', 'يمين']] as const).map(([pos, Icon, label, labelAr]) => (
+                        <Button
+                          key={pos}
+                          variant={pending.signaturePosition === pos ? 'default' : 'outline'}
+                          size="sm"
+                          className="flex-1 gap-1"
+                          onClick={() => updatePending({ signaturePosition: pos })}
+                        >
+                          <Icon className="h-3 w-3" />
+                          <span className="text-xs">{isAr ? labelAr : label}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {stampImage && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">{isAr ? 'موضع الختم' : 'Stamp Position'}</p>
+                    <div className="flex gap-1">
+                      {([['left', AlignLeft, 'Left', 'يسار'], ['center', AlignCenter, 'Center', 'وسط'], ['right', AlignRight, 'Right', 'يمين']] as const).map(([pos, Icon, label, labelAr]) => (
+                        <Button
+                          key={pos}
+                          variant={pending.stampPosition === pos ? 'default' : 'outline'}
+                          size="sm"
+                          className="flex-1 gap-1"
+                          onClick={() => updatePending({ stampPosition: pos })}
+                        >
+                          <Icon className="h-3 w-3" />
+                          <span className="text-xs">{isAr ? labelAr : label}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
