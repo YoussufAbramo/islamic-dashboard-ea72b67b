@@ -244,7 +244,7 @@ const LandingPage = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-16 overflow-hidden">
+      <section id="top" className="relative pt-16 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img src={islamicPatternHero} alt="" className="w-full h-full object-cover opacity-20 dark:opacity-10" />
           <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />

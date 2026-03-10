@@ -3,7 +3,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { Button } from '@/components/ui/button';
-import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, DollarSign } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, DollarSign, HardDrive, ArrowDownUp, Construction } from 'lucide-react';
 import { toast } from 'sonner';
 import AppearanceSettings from '@/components/settings/AppearanceSettings';
 import PaymentGatewayCard from '@/components/settings/PaymentGatewayCard';
@@ -13,7 +14,7 @@ import GeneralSettings from '@/components/settings/GeneralSettings';
 import LandingContentSettings from '@/components/settings/LandingContentSettings';
 import SaaSPricingSettings from '@/components/settings/SaaSPricingSettings';
 
-type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing';
+type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing' | 'backups' | 'export-import';
 
 const Settings = () => {
   const { language } = useLanguage();
@@ -28,7 +29,7 @@ const Settings = () => {
     toast.success(isAr ? 'تم حفظ الإعدادات' : 'Settings saved successfully');
   };
 
-  const tabs: { value: SettingsTab; label: string; labelAr: string; icon: any; adminOnly?: boolean }[] = [
+  const tabs: { value: SettingsTab; label: string; labelAr: string; icon: any; adminOnly?: boolean; comingSoon?: boolean }[] = [
     { value: 'general', label: 'General', labelAr: 'عام', icon: Settings2 },
     { value: 'appearance', label: 'Appearance', labelAr: 'المظهر', icon: Palette },
     { value: 'landing', label: 'Landing Page', labelAr: 'صفحة الهبوط', icon: Globe, adminOnly: true },
@@ -36,9 +37,23 @@ const Settings = () => {
     { value: 'auth', label: 'Authentication', labelAr: 'المصادقة', icon: ShieldCheck, adminOnly: true },
     { value: 'payment', label: 'Payment Methods', labelAr: 'طرق الدفع', icon: CreditCard, adminOnly: true },
     { value: 'data', label: 'Data Management', labelAr: 'إدارة البيانات', icon: Database, adminOnly: true },
+    { value: 'backups', label: 'Backups', labelAr: 'النسخ الاحتياطية', icon: HardDrive, adminOnly: true, comingSoon: true },
+    { value: 'export-import', label: 'Export/Import Setup', labelAr: 'تصدير/استيراد الإعداد', icon: ArrowDownUp, adminOnly: true, comingSoon: true },
   ];
 
   const visibleTabs = tabs.filter(t => !t.adminOnly || isAdmin);
+
+  const ComingSoonCard = ({ title, titleAr }: { title: string; titleAr: string }) => (
+    <Card>
+      <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+        <Construction className="h-12 w-12 text-muted-foreground mb-4" />
+        <CardTitle className="text-xl mb-2">{isAr ? titleAr : title}</CardTitle>
+        <CardDescription className="text-base">
+          {isAr ? 'هذه الميزة قيد التطوير وستكون متاحة قريباً.' : 'This feature is under development and will be available soon.'}
+        </CardDescription>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="space-y-6">
@@ -75,6 +90,11 @@ const Settings = () => {
                 >
                   <Icon className="h-4 w-4 shrink-0" />
                   {isAr ? tab.labelAr : tab.label}
+                  {tab.comingSoon && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted-foreground/20 text-muted-foreground ms-auto">
+                      {isAr ? 'قريباً' : 'Soon'}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -90,6 +110,8 @@ const Settings = () => {
           {activeTab === 'auth' && isAdmin && <AuthenticationSettings />}
           {activeTab === 'payment' && isAdmin && <PaymentGatewayCard isAr={isAr} />}
           {activeTab === 'data' && isAdmin && <DataManagementCard isAr={isAr} />}
+          {activeTab === 'backups' && isAdmin && <ComingSoonCard title="Backups" titleAr="النسخ الاحتياطية" />}
+          {activeTab === 'export-import' && isAdmin && <ComingSoonCard title="Export/Import Setup" titleAr="تصدير/استيراد الإعداد" />}
         </div>
       </div>
 

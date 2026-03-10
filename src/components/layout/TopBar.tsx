@@ -89,8 +89,8 @@ const TopBar = () => {
         <SidebarTrigger className="rounded-full" />
         <div className="flex-1" />
 
-        {/* Go to Landing Page */}
-        <Button variant="ghost" size="icon" className={iconBtnClass} onClick={() => navigate('/')}>
+        {/* Go to Landing Page - opens in new tab */}
+        <Button variant="ghost" size="icon" className={iconBtnClass} onClick={() => window.open('/', '_blank')}>
           <Home className="h-4 w-4" />
         </Button>
 
