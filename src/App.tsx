@@ -32,6 +32,7 @@ import Notifications from "./pages/Notifications";
 import Invoices from "./pages/Invoices";
 import InvoiceView from "./pages/InvoiceView";
 import LandingPage from "./pages/LandingPage";
+import CalculatorPage from "./pages/Calculator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
