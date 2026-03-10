@@ -134,6 +134,15 @@ const Invoices = () => {
     toast.success(isAr ? 'تم نسخ الرابط' : 'Invoice URL copied');
   };
 
+  const handleDeleteInvoice = async () => {
+    if (!deleteTarget) return;
+    await supabase.from('invoices').delete().eq('id', deleteTarget);
+    toast.success(isAr ? 'تم حذف الفاتورة' : 'Invoice deleted');
+    setDeleteTarget(null);
+    fetchInvoices();
+  };
+  };
+
   const statusCounts = {
     all: invoices.length,
     pending: invoices.filter(i => i.status === 'pending').length,
