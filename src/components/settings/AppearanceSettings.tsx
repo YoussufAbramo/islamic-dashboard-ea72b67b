@@ -1,5 +1,5 @@
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAppSettings, LTR_FONTS, RTL_FONTS, type ButtonShape } from '@/contexts/AppSettingsContext';
+import { useAppSettings, LTR_FONTS, RTL_FONTS, type ButtonShape, type FooterPosition } from '@/contexts/AppSettingsContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
