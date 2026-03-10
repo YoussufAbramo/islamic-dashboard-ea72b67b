@@ -200,27 +200,26 @@ const LandingPage = () => {
               </button>
               <div className="mx-2 h-6 w-px bg-border" />
               {user ? (
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => navigate('/dashboard')}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-accent/50 transition-colors"
-                  >
-                    <Avatar className="h-7 w-7">
-                      <AvatarImage src={avatarUrl} />
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
-                        {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm font-medium text-foreground">{profile?.full_name || 'User'}</span>
-                  </button>
-                  <button
-                    onClick={async () => { await signOut(); navigate('/login'); }}
-                    className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-accent/50 transition-colors group"
+                >
+                  <Avatar className="h-7 w-7">
+                    <AvatarImage src={avatarUrl} />
+                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                      {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium text-foreground">{profile?.full_name || 'User'}</span>
+                  <span
+                    role="button"
+                    onClick={async (e) => { e.stopPropagation(); await signOut(); navigate('/login'); }}
+                    className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                     title={isAr ? 'تسجيل الخروج' : 'Logout'}
                   >
-                    <LogOut className="h-4 w-4" />
-                  </button>
-                </div>
+                    <LogOut className="h-3.5 w-3.5" />
+                  </span>
+                </button>
               ) : (
                 <Button size="sm" onClick={() => navigate('/login')}>
                   {t('Get Started', 'ابدأ الآن')} <ChevronRight className="h-4 w-4 ms-1" />
@@ -331,231 +330,127 @@ const LandingPage = () => {
           <div className="text-center mb-16">
             <Badge variant="secondary" className="mb-4">{t('Features', 'المميزات')}</Badge>
             <h2 className="text-3xl md:text-4xl font-bold font-amiri text-foreground mb-4">{ct('features', 'title')}</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{ct('features', 'subtitle')}</p>
+            <p className="text-muted-foreground max-w-2xl mx-auto">{ct('features', 'subtitle')}</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuresData.map((feature, i) => (
-              <Card key={i} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border/50">
-                <CardContent className="pt-6">
-                  <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                    <feature.icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="font-semibold text-foreground mb-2">{isAr ? feature.titleAr : feature.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{isAr ? feature.descAr : feature.desc}</p>
-                </CardContent>
-              </Card>
+            {featuresData.map((feature, i) => {
+              const Icon = feature.icon;
+              return (
+                <Card key={i} className="group hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/30">
+                  <CardContent className="pt-6">
+                    <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                      <Icon className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="font-bold text-foreground mb-2">{isAr ? feature.titleAr : feature.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{isAr ? feature.descAr : feature.desc}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Why Us Section */}
+      <section id="whyus" className="py-20 md:py-28 bg-muted/30">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <Badge variant="secondary" className="mb-4">{t('Why Us', 'لماذا نحن')}</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold font-amiri text-foreground mb-4">{ct('whyus', 'title')}</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">{ct('whyus', 'subtitle')}</p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {(c.whyus?.reasons || defaultContent.whyus.reasons).map((reason: any, i: number) => (
+              <div key={i} className="flex gap-4 p-6 rounded-xl bg-background border border-border/50">
+                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <Check className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-foreground mb-1">{isAr ? reason.title_ar : reason.title}</h3>
+                  <p className="text-sm text-muted-foreground">{isAr ? reason.desc_ar : reason.desc}</p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Islamic Pattern Divider */}
-      <div className="relative py-8">
-        <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border/30" /></div>
-        <div className="relative flex justify-center">
-          <div className="px-6 bg-background">
-            <div className="h-8 w-8 rounded-full border-2 border-primary/30 flex items-center justify-center">
-              <Star className="h-4 w-4 text-primary/50" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Why Us Section */}
-      <section id="whyus" className="py-20 md:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-              <Badge variant="secondary" className="mb-4">{t('Why Us', 'لماذا نحن')}</Badge>
-              <h2 className="text-3xl md:text-4xl font-bold font-amiri text-foreground mb-4">{ct('whyus', 'title')}</h2>
-              <p className="text-lg text-muted-foreground mb-8">{ct('whyus', 'subtitle')}</p>
-              <div className="space-y-6">
-                {(c.whyus?.reasons || []).map((reason: any, i: number) => (
-                  <div key={i} className="flex gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <Check className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">{isAr ? (reason.title_ar || reason.title) : reason.title}</h3>
-                      <p className="text-sm text-muted-foreground">{isAr ? (reason.desc_ar || reason.desc) : reason.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="relative">
-              <div className="absolute -inset-4 rounded-3xl bg-primary/5" />
-              <div className="relative p-8 rounded-2xl border border-border/50 bg-card space-y-6">
-                <div className="text-center space-y-2">
-                  <div className="inline-flex h-16 w-16 rounded-2xl bg-primary/10 items-center justify-center mx-auto">
-                    <BookOpen className="h-8 w-8 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-bold font-amiri text-foreground">{t('All-in-One Platform', 'منصة شاملة')}</h3>
-                  <p className="text-sm text-muted-foreground">{t('Everything you need to run your Islamic educational institution', 'كل ما تحتاجه لإدارة مؤسستك التعليمية الإسلامية')}</p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    { label: t('Courses', 'الدورات'), value: t('Unlimited', 'غير محدود') },
-                    { label: t('Storage', 'التخزين'), value: '100GB' },
-                    { label: t('Support', 'الدعم'), value: '24/7' },
-                    { label: t('Updates', 'التحديثات'), value: t('Free', 'مجاني') },
-                  ].map(stat => (
-                    <div key={stat.label} className="text-center p-3 rounded-lg bg-muted/50">
-                      <div className="text-lg font-bold text-foreground">{stat.value}</div>
-                      <div className="text-xs text-muted-foreground">{stat.label}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 md:py-28 relative">
-        <div className="absolute inset-0 bg-muted/30" />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section id="pricing" className="py-20 md:py-28">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <Badge variant="secondary" className="mb-4">{t('Pricing', 'الأسعار')}</Badge>
             <h2 className="text-3xl md:text-4xl font-bold font-amiri text-foreground mb-4">{t('Simple, Transparent Pricing', 'أسعار بسيطة وشفافة')}</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">{t("Choose the plan that fits your institution's needs", 'اختر الخطة المناسبة لاحتياجات مؤسستك')}</p>
-            <div className="inline-flex items-center gap-2 p-1 rounded-lg bg-muted border border-border">
-              <button onClick={() => setBillingCycle('monthly')} className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${billingCycle === 'monthly' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}>
+            <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-muted mt-4">
+              <button onClick={() => setBillingCycle('monthly')} className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${billingCycle === 'monthly' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground'}`}>
                 {t('Monthly', 'شهري')}
               </button>
-              <button onClick={() => setBillingCycle('yearly')} className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${billingCycle === 'yearly' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}>
-                {t('Yearly', 'سنوي')} <Badge variant="secondary" className="ms-1 text-[10px]">{t('Save 20%', 'وفر 20%')}</Badge>
+              <button onClick={() => setBillingCycle('yearly')} className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${billingCycle === 'yearly' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground'}`}>
+                {t('Yearly', 'سنوي')}
               </button>
             </div>
           </div>
-
-          {filteredPackages.length > 0 ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredPackages.map(pkg => (
-                <Card key={pkg.id} className={`relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${pkg.is_featured ? 'border-primary shadow-lg ring-2 ring-primary/20' : 'border-border/50'}`}>
-                  {pkg.is_featured && (
-                    <div className="absolute top-0 end-0 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-es-lg">
-                      {t('Popular', 'الأكثر طلباً')}
-                    </div>
-                  )}
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-xl font-amiri">{isAr ? (pkg.title_ar || pkg.title) : pkg.title}</CardTitle>
-                    <CardDescription>{isAr ? (pkg.subtitle_ar || pkg.subtitle) : pkg.subtitle}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div>
-                      {pkg.sale_price != null ? (
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-4xl font-bold text-foreground">{currencySymbol}{pkg.sale_price}</span>
-                          <span className="text-lg text-muted-foreground line-through">{currencySymbol}{pkg.regular_price}</span>
-                          <span className="text-sm text-muted-foreground">/{billingCycle === 'monthly' ? t('mo', 'شهر') : t('yr', 'سنة')}</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-4xl font-bold text-foreground">{currencySymbol}{pkg.regular_price}</span>
-                          <span className="text-sm text-muted-foreground">/{billingCycle === 'monthly' ? t('mo', 'شهر') : t('yr', 'سنة')}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between py-2 border-b border-border/50">
-                        <span className="text-muted-foreground">{t('Teachers', 'المعلمين')}</span>
-                        <span className="font-medium text-foreground">{pkg.max_teachers}</span>
-                      </div>
-                      <div className="flex justify-between py-2 border-b border-border/50">
-                        <span className="text-muted-foreground">{t('Students', 'الطلاب')}</span>
-                        <span className="font-medium text-foreground">{pkg.max_students}</span>
-                      </div>
-                      <div className="flex justify-between py-2 border-b border-border/50">
-                        <span className="text-muted-foreground">{t('Courses', 'الدورات')}</span>
-                        <span className="font-medium text-foreground">{pkg.max_courses}</span>
-                      </div>
-                    </div>
-                    <ul className="space-y-2">
-                      {(pkg.features || []).map((f: string, i: number) => (
-                        <li key={i} className="flex items-start gap-2 text-sm">
-                          <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                          <span className="text-muted-foreground">{f}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                  <CardFooter>
-                    <Button className="w-full" variant={pkg.is_featured ? 'default' : 'outline'} onClick={() => navigate(user ? '/dashboard' : '/login')}>
-                      {t('Get Started', 'ابدأ الآن')}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">{t('Pricing packages coming soon. Contact us for custom quotes.', 'باقات الأسعار قريباً. تواصل معنا للحصول على عروض مخصصة.')}</p>
-            </div>
+          <div className={`grid gap-6 max-w-5xl mx-auto ${filteredPackages.length <= 3 ? `sm:grid-cols-${Math.min(filteredPackages.length, 3)}` : 'sm:grid-cols-2 lg:grid-cols-3'}`}>
+            {filteredPackages.map((pkg) => (
+              <Card key={pkg.id} className={`relative flex flex-col ${pkg.is_featured ? 'border-primary shadow-lg scale-[1.02]' : 'border-border/50'}`}>
+                {pkg.is_featured && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <Badge className="bg-primary text-primary-foreground">{t('Most Popular', 'الأكثر شعبية')}</Badge>
+                  </div>
+                )}
+                <CardHeader className="text-center pb-2">
+                  <CardTitle className="text-xl">{isAr ? (pkg.title_ar || pkg.title) : pkg.title}</CardTitle>
+                  <CardDescription>{isAr ? (pkg.subtitle_ar || pkg.subtitle) : pkg.subtitle}</CardDescription>
+                </CardHeader>
+                <CardContent className="text-center flex-1">
+                  <div className="mb-6">
+                    {pkg.sale_price != null && pkg.sale_price < pkg.regular_price ? (
+                      <>
+                        <span className="text-lg text-muted-foreground line-through">{currencySymbol}{pkg.regular_price}</span>
+                        <div className="text-4xl font-bold text-foreground">{currencySymbol}{pkg.sale_price}<span className="text-sm font-normal text-muted-foreground">/{billingCycle === 'yearly' ? t('yr', 'سنة') : t('mo', 'شهر')}</span></div>
+                      </>
+                    ) : (
+                      <div className="text-4xl font-bold text-foreground">{currencySymbol}{pkg.regular_price}<span className="text-sm font-normal text-muted-foreground">/{billingCycle === 'yearly' ? t('yr', 'سنة') : t('mo', 'شهر')}</span></div>
+                    )}
+                  </div>
+                  <ul className="space-y-3 text-sm text-start">
+                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary shrink-0" />{t(`Up to ${pkg.max_teachers} teachers`, `حتى ${pkg.max_teachers} معلم`)}</li>
+                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary shrink-0" />{t(`Up to ${pkg.max_students} students`, `حتى ${pkg.max_students} طالب`)}</li>
+                    <li className="flex items-center gap-2"><Check className="h-4 w-4 text-primary shrink-0" />{t(`Up to ${pkg.max_courses} courses`, `حتى ${pkg.max_courses} دورة`)}</li>
+                    {Array.isArray(pkg.features) && pkg.features.map((f: any, i: number) => (
+                      <li key={i} className="flex items-center gap-2"><Check className="h-4 w-4 text-primary shrink-0" />{typeof f === 'string' ? f : f.text || ''}</li>
+                    ))}
+                  </ul>
+                </CardContent>
+                <CardFooter>
+                  <Button className="w-full" variant={pkg.is_featured ? 'default' : 'outline'} onClick={() => navigate('/login')}>
+                    {t('Get Started', 'ابدأ الآن')}
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+          {filteredPackages.length === 0 && (
+            <div className="text-center text-muted-foreground py-12">{t('No packages available for this billing cycle', 'لا توجد باقات متاحة لهذه الدورة المالية')}</div>
           )}
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 md:py-28 relative overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img src={islamicPatternHero} alt="" className="w-full h-full object-cover opacity-10 dark:opacity-5" />
-        </div>
-        <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold font-amiri text-foreground mb-4">{ct('cta', 'title')}</h2>
-          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">{ct('cta', 'subtitle')}</p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Button size="lg" onClick={() => navigate(user ? '/dashboard' : '/login')} className="text-base">
-              {t('Start Free Trial', 'ابدأ تجربة مجانية')} <ChevronRight className="h-5 w-5 ms-2" />
-            </Button>
-            <Button variant="outline" size="lg" className="text-base">
-              {t('Contact Sales', 'تواصل مع المبيعات')}
-            </Button>
-          </div>
+      {/* CTA */}
+      <section className="py-20 md:py-28 bg-primary/5">
+        <div className="mx-auto max-w-3xl px-4 text-center space-y-6">
+          <h2 className="text-3xl md:text-4xl font-bold font-amiri text-foreground">{ct('cta', 'title')}</h2>
+          <p className="text-muted-foreground text-lg">{ct('cta', 'subtitle')}</p>
+          <Button size="lg" onClick={() => navigate('/login')} className="text-base">
+            {t('Start Free Trial', 'ابدأ التجربة المجانية')} <ChevronRight className="h-5 w-5 ms-2" />
+          </Button>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card py-12">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                {appLogo ? (
-                  <img src={appLogo} alt={appName} className="h-6 w-6 rounded object-cover" />
-                ) : (
-                  <BookOpen className="h-6 w-6 text-primary" />
-                )}
-                <span className="text-lg font-bold font-amiri text-foreground">{appName}</span>
-              </div>
-              <p className="text-sm text-muted-foreground">{t('Comprehensive Islamic education management platform.', 'منصة شاملة لإدارة التعليم الإسلامي.')}</p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-3">{t('Product', 'المنتج')}</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><button onClick={() => scrollTo('features')} className="hover:text-foreground transition-colors">{t('Features', 'المميزات')}</button></li>
-                <li><button onClick={() => scrollTo('pricing')} className="hover:text-foreground transition-colors">{t('Pricing', 'الأسعار')}</button></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-3">{t('Company', 'الشركة')}</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><button onClick={() => scrollTo('whyus')} className="hover:text-foreground transition-colors">{t('About Us', 'من نحن')}</button></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">{t('Contact', 'تواصل معنا')}</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-3">{t('Legal', 'قانوني')}</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition-colors">{t('Privacy Policy', 'سياسة الخصوصية')}</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">{t('Terms of Service', 'شروط الخدمة')}</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-border text-center">
-            <CopyrightText />
-          </div>
+      <footer className="py-8 border-t border-border">
+        <div className="mx-auto max-w-7xl px-4 text-center">
+          <CopyrightText />
         </div>
       </footer>
     </div>

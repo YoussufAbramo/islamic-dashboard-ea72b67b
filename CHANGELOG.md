@@ -2,6 +2,24 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [2.7.0] - 2026-03-10
+
+### Added
+- Invoice editing: Admin can edit invoice status, amount, due date, and notes after creation
+- Subscription pricing: Price Rate/hr and Total Price fields with automatic bi-directional calculation
+- Invoice view: Subscription price shown as old/strikethrough price when discounted
+- Invoice view: Favicon and logo loaded from app settings, footer shows app name from settings
+- Invoice view: Active payment methods loaded from app settings
+
+### Changed
+- Landing page: Logout button merged inside the profile element as a single unified component
+- Dashboard action icon buttons: Unified hover style (rounded-full with muted hover) across all pages
+- Subscription creation: Search bars moved inside dropdown lists (combobox pattern)
+- Subscription creation: Start date and renewal date side-by-side at 50% width, removed "auto-calculated" text
+- Subscription detail dialog: Unified view/edit in single layout without content duplication
+- Timezone settings: Search moved inside the dropdown using combobox pattern
+- Version bumped to 2.7.0
+
 ## [2.6.0] - 2026-03-10
 
 ### Added
