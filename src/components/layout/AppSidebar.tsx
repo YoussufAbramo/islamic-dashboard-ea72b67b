@@ -99,7 +99,7 @@ const AppSidebar = () => {
           {appLogo ? (
             <img src={appLogo} alt="Logo" className="h-9 w-9 rounded object-cover" />
           ) : (
-            <BookOpen className="h-8 w-8 text-gold" />
+            <span className="text-sm font-bold text-foreground truncate max-w-[160px]">{appName || 'Islamic Dashboard'}</span>
           )}
         </div>
       </SidebarHeader>

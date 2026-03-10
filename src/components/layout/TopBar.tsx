@@ -142,7 +142,7 @@ const TopBar = () => {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className={`${iconBtnClass} relative`}>
               <Bell className="h-4 w-4" />
-              {notifications.length > 0 && <Badge className="absolute top-0 -end-0.5 h-4 min-w-[16px] p-0 text-[10px] flex items-center justify-center">{notifications.length}</Badge>}
+              {notifications.length > 0 && <Badge className="absolute top-0 -end-0.5 h-4 min-w-[16px] p-0 text-[10px] flex items-center justify-center bg-red-500 text-white border-red-500 hover:bg-red-600">{notifications.length}</Badge>}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">

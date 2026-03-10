@@ -139,7 +139,19 @@ const Login = () => {
           <Card className="border-border/30 shadow-2xl backdrop-blur-xl bg-card/80 overflow-hidden">
             <div className="h-1 bg-gradient-to-r from-[hsl(var(--emerald))] via-[hsl(var(--gold))] to-[hsl(var(--emerald))]" />
 
-            <CardHeader className="pb-4 text-center pt-8">
+            {/* Landing Page Button */}
+            <div className="px-6 pt-5 pb-0">
+              <Button
+                variant="outline"
+                className="w-full gap-2 border-primary/30 hover:bg-primary/5"
+                onClick={() => window.open('/', '_blank')}
+              >
+                <ExternalLink className="h-4 w-4" />
+                {language === 'ar' ? 'زيارة صفحة الهبوط' : 'Visit Landing Page'}
+              </Button>
+            </div>
+
+            <CardHeader className="pb-4 text-center pt-4">
               <h2 className="text-xl font-semibold">{t('auth.login')}</h2>
               <p className="text-sm text-muted-foreground">
                 {language === 'ar' ? 'اختر نوع حسابك ثم سجل الدخول' : 'Select your account type to continue'}
