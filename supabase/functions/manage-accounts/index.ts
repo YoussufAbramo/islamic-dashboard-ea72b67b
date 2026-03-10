@@ -361,6 +361,80 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ success: true, deleted_users: deletedUsers, preserved_admins: adminIds.length }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
+    // ==================== CLEAR SEED (sample data only) ====================
+    if (action === 'clear_seed') {
+      const sampleEmails = [
+        'student1@sample.edu', 'student2@sample.edu', 'student3@sample.edu',
+        'student4@sample.edu', 'student5@sample.edu',
+        'teacher1@sample.edu', 'teacher2@sample.edu',
+      ]
+
+      // Find sample user IDs
+      const { data: { users } } = await adminClient.auth.admin.listUsers()
+      const sampleUserIds = users.filter(u => sampleEmails.includes(u.email || '')).map(u => u.id)
+
+      if (sampleUserIds.length === 0) {
+        return new Response(JSON.stringify({ success: true, message: 'No sample data found', deleted_users: 0 }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+
+      // Get student/teacher record IDs for these users
+      const { data: sampleStudents } = await adminClient.from('students').select('id').in('user_id', sampleUserIds)
+      const { data: sampleTeachers } = await adminClient.from('teachers').select('id').in('user_id', sampleUserIds)
+      const sStudentIds = (sampleStudents || []).map(s => s.id)
+      const sTeacherIds = (sampleTeachers || []).map(t => t.id)
+
+      // Delete in FK-safe order, scoped to sample users
+      if (sStudentIds.length > 0 || sTeacherIds.length > 0) {
+        // Chat messages from sample chats
+        const chatFilter = []
+        if (sStudentIds.length > 0) chatFilter.push(...sStudentIds)
+        const { data: sampleChats } = await adminClient.from('chats').select('id').or(
+          [
+            sStudentIds.length > 0 ? `student_id.in.(${sStudentIds.join(',')})` : '',
+            sTeacherIds.length > 0 ? `teacher_id.in.(${sTeacherIds.join(',')})` : '',
+          ].filter(Boolean).join(',')
+        )
+        const chatIds = (sampleChats || []).map(c => c.id)
+        if (chatIds.length > 0) {
+          await adminClient.from('chat_messages').delete().in('chat_id', chatIds)
+          await adminClient.from('chats').delete().in('id', chatIds)
+        }
+
+        // Attendance, timetable, subscriptions scoped to sample students/teachers
+        if (sStudentIds.length > 0) {
+          await adminClient.from('attendance').delete().in('student_id', sStudentIds)
+          await adminClient.from('student_progress').delete().in('student_id', sStudentIds)
+          await adminClient.from('timetable_entries').delete().in('student_id', sStudentIds)
+          await adminClient.from('subscriptions').delete().in('student_id', sStudentIds)
+        }
+        if (sTeacherIds.length > 0) {
+          await adminClient.from('timetable_entries').delete().in('teacher_id', sTeacherIds)
+        }
+      }
+
+      // Certificates issued to sample users
+      await adminClient.from('certificates').delete().in('recipient_id', sampleUserIds)
+      // Support tickets from sample users
+      await adminClient.from('support_tickets').delete().in('user_id', sampleUserIds)
+      // Notifications for sample users
+      await adminClient.from('notifications').delete().in('user_id', sampleUserIds)
+
+      // Delete student/teacher/profile/role records
+      if (sStudentIds.length > 0) await adminClient.from('students').delete().in('id', sStudentIds)
+      if (sTeacherIds.length > 0) await adminClient.from('teachers').delete().in('id', sTeacherIds)
+      await adminClient.from('profiles').delete().in('id', sampleUserIds)
+      await adminClient.from('user_roles').delete().in('user_id', sampleUserIds)
+
+      // Delete auth users
+      let deletedUsers = 0
+      for (const uid of sampleUserIds) {
+        await adminClient.auth.admin.deleteUser(uid)
+        deletedUsers++
+      }
+
+      return new Response(JSON.stringify({ success: true, deleted_users: deletedUsers }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
     return new Response(JSON.stringify({ error: 'Invalid action' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
