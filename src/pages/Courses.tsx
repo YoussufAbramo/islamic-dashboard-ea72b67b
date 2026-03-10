@@ -122,7 +122,7 @@ const Courses = () => {
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 me-2" />{t('courses.create')}</Button>
               </DialogTrigger>
-              <DialogContent className="max-w-lg">
+              <DialogContent className="max-w-2xl">
                 <DialogHeader><DialogTitle>{editCourse ? t('courses.edit') : t('courses.create')}</DialogTitle></DialogHeader>
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
