@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Palette, Building2, Upload, Check, Type, RectangleHorizontal, Circle, Square, Search, Plus } from 'lucide-react';
+import { Palette, Building2, Upload, Check, Type, RectangleHorizontal, Circle, Square, Search, Plus, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useRef, useEffect, useState, useMemo } from 'react';
