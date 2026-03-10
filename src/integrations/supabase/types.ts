@@ -304,6 +304,7 @@ export type Database = {
           description: string | null
           description_ar: string | null
           id: string
+          image_url: string | null
           status: string
           title: string
           title_ar: string | null
@@ -315,6 +316,7 @@ export type Database = {
           description?: string | null
           description_ar?: string | null
           id?: string
+          image_url?: string | null
           status?: string
           title: string
           title_ar?: string | null
@@ -326,6 +328,7 @@ export type Database = {
           description?: string | null
           description_ar?: string | null
           id?: string
+          image_url?: string | null
           status?: string
           title?: string
           title_ar?: string | null
@@ -343,7 +346,9 @@ export type Database = {
           id: string
           invoice_number: string
           notes: string | null
+          original_price: number | null
           paid_at: string | null
+          sale_price: number | null
           share_token: string
           status: string
           student_id: string
@@ -359,7 +364,9 @@ export type Database = {
           id?: string
           invoice_number?: string
           notes?: string | null
+          original_price?: number | null
           paid_at?: string | null
+          sale_price?: number | null
           share_token?: string
           status?: string
           student_id: string
@@ -375,7 +382,9 @@ export type Database = {
           id?: string
           invoice_number?: string
           notes?: string | null
+          original_price?: number | null
           paid_at?: string | null
+          sale_price?: number | null
           share_token?: string
           status?: string
           student_id?: string
@@ -686,6 +695,7 @@ export type Database = {
           course_id: string
           created_at: string
           id: string
+          lesson_duration: number | null
           price: number | null
           renewal_date: string | null
           start_date: string
@@ -694,11 +704,13 @@ export type Database = {
           subscription_type: string
           teacher_id: string | null
           updated_at: string
+          weekly_lessons: number | null
         }
         Insert: {
           course_id: string
           created_at?: string
           id?: string
+          lesson_duration?: number | null
           price?: number | null
           renewal_date?: string | null
           start_date?: string
@@ -707,11 +719,13 @@ export type Database = {
           subscription_type?: string
           teacher_id?: string | null
           updated_at?: string
+          weekly_lessons?: number | null
         }
         Update: {
           course_id?: string
           created_at?: string
           id?: string
+          lesson_duration?: number | null
           price?: number | null
           renewal_date?: string | null
           start_date?: string
@@ -720,6 +734,7 @@ export type Database = {
           subscription_type?: string
           teacher_id?: string | null
           updated_at?: string
+          weekly_lessons?: number | null
         }
         Relationships: [
           {
