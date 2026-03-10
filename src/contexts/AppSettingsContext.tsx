@@ -75,6 +75,7 @@ interface PendingSettings {
   paymentGateway: string;
   defaultLanguage: 'en' | 'ar';
   defaultTimezone: string;
+  sidebarMode: SidebarMode;
 }
 
 interface AppSettingsContextType {
