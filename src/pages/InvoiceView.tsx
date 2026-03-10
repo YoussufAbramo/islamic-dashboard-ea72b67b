@@ -59,6 +59,8 @@ const InvoiceView = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
   const [invoice, setInvoice] = useState<any>(null);
+  const { language } = useLanguage();
+  const isAr = language === 'ar';
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [selectedGateway, setSelectedGateway] = useState<string | null>(null);
