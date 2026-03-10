@@ -38,7 +38,7 @@ const Settings = () => {
     { value: 'auth', label: 'Authentication', labelAr: 'المصادقة', icon: ShieldCheck, adminOnly: true },
     { value: 'payment', label: 'Payment Methods', labelAr: 'طرق الدفع', icon: CreditCard, adminOnly: true },
     { value: 'data', label: 'Data Management', labelAr: 'إدارة البيانات', icon: Database, adminOnly: true },
-    { value: 'backups', label: 'Backups', labelAr: 'النسخ الاحتياطية', icon: HardDrive, adminOnly: true, comingSoon: true },
+    { value: 'backups', label: 'Backups', labelAr: 'النسخ الاحتياطية', icon: HardDrive, adminOnly: true },
     { value: 'export-import', label: 'Export/Import Setup', labelAr: 'تصدير/استيراد الإعداد', icon: ArrowDownUp, adminOnly: true, comingSoon: true },
   ];
 
