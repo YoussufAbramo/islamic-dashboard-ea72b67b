@@ -16,7 +16,7 @@ const CURRENCIES: Currency[] = [
   { name: 'QAR', symbol: 'ر.ق' },
 ];
 
-export type ColorTheme = 'emerald' | 'ocean' | 'purple' | 'desert' | 'midnight';
+export type ColorTheme = 'emerald' | 'ocean' | 'purple' | 'desert' | 'midnight' | 'rose' | 'teal' | 'amber' | 'slate' | 'crimson';
 export type ButtonShape = 'rounded' | 'circular' | 'square';
 export type FooterPosition = 'left' | 'center' | 'right';
 
@@ -26,6 +26,11 @@ const THEMES: { value: ColorTheme; label: string; labelAr: string; color: string
   { value: 'purple', label: 'Royal Purple', labelAr: 'البنفسجي الملكي', color: 'hsl(270 50% 40%)' },
   { value: 'desert', label: 'Desert Sand', labelAr: 'رمال الصحراء', color: 'hsl(25 60% 42%)' },
   { value: 'midnight', label: 'Midnight', labelAr: 'منتصف الليل', color: 'hsl(220 55% 35%)' },
+  { value: 'rose', label: 'Rose Garden', labelAr: 'حديقة الورد', color: 'hsl(345 55% 45%)' },
+  { value: 'teal', label: 'Teal Breeze', labelAr: 'نسيم أزرق مخضر', color: 'hsl(180 50% 35%)' },
+  { value: 'amber', label: 'Amber Glow', labelAr: 'توهج العنبر', color: 'hsl(40 75% 45%)' },
+  { value: 'slate', label: 'Slate Steel', labelAr: 'الرمادي الفولاذي', color: 'hsl(215 20% 40%)' },
+  { value: 'crimson', label: 'Crimson Fire', labelAr: 'النار القرمزية', color: 'hsl(0 65% 42%)' },
 ];
 
 export const LTR_FONTS = [
