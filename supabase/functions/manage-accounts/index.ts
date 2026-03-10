@@ -309,58 +309,53 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: 'No admin users found - aborting' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
 
-      // Delete in FK-safe order
-      // 1. chat_messages
-      await adminClient.from('chat_messages').delete().gte('created_at', '1970-01-01')
-      // 2. attendance
-      await adminClient.from('attendance').delete().gte('created_at', '1970-01-01')
-      // 3. student_progress
-      await adminClient.from('student_progress').delete().gte('created_at', '1970-01-01')
-      // 4. timetable_entries
-      await adminClient.from('timetable_entries').delete().gte('created_at', '1970-01-01')
-      // 5. chats
-      await adminClient.from('chats').delete().gte('created_at', '1970-01-01')
-      // 6. certificates
-      await adminClient.from('certificates').delete().gte('created_at', '1970-01-01')
-      // 6b. invoices (before subscriptions due to FK)
-      await adminClient.from('invoices').delete().gte('created_at', '1970-01-01')
-      // 7. subscriptions
-      await adminClient.from('subscriptions').delete().gte('created_at', '1970-01-01')
-      // 8. lessons
-      await adminClient.from('lessons').delete().gte('created_at', '1970-01-01')
-      // 9. course_sections
-      await adminClient.from('course_sections').delete().gte('created_at', '1970-01-01')
-      // 10. courses
-      await adminClient.from('courses').delete().gte('created_at', '1970-01-01')
-      // 11. notifications - all
-      await adminClient.from('notifications').delete().gte('created_at', '1970-01-01')
-      // 12. announcements
-      await adminClient.from('announcements').delete().gte('created_at', '1970-01-01')
-      // 13. support_tickets
-      await adminClient.from('support_tickets').delete().gte('created_at', '1970-01-01')
-      // 14. students (non-admin)
-      for (const sid of adminIds) {
-        // Keep admin student records if any
+      const errors: string[] = []
+      const tryDelete = async (table: string, query: any) => {
+        const { error } = await query
+        if (error) errors.push(`${table}: ${error.message}`)
       }
-      await adminClient.from('students').delete().not('user_id', 'in', `(${adminIds.join(',')})`)
-      // 15. teachers (non-admin)
-      await adminClient.from('teachers').delete().not('user_id', 'in', `(${adminIds.join(',')})`)
-      // 16. profiles (non-admin)
-      await adminClient.from('profiles').delete().not('id', 'in', `(${adminIds.join(',')})`)
-      // 17. user_roles (non-admin)
-      await adminClient.from('user_roles').delete().not('user_id', 'in', `(${adminIds.join(',')})`)
 
-      // 18. Delete non-admin auth users
+      // Delete in FK-safe order — use .neq('id', '00000000-0000-0000-0000-000000000000') as "match all"
+      const matchAll = '00000000-0000-0000-0000-000000000000'
+      await tryDelete('chat_messages', adminClient.from('chat_messages').delete().neq('id', matchAll))
+      await tryDelete('attendance', adminClient.from('attendance').delete().neq('id', matchAll))
+      await tryDelete('student_progress', adminClient.from('student_progress').delete().neq('id', matchAll))
+      await tryDelete('timetable_entries', adminClient.from('timetable_entries').delete().neq('id', matchAll))
+      await tryDelete('chats', adminClient.from('chats').delete().neq('id', matchAll))
+      await tryDelete('certificates', adminClient.from('certificates').delete().neq('id', matchAll))
+      await tryDelete('invoices', adminClient.from('invoices').delete().neq('id', matchAll))
+      await tryDelete('subscriptions', adminClient.from('subscriptions').delete().neq('id', matchAll))
+      await tryDelete('lessons', adminClient.from('lessons').delete().neq('id', matchAll))
+      await tryDelete('course_sections', adminClient.from('course_sections').delete().neq('id', matchAll))
+      await tryDelete('courses', adminClient.from('courses').delete().neq('id', matchAll))
+      await tryDelete('notifications', adminClient.from('notifications').delete().neq('id', matchAll))
+      await tryDelete('announcements', adminClient.from('announcements').delete().neq('id', matchAll))
+      await tryDelete('support_tickets', adminClient.from('support_tickets').delete().neq('id', matchAll))
+
+      // Delete non-admin students, teachers, profiles, roles
+      for (const adminId of adminIds) {
+        // Individual exclusion is more reliable
+      }
+      await tryDelete('students', adminClient.from('students').not('user_id', 'in', `(${adminIds.join(',')})`))
+      await tryDelete('teachers', adminClient.from('teachers').not('user_id', 'in', `(${adminIds.join(',')})`).delete())
+      await tryDelete('profiles', adminClient.from('profiles').not('id', 'in', `(${adminIds.join(',')})`).delete())
+      await tryDelete('user_roles', adminClient.from('user_roles').not('user_id', 'in', `(${adminIds.join(',')})`).delete())
+
+      // Delete non-admin auth users
       const { data: { users } } = await adminClient.auth.admin.listUsers()
       let deletedUsers = 0
       for (const user of users) {
         if (!adminIds.includes(user.id)) {
-          await adminClient.auth.admin.deleteUser(user.id)
-          deletedUsers++
+          try {
+            await adminClient.auth.admin.deleteUser(user.id)
+            deletedUsers++
+          } catch (e) {
+            errors.push(`auth.delete(${user.email}): ${e.message}`)
+          }
         }
       }
 
-      return new Response(JSON.stringify({ success: true, deleted_users: deletedUsers, preserved_admins: adminIds.length }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      return new Response(JSON.stringify({ success: true, deleted_users: deletedUsers, preserved_admins: adminIds.length, errors: errors.length > 0 ? errors : undefined }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     // ==================== CLEAR SEED (sample data only) ====================
