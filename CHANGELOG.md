@@ -2,6 +2,29 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [2.1.0] - 2026-03-10
+
+### Added
+- Confirmation dialog before erasing sample data
+- Persistent log history for seed/erase operations (stored in localStorage)
+- "View Log" button always visible, scans for sample data and shows full history
+- "Clear Log" option in log dialog
+- "Backups" settings tab (coming soon placeholder)
+- "Export/Import Setup" settings tab (coming soon placeholder)
+- "Home" nav link on landing page that scrolls to top
+
+### Changed
+- App Logo now displays at full aspect ratio (not forced square) in Settings and Landing Page
+- Landing page navbar shows logo only (no app name text)
+- Landing page Home button in TopBar now opens in a new tab
+- Erase All Data warning text now lists all affected tables explicitly
+- Erase sample data now logs operations to persistent history
+- Version bumped to 2.1.0
+
+### Fixed
+- "Erase All Data" button was not performing the actual deletion (clear_all action)
+- "Erase Sample Data" had no confirmation before executing
+
 ## [2.0.0] - 2026-03-10
 
 ### Added
