@@ -166,6 +166,17 @@ const Dashboard = () => {
     });
   }, []);
 
+  const moveSection = useCallback((index: number, direction: 'up' | 'down') => {
+    setSectionOrder(prev => {
+      const next = [...prev];
+      const target = direction === 'up' ? index - 1 : index + 1;
+      if (target < 0 || target >= next.length) return prev;
+      [next[index], next[target]] = [next[target], next[index]];
+      localStorage.setItem('dashboard_section_order', JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   useEffect(() => {
     const now = new Date();
     const weekStart = startOfWeek(now, { weekStartsOn: 1 });
