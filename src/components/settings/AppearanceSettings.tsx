@@ -299,8 +299,8 @@ const AppearanceSettings = () => {
       {/* Sidebar Mode */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><PanelLeft className="h-5 w-5 text-primary" />{isAr ? 'وضع القائمة الجانبية' : 'Sidebar Mode'}</CardTitle>
-          <CardDescription>{isAr ? 'اختر المظهر الفاتح أو الداكن للقائمة الجانبية' : 'Choose light or dark appearance for the sidebar menu'}</CardDescription>
+          <CardTitle className="flex items-center gap-2"><PanelLeft className="h-5 w-5 text-primary" />{isAr ? 'وضع القائمة الرئيسية' : 'Main Menu Mode'}</CardTitle>
+          <CardDescription>{isAr ? 'اختر المظهر الفاتح أو الداكن للقائمة الرئيسية' : 'Choose light or dark appearance for the main menu'}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">

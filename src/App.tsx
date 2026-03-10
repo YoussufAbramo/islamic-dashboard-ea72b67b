@@ -18,6 +18,8 @@ import Courses from "./pages/Courses";
 import CourseDetail from "./pages/CourseDetail";
 import Students from "./pages/Students";
 import Teachers from "./pages/Teachers";
+import Admins from "./pages/Admins";
+import RoleManagement from "./pages/RoleManagement";
 import Support from "./pages/Support";
 import Timetable from "./pages/Timetable";
 import Subscriptions from "./pages/Subscriptions";
@@ -60,6 +62,8 @@ const App = () => (
                       <Route path="courses/:id" element={<CourseDetail />} />
                       <Route path="students" element={<RoleGuard allowed={['admin', 'teacher']}><Students /></RoleGuard>} />
                       <Route path="teachers" element={<RoleGuard allowed={['admin']}><Teachers /></RoleGuard>} />
+                      <Route path="admins" element={<RoleGuard allowed={['admin']}><Admins /></RoleGuard>} />
+                      <Route path="roles" element={<RoleGuard allowed={['admin']}><RoleManagement /></RoleGuard>} />
                       <Route path="support" element={<RoleGuard allowed={['admin']}><Support /></RoleGuard>} />
                       <Route path="timetable" element={<Timetable />} />
                       <Route path="subscriptions" element={<RoleGuard allowed={['admin']}><Subscriptions /></RoleGuard>} />
