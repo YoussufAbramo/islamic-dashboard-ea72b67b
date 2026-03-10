@@ -494,7 +494,7 @@ const Dashboard = () => {
                               <p className="text-sm font-medium">{(sub.courses as any)?.title || '—'}</p>
                               <p className="text-xs text-muted-foreground">{sub.subscription_type} · {currency.symbol}{Number(sub.price || 0).toFixed(0)}</p>
                             </div>
-                            <Badge variant={sub.status === 'active' ? 'default' : 'secondary'} className="text-[10px]">{sub.status}</Badge>
+                            <Badge variant={sub.status === 'active' ? 'default' : 'secondary'} className="text-[10px]">{sub.status === 'active' ? (isAr ? 'نشط' : 'Active') : sub.status === 'expired' ? (isAr ? 'منتهي' : 'Expired') : sub.status === 'cancelled' ? (isAr ? 'ملغي' : 'Cancelled') : sub.status}</Badge>
                           </div>
                         ))}
                       </div>
