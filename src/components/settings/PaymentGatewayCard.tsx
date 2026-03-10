@@ -77,7 +77,7 @@ const PaymentGatewayCard = ({ isAr }: PaymentGatewayCardProps) => {
   // Track active gateways and their API values
   const [activeGateways, setActiveGateways] = useState<Record<string, boolean>>(() => {
     const saved = localStorage.getItem('app_active_gateways');
-    return saved ? JSON.parse(saved) : {};
+    return saved ? JSON.parse(saved) : { paypal: true, paymob: true };
   });
   const [apiValues, setApiValues] = useState<Record<string, Record<string, string>>>({});
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
