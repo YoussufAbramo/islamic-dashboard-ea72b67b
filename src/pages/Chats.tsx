@@ -12,9 +12,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Send, Ban, CheckCircle, Trash2, Plus, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import islamicBg from '@/assets/islamic-bg.jpg';
 
 const Chats = () => {
   const { t, language } = useLanguage();
@@ -81,7 +83,10 @@ const Chats = () => {
   };
 
   const deleteMessage = async (messageId: string) => {
-    await supabase.from('chat_messages').update({ is_deleted: true }).eq('id', messageId);
+    const deletedText = language === 'ar' 
+      ? `تم حذف هذه الرسالة بواسطة ${role === 'admin' ? 'المسؤول' : 'المعلم'}`
+      : `This message was deleted by ${role === 'admin' ? 'admin' : 'teacher'}`;
+    await supabase.from('chat_messages').update({ message: deletedText, is_deleted: true }).eq('id', messageId);
     fetchMessages(selectedChat.id);
     toast.success(language === 'ar' ? 'تم حذف الرسالة' : 'Message deleted');
   };
@@ -213,25 +218,39 @@ const Chats = () => {
                 )}
               </CardHeader>
               <CardContent className="flex-1 flex flex-col p-0">
-                <ScrollArea className="flex-1 p-4">
-                  <div className="space-y-3">
-                    {messages.filter(m => !m.is_deleted).map((msg) => (
-                      <div key={msg.id} className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[70%] p-2 rounded-lg text-sm ${msg.sender_id === user?.id ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                          <p className="text-xs font-medium mb-1">{msg.profiles?.full_name}</p>
-                          <p>{msg.message}</p>
-                          <div className="flex items-center justify-between mt-1">
-                            <span className="text-[10px] opacity-70">{format(new Date(msg.created_at), 'HH:mm')}</span>
-                            {role === 'admin' && (
-                              <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => deleteMessage(msg.id)}>
-                                <Trash2 className="h-2 w-2" />
-                              </Button>
-                            )}
+                <ScrollArea className="flex-1" style={{ backgroundImage: `url(${islamicBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+                  <div className="space-y-3 p-4 bg-background/80 backdrop-blur-sm min-h-full">
+                    {messages.map((msg) => {
+                      const isOwn = msg.sender_id === user?.id;
+                      const initials = (msg.profiles?.full_name || '?').charAt(0).toUpperCase();
+                      return (
+                        <div key={msg.id} className={`flex items-end gap-2 ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                          {!isOwn && (
+                            <Avatar className="h-7 w-7 shrink-0">
+                              <AvatarFallback className="text-xs bg-primary/10 text-primary">{initials}</AvatarFallback>
+                            </Avatar>
+                          )}
+                          <div className={`max-w-[70%] p-2 rounded-lg text-sm ${msg.is_deleted ? 'bg-muted/60 italic text-muted-foreground' : isOwn ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                            <p className="text-xs font-medium mb-1">{msg.profiles?.full_name}</p>
+                            <p>{msg.message}</p>
+                            <div className="flex items-center justify-between mt-1 gap-2">
+                              <span className="text-[10px] opacity-70">{format(new Date(msg.created_at), 'HH:mm')}</span>
+                              {(role === 'admin' || role === 'teacher') && !msg.is_deleted && (
+                                <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => deleteMessage(msg.id)}>
+                                  <Trash2 className="h-2 w-2" />
+                                </Button>
+                              )}
+                            </div>
                           </div>
+                          {isOwn && (
+                            <Avatar className="h-7 w-7 shrink-0">
+                              <AvatarFallback className="text-xs bg-primary/10 text-primary">{initials}</AvatarFallback>
+                            </Avatar>
+                          )}
                         </div>
-                      </div>
-                    ))}
-                    {messages.filter(m => !m.is_deleted).length === 0 && <p className="text-center text-muted-foreground text-sm">{t('chats.noMessages')}</p>}
+                      );
+                    })}
+                    {messages.length === 0 && <p className="text-center text-muted-foreground text-sm">{t('chats.noMessages')}</p>}
                   </div>
                 </ScrollArea>
                 {!selectedChat.is_suspended && (
