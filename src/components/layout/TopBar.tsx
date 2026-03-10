@@ -1,4 +1,4 @@
-import { Moon, Sun, Bell, Megaphone, Globe, LogOut, User, Plus, CheckCheck, ExternalLink } from 'lucide-react';
+import { Moon, Sun, Bell, Megaphone, Globe, Plus, CheckCheck, ExternalLink, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const TopBar = () => {
-  const { user, profile, signOut, role } = useAuth();
+  const { user, role } = useAuth();
   const { t, language, setLanguage } = useLanguage();
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
@@ -41,8 +41,6 @@ const TopBar = () => {
     document.documentElement.classList.toggle('dark');
     setDarkMode(!darkMode);
   };
-
-  const handleLogout = async () => { await signOut(); navigate('/login'); };
 
   const markAllNotificationsRead = async () => {
     if (!user) return;
@@ -90,6 +88,11 @@ const TopBar = () => {
       <header className="flex h-14 items-center gap-2 border-b bg-background px-4">
         <SidebarTrigger className="rounded-full" />
         <div className="flex-1" />
+
+        {/* Go to Landing Page */}
+        <Button variant="ghost" size="icon" className={iconBtnClass} onClick={() => navigate('/')}>
+          <Home className="h-4 w-4" />
+        </Button>
 
         <Button variant="ghost" size="icon" className={iconBtnClass} onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}>
           <Globe className="h-4 w-4" />
@@ -161,26 +164,6 @@ const TopBar = () => {
             <DropdownMenuSeparator />
             <DropdownMenuItem className="justify-center text-primary text-sm" onClick={() => navigate('/dashboard/notifications')}>
               <ExternalLink className="h-3 w-3 me-1" />{isAr ? 'عرض الكل' : 'View All'}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Profile dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className={iconBtnClass}>
-              <User className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem className="font-medium">{profile?.full_name || user?.email}</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate('/dashboard/profile')}>
-              <User className="h-4 w-4 me-2" /> {t('nav.profile')}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
-              <LogOut className="h-4 w-4 me-2" /> {t('auth.logout')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

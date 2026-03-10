@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import { Search, Plus, FileText, ArrowUp, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
 import InvoiceStatsCards from '@/components/invoices/InvoiceStatsCards';
@@ -35,8 +36,10 @@ const Invoices = () => {
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
 
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
   const [createForm, setCreateForm] = useState({
     subscription_id: '', billing_cycle: 'monthly', notes: '',
+    original_price: '', sale_price: '', course_id: '',
   });
   const [createLoading, setCreateLoading] = useState(false);
 
@@ -53,14 +56,30 @@ const Invoices = () => {
   };
 
   const fetchFormData = async () => {
-    const { data } = await supabase
-      .from('subscriptions')
-      .select('id, price, subscription_type, courses:course_id(title), students:student_id(id, user_id, profiles:students_user_id_profiles_fkey(full_name))')
-      .eq('status', 'active');
-    setSubscriptions(data || []);
+    const [subRes, courseRes] = await Promise.all([
+      supabase
+        .from('subscriptions')
+        .select('id, price, subscription_type, courses:course_id(title), students:student_id(id, user_id, profiles:students_user_id_profiles_fkey(full_name))')
+        .eq('status', 'active'),
+      supabase.from('courses').select('id, title, title_ar').eq('status', 'published'),
+    ]);
+    setSubscriptions(subRes.data || []);
+    setCourses(courseRes.data || []);
   };
 
   useEffect(() => { fetchInvoices(); }, []);
+
+  // Auto-fill price when subscription is selected
+  const handleSubscriptionChange = (subId: string) => {
+    const sub = subscriptions.find(s => s.id === subId);
+    setCreateForm(prev => ({
+      ...prev,
+      subscription_id: subId,
+      original_price: sub?.price?.toString() || '',
+      sale_price: '',
+      course_id: '',
+    }));
+  };
 
   const handleCreate = async () => {
     if (!createForm.subscription_id) {
@@ -72,18 +91,27 @@ const Invoices = () => {
     const sub = subscriptions.find(s => s.id === createForm.subscription_id);
     if (!sub) { setCreateLoading(false); return; }
 
-    const amount = sub.price || 0;
+    const originalPrice = parseFloat(createForm.original_price) || sub.price || 0;
+    const salePrice = createForm.sale_price ? parseFloat(createForm.sale_price) : null;
+    const finalAmount = salePrice !== null && salePrice < originalPrice ? salePrice : originalPrice;
+
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + (createForm.billing_cycle === 'yearly' ? 365 : 30));
 
-    const { error } = await supabase.from('invoices').insert({
+    const insertData: any = {
       subscription_id: sub.id,
       student_id: sub.students?.id,
-      amount,
+      amount: finalAmount,
       billing_cycle: createForm.billing_cycle,
       due_date: dueDate.toISOString().split('T')[0],
       notes: createForm.notes,
-    });
+    };
+
+    if (createForm.course_id) {
+      insertData.course_id = createForm.course_id;
+    }
+
+    const { error } = await supabase.from('invoices').insert(insertData);
 
     setCreateLoading(false);
     if (error) {
@@ -91,7 +119,7 @@ const Invoices = () => {
     } else {
       toast.success(isAr ? 'تم إنشاء الفاتورة' : 'Invoice created successfully');
       setCreateOpen(false);
-      setCreateForm({ subscription_id: '', billing_cycle: 'monthly', notes: '' });
+      setCreateForm({ subscription_id: '', billing_cycle: 'monthly', notes: '', original_price: '', sale_price: '', course_id: '' });
       fetchInvoices();
     }
   };
@@ -106,7 +134,6 @@ const Invoices = () => {
     toast.success(isAr ? 'تم نسخ الرابط' : 'Invoice URL copied');
   };
 
-  // Filtering
   const statusCounts = {
     all: invoices.length,
     pending: invoices.filter(i => i.status === 'pending').length,
@@ -172,14 +199,12 @@ const Invoices = () => {
         </div>
       </div>
 
-      {/* Stats */}
       <InvoiceStatsCards invoices={invoices} loading={loading} isAr={isAr} formatPrice={formatPrice} />
 
       {showEmptyState ? (
         <InvoiceEmptyState isAr={isAr} isAdmin={role === 'admin'} onCreateClick={() => { setCreateOpen(true); fetchFormData(); }} />
       ) : (
         <>
-          {/* Filters */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full sm:w-auto">
               <TabsList>
@@ -195,7 +220,6 @@ const Invoices = () => {
             </Tabs>
           </div>
 
-          {/* Table */}
           <InvoiceTable
             invoices={paginatedItems}
             loading={loading}
@@ -219,7 +243,7 @@ const Invoices = () => {
               <Label>{isAr ? 'الاشتراك' : 'Subscription'} *</Label>
               <Select
                 value={createForm.subscription_id}
-                onValueChange={(v) => setCreateForm({ ...createForm, subscription_id: v })}
+                onValueChange={handleSubscriptionChange}
               >
                 <SelectTrigger><SelectValue placeholder={isAr ? 'اختر اشتراك' : 'Select subscription'} /></SelectTrigger>
                 <SelectContent>
@@ -230,6 +254,48 @@ const Invoices = () => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>{isAr ? 'الدورة' : 'Course'}</Label>
+              <Select
+                value={createForm.course_id}
+                onValueChange={(v) => setCreateForm({ ...createForm, course_id: v })}
+              >
+                <SelectTrigger><SelectValue placeholder={isAr ? 'اختر دورة' : 'Select course'} /></SelectTrigger>
+                <SelectContent>
+                  {courses.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {isAr ? (c.title_ar || c.title) : c.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>{isAr ? 'السعر الأصلي' : 'Original Price'}</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={createForm.original_price}
+                  onChange={(e) => setCreateForm({ ...createForm, original_price: e.target.value })}
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{isAr ? 'سعر البيع' : 'Sale Price'}</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={createForm.sale_price}
+                  onChange={(e) => setCreateForm({ ...createForm, sale_price: e.target.value })}
+                  placeholder={isAr ? 'اختياري' : 'Optional'}
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -248,10 +314,11 @@ const Invoices = () => {
 
             <div className="space-y-2">
               <Label>{isAr ? 'ملاحظات' : 'Notes'}</Label>
-              <Input
+              <Textarea
                 value={createForm.notes}
                 onChange={(e) => setCreateForm({ ...createForm, notes: e.target.value })}
                 placeholder={isAr ? 'ملاحظات اختيارية' : 'Optional notes'}
+                rows={2}
               />
             </div>
           </div>

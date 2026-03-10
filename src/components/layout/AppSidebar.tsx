@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText } from 'lucide-react';
+import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText, LogOut } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -26,7 +26,7 @@ interface MenuCategory {
 }
 
 const AppSidebar = () => {
-  const { role, profile } = useAuth();
+  const { role, profile, signOut } = useAuth();
   const { t, language } = useLanguage();
   const { appLogo } = useAppSettings();
   const navigate = useNavigate();
@@ -39,6 +39,11 @@ const AppSidebar = () => {
       getAvatarSignedUrl(profile.avatar_url).then(setResolvedAvatarUrl);
     }
   }, [profile?.avatar_url]);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login');
+  };
 
   const categories: MenuCategory[] = [
     {
@@ -136,7 +141,7 @@ const AppSidebar = () => {
             <span className="text-sm text-sidebar-foreground/80">{isAr ? 'إعدادات التطبيق' : 'App Settings'}</span>
           </div>
 
-          {/* User profile */}
+          {/* User profile with logout */}
           <div
             className="flex items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent cursor-pointer transition-colors"
             onClick={() => navigate('/dashboard/profile')}
@@ -153,6 +158,16 @@ const AppSidebar = () => {
               </p>
               <p className="text-[11px] text-sidebar-foreground/60 truncate">{role || ''}</p>
             </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleLogout();
+              }}
+              className="p-1.5 rounded-md hover:bg-destructive/10 text-sidebar-foreground/50 hover:text-destructive transition-colors"
+              title={isAr ? 'تسجيل الخروج' : 'Logout'}
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </SidebarFooter>
