@@ -153,7 +153,7 @@ const Reports = () => {
           <div className="flex items-center justify-end">
             <Button variant="outline" size="sm" onClick={() => exportCSV(
               ['Student', 'Status', 'Date', 'Notes'],
-              attendance.map(a => [getStudentName(a.student_id), a.status, format(new Date(a.created_at), 'PP'), a.notes || '']),
+              sortedAttendance.map(a => [getStudentName(a.student_id), a.status, format(new Date(a.created_at), 'PP'), a.notes || '']),
               'attendance-report'
             )}>
               <Download className="h-4 w-4 me-2" />CSV

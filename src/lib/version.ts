@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.5.0';
+export const APP_VERSION = '1.6.0';
 export const APP_NAME = 'EduDash';
 export const COPYRIGHT_TEXT = '© 2026';
 export const COPYRIGHT_LINK = 'https://codecom.dev/';

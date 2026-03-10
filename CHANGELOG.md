@@ -2,6 +2,22 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [1.6.0] - 2026-03-10
+
+### Added
+- Custom app favicon (Islamic educational theme icon)
+- Sort toggle (newest/oldest) on Attendance, Timetable, Certificates, Reports, Invoices, and Subscriptions pages
+- Timetable calendar redesigned with custom grid layout (monthly & weekly views)
+- Monthly/weekly timeframe toggle on Timetable calendar view
+- Navigation controls (prev/next/today) on calendar
+- Lesson count indicators (dots) on calendar day cells
+- Pagination on Timetable list view (upcoming & past tabs)
+
+### Changed
+- Timetable calendar replaced with custom-built responsive calendar grid
+- Calendar day cells show lesson dot indicators instead of simple highlighting
+- Weekly view shows 7-day strip with lesson details panel
+
 ## [1.5.0] - 2026-03-10
 
 ### Added
@@ -63,78 +79,33 @@ All notable changes to EduDash will be documented in this file.
 ## [1.2.0] - 2026-03-09
 
 ### Added
-- Announcements page (`/dashboard/announcements`) with full CRUD and detail popup
-- Notifications page (`/dashboard/notifications`) with mark-read and navigation
-- Forgot Password page (`/forgot-password`) as standalone auth page
-- Button shape setting (rounded/circular/square) in App Settings
-- Certificate design selection (Classic, Modern, Elegant) with isolated print window
-- Support ticket detail UI with tabbed layout (Details, Notes, Contact)
-- WhatsApp/Email/Call contact buttons in support ticket detail
-- Resolution notes textarea in support tickets
+- Announcements page with full CRUD and detail popup
+- Notifications page with mark-read and navigation
+- Forgot Password page as standalone auth page
+- Button shape setting in App Settings
+- Certificate design selection with isolated print window
+- Support ticket detail UI with tabbed layout
 - Dashboard widget toggle for 12 individual widgets
-- Clickable stat cards navigating to related pages
-- Upcoming Lessons, Recent Subscriptions, Announcements dashboard widgets
-- "View All" buttons in TopBar announcements and notifications dropdowns
-- Announcement detail popup when clicking in TopBar dropdown
-- Notification click navigates to related page via `link` field
 - Custom scrollbar styling matching dashboard theme
-- Font preview loading only on Settings page (optimized)
-- `manage-accounts` edge function for email updates and user management
-- Islamic geometric corner patterns on auth page
 
 ### Changed
-- Sidebar menu reordered: Overview → Educate → Messages → Users → Finance
-- Added Announcements and Notifications to sidebar Messages category
-- Admin quick login password fixed to match actual credentials
-- Test accounts updated to `@codecom.dev` emails
-- Forgot password changed from inline handler to dedicated page link
-- TopBar badge position adjusted (slightly lower on icons)
-- Certificate print now opens isolated window instead of printing whole page
-- Dashboard calendar styled with gradient headers and ring indicators
-- All RLS policies converted from RESTRICTIVE to PERMISSIVE (fixes data visibility)
-
-### Fixed
-- Admin quick login not working (wrong password in TEST_ACCOUNTS)
-- Students/teachers not showing in dashboard (RESTRICTIVE RLS policies)
-- Certificate print printing entire dashboard page
-- Font preview not working in Settings page
-- Dark mode color issues with non-default color themes
+- Sidebar menu reordered
+- All RLS policies converted from RESTRICTIVE to PERMISSIVE
 
 ## [1.1.0] - 2026-03-09
 
 ### Added
-- Monthly Recurring Income (MRI) stat card for admin dashboard
+- Monthly Recurring Income stat card
 - Lessons calendar with day-by-day lesson view
-- Hover effects on all dashboard stat cards
 - Version management system and changelog
-- Copyright footer (CodeCom.dev)
-- New admin account creation via edge function
-- Modern Islamic-themed auth pages with geometric patterns
-- RTL sidebar layout fix
-
-### Changed
-- Redesigned Login and Signup pages with layered Islamic patterns
-- Enhanced dashboard with calendar and MRI statistics
+- Copyright footer
+- Modern Islamic-themed auth pages
 
 ### Security
-- Hardened RLS policies (RESTRICTIVE → PERMISSIVE conversion)
-- Role assignment locked to database trigger (defaults to student)
-- Restricted `has_role` function to postgres role only
+- Hardened RLS policies
+- Role assignment locked to database trigger
 
 ## [1.0.0] - 2026-03-08
 
 ### Added
 - Initial release of EduDash Islamic Educational Platform
-- Role-based authentication (Admin, Teacher, Student)
-- Course management with sections and lessons (12 lesson types)
-- Student management with teacher assignment
-- Teacher management with weekly schedules
-- Timetable with scheduling and attendance tracking
-- Subscription management (monthly/yearly)
-- Support ticket system with departments and priorities
-- Real-time chat between teachers and students
-- Notifications and announcements system
-- Profile management with avatar support
-- Bilingual support (English/Arabic) with RTL
-- Dark mode support
-- Islamic-themed UI with geometric patterns
