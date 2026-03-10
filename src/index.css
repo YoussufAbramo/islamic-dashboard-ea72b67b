@@ -570,6 +570,11 @@
     --sidebar-accent: 0 35% 18%;
     --sidebar-border: 0 30% 20%;
     --sidebar-ring: 15 60% 52%;
+    --sidebar-light-background: 0 15% 96%;
+    --sidebar-light-foreground: 0 25% 12%;
+    --sidebar-light-accent: 0 10% 90%;
+    --sidebar-light-accent-foreground: 0 25% 12%;
+    --sidebar-light-border: 0 10% 85%;
   }
   .dark.theme-crimson {
     --background: 0 25% 6%;
