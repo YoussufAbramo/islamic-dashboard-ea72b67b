@@ -280,11 +280,10 @@ const Invoices = () => {
                 <Label>{isAr ? 'السعر الأصلي' : 'Original Price'}</Label>
                 <Input
                   type="number"
-                  min="0"
-                  step="0.01"
                   value={createForm.original_price}
-                  onChange={(e) => setCreateForm({ ...createForm, original_price: e.target.value })}
-                  placeholder="0.00"
+                  readOnly
+                  disabled
+                  className="bg-muted"
                 />
               </div>
               <div className="space-y-2">
@@ -302,16 +301,12 @@ const Invoices = () => {
 
             <div className="space-y-2">
               <Label>{isAr ? 'الدورة المالية' : 'Billing Cycle'}</Label>
-              <Select
-                value={createForm.billing_cycle}
-                onValueChange={(v) => setCreateForm({ ...createForm, billing_cycle: v })}
-              >
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="monthly">{isAr ? 'شهري' : 'Monthly'}</SelectItem>
-                  <SelectItem value="yearly">{isAr ? 'سنوي' : 'Yearly'}</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                value={createForm.billing_cycle === 'yearly' ? (isAr ? 'سنوي' : 'Yearly') : (isAr ? 'شهري' : 'Monthly')}
+                readOnly
+                disabled
+                className="bg-muted"
+              />
             </div>
 
             <div className="space-y-2">
