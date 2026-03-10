@@ -63,6 +63,18 @@ const AppearanceSettings = () => {
     toast.success(isAr ? 'تم رفع الشعار' : 'Logo uploaded');
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, setter: (url: string) => void, prefix: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const ext = file.name.split('.').pop();
+    const path = `branding/${prefix}-${Date.now()}.${ext}`;
+    const { uploadAndGetSignedUrl } = await import('@/lib/storage');
+    const { signedUrl, error: uploadErr } = await uploadAndGetSignedUrl(path, file);
+    if (uploadErr) { toast.error(uploadErr); return; }
+    setter(signedUrl);
+    toast.success(isAr ? 'تم الرفع بنجاح' : 'Uploaded successfully');
+  };
+
   const shapeOptions: { value: ButtonShape; label: string; labelAr: string; icon: any }[] = [
     { value: 'rounded', label: 'Rounded', labelAr: 'مستدير', icon: RectangleHorizontal },
     { value: 'circular', label: 'Circular', labelAr: 'دائري', icon: Circle },
