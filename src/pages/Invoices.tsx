@@ -134,14 +134,25 @@ const Invoices = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{isAr ? 'الفواتير' : 'Invoices'}</h1>
-        {role === 'admin' && (
-          <Button onClick={() => { setCreateOpen(true); fetchFormData(); }}>
-            <Plus className="h-4 w-4 me-2" />
-            {isAr ? 'فاتورة جديدة' : 'New Invoice'}
-          </Button>
-        )}
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold shrink-0">{isAr ? 'الفواتير' : 'Invoices'}</h1>
+        <div className="flex items-center gap-2 ms-auto">
+          <div className="relative">
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={isAr ? 'بحث...' : 'Search...'}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="ps-9 w-48 sm:w-64"
+            />
+          </div>
+          {role === 'admin' && (
+            <Button onClick={() => { setCreateOpen(true); fetchFormData(); }}>
+              <Plus className="h-4 w-4 me-2" />
+              {isAr ? 'فاتورة جديدة' : 'New Invoice'}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Stats */}

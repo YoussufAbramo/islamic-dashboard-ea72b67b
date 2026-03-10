@@ -63,18 +63,19 @@ const Announcements = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">{isAr ? 'الإعلانات' : 'Announcements'}</h1>
-        {isAdmin && (
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="h-4 w-4 me-2" />{isAr ? 'إعلان جديد' : 'New Announcement'}
-          </Button>
-        )}
-      </div>
-
-      <div className="relative max-w-sm">
-        <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder={isAr ? 'بحث...' : 'Search...'} value={search} onChange={e => setSearch(e.target.value)} className="ps-9" />
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-3xl font-bold shrink-0">{isAr ? 'الإعلانات' : 'Announcements'}</h1>
+        <div className="flex items-center gap-2 ms-auto">
+          <div className="relative">
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder={isAr ? 'بحث...' : 'Search...'} value={search} onChange={e => setSearch(e.target.value)} className="ps-9 w-48 sm:w-64" />
+          </div>
+          {isAdmin && (
+            <Button onClick={() => setCreateOpen(true)}>
+              <Plus className="h-4 w-4 me-2" />{isAr ? 'إعلان جديد' : 'New Announcement'}
+            </Button>
+          )}
+        </div>
       </div>
 
       {filtered.length === 0 ? (
