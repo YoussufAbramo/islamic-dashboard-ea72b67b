@@ -29,6 +29,8 @@ interface Props {
   stampImage?: string;
 }
 
+const esc = (s: string) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
 const InvoicePreviewDialog = ({ open, onOpenChange, invoice, isAr, formatPrice, paymentGateway, appLogo, appName, onCopyUrl, role, signatureImage, stampImage }: Props) => {
   if (!invoice) return null;
 
@@ -40,7 +42,7 @@ const InvoicePreviewDialog = ({ open, onOpenChange, invoice, isAr, formatPrice, 
     if (!w) return;
     const inv = invoice;
     const gwName = gateway?.name || 'N/A';
-    w.document.write(`<!DOCTYPE html><html><head><title>Invoice ${inv.invoice_number}</title>
+    w.document.write(`<!DOCTYPE html><html><head><title>Invoice ${esc(inv.invoice_number || '')}</title>
       <style>body{font-family:system-ui;max-width:700px;margin:40px auto;padding:20px;color:#333}
       .header{display:flex;justify-content:space-between;border-bottom:2px solid #333;padding-bottom:20px;margin-bottom:20px}
       .amount{text-align:center;font-size:2em;font-weight:bold;padding:20px;background:#f5f5f5;border-radius:8px;margin:20px 0}
