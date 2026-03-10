@@ -256,6 +256,11 @@
     --sidebar-accent: 25 35% 18%;
     --sidebar-border: 25 30% 20%;
     --sidebar-ring: 35 70% 55%;
+    --sidebar-light-background: 35 20% 96%;
+    --sidebar-light-foreground: 25 30% 12%;
+    --sidebar-light-accent: 35 15% 90%;
+    --sidebar-light-accent-foreground: 25 30% 12%;
+    --sidebar-light-border: 35 15% 85%;
   }
   /* Desert - Dark */
   .dark.theme-desert {
