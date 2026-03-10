@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { usePagination } from '@/hooks/use-pagination';
+import PaginationControls from '@/components/PaginationControls';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
@@ -121,6 +123,8 @@ const Invoices = () => {
     return matchesStatus && matchesSearch;
   });
 
+  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+
   const showEmptyState = !loading && invoices.length === 0;
 
   const statusTabs = [
@@ -180,13 +184,14 @@ const Invoices = () => {
 
           {/* Table */}
           <InvoiceTable
-            invoices={filtered}
+            invoices={paginatedItems}
             loading={loading}
             isAr={isAr}
             formatPrice={formatPrice}
             onPreview={openPreview}
             onCopyUrl={copyInvoiceUrl}
           />
+          <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
         </>
       )}
 

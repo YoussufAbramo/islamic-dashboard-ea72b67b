@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { usePagination } from '@/hooks/use-pagination';
+import PaginationControls from '@/components/PaginationControls';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
@@ -130,6 +132,8 @@ const Certificates = () => {
     return title.includes(q) || recipient.includes(q) || course.includes(q) || number.includes(q);
   });
 
+  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filteredCerts);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3">
@@ -229,7 +233,7 @@ const Certificates = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCerts.map(cert => (
+                {paginatedItems.map(cert => (
                   <TableRow key={cert.id}>
                     <TableCell><Badge variant="outline">{cert.certificate_number}</Badge></TableCell>
                     <TableCell>{isAr && cert.title_ar ? cert.title_ar : cert.title}</TableCell>
@@ -252,6 +256,7 @@ const Certificates = () => {
           </CardContent>
         </Card>
       )}
+      <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
     </div>
   );
 };

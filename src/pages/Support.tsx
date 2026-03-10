@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { usePagination } from '@/hooks/use-pagination';
+import PaginationControls from '@/components/PaginationControls';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -75,6 +77,8 @@ const Support = () => {
 
   const filtered = tickets.filter((t) => t.subject.toLowerCase().includes(search.toLowerCase()) || t.name.toLowerCase().includes(search.toLowerCase()));
 
+  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
@@ -142,7 +146,7 @@ const Support = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((ticket) => (
+            {paginatedItems.map((ticket) => (
               <TableRow key={ticket.id}>
                 <TableCell className="font-medium">{ticket.subject}</TableCell>
                 <TableCell>{ticket.name}</TableCell>
@@ -158,6 +162,7 @@ const Support = () => {
           </TableBody>
         </Table>
       </div>
+      <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
 
       {/* Enhanced Detail Dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>

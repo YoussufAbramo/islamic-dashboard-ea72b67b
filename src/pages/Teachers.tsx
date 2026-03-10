@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { usePagination } from '@/hooks/use-pagination';
+import PaginationControls from '@/components/PaginationControls';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -74,6 +76,8 @@ const Teachers = () => {
     return name.toLowerCase().includes(search.toLowerCase());
   });
 
+  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
@@ -104,7 +108,7 @@ const Teachers = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((teacher) => (
+            {paginatedItems.map((teacher) => (
               <TableRow key={teacher.id}>
                 <TableCell className="font-medium">{teacher.profiles?.full_name}</TableCell>
                 <TableCell>{teacher.profiles?.phone}</TableCell>
@@ -119,6 +123,7 @@ const Teachers = () => {
           </TableBody>
         </Table>
       </div>
+      <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
 
       {/* Detail dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>

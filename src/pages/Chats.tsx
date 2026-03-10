@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { usePagination } from '@/hooks/use-pagination';
+import PaginationControls from '@/components/PaginationControls';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -138,6 +140,8 @@ const Chats = () => {
     return getChatLabel(chat).toLowerCase().includes(searchQuery.toLowerCase());
   });
 
+  const { currentPage, totalPages, paginatedItems: paginatedChats, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filteredChats);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
@@ -168,7 +172,7 @@ const Chats = () => {
           </CardHeader>
           <CardContent className="p-0">
             <ScrollArea className="h-[calc(100vh-320px)]">
-              {filteredChats.map((chat) => (
+              {paginatedChats.map((chat) => (
                 <div
                   key={chat.id}
                   className={`p-3 border-b cursor-pointer hover:bg-muted/50 transition-colors ${selectedChat?.id === chat.id ? 'bg-muted' : ''}`}
@@ -189,6 +193,7 @@ const Chats = () => {
                 </p>
               )}
             </ScrollArea>
+            <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
           </CardContent>
         </Card>
 
