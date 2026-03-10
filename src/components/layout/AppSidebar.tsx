@@ -93,6 +93,13 @@ const AppSidebar = () => {
     },
   ];
 
+  const { appLogo, appName, sidebarMode } = useAppSettings();
+
+  // Apply sidebar mode attribute to document for CSS targeting
+  useEffect(() => {
+    document.documentElement.setAttribute('data-sidebar-mode', sidebarMode);
+  }, [sidebarMode]);
+
   return (
     <Sidebar side={isAr ? 'right' : 'left'}>
       <SidebarHeader className="p-4 border-b border-sidebar-border">
