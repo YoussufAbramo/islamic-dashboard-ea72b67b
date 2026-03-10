@@ -333,13 +333,11 @@ Deno.serve(async (req) => {
       await tryDelete('support_tickets', adminClient.from('support_tickets').delete().neq('id', matchAll))
 
       // Delete non-admin students, teachers, profiles, roles
-      for (const adminId of adminIds) {
-        // Individual exclusion is more reliable
-      }
-      await tryDelete('students', adminClient.from('students').not('user_id', 'in', `(${adminIds.join(',')})`))
-      await tryDelete('teachers', adminClient.from('teachers').not('user_id', 'in', `(${adminIds.join(',')})`).delete())
-      await tryDelete('profiles', adminClient.from('profiles').not('id', 'in', `(${adminIds.join(',')})`).delete())
-      await tryDelete('user_roles', adminClient.from('user_roles').not('user_id', 'in', `(${adminIds.join(',')})`).delete())
+      await tryDelete('students', adminClient.from('students').delete().not('user_id', 'in', `(${adminIds.join(',')})`))
+      await tryDelete('teachers', adminClient.from('teachers').delete().not('user_id', 'in', `(${adminIds.join(',')})`))
+      await tryDelete('profiles', adminClient.from('profiles').delete().not('id', 'in', `(${adminIds.join(',')})`))
+      await tryDelete('user_roles', adminClient.from('user_roles').delete().not('user_id', 'in', `(${adminIds.join(',')})`))
+
 
       // Delete non-admin auth users
       const { data: { users } } = await adminClient.auth.admin.listUsers()
