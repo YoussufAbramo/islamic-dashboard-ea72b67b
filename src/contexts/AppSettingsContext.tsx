@@ -165,6 +165,8 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     localStorage.setItem('app_name', pending.appName);
     localStorage.setItem('app_description', pending.appDescription);
     localStorage.setItem('app_logo', pending.appLogo);
+    localStorage.setItem('app_signature_image', pending.signatureImage);
+    localStorage.setItem('app_stamp_image', pending.stampImage);
     localStorage.setItem('app_ltr_font', pending.ltrFont);
     localStorage.setItem('app_rtl_font', pending.rtlFont);
     localStorage.setItem('app_button_shape', pending.buttonShape);
