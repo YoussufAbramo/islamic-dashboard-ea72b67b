@@ -43,6 +43,7 @@ const Invoices = () => {
     original_price: '', sale_price: '', course_id: '',
   });
   const [createLoading, setCreateLoading] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const formatPrice = (amount: number) => `${currency.symbol}${amount.toFixed(currencyDecimals)}`;
 
