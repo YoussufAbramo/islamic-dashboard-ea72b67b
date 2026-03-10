@@ -174,6 +174,26 @@ const InvoiceView = () => {
             <p className="text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">{invoice.notes}</p>
           </div>
         )}
+
+        {/* Signature & Stamp */}
+        {(signatureImage || stampImage) && (
+          <div className="pt-4 border-t border-border print:border-border">
+            <div className="flex items-end gap-4">
+              {signatureImage && (
+                <div className={`space-y-1 ${signaturePosition === 'center' ? 'mx-auto' : signaturePosition === 'right' ? 'ms-auto' : ''}`}>
+                  <p className="text-xs text-muted-foreground">Signature</p>
+                  <img src={signatureImage} alt="Signature" className="h-16 w-auto object-contain" />
+                </div>
+              )}
+              {stampImage && (
+                <div className={`space-y-1 ${stampPosition === 'center' ? 'mx-auto' : stampPosition === 'right' ? 'ms-auto' : ''}`}>
+                  <p className="text-xs text-muted-foreground">Stamp</p>
+                  <img src={stampImage} alt="Stamp" className="h-16 w-auto object-contain" />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
