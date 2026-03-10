@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, DollarSign, HardDrive, ArrowDownUp, Construction } from 'lucide-react';
+import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, DollarSign, HardDrive } from 'lucide-react';
 import { toast } from 'sonner';
 import AppearanceSettings from '@/components/settings/AppearanceSettings';
 import PaymentGatewayCard from '@/components/settings/PaymentGatewayCard';
