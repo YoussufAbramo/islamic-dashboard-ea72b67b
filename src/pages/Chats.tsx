@@ -225,17 +225,56 @@ const Chats = () => {
         <Card className="md:col-span-2 flex flex-col">
           {selectedChat ? (
             <>
-              <CardHeader className="pb-2 flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-sm">{getChatLabel(selectedChat)}</CardTitle>
-                  {selectedChat.is_suspended && <Badge variant="destructive" className="text-xs mt-1">{t('chats.suspended')}</Badge>}
+              <CardHeader className="pb-2 flex-row items-center justify-between border-b bg-muted/30">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-9 w-9">
+                    <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+                      {getChatLabel(selectedChat).charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <CardTitle className="text-sm">{getChatLabel(selectedChat)}</CardTitle>
+                    <p className="text-[10px] text-muted-foreground">
+                      {selectedChat.is_group ? (isAr ? 'محادثة جماعية' : 'Group Chat') : (isAr ? 'محادثة مباشرة' : 'Direct Chat')}
+                    </p>
+                  </div>
+                  {selectedChat.is_suspended && <Badge variant="destructive" className="text-xs">{t('chats.suspended')}</Badge>}
                 </div>
-                {role === 'admin' && (
-                  <Button variant="outline" size="sm" onClick={toggleSuspend}>
-                    {selectedChat.is_suspended ? <CheckCircle className="h-3 w-3 me-1" /> : <Ban className="h-3 w-3 me-1" />}
-                    {selectedChat.is_suspended ? t('chats.unsuspend') : t('chats.suspend')}
-                  </Button>
-                )}
+                <div className="flex items-center gap-1">
+                  {selectedChat.is_group && (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="ghost" size="sm" className="gap-1 text-xs">
+                          <Users className="h-3 w-3" />
+                          {isAr ? 'الأعضاء' : 'Members'}
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-sm">
+                        <DialogHeader><DialogTitle>{isAr ? 'أعضاء المجموعة' : 'Group Members'}</DialogTitle></DialogHeader>
+                        <div className="space-y-2">
+                          {selectedChat.teachers?.profiles?.full_name && (
+                            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
+                              <Avatar className="h-7 w-7"><AvatarFallback className="text-xs bg-primary/10 text-primary">{selectedChat.teachers.profiles.full_name.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
+                              <div><p className="text-sm font-medium">{selectedChat.teachers.profiles.full_name}</p><p className="text-[10px] text-muted-foreground">{isAr ? 'معلم' : 'Teacher'}</p></div>
+                            </div>
+                          )}
+                          {selectedChat.students?.profiles?.full_name && (
+                            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
+                              <Avatar className="h-7 w-7"><AvatarFallback className="text-xs bg-primary/10 text-primary">{selectedChat.students.profiles.full_name.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
+                              <div><p className="text-sm font-medium">{selectedChat.students.profiles.full_name}</p><p className="text-[10px] text-muted-foreground">{isAr ? 'طالب' : 'Student'}</p></div>
+                            </div>
+                          )}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  )}
+                  {role === 'admin' && (
+                    <Button variant="outline" size="sm" onClick={toggleSuspend}>
+                      {selectedChat.is_suspended ? <CheckCircle className="h-3 w-3 me-1" /> : <Ban className="h-3 w-3 me-1" />}
+                      {selectedChat.is_suspended ? t('chats.unsuspend') : t('chats.suspend')}
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent className="flex-1 flex flex-col p-0">
                 <ScrollArea className="flex-1 relative">
