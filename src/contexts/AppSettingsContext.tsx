@@ -120,7 +120,7 @@ interface AppSettingsContextType {
 
 const AppSettingsContext = createContext<AppSettingsContextType | null>(null);
 
-const SETTINGS_VERSION = '2';
+const SETTINGS_VERSION = '3';
 
 function loadSaved(): PendingSettings {
   // Clear stale settings when defaults change
