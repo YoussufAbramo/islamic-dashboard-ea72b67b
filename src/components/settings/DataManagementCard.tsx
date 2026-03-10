@@ -197,7 +197,24 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
             </div>
           </div>
 
-          {/* Erase Data */}
+          {/* Erase Sample Data */}
+          <div className="flex items-start gap-4 p-4 rounded-lg border border-border">
+            <PackagePlus className="h-8 w-8 text-orange-500 shrink-0 mt-0.5" />
+            <div className="flex-1 space-y-2">
+              <h4 className="font-medium">{isAr ? 'مسح البيانات التجريبية' : 'Erase Sample Data'}</h4>
+              <p className="text-sm text-muted-foreground">
+                {isAr
+                  ? 'مسح البيانات التجريبية التي تم إضافتها فقط. لن يتأثر أي بيانات مستخدمين حقيقية.'
+                  : 'Erase only the sample data that was seeded. No real user data will be affected.'}
+              </p>
+              <Button variant="outline" size="sm" onClick={handleEraseSeedData} disabled={eraseSeedLoading}>
+                {eraseSeedLoading && <Loader2 className="h-4 w-4 me-1 animate-spin" />}
+                {isAr ? 'مسح البيانات التجريبية' : 'Erase Sample Data'}
+              </Button>
+            </div>
+          </div>
+
+          {/* Erase All Data */}
           <div className="flex items-start gap-4 p-4 rounded-lg border border-destructive/30 bg-destructive/5">
             <Trash2 className="h-8 w-8 text-destructive shrink-0 mt-0.5" />
             <div className="flex-1 space-y-2">

@@ -366,9 +366,6 @@ const AppearanceSettings = () => {
                 onSelect={(v) => updatePending({ ltrFont: v })}
                 type="ltr"
               />
-              <div className="p-3 rounded-lg border border-border bg-muted/30">
-                <p className="text-sm" style={{ fontFamily: `'${pending.ltrFont}', sans-serif` }}>The quick brown fox jumps over the lazy dog. 0123456789</p>
-              </div>
             </div>
             <div className="space-y-2">
               <Label>{isAr ? 'خط RTL (العربية)' : 'RTL Font (Arabic)'}</Label>
@@ -382,11 +379,14 @@ const AppearanceSettings = () => {
                 onSelect={(v) => updatePending({ rtlFont: v })}
                 type="rtl"
               />
-              <div className="p-3 rounded-lg border border-border bg-muted/30">
-                <p className="text-sm" dir="rtl" style={{ fontFamily: `'${pending.rtlFont}', sans-serif` }}>هذا نص تجريبي لمعاينة الخط العربي المختار. ٠١٢٣٤٥٦٧٨٩</p>
-              </div>
             </div>
           </div>
+          <p className="text-sm text-muted-foreground">
+            {isAr ? 'إذا كنت ترغب في معاينة الخطوط أو الحصول على المزيد، ' : 'If you want to preview the fonts or get more, '}
+            <a href="https://fonts.google.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+              {isAr ? 'اذهب إلى Google Fonts' : 'Go to Google Fonts'}
+            </a>
+          </p>
         </CardContent>
       </Card>
 

@@ -69,6 +69,26 @@ const GeneralSettings = () => {
           </div>
         </CardContent>
       </Card>
+      {/* Default Language */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Globe className="h-5 w-5 text-primary" />{isAr ? 'اللغة الافتراضية' : 'Default Language'}</CardTitle>
+          <CardDescription>{isAr ? 'اختر اللغة الافتراضية للتطبيق' : 'Choose the default language for the app'}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Label>{isAr ? 'اللغة' : 'Language'}</Label>
+            <Select value={pending.defaultLanguage} onValueChange={(v) => updatePending({ defaultLanguage: v as 'en' | 'ar' })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="ar">العربية (Arabic)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">{isAr ? 'اللغة التي سيتم استخدامها افتراضياً عند فتح التطبيق' : 'The language used by default when the app is opened'}</p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
