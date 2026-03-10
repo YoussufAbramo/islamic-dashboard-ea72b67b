@@ -69,6 +69,7 @@ interface PendingSettings {
   buttonShape: ButtonShape;
   currencyDecimals: number;
   paymentGateway: string;
+  defaultLanguage: 'en' | 'ar';
 }
 
 interface AppSettingsContextType {
