@@ -97,7 +97,7 @@ const AppSidebar = () => {
             <BookOpen className="h-6 w-6 text-gold" />
           )}
           <h2 className="text-lg font-bold font-amiri text-sidebar-foreground truncate">
-            {appName || (isAr ? 'منصة التعليم' : 'EduDash')}
+            {appName || (isAr ? 'منصة التعليم' : 'Islamic Dashboard')}
           </h2>
         </div>
       </SidebarHeader>

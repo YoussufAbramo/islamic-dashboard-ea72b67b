@@ -86,14 +86,18 @@ const Signup = () => {
 
       <div className="relative z-10 w-full max-w-md px-4 py-8">
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-4 islamic-arch-glow">
-            <BookOpen className="w-10 h-10 text-gold" />
-          </div>
+          {appLogo ? (
+            <img src={appLogo} alt="Logo" className="w-20 h-20 mx-auto mb-4 rounded-full object-cover border-2 border-primary/20" />
+          ) : (
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-4 islamic-arch-glow">
+              <BookOpen className="w-10 h-10 text-gold" />
+            </div>
+          )}
           <h1 className="text-4xl font-bold font-amiri text-gold">
-            {language === 'ar' ? 'منصة التعليم' : 'EduDash'}
+            {language === 'ar' ? (appName || 'منصة التعليم') : (appName || 'EduDash')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1 font-amiri">
-            {language === 'ar' ? 'بسم الله الرحمن الرحيم' : 'In the Name of Allah, the Most Gracious'}
+            {appDescription || (language === 'ar' ? 'بسم الله الرحمن الرحيم' : 'In the Name of Allah, the Most Gracious')}
           </p>
           <div className="flex items-center justify-center gap-2 mt-3">
             <div className="w-12 h-[1px] bg-gradient-to-r from-transparent to-[hsl(var(--gold))]/60" />
