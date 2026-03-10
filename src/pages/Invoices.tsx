@@ -22,7 +22,7 @@ import InvoiceEmptyState from '@/components/invoices/InvoiceEmptyState';
 const Invoices = () => {
   const { language } = useLanguage();
   const { role } = useAuth();
-  const { currency, currencyDecimals, paymentGateway, appLogo, appName, signatureImage, stampImage } = useAppSettings();
+  const { currency, currencyDecimals, paymentGateway, appLogo, appName, signatureImage, stampImage, signaturePosition, stampPosition } = useAppSettings();
   const isAr = language === 'ar';
 
   const [invoices, setInvoices] = useState<any[]>([]);
