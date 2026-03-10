@@ -165,15 +165,7 @@ const Chats = () => {
         <Card className="md:col-span-1">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">{t('chats.title')}</CardTitle>
-            <div className="relative mt-2">
-              <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder={language === 'ar' ? 'بحث في المحادثات...' : 'Search chats...'}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="ps-9 h-8 text-sm"
-              />
-            </div>
+          </CardHeader>
           </CardHeader>
           <CardContent className="p-0">
             <ScrollArea className="h-[calc(100vh-320px)]">

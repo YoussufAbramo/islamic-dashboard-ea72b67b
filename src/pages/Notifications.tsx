@@ -59,25 +59,23 @@ const Notifications = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">{isAr ? 'الإشعارات' : 'Notifications'}</h1>
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-3xl font-bold shrink-0">{isAr ? 'الإشعارات' : 'Notifications'}</h1>
+        <div className="flex items-center gap-2 ms-auto">
+          <div className="relative">
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={isAr ? 'بحث...' : 'Search...'}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="ps-9 w-48 sm:w-64"
+            />
+          </div>
           {unreadCount > 0 && <Badge>{unreadCount} {isAr ? 'غير مقروء' : 'unread'}</Badge>}
           <Button variant="outline" size="sm" onClick={markAllRead}>
             <CheckCheck className="h-4 w-4 me-1" />{isAr ? 'تحديد الكل كمقروء' : 'Mark All Read'}
           </Button>
         </div>
-      </div>
-
-      {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder={isAr ? 'بحث في الإشعارات...' : 'Search notifications...'}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="ps-9"
-        />
       </div>
 
       {filteredNotifications.length === 0 ? (
