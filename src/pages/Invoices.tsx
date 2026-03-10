@@ -13,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Search, Plus, FileText, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, Plus, FileText, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import InvoiceStatsCards from '@/components/invoices/InvoiceStatsCards';
 import InvoiceTable from '@/components/invoices/InvoiceTable';
