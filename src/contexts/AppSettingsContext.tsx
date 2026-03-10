@@ -113,6 +113,8 @@ interface AppSettingsContextType {
   setFavicon: (f: string) => void;
   defaultTimezone: string;
   setDefaultTimezone: (tz: string) => void;
+  sidebarMode: SidebarMode;
+  setSidebarMode: (m: SidebarMode) => void;
   pending: PendingSettings;
   updatePending: (partial: Partial<PendingSettings>) => void;
   saveSettings: () => void;
