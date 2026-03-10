@@ -9,22 +9,24 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Search, Eye, Plus } from 'lucide-react';
+import { Search, Eye, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Teachers = () => {
   const { t, language } = useLanguage();
   const { role } = useAuth();
+  const isAr = language === 'ar';
   const [teachers, setTeachers] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [detailOpen, setDetailOpen] = useState(false);
   const [selected, setSelected] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [editing, setEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ bio: '', specialization: '' });
+  const [editForm, setEditForm] = useState({ bio: '', specialization: '', full_name: '', phone: '', email: '' });
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
-  // Add teacher dialog
   const [addOpen, setAddOpen] = useState(false);
   const [addForm, setAddForm] = useState({ full_name: '', email: '', password: '', phone: '', specialization: '', bio: '' });
   const [addLoading, setAddLoading] = useState(false);
@@ -39,21 +41,30 @@ const Teachers = () => {
   const viewDetails = (teacher: any) => {
     setSelected(teacher);
     setProfile(teacher.profiles);
-    setEditForm({ bio: teacher.bio || '', specialization: teacher.specialization || '' });
+    setEditForm({ bio: teacher.bio || '', specialization: teacher.specialization || '', full_name: teacher.profiles?.full_name || '', phone: teacher.profiles?.phone || '', email: teacher.profiles?.email || '' });
     setDetailOpen(true);
     setEditing(false);
   };
 
   const saveEdit = async () => {
-    await supabase.from('teachers').update(editForm).eq('id', selected.id);
-    toast.success(language === 'ar' ? 'تم تحديث المعلم' : 'Teacher updated');
+    await supabase.from('teachers').update({ bio: editForm.bio, specialization: editForm.specialization }).eq('id', selected.id);
+    await supabase.from('profiles').update({ full_name: editForm.full_name, phone: editForm.phone, email: editForm.email }).eq('id', selected.user_id);
+    toast.success(isAr ? 'تم تحديث المعلم' : 'Teacher updated');
     setEditing(false);
+    fetchTeachers();
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    await supabase.from('teachers').delete().eq('id', deleteTarget);
+    toast.success(isAr ? 'تم حذف المعلم' : 'Teacher deleted');
+    setDeleteTarget(null);
     fetchTeachers();
   };
 
   const handleAddTeacher = async () => {
     if (!addForm.email || !addForm.password || !addForm.full_name) {
-      toast.error(language === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields');
+      toast.error(isAr ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields');
       return;
     }
     setAddLoading(true);
@@ -61,10 +72,8 @@ const Teachers = () => {
       body: { action: 'create', role: 'teacher', email: addForm.email, password: addForm.password, full_name: addForm.full_name, phone: addForm.phone, specialization: addForm.specialization, bio: addForm.bio },
     });
     setAddLoading(false);
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success(language === 'ar' ? 'تم إضافة المعلم' : 'Teacher added successfully');
+    if (error) { toast.error(error.message); } else {
+      toast.success(isAr ? 'تم إضافة المعلم' : 'Teacher added successfully');
       setAddOpen(false);
       setAddForm({ full_name: '', email: '', password: '', phone: '', specialization: '', bio: '' });
       fetchTeachers();
@@ -89,8 +98,7 @@ const Teachers = () => {
           </div>
           {role === 'admin' && (
             <Button onClick={() => setAddOpen(true)}>
-              <Plus className="h-4 w-4 me-2" />
-              {language === 'ar' ? 'إضافة معلم' : 'Add Teacher'}
+              <Plus className="h-4 w-4 me-2" />{isAr ? 'إضافة معلم' : 'Add Teacher'}
             </Button>
           )}
         </div>
@@ -114,8 +122,9 @@ const Teachers = () => {
                 <TableCell>{teacher.profiles?.phone}</TableCell>
                 <TableCell>{teacher.profiles?.email}</TableCell>
                 <TableCell>{teacher.specialization}</TableCell>
-                <TableCell>
+                <TableCell className="flex gap-1">
                   <Button variant="ghost" size="icon" onClick={() => viewDetails(teacher)}><Eye className="h-4 w-4" /></Button>
+                  {role === 'admin' && <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => setDeleteTarget(teacher.id)}><Trash2 className="h-4 w-4" /></Button>}
                 </TableCell>
               </TableRow>
             ))}
@@ -125,19 +134,18 @@ const Teachers = () => {
       </div>
       <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
 
-      {/* Detail dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{t('teachers.details')}</DialogTitle></DialogHeader>
           {selected && profile && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div><Label>{t('teachers.name')}</Label><p className="font-medium">{profile.full_name}</p></div>
-                <div><Label>{t('teachers.email')}</Label><p>{profile.email}</p></div>
-                <div><Label>{t('teachers.phone')}</Label><p>{profile.phone}</p></div>
-              </div>
               {editing ? (
-                <div className="space-y-3 border-t pt-3">
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div><Label>{t('teachers.name')}</Label><Input value={editForm.full_name} onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })} /></div>
+                    <div><Label>{t('teachers.email')}</Label><Input value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} /></div>
+                    <div><Label>{t('teachers.phone')}</Label><Input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} /></div>
+                  </div>
                   <div><Label>{t('teachers.specialization')}</Label><Input value={editForm.specialization} onChange={(e) => setEditForm({ ...editForm, specialization: e.target.value })} /></div>
                   <div><Label>{t('teachers.bio')}</Label><Textarea value={editForm.bio} onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })} /></div>
                   <div className="flex gap-2">
@@ -146,34 +154,53 @@ const Teachers = () => {
                   </div>
                 </div>
               ) : (
-                <div className="border-t pt-3 space-y-2">
-                  <div><Label>{t('teachers.specialization')}</Label><p>{selected.specialization || '-'}</p></div>
-                  <div><Label>{t('teachers.bio')}</Label><p>{selected.bio || '-'}</p></div>
-                  <Button variant="outline" size="sm" onClick={() => setEditing(true)}>{t('common.edit')}</Button>
-                </div>
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div><Label>{t('teachers.name')}</Label><p className="font-medium">{profile.full_name}</p></div>
+                    <div><Label>{t('teachers.email')}</Label><p>{profile.email}</p></div>
+                    <div><Label>{t('teachers.phone')}</Label><p>{profile.phone}</p></div>
+                  </div>
+                  <div className="border-t pt-3 space-y-2">
+                    <div><Label>{t('teachers.specialization')}</Label><p>{selected.specialization || '-'}</p></div>
+                    <div><Label>{t('teachers.bio')}</Label><p>{selected.bio || '-'}</p></div>
+                    <Button variant="outline" size="sm" onClick={() => setEditing(true)}>{t('common.edit')}</Button>
+                  </div>
+                </>
               )}
             </div>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* Add teacher dialog */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{language === 'ar' ? 'إضافة معلم جديد' : 'Add New Teacher'}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{isAr ? 'إضافة معلم جديد' : 'Add New Teacher'}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div><Label>{t('auth.fullName')} *</Label><Input value={addForm.full_name} onChange={(e) => setAddForm({ ...addForm, full_name: e.target.value })} /></div>
             <div><Label>{t('auth.email')} *</Label><Input type="email" value={addForm.email} onChange={(e) => setAddForm({ ...addForm, email: e.target.value })} /></div>
-            <div><Label>{t('auth.password')} *</Label><Input type="password" value={addForm.password} onChange={(e) => setAddForm({ ...addForm, password: e.target.value })} placeholder={language === 'ar' ? '6 أحرف على الأقل' : 'Min 6 characters'} /></div>
+            <div><Label>{t('auth.password')} *</Label><Input type="password" value={addForm.password} onChange={(e) => setAddForm({ ...addForm, password: e.target.value })} placeholder={isAr ? '6 أحرف على الأقل' : 'Min 6 characters'} /></div>
             <div><Label>{t('auth.phone')}</Label><Input value={addForm.phone} onChange={(e) => setAddForm({ ...addForm, phone: e.target.value })} /></div>
             <div><Label>{t('teachers.specialization')}</Label><Input value={addForm.specialization} onChange={(e) => setAddForm({ ...addForm, specialization: e.target.value })} /></div>
             <div><Label>{t('teachers.bio')}</Label><Textarea value={addForm.bio} onChange={(e) => setAddForm({ ...addForm, bio: e.target.value })} /></div>
             <Button onClick={handleAddTeacher} disabled={addLoading} className="w-full">
-              {addLoading ? t('common.loading') : (language === 'ar' ? 'إضافة المعلم' : 'Add Teacher')}
+              {addLoading ? t('common.loading') : (isAr ? 'إضافة المعلم' : 'Add Teacher')}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{isAr ? 'حذف المعلم' : 'Delete Teacher'}</AlertDialogTitle>
+            <AlertDialogDescription>{isAr ? 'هل أنت متأكد؟ لا يمكن التراجع.' : 'Are you sure? This cannot be undone.'}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDelete}>{isAr ? 'حذف' : 'Delete'}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

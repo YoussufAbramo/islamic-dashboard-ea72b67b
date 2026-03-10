@@ -10,6 +10,8 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { format, isSameDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addMonths, addWeeks, eachDayOfInterval, isToday, isSameMonth } from 'date-fns';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
 const StatCard = ({ title, value, icon: Icon, alert, onClick }: { title: string; value: number | string; icon: any; alert?: boolean; onClick?: () => void }) => (
   <Card className={`hover:shadow-lg hover:scale-[1.02] hover:-translate-y-1 transition-all duration-200 cursor-pointer hover:border-primary/40 hover:shadow-primary/10 ${alert ? 'border-destructive/50' : ''}`} onClick={onClick}>
@@ -38,7 +40,8 @@ type WidgetKey =
   | 'attendanceOverview' | 'certificatesIssued' | 'supportOverview'
   | 'teacherOverview' | 'announcementsWidget' | 'chatsOverview'
   | 'calendar' | 'upcomingLessons' | 'recentActivity'
-  | 'recentSubscriptions' | 'topStudents';
+  | 'recentSubscriptions' | 'topStudents'
+  | 'salesGraph' | 'attendanceGraph';
 
 const DEFAULT_WIDGETS: Record<WidgetKey, boolean> = {
   statCourses: true, statStudents: true, statTeachers: true, statSubscriptions: true,
@@ -47,6 +50,7 @@ const DEFAULT_WIDGETS: Record<WidgetKey, boolean> = {
   teacherOverview: true, announcementsWidget: true, chatsOverview: true,
   calendar: true, upcomingLessons: true, recentActivity: true,
   recentSubscriptions: true, topStudents: true,
+  salesGraph: true, attendanceGraph: true,
 };
 
 const WIDGET_LABELS: Record<WidgetKey, { en: string; ar: string }> = {
@@ -69,15 +73,18 @@ const WIDGET_LABELS: Record<WidgetKey, { en: string; ar: string }> = {
   recentActivity: { en: 'Recent Activity', ar: 'النشاط الأخير' },
   recentSubscriptions: { en: 'Recent Subscriptions', ar: 'الاشتراكات الأخيرة' },
   topStudents: { en: 'Top Students', ar: 'أفضل الطلاب' },
+  salesGraph: { en: 'Sales Performance', ar: 'أداء المبيعات' },
+  attendanceGraph: { en: 'Attendance Performance', ar: 'أداء الحضور' },
 };
 
 interface WidgetCategory { label: string; labelAr: string; keys: WidgetKey[]; }
 
-type SectionKey = 'stats' | 'overview' | 'upcomingLessons' | 'recentSubscriptions' | 'calendar' | 'recentActivity';
+type SectionKey = 'graphs' | 'stats' | 'overview' | 'upcomingLessons' | 'recentSubscriptions' | 'calendar' | 'recentActivity';
 
-const DEFAULT_SECTION_ORDER: SectionKey[] = ['stats', 'overview', 'upcomingLessons', 'recentSubscriptions', 'calendar', 'recentActivity'];
+const DEFAULT_SECTION_ORDER: SectionKey[] = ['graphs', 'stats', 'overview', 'upcomingLessons', 'recentSubscriptions', 'calendar', 'recentActivity'];
 
 const SECTION_LABELS: Record<SectionKey, { en: string; ar: string }> = {
+  graphs: { en: '📈 Performance Graphs', ar: '📈 رسوم الأداء' },
   stats: { en: '📊 Statistics Cards', ar: '📊 بطاقات الإحصائيات' },
   overview: { en: '📋 Overview Cards', ar: '📋 بطاقات النظرة العامة' },
   upcomingLessons: { en: '📅 Upcoming Lessons', ar: '📅 الدروس القادمة' },
@@ -87,6 +94,7 @@ const SECTION_LABELS: Record<SectionKey, { en: string; ar: string }> = {
 };
 
 const WIDGET_CATEGORIES: WidgetCategory[] = [
+  { label: '📈 Performance Graphs', labelAr: '📈 رسوم الأداء', keys: ['salesGraph', 'attendanceGraph'] },
   { label: '📊 Statistics Cards', labelAr: '📊 بطاقات الإحصائيات', keys: ['statCourses', 'statStudents', 'statTeachers', 'statSubscriptions', 'statTickets', 'statLessons', 'statWeeklyLessons', 'statMri'] },
   { label: '📋 Overview Cards', labelAr: '📋 بطاقات النظرة العامة', keys: ['attendanceOverview', 'certificatesIssued', 'supportOverview', 'teacherOverview', 'announcementsWidget', 'chatsOverview'] },
   { label: '📅 Schedule & Activity', labelAr: '📅 الجدول والنشاط', keys: ['calendar', 'upcomingLessons', 'recentActivity', 'recentSubscriptions', 'topStudents'] },
@@ -107,6 +115,8 @@ function migrateWidgets(saved: any): Record<WidgetKey, boolean> {
   return result;
 }
 
+const CHART_COLORS = ['hsl(var(--primary))', 'hsl(var(--primary) / 0.7)', 'hsl(var(--primary) / 0.5)', 'hsl(var(--primary) / 0.3)'];
+
 const Dashboard = () => {
   const { role, profile } = useAuth();
   const { t, language } = useLanguage();
@@ -121,13 +131,21 @@ const Dashboard = () => {
   const [recentSubs, setRecentSubs] = useState<any[]>([]);
   const [recentAnnouncements, setRecentAnnouncements] = useState<any[]>([]);
   const [editMode, setEditMode] = useState(false);
+  const [salesData, setSalesData] = useState<any[]>([]);
+  const [attendanceData, setAttendanceData] = useState<any[]>([]);
   const [widgets, setWidgets] = useState<Record<WidgetKey, boolean>>(() => {
     const saved = localStorage.getItem('dashboard_widgets');
     return migrateWidgets(saved ? JSON.parse(saved) : null);
   });
   const [sectionOrder, setSectionOrder] = useState<SectionKey[]>(() => {
     const saved = localStorage.getItem('dashboard_section_order');
-    return saved ? JSON.parse(saved) : DEFAULT_SECTION_ORDER;
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Ensure 'graphs' is included
+      if (!parsed.includes('graphs')) return ['graphs', ...parsed];
+      return parsed;
+    }
+    return DEFAULT_SECTION_ORDER;
   });
   const isAr = language === 'ar';
   const isAdmin = role === 'admin';
@@ -161,7 +179,7 @@ const Dashboard = () => {
         supabase.from('courses').select('id', { count: 'exact', head: true }),
         supabase.from('students').select('id', { count: 'exact', head: true }),
         supabase.from('teachers').select('id', { count: 'exact', head: true }),
-        supabase.from('subscriptions').select('id, price', { count: 'exact' }).eq('status', 'active'),
+        supabase.from('subscriptions').select('id, price, created_at', { count: 'exact' }).eq('status', 'active'),
         supabase.from('support_tickets').select('id', { count: 'exact', head: true }).eq('status', 'open'),
         supabase.from('timetable_entries').select('id', { count: 'exact', head: true }).gte('scheduled_at', now.toISOString()),
         supabase.from('timetable_entries').select('id, status').gte('scheduled_at', weekStart.toISOString()).lte('scheduled_at', weekEnd.toISOString()),
@@ -171,7 +189,8 @@ const Dashboard = () => {
         supabase.from('announcements').select('id', { count: 'exact', head: true }).eq('is_active', true),
       ]);
 
-      const mri = (subs.data || []).reduce((sum: number, s: any) => sum + (Number(s.price) || 0), 0);
+      const subsData = subs.data || [];
+      const mri = subsData.reduce((sum: number, s: any) => sum + (Number(s.price) || 0), 0);
       const weekData = weeklyEntries.data || [];
       const absences = weekData.filter((e: any) => e.status === 'cancelled').length;
 
@@ -182,6 +201,26 @@ const Dashboard = () => {
         certificates: certs.count || 0, attendance: attendanceCount.count || 0,
         chats: chatCount.count || 0, announcements: announcementsCount.count || 0,
       });
+
+      // Build sales data by month (last 6 months)
+      const monthlyData: Record<string, number> = {};
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(); d.setMonth(d.getMonth() - i);
+        const key = format(d, 'MMM');
+        monthlyData[key] = 0;
+      }
+      subsData.forEach((s: any) => {
+        const key = format(new Date(s.created_at), 'MMM');
+        if (key in monthlyData) monthlyData[key] += Number(s.price) || 0;
+      });
+      setSalesData(Object.entries(monthlyData).map(([month, revenue]) => ({ month, revenue })));
+    };
+
+    const fetchAttendanceStats = async () => {
+      const { data } = await supabase.from('attendance').select('status');
+      const statusCounts: Record<string, number> = { present: 0, absent: 0, late: 0, excused: 0 };
+      (data || []).forEach((a: any) => { statusCounts[a.status] = (statusCounts[a.status] || 0) + 1; });
+      setAttendanceData(Object.entries(statusCounts).filter(([, v]) => v > 0).map(([name, value]) => ({ name, value })));
     };
 
     const fetchTimetable = async () => {
@@ -197,6 +236,7 @@ const Dashboard = () => {
     };
 
     fetchStats();
+    fetchAttendanceStats();
     fetchTimetable();
     fetchRecent();
   }, []);
@@ -212,7 +252,6 @@ const Dashboard = () => {
 
   const hasAnyStat = (['statCourses', 'statStudents', 'statTeachers', 'statSubscriptions', 'statTickets', 'statLessons', 'statWeeklyLessons', 'statMri'] as WidgetKey[]).some(k => widgets[k]);
 
-  // Calendar logic (matching Timetable page)
   const calendarDays = useMemo(() => {
     if (calendarMode === 'monthly') {
       const monthStart = startOfMonth(currentDate);
@@ -241,6 +280,10 @@ const Dashboard = () => {
     ? ['اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت', 'أحد']
     : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+  const salesChartConfig = { revenue: { label: isAr ? 'الإيرادات' : 'Revenue', color: 'hsl(var(--primary))' } };
+  const attendanceChartConfig = { present: { label: isAr ? 'حاضر' : 'Present', color: 'hsl(var(--primary))' }, absent: { label: isAr ? 'غائب' : 'Absent', color: 'hsl(var(--destructive))' }, late: { label: isAr ? 'متأخر' : 'Late', color: 'hsl(var(--primary) / 0.5)' }, excused: { label: isAr ? 'معذور' : 'Excused', color: 'hsl(var(--primary) / 0.3)' } };
+  const attendancePieColors = ['hsl(var(--primary))', 'hsl(0 84% 60%)', 'hsl(var(--primary) / 0.5)', 'hsl(var(--primary) / 0.3)'];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -253,7 +296,6 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* Edit Mode Panel */}
       {editMode && isAdmin && (
         <Card className="border-primary/30 bg-primary/5">
           <CardContent className="pt-4 space-y-4">
@@ -287,7 +329,6 @@ const Dashboard = () => {
         </Card>
       )}
 
-      {/* Teacher Stats */}
       {role === 'teacher' && (
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <StatCard title={t('dashboard.myStudents')} value={stats.students} icon={GraduationCap} onClick={() => navigate('/dashboard/students')} />
@@ -296,7 +337,6 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Student Stats */}
       {role === 'student' && (
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <StatCard title={t('dashboard.myCourses')} value={stats.courses} icon={BookOpen} onClick={() => navigate('/dashboard/courses')} />
@@ -305,9 +345,51 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Admin sections rendered in custom order */}
       {isAdmin && sectionOrder.map((sectionKey) => {
         switch (sectionKey) {
+          case 'graphs': {
+            const showSales = widgets.salesGraph;
+            const showAttendance = widgets.attendanceGraph;
+            if (!showSales && !showAttendance) return null;
+            return (
+              <div key={sectionKey} className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+                {showSales && (
+                  <Card>
+                    <CardHeader><CardTitle className="text-sm flex items-center gap-2"><DollarSign className="h-4 w-4 text-primary" />{isAr ? 'أداء المبيعات' : 'Sales Performance'}</CardTitle></CardHeader>
+                    <CardContent>
+                      <ChartContainer config={salesChartConfig} className="h-[250px] w-full">
+                        <BarChart data={salesData}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                          <XAxis dataKey="month" className="text-xs" />
+                          <YAxis className="text-xs" />
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ChartContainer>
+                    </CardContent>
+                  </Card>
+                )}
+                {showAttendance && (
+                  <Card>
+                    <CardHeader><CardTitle className="text-sm flex items-center gap-2"><ClipboardCheck className="h-4 w-4 text-primary" />{isAr ? 'أداء الحضور' : 'Attendance Performance'}</CardTitle></CardHeader>
+                    <CardContent>
+                      <ChartContainer config={attendanceChartConfig} className="h-[250px] w-full">
+                        <PieChart>
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <Pie data={attendanceData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                            {attendanceData.map((_, index) => (
+                              <Cell key={`cell-${index}`} fill={attendancePieColors[index % attendancePieColors.length]} />
+                            ))}
+                          </Pie>
+                        </PieChart>
+                      </ChartContainer>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            );
+          }
+
           case 'stats':
             return hasAnyStat ? (
               <div key={sectionKey} className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -429,7 +511,6 @@ const Dashboard = () => {
           case 'calendar':
             return widgets.calendar ? (
               <div key={sectionKey} className="space-y-4">
-                {/* Calendar Controls */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <CalendarIcon className="h-5 w-5 text-primary" />
@@ -463,7 +544,6 @@ const Dashboard = () => {
                 </div>
 
                 <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
-                  {/* Calendar Grid */}
                   <Card className="lg:col-span-2">
                     <CardContent className="pt-4">
                       <div className="grid grid-cols-7 gap-1 mb-1">
@@ -494,16 +574,9 @@ const Dashboard = () => {
                               {count > 0 && (
                                 <div className="flex gap-0.5 mt-1">
                                   {Array.from({ length: Math.min(count, 3) }).map((_, i) => (
-                                    <div
-                                      key={i}
-                                      className={`w-1.5 h-1.5 rounded-full ${
-                                        isSelected ? 'bg-primary-foreground' : 'bg-primary'
-                                      }`}
-                                    />
+                                    <div key={i} className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-primary-foreground' : 'bg-primary'}`} />
                                   ))}
-                                  {count > 3 && (
-                                    <span className={`text-[8px] ${isSelected ? 'text-primary-foreground' : 'text-primary'}`}>+{count - 3}</span>
-                                  )}
+                                  {count > 3 && <span className={`text-[8px] ${isSelected ? 'text-primary-foreground' : 'text-primary'}`}>+{count - 3}</span>}
                                 </div>
                               )}
                             </button>
@@ -513,21 +586,14 @@ const Dashboard = () => {
                     </CardContent>
                   </Card>
 
-                  {/* Day Details */}
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm">
-                        {format(selectedDate, 'EEEE, MMMM d, yyyy')}
-                      </CardTitle>
-                      <p className="text-xs text-muted-foreground">
-                        {dayLessons.length} {isAr ? 'دروس' : 'lessons'}
-                      </p>
+                      <CardTitle className="text-sm">{format(selectedDate, 'EEEE, MMMM d, yyyy')}</CardTitle>
+                      <p className="text-xs text-muted-foreground">{dayLessons.length} {isAr ? 'دروس' : 'lessons'}</p>
                     </CardHeader>
                     <CardContent>
                       {dayLessons.length === 0 ? (
-                        <p className="text-muted-foreground text-sm py-8 text-center">
-                          {isAr ? 'لا توجد دروس في هذا اليوم' : 'No lessons on this day'}
-                        </p>
+                        <p className="text-muted-foreground text-sm py-8 text-center">{isAr ? 'لا توجد دروس في هذا اليوم' : 'No lessons on this day'}</p>
                       ) : (
                         <div className="space-y-2">
                           {dayLessons.map((lesson) => (

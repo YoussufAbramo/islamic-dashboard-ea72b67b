@@ -34,29 +34,17 @@ const THEMES: { value: ColorTheme; label: string; labelAr: string; color: string
 ];
 
 export const LTR_FONTS = [
-  { value: 'Inter', label: 'Inter' },
-  { value: 'Roboto', label: 'Roboto' },
-  { value: 'Poppins', label: 'Poppins' },
-  { value: 'Open Sans', label: 'Open Sans' },
-  { value: 'Lato', label: 'Lato' },
-  { value: 'Montserrat', label: 'Montserrat' },
-  { value: 'Nunito', label: 'Nunito' },
-  { value: 'Raleway', label: 'Raleway' },
-  { value: 'Source Sans 3', label: 'Source Sans 3' },
+  { value: 'Inter', label: 'Inter' }, { value: 'Roboto', label: 'Roboto' }, { value: 'Poppins', label: 'Poppins' },
+  { value: 'Open Sans', label: 'Open Sans' }, { value: 'Lato', label: 'Lato' }, { value: 'Montserrat', label: 'Montserrat' },
+  { value: 'Nunito', label: 'Nunito' }, { value: 'Raleway', label: 'Raleway' }, { value: 'Source Sans 3', label: 'Source Sans 3' },
   { value: 'DM Sans', label: 'DM Sans' },
 ];
 
 export const RTL_FONTS = [
-  { value: 'Cairo', label: 'Cairo' },
-  { value: 'Tajawal', label: 'Tajawal' },
-  { value: 'Noto Kufi Arabic', label: 'Noto Kufi Arabic' },
-  { value: 'Almarai', label: 'Almarai' },
-  { value: 'IBM Plex Sans Arabic', label: 'IBM Plex Sans Arabic' },
-  { value: 'Readex Pro', label: 'Readex Pro' },
-  { value: 'Rubik', label: 'Rubik' },
-  { value: 'Changa', label: 'Changa' },
-  { value: 'El Messiri', label: 'El Messiri' },
-  { value: 'Noto Sans Arabic', label: 'Noto Sans Arabic' },
+  { value: 'Cairo', label: 'Cairo' }, { value: 'Tajawal', label: 'Tajawal' }, { value: 'Noto Kufi Arabic', label: 'Noto Kufi Arabic' },
+  { value: 'Almarai', label: 'Almarai' }, { value: 'IBM Plex Sans Arabic', label: 'IBM Plex Sans Arabic' },
+  { value: 'Readex Pro', label: 'Readex Pro' }, { value: 'Rubik', label: 'Rubik' }, { value: 'Changa', label: 'Changa' },
+  { value: 'El Messiri', label: 'El Messiri' }, { value: 'Noto Sans Arabic', label: 'Noto Sans Arabic' },
 ];
 
 interface PendingSettings {
@@ -75,6 +63,7 @@ interface PendingSettings {
   currencyDecimals: number;
   paymentGateway: string;
   defaultLanguage: 'en' | 'ar';
+  defaultTimezone: string;
 }
 
 interface AppSettingsContextType {
@@ -110,6 +99,8 @@ interface AppSettingsContextType {
   setPaymentGateway: (g: string) => void;
   favicon: string;
   setFavicon: (f: string) => void;
+  defaultTimezone: string;
+  setDefaultTimezone: (tz: string) => void;
   pending: PendingSettings;
   updatePending: (partial: Partial<PendingSettings>) => void;
   saveSettings: () => void;
@@ -136,6 +127,7 @@ function loadSaved(): PendingSettings {
     currencyDecimals: parseInt(localStorage.getItem('app_currency_decimals') || '2', 10),
     paymentGateway: localStorage.getItem('app_payment_gateway') || '',
     defaultLanguage: (localStorage.getItem('app_default_language') as 'en' | 'ar') || 'en',
+    defaultTimezone: localStorage.getItem('app_default_timezone') || Intl.DateTimeFormat().resolvedOptions().timeZone,
   };
 }
 
@@ -144,53 +136,35 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [pending, setPending] = useState<PendingSettings>(loadSaved);
   const [favicon, setFaviconState] = useState(() => localStorage.getItem('app_favicon') || '');
 
-  // Apply favicon
   useEffect(() => {
     if (favicon) {
       let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        document.head.appendChild(link);
-      }
+      if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
       link.href = favicon;
     }
   }, [favicon]);
 
-  const setFavicon = useCallback((url: string) => {
-    localStorage.setItem('app_favicon', url);
-    setFaviconState(url);
-  }, []);
+  const setFavicon = useCallback((url: string) => { localStorage.setItem('app_favicon', url); setFaviconState(url); }, []);
 
-  // Apply theme class to root
   useEffect(() => {
     const root = document.documentElement;
     root.classList.remove('theme-ocean', 'theme-purple', 'theme-desert', 'theme-midnight');
-    if (saved.colorTheme !== 'emerald') {
-      root.classList.add(`theme-${saved.colorTheme}`);
-    }
+    if (saved.colorTheme !== 'emerald') root.classList.add(`theme-${saved.colorTheme}`);
   }, [saved.colorTheme]);
 
-  // Apply button shape
   useEffect(() => {
     const root = document.documentElement;
     root.classList.remove('btn-rounded', 'btn-circular', 'btn-square');
     root.classList.add(`btn-${saved.buttonShape}`);
   }, [saved.buttonShape]);
 
-  // Apply fonts
   useEffect(() => {
     document.documentElement.style.setProperty('--font-ltr', `'${saved.ltrFont}', sans-serif`);
     document.documentElement.style.setProperty('--font-rtl', `'${saved.rtlFont}', sans-serif`);
     const families = [saved.ltrFont, saved.rtlFont].map(f => f.replace(/ /g, '+')).join('&family=');
     const linkId = 'dynamic-google-fonts';
     let link = document.getElementById(linkId) as HTMLLinkElement;
-    if (!link) {
-      link = document.createElement('link');
-      link.id = linkId;
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
-    }
+    if (!link) { link = document.createElement('link'); link.id = linkId; link.rel = 'stylesheet'; document.head.appendChild(link); }
     link.href = `https://fonts.googleapis.com/css2?family=${families}:wght@300;400;500;600;700&display=swap`;
   }, [saved.ltrFont, saved.rtlFont]);
 
@@ -212,36 +186,20 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     localStorage.setItem('app_currency_decimals', String(pending.currencyDecimals));
     localStorage.setItem('app_payment_gateway', pending.paymentGateway);
     localStorage.setItem('app_default_language', pending.defaultLanguage);
+    localStorage.setItem('app_default_timezone', pending.defaultTimezone);
     setSaved({ ...pending });
   }, [pending]);
 
-  const discardChanges = useCallback(() => {
-    setPending({ ...saved });
-  }, [saved]);
-
-  const updatePending = useCallback((partial: Partial<PendingSettings>) => {
-    setPending(prev => ({ ...prev, ...partial }));
-  }, []);
+  const discardChanges = useCallback(() => { setPending({ ...saved }); }, [saved]);
+  const updatePending = useCallback((partial: Partial<PendingSettings>) => { setPending(prev => ({ ...prev, ...partial })); }, []);
 
   const setCurrency = useCallback((c: Currency) => { setPending(p => ({ ...p, currency: c })); }, []);
   const setColorTheme = useCallback((t: ColorTheme) => { setPending(p => ({ ...p, colorTheme: t })); }, []);
   const setAppName = useCallback((n: string) => { setPending(p => ({ ...p, appName: n })); }, []);
   const setAppDescription = useCallback((d: string) => { setPending(p => ({ ...p, appDescription: d })); }, []);
-  const setAppLogo = useCallback((l: string) => {
-    localStorage.setItem('app_logo', l);
-    setSaved(s => ({ ...s, appLogo: l }));
-    setPending(p => ({ ...p, appLogo: l }));
-  }, []);
-  const setSignatureImage = useCallback((s: string) => {
-    localStorage.setItem('app_signature_image', s);
-    setSaved(prev => ({ ...prev, signatureImage: s }));
-    setPending(prev => ({ ...prev, signatureImage: s }));
-  }, []);
-  const setStampImage = useCallback((s: string) => {
-    localStorage.setItem('app_stamp_image', s);
-    setSaved(prev => ({ ...prev, stampImage: s }));
-    setPending(prev => ({ ...prev, stampImage: s }));
-  }, []);
+  const setAppLogo = useCallback((l: string) => { localStorage.setItem('app_logo', l); setSaved(s => ({ ...s, appLogo: l })); setPending(p => ({ ...p, appLogo: l })); }, []);
+  const setSignatureImage = useCallback((s: string) => { localStorage.setItem('app_signature_image', s); setSaved(prev => ({ ...prev, signatureImage: s })); setPending(prev => ({ ...prev, signatureImage: s })); }, []);
+  const setStampImage = useCallback((s: string) => { localStorage.setItem('app_stamp_image', s); setSaved(prev => ({ ...prev, stampImage: s })); setPending(prev => ({ ...prev, stampImage: s })); }, []);
   const setSignaturePosition = useCallback((p: FooterPosition) => { setPending(prev => ({ ...prev, signaturePosition: p })); }, []);
   const setStampPosition = useCallback((p: FooterPosition) => { setPending(prev => ({ ...prev, stampPosition: p })); }, []);
   const setLtrFont = useCallback((f: string) => { setPending(p => ({ ...p, ltrFont: f })); }, []);
@@ -249,6 +207,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const setButtonShape = useCallback((s: ButtonShape) => { setPending(p => ({ ...p, buttonShape: s })); }, []);
   const setCurrencyDecimals = useCallback((d: number) => { setPending(p => ({ ...p, currencyDecimals: d })); }, []);
   const setPaymentGateway = useCallback((g: string) => { setPending(p => ({ ...p, paymentGateway: g })); }, []);
+  const setDefaultTimezone = useCallback((tz: string) => { setPending(p => ({ ...p, defaultTimezone: tz })); }, []);
 
   return (
     <AppSettingsContext.Provider value={{
@@ -267,6 +226,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       currencyDecimals: saved.currencyDecimals, setCurrencyDecimals,
       paymentGateway: saved.paymentGateway, setPaymentGateway,
       favicon, setFavicon,
+      defaultTimezone: saved.defaultTimezone, setDefaultTimezone,
       pending, updatePending, saveSettings, hasPendingChanges, discardChanges,
     }}>
       {children}
@@ -276,8 +236,6 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
 export const useAppSettings = () => {
   const context = useContext(AppSettingsContext);
-  if (!context) {
-    throw new Error('useAppSettings must be used within AppSettingsProvider');
-  }
+  if (!context) throw new Error('useAppSettings must be used within AppSettingsProvider');
   return context;
 };

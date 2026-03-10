@@ -9,13 +9,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { Search, Eye, Plus } from 'lucide-react';
+import { Search, Eye, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Students = () => {
   const { t, language } = useLanguage();
   const { role } = useAuth();
+  const isAr = language === 'ar';
   const [students, setStudents] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [detailOpen, setDetailOpen] = useState(false);
@@ -24,8 +26,8 @@ const Students = () => {
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
-  // Add student dialog
   const [addOpen, setAddOpen] = useState(false);
   const [addForm, setAddForm] = useState({ full_name: '', email: '', password: '', phone: '' });
   const [addLoading, setAddLoading] = useState(false);
@@ -40,7 +42,7 @@ const Students = () => {
   const viewDetails = async (student: any) => {
     setSelected(student);
     setProfile(student.profiles);
-    setEditForm({ lesson_duration: student.lesson_duration, weekly_repeat: student.weekly_repeat });
+    setEditForm({ lesson_duration: student.lesson_duration, weekly_repeat: student.weekly_repeat, full_name: student.profiles?.full_name || '', phone: student.profiles?.phone || '', email: student.profiles?.email || '' });
     const { data } = await supabase.from('subscriptions').select('*, courses:course_id(title)').eq('student_id', student.id);
     setSubscriptions(data || []);
     setDetailOpen(true);
@@ -48,15 +50,24 @@ const Students = () => {
   };
 
   const saveEdit = async () => {
-    await supabase.from('students').update(editForm).eq('id', selected.id);
-    toast.success(language === 'ar' ? 'تم تحديث الطالب' : 'Student updated');
+    await supabase.from('students').update({ lesson_duration: editForm.lesson_duration, weekly_repeat: editForm.weekly_repeat }).eq('id', selected.id);
+    await supabase.from('profiles').update({ full_name: editForm.full_name, phone: editForm.phone, email: editForm.email }).eq('id', selected.user_id);
+    toast.success(isAr ? 'تم تحديث الطالب' : 'Student updated');
     setEditing(false);
+    fetchStudents();
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    await supabase.from('students').delete().eq('id', deleteTarget);
+    toast.success(isAr ? 'تم حذف الطالب' : 'Student deleted');
+    setDeleteTarget(null);
     fetchStudents();
   };
 
   const handleAddStudent = async () => {
     if (!addForm.email || !addForm.password || !addForm.full_name) {
-      toast.error(language === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields');
+      toast.error(isAr ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields');
       return;
     }
     setAddLoading(true);
@@ -64,10 +75,8 @@ const Students = () => {
       body: { action: 'create', role: 'student', email: addForm.email, password: addForm.password, full_name: addForm.full_name, phone: addForm.phone },
     });
     setAddLoading(false);
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success(language === 'ar' ? 'تم إضافة الطالب' : 'Student added successfully');
+    if (error) { toast.error(error.message); } else {
+      toast.success(isAr ? 'تم إضافة الطالب' : 'Student added successfully');
       setAddOpen(false);
       setAddForm({ full_name: '', email: '', password: '', phone: '' });
       fetchStudents();
@@ -93,8 +102,7 @@ const Students = () => {
           </div>
           {role === 'admin' && (
             <Button onClick={() => setAddOpen(true)}>
-              <Plus className="h-4 w-4 me-2" />
-              {language === 'ar' ? 'إضافة طالب' : 'Add Student'}
+              <Plus className="h-4 w-4 me-2" />{isAr ? 'إضافة طالب' : 'Add Student'}
             </Button>
           )}
         </div>
@@ -118,8 +126,9 @@ const Students = () => {
                 <TableCell>{student.profiles?.phone}</TableCell>
                 <TableCell>{student.profiles?.email}</TableCell>
                 <TableCell>{student.lesson_duration} {t('common.minutes')}</TableCell>
-                <TableCell>
+                <TableCell className="flex gap-1">
                   <Button variant="ghost" size="icon" onClick={() => viewDetails(student)}><Eye className="h-4 w-4" /></Button>
+                  {role === 'admin' && <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => setDeleteTarget(student.id)}><Trash2 className="h-4 w-4" /></Button>}
                 </TableCell>
               </TableRow>
             ))}
@@ -129,36 +138,40 @@ const Students = () => {
       </div>
       <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
 
-      {/* Detail dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{t('students.details')}</DialogTitle></DialogHeader>
           {selected && profile && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div><Label>{t('students.name')}</Label><p className="font-medium">{profile.full_name}</p></div>
-                <div><Label>{t('students.email')}</Label><p>{profile.email}</p></div>
-                <div><Label>{t('students.phone')}</Label><p>{profile.phone}</p></div>
-              </div>
               {editing ? (
-                <div className="space-y-3 border-t pt-3">
-                  <div><Label>{t('students.lessonDuration')} ({t('common.minutes')})</Label>
-                    <Input type="number" value={editForm.lesson_duration} onChange={(e) => setEditForm({ ...editForm, lesson_duration: parseInt(e.target.value) })} /></div>
-                  <div><Label>{t('students.weeklyRepeat')}</Label>
-                    <Input type="number" value={editForm.weekly_repeat} onChange={(e) => setEditForm({ ...editForm, weekly_repeat: parseInt(e.target.value) })} /></div>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div><Label>{t('students.name')}</Label><Input value={editForm.full_name} onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })} /></div>
+                    <div><Label>{t('students.email')}</Label><Input value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} /></div>
+                    <div><Label>{t('students.phone')}</Label><Input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} /></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div><Label>{t('students.lessonDuration')} ({t('common.minutes')})</Label>
+                      <Input type="number" value={editForm.lesson_duration} onChange={(e) => setEditForm({ ...editForm, lesson_duration: parseInt(e.target.value) })} /></div>
+                    <div><Label>{t('students.weeklyRepeat')}</Label>
+                      <Input type="number" value={editForm.weekly_repeat} onChange={(e) => setEditForm({ ...editForm, weekly_repeat: parseInt(e.target.value) })} /></div>
+                  </div>
                   <div className="flex gap-2">
                     <Button onClick={saveEdit}>{t('common.save')}</Button>
                     <Button variant="outline" onClick={() => setEditing(false)}>{t('common.cancel')}</Button>
                   </div>
                 </div>
               ) : (
-                <div className="border-t pt-3">
+                <>
                   <div className="grid grid-cols-2 gap-4">
+                    <div><Label>{t('students.name')}</Label><p className="font-medium">{profile.full_name}</p></div>
+                    <div><Label>{t('students.email')}</Label><p>{profile.email}</p></div>
+                    <div><Label>{t('students.phone')}</Label><p>{profile.phone}</p></div>
                     <div><Label>{t('students.lessonDuration')}</Label><p>{selected.lesson_duration} {t('common.minutes')}</p></div>
                     <div><Label>{t('students.weeklyRepeat')}</Label><p>{selected.weekly_repeat}x</p></div>
                   </div>
-                  <Button variant="outline" size="sm" className="mt-3" onClick={() => setEditing(true)}>{t('common.edit')}</Button>
-                </div>
+                  <Button variant="outline" size="sm" onClick={() => setEditing(true)}>{t('common.edit')}</Button>
+                </>
               )}
               <div className="border-t pt-3">
                 <h3 className="font-semibold mb-2">{t('students.subscribedCourses')}</h3>
@@ -179,21 +192,33 @@ const Students = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Add student dialog */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{language === 'ar' ? 'إضافة طالب جديد' : 'Add New Student'}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{isAr ? 'إضافة طالب جديد' : 'Add New Student'}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div><Label>{t('auth.fullName')} *</Label><Input value={addForm.full_name} onChange={(e) => setAddForm({ ...addForm, full_name: e.target.value })} /></div>
             <div><Label>{t('auth.email')} *</Label><Input type="email" value={addForm.email} onChange={(e) => setAddForm({ ...addForm, email: e.target.value })} /></div>
-            <div><Label>{t('auth.password')} *</Label><Input type="password" value={addForm.password} onChange={(e) => setAddForm({ ...addForm, password: e.target.value })} placeholder={language === 'ar' ? '6 أحرف على الأقل' : 'Min 6 characters'} /></div>
+            <div><Label>{t('auth.password')} *</Label><Input type="password" value={addForm.password} onChange={(e) => setAddForm({ ...addForm, password: e.target.value })} placeholder={isAr ? '6 أحرف على الأقل' : 'Min 6 characters'} /></div>
             <div><Label>{t('auth.phone')}</Label><Input value={addForm.phone} onChange={(e) => setAddForm({ ...addForm, phone: e.target.value })} /></div>
             <Button onClick={handleAddStudent} disabled={addLoading} className="w-full">
-              {addLoading ? t('common.loading') : (language === 'ar' ? 'إضافة الطالب' : 'Add Student')}
+              {addLoading ? t('common.loading') : (isAr ? 'إضافة الطالب' : 'Add Student')}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{isAr ? 'حذف الطالب' : 'Delete Student'}</AlertDialogTitle>
+            <AlertDialogDescription>{isAr ? 'هل أنت متأكد؟ لا يمكن التراجع.' : 'Are you sure? This cannot be undone.'}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleDelete}>{isAr ? 'حذف' : 'Delete'}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -6,8 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Coins, MessageSquare, Globe, Building2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Coins, MessageSquare, Globe, Building2, Clock } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
 
 const GeneralSettings = () => {
   const { language } = useLanguage();
@@ -18,9 +18,24 @@ const GeneralSettings = () => {
     return localStorage.getItem('app_teacher_can_chat') !== 'false';
   });
 
+  const [tzSearch, setTzSearch] = useState('');
+
   useEffect(() => {
     localStorage.setItem('app_teacher_can_chat', String(teacherCanChat));
   }, [teacherCanChat]);
+
+  const timezones = useMemo(() => {
+    try {
+      return Intl.supportedValuesOf('timeZone');
+    } catch {
+      return ['UTC', 'America/New_York', 'Europe/London', 'Asia/Dubai', 'Asia/Riyadh', 'Africa/Cairo'];
+    }
+  }, []);
+
+  const filteredTimezones = useMemo(() => {
+    if (!tzSearch) return timezones.slice(0, 50);
+    return timezones.filter(tz => tz.toLowerCase().includes(tzSearch.toLowerCase())).slice(0, 50);
+  }, [timezones, tzSearch]);
 
   return (
     <div className="space-y-6">
@@ -74,6 +89,34 @@ const GeneralSettings = () => {
         </CardContent>
       </Card>
 
+      {/* Default Timezone */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5 text-primary" />{isAr ? 'المنطقة الزمنية' : 'Default Timezone'}</CardTitle>
+          <CardDescription>{isAr ? 'اختر المنطقة الزمنية الافتراضية للتطبيق' : 'Choose the default timezone for the app'}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Label>{isAr ? 'المنطقة الزمنية' : 'Timezone'}</Label>
+            <Input
+              placeholder={isAr ? 'ابحث عن منطقة زمنية...' : 'Search timezone...'}
+              value={tzSearch}
+              onChange={(e) => setTzSearch(e.target.value)}
+              className="mb-2"
+            />
+            <Select value={pending.defaultTimezone} onValueChange={(v) => updatePending({ defaultTimezone: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {filteredTimezones.map((tz) => (
+                  <SelectItem key={tz} value={tz}>{tz}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">{isAr ? 'المنطقة الزمنية المستخدمة في أسماء النسخ الاحتياطية والتقارير' : 'Timezone used for backup names and reports'}</p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Chat Permissions */}
       <Card>
         <CardHeader>
@@ -90,6 +133,7 @@ const GeneralSettings = () => {
           </div>
         </CardContent>
       </Card>
+
       {/* Default Language */}
       <Card>
         <CardHeader>
