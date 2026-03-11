@@ -9,6 +9,8 @@ export interface LandingHeaderProps {
   appName: string;
   appLogo?: string;
   navSections: { label: string; id: string }[];
+  navSectionsLeft?: { label: string; id: string }[];
+  navSectionsRight?: { label: string; id: string }[];
   scrollTo: (id: string) => void;
   user: any;
   profile: any;
