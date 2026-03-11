@@ -95,6 +95,7 @@ const App = () => (
                       <Route path="blog" element={<RoleGuard allowed={['admin']}><BlogPosts /></RoleGuard>} />
                       <Route path="activity-log" element={<RoleGuard allowed={['admin']}><ActivityLog /></RoleGuard>} />
                       <Route path="webhook-log" element={<RoleGuard allowed={['admin']}><WebhookLog /></RoleGuard>} />
+                      <Route path="error-log" element={<RoleGuard allowed={['admin']}><ErrorLog /></RoleGuard>} />
                       <Route path="profile" element={<Profile />} />
                     </Route>
                     <Route path="/invoice/:id" element={<InvoiceView />} />
