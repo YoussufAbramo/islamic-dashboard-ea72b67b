@@ -174,7 +174,7 @@ const Timetable = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('timetable.title')}</h1>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <SortButton />
           <div className="flex gap-1 border rounded-lg p-1">
             <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')}>
