@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 import { Camera, Lock } from 'lucide-react';
 import { getAvatarSignedUrl, uploadAndGetSignedUrl } from '@/lib/storage';
 import { useEffect } from 'react';

@@ -9,6 +9,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import CopyrightText from '@/components/CopyrightText';
 import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 import { GraduationCap, Users, ShieldCheck, Eye, EyeOff, BookOpen, Moon, Sun, Mail, ExternalLink } from 'lucide-react';
 import islamicBg from '@/assets/islamic-bg.jpg';
 

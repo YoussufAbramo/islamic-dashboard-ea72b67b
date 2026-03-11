@@ -9,6 +9,7 @@ import { useAppSettings } from '@/contexts/AppSettingsContext';
 import CopyrightText from '@/components/CopyrightText';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 import { BookOpen, Moon, Sun, ArrowLeft, Mail, Eye, EyeOff } from 'lucide-react';
 import islamicBg from '@/assets/islamic-bg.jpg';
 
