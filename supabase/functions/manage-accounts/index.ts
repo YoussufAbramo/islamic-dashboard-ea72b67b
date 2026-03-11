@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
     const callerId = claimsData.claims.sub
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey)
-    const { data: roleData } = await adminClient.from('user_roles').select('role').eq('user_id', caller.id).single()
+    const { data: roleData } = await adminClient.from('user_roles').select('role').eq('user_id', callerId).single()
     if (roleData?.role !== 'admin') {
       return new Response(JSON.stringify({ error: 'Admin access required' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
