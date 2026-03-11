@@ -48,6 +48,7 @@ const Media = () => {
   const [search, setSearch] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<FileObject | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
   const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [bulkDownloading, setBulkDownloading] = useState(false);
