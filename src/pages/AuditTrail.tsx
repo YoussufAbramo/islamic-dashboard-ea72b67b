@@ -255,10 +255,11 @@ const AuditTrail = () => {
 
       {/* Table */}
       {logs.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <p className="text-lg font-medium">{isAr ? 'لا توجد سجلات تدقيق بعد' : 'No audit logs yet'}</p>
-          <p className="text-sm mt-1">{isAr ? 'ستظهر السجلات تلقائياً عند إجراء أي تغييرات' : 'Logs will appear automatically when changes are made'}</p>
-        </div>
+        <EmptyState
+          icon={ClipboardList}
+          title={isAr ? 'لا توجد سجلات تدقيق بعد' : 'No audit logs yet'}
+          description={isAr ? 'ستظهر السجلات تلقائياً عند إجراء أي تغييرات' : 'Logs will appear automatically when changes are made'}
+        />
       ) : (
         <>
           <div className="rounded-lg border border-border overflow-hidden">

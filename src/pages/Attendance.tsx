@@ -195,7 +195,11 @@ const Attendance = () => {
 
         <TabsContent value="teachers" className="space-y-6">
           {teacherStats.length === 0 ? (
-            <Card><CardContent className="pt-6 text-center text-muted-foreground">{isAr ? 'لا توجد بيانات حضور للمعلمين' : 'No teacher attendance data available'}</CardContent></Card>
+            <EmptyState
+              icon={ClipboardCheck}
+              title={isAr ? 'لا توجد بيانات حضور للمعلمين' : 'No teacher attendance data available'}
+              description={isAr ? 'ستظهر البيانات عند تسجيل حضور المعلمين' : 'Data will appear when teacher attendance is recorded'}
+            />
           ) : (
             <>
               <Card>

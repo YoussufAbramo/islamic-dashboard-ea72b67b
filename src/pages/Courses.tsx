@@ -284,7 +284,13 @@ const Courses = () => {
             </Card>
           ))}
           {filtered.length === 0 && (
-            <div className="col-span-full text-center text-muted-foreground py-12">{t('common.noData')}</div>
+            <div className="col-span-full">
+              <EmptyState
+                icon={BookOpen}
+                title={isAr ? 'لا توجد دورات' : 'No courses found'}
+                description={isAr ? 'أنشئ دورة جديدة للبدء' : 'Create a new course to get started'}
+              />
+            </div>
           )}
         </div>
       ) : (

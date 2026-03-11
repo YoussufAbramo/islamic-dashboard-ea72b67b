@@ -421,9 +421,11 @@ const Certificates = () => {
       </Tabs>
 
       {filteredCerts.length === 0 ? (
-        <Card><CardContent className="pt-6 text-center text-muted-foreground">
-          {searchQuery ? (isAr ? 'لا توجد نتائج مطابقة' : 'No matching results') : (isAr ? 'لا توجد شهادات' : 'No certificates')}
-        </CardContent></Card>
+        <EmptyState
+          icon={Award}
+          title={searchQuery ? (isAr ? 'لا توجد نتائج مطابقة' : 'No matching results') : (isAr ? 'لا توجد شهادات' : 'No certificates')}
+          description={searchQuery ? undefined : (isAr ? 'أنشئ شهادة جديدة للطلاب أو المعلمين' : 'Create a new certificate for students or teachers')}
+        />
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {paginatedItems.map(cert => (
