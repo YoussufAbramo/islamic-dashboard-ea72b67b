@@ -106,9 +106,9 @@ const AppSidebar = () => {
       requiresWebsiteMode: true,
       items: [
         { key: 'landing-page', label: isAr ? 'صفحة الهبوط' : 'Landing Page', icon: Globe, path: '/dashboard/landing-page', roles: ['admin'] },
-        { key: 'policies', label: isAr ? 'السياسات' : 'Policies', icon: ScrollText, path: '/dashboard/policies', roles: ['admin'] },
         { key: 'website-pages', label: isAr ? 'الصفحات الرئيسية' : 'Main Pages', icon: FileText, path: '/dashboard/website-pages', roles: ['admin'] },
         { key: 'blog', label: isAr ? 'المدونة' : 'Blogs', icon: PenLine, path: '/dashboard/blog', roles: ['admin'] },
+        { key: 'policies', label: isAr ? 'السياسات' : 'Policies', icon: ScrollText, path: '/dashboard/policies', roles: ['admin'] },
       ],
     },
     {
