@@ -13,6 +13,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calculator as CalcIcon, DollarSign, Clock, CalendarDays, TrendingUp, Plus, Check, ChevronsUpDown } from 'lucide-react';
 import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 import { cn } from '@/lib/utils';
 import SchedulePicker from '@/components/SchedulePicker';
 

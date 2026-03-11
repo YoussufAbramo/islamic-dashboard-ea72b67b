@@ -16,6 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Search, Plus, FileText, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 import InvoiceStatsCards from '@/components/invoices/InvoiceStatsCards';
 import InvoiceTable from '@/components/invoices/InvoiceTable';
 import InvoicePreviewDialog from '@/components/invoices/InvoicePreviewDialog';
