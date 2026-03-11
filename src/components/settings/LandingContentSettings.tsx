@@ -12,15 +12,15 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import {
-  Save, Plus, Trash2, GripVertical, ChevronDown, ChevronUp, Pencil, X, Search, Globe, Menu,
-  Star, Sparkles, Shield, Megaphone, BookOpen, Users, BarChart3, HelpCircle, Mail, Layers, CreditCard, Quote, Handshake, Settings2, Eye, EyeOff, LayoutTemplate, Check,
+  Save, Plus, Trash2, GripVertical, ChevronDown, ChevronUp, Pencil, X, Search, Globe, Menu, Columns3,
+  Star, Sparkles, Shield, Megaphone, BookOpen, Users, BarChart3, HelpCircle, Mail, Layers, CreditCard, Quote, Handshake, Settings2, Eye, EyeOff, LayoutTemplate, Check, PanelBottom,
 } from 'lucide-react';
 import { HEADER_STYLES, type HeaderStyleKey } from '@/components/landing/LandingHeaders';
 import ImagePickerField from '@/components/media/ImagePickerField';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { DEFAULT_SECTION_ORDER, defaultSectionContent, defaultGeneralContent, defaultNavItems, sectionMeta, type SectionKey, type NavItem } from '@/lib/landingDefaults';
+import { DEFAULT_SECTION_ORDER, defaultSectionContent, defaultGeneralContent, defaultNavItems, defaultFooterContent, sectionMeta, type SectionKey, type NavItem, type FooterColumn } from '@/lib/landingDefaults';
 
 const iconMap: Record<string, any> = {
   Star, Sparkles, Shield, Megaphone, BookOpen, Users, BarChart3, HelpCircle, Mail, Layers, CreditCard, Quote, Handshake,
@@ -84,7 +84,7 @@ const LandingContentSettings = () => {
   const [general, setGeneral] = useState<Record<string, any>>({ ...defaultGeneralContent });
   const [sectionsOrder, setSectionsOrder] = useState<SectionKey[]>([...DEFAULT_SECTION_ORDER]);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'sections' | 'header' | 'seo'>('sections');
+  const [activeTab, setActiveTab] = useState<'header' | 'sections' | 'footer' | 'seo'>('header');
   const [saving, setSaving] = useState(false);
   const [websitePages, setWebsitePages] = useState<{ slug: string; title: string; title_ar: string | null }[]>([]);
   const [policies, setPolicies] = useState<{ slug: string; title: string; title_ar: string | null }[]>([]);
@@ -619,21 +619,138 @@ const LandingContentSettings = () => {
     </div>
   );
 
+  // ─── Footer editor ───
+  const footer = general.footer || defaultFooterContent;
+  const footerColumns: FooterColumn[] = footer.columns || defaultFooterContent.columns;
+  const footerColumnsCount: number = footer.columns_count || 3;
+
+  const updateFooterField = (field: string, value: any) => {
+    updateGeneralField('footer', { ...footer, [field]: value });
+  };
+
+  const updateFooterColumn = (colIdx: number, field: string, value: any) => {
+    const cols = [...footerColumns];
+    cols[colIdx] = { ...cols[colIdx], [field]: value };
+    updateFooterField('columns', cols);
+  };
+
+  const updateFooterColumnItem = (colIdx: number, itemIdx: number, field: string, value: string) => {
+    const cols = [...footerColumns];
+    const items = [...cols[colIdx].items];
+    items[itemIdx] = { ...items[itemIdx], [field]: value };
+    cols[colIdx] = { ...cols[colIdx], items };
+    updateFooterField('columns', cols);
+  };
+
+  const addFooterColumnItem = (colIdx: number) => {
+    const cols = [...footerColumns];
+    cols[colIdx] = { ...cols[colIdx], items: [...cols[colIdx].items, { label: '', label_ar: '', url: '' }] };
+    updateFooterField('columns', cols);
+  };
+
+  const removeFooterColumnItem = (colIdx: number, itemIdx: number) => {
+    const cols = [...footerColumns];
+    const items = [...cols[colIdx].items];
+    items.splice(itemIdx, 1);
+    cols[colIdx] = { ...cols[colIdx], items };
+    updateFooterField('columns', cols);
+  };
+
+  const handleColumnsCountChange = (count: number) => {
+    const cols = [...footerColumns];
+    while (cols.length < count) cols.push({ title: '', title_ar: '', items: [] });
+    updateFooterField('columns_count', count);
+    updateFooterField('columns', cols.slice(0, count));
+  };
+
+  const renderFooterTab = () => (
+    <div className="space-y-6">
+      {/* App branding */}
+      <div className="rounded-lg border border-border p-4 space-y-4">
+        <h3 className="font-medium flex items-center gap-2"><LayoutTemplate className="h-4 w-4" />{isAr ? 'هوية التطبيق' : 'App Branding'}</h3>
+        <ImagePickerField label={isAr ? 'شعار الفوتر' : 'Footer Logo'} value={footer.logo || ''} onChange={(url) => updateFooterField('logo', url)} />
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div><Label>Title (EN)</Label><Input value={footer.title || ''} onChange={e => updateFooterField('title', e.target.value)} placeholder="Islamic Dashboard" /></div>
+          <div><Label>Title (AR)</Label><Input dir="rtl" value={footer.title_ar || ''} onChange={e => updateFooterField('title_ar', e.target.value)} /></div>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div><Label>Description (EN)</Label><Textarea value={footer.description || ''} onChange={e => updateFooterField('description', e.target.value)} rows={2} /></div>
+          <div><Label>Description (AR)</Label><Textarea dir="rtl" value={footer.description_ar || ''} onChange={e => updateFooterField('description_ar', e.target.value)} rows={2} /></div>
+        </div>
+      </div>
+
+      {/* Columns layout */}
+      <div className="rounded-lg border border-border p-4 space-y-4">
+        <h3 className="font-medium flex items-center gap-2"><Columns3 className="h-4 w-4" />{isAr ? 'تخطيط الأعمدة' : 'Column Layout'}</h3>
+        <div className="flex items-center gap-2">
+          {[1, 2, 3, 4].map(n => (
+            <button
+              key={n}
+              onClick={() => handleColumnsCountChange(n)}
+              className={`h-10 w-10 rounded-lg border-2 flex items-center justify-center text-sm font-bold transition-all ${
+                footerColumnsCount === n
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-border text-muted-foreground hover:border-primary/40'
+              }`}
+            >
+              {n}
+            </button>
+          ))}
+          <span className="text-sm text-muted-foreground ms-2">{isAr ? 'أعمدة' : 'columns'}</span>
+        </div>
+      </div>
+
+      {/* Column editors */}
+      {footerColumns.slice(0, footerColumnsCount).map((col, colIdx) => (
+        <div key={colIdx} className="rounded-lg border border-border p-4 space-y-4">
+          <h3 className="font-medium text-sm">{isAr ? `العمود ${colIdx + 1}` : `Column ${colIdx + 1}`}</h3>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div><Label className="text-xs">Title (EN)</Label><Input value={col.title || ''} onChange={e => updateFooterColumn(colIdx, 'title', e.target.value)} className="h-8 text-sm" /></div>
+            <div><Label className="text-xs">Title (AR)</Label><Input dir="rtl" value={col.title_ar || ''} onChange={e => updateFooterColumn(colIdx, 'title_ar', e.target.value)} className="h-8 text-sm" /></div>
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-xs font-medium">{isAr ? 'الروابط' : 'Links'}</Label>
+            <Button variant="outline" size="sm" onClick={() => addFooterColumnItem(colIdx)}>
+              <Plus className="h-3.5 w-3.5 me-1" />{isAr ? 'إضافة' : 'Add'}
+            </Button>
+          </div>
+          {col.items.map((link, linkIdx) => (
+            <div key={linkIdx} className="flex items-start gap-2 rounded-md border border-border/60 p-2">
+              <div className="grid grid-cols-3 gap-2 flex-1">
+                <div><Label className="text-xs">Label (EN)</Label><Input value={link.label || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'label', e.target.value)} className="h-7 text-xs" /></div>
+                <div><Label className="text-xs">Label (AR)</Label><Input dir="rtl" value={link.label_ar || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'label_ar', e.target.value)} className="h-7 text-xs" /></div>
+                <div><Label className="text-xs">URL</Label><Input value={link.url || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'url', e.target.value)} className="h-7 text-xs" placeholder="#section or /page" /></div>
+              </div>
+              <Button variant="ghost" size="icon" className="h-7 w-7 mt-4 text-muted-foreground hover:text-destructive shrink-0" onClick={() => removeFooterColumnItem(colIdx, linkIdx)}>
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </div>
+          ))}
+          {col.items.length === 0 && <p className="text-xs text-muted-foreground text-center py-2 border border-dashed border-border rounded-md">{isAr ? 'لا توجد روابط' : 'No links yet'}</p>}
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       {/* Tab navigation */}
       <div className="flex items-center gap-1 p-1 rounded-lg bg-muted w-fit">
+        <button onClick={() => setActiveTab('header')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'header' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+          <LayoutTemplate className="h-4 w-4" />
+          {isAr ? 'الهيدر' : 'Header'}
+        </button>
         <button onClick={() => setActiveTab('sections')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'sections' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
           <Layers className="h-4 w-4" />
           {isAr ? 'الأقسام' : 'Sections'}
         </button>
-        <button onClick={() => setActiveTab('header')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'header' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-          <LayoutTemplate className="h-4 w-4" />
-          {isAr ? 'نمط الهيدر' : 'Header Style'}
+        <button onClick={() => setActiveTab('footer')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'footer' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+          <PanelBottom className="h-4 w-4" />
+          {isAr ? 'الفوتر' : 'Footer'}
         </button>
         <button onClick={() => setActiveTab('seo')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'seo' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
           <Settings2 className="h-4 w-4" />
-          {isAr ? 'SEO والعامة' : 'SEO & General'}
+          {isAr ? 'SEO' : 'SEO'}
         </button>
       </div>
 
@@ -644,6 +761,14 @@ const LandingContentSettings = () => {
             <CardDescription>{isAr ? 'اختر نمط الهيدر وعدّل عناصر القائمة' : 'Choose header style and customize menu items'}</CardDescription>
           </CardHeader>
           <CardContent>{renderHeaderTab()}</CardContent>
+        </Card>
+      ) : activeTab === 'footer' ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>{isAr ? 'إعدادات الفوتر' : 'Footer Settings'}</CardTitle>
+            <CardDescription>{isAr ? 'تخصيص تذييل صفحة الهبوط' : 'Customize the landing page footer'}</CardDescription>
+          </CardHeader>
+          <CardContent>{renderFooterTab()}</CardContent>
         </Card>
       ) : activeTab === 'seo' ? (
         <Card>

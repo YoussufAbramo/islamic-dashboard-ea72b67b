@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import CopyrightText from '@/components/CopyrightText';
-import { DEFAULT_SECTION_ORDER, defaultSectionContent, defaultGeneralContent, defaultNavItems, type SectionKey } from '@/lib/landingDefaults';
+import { DEFAULT_SECTION_ORDER, defaultSectionContent, defaultGeneralContent, defaultNavItems, defaultFooterContent, type SectionKey, type FooterColumn } from '@/lib/landingDefaults';
 import { getHeaderComponent, type HeaderStyleKey } from '@/components/landing/LandingHeaders';
 
 // Section components
@@ -165,12 +165,70 @@ const LandingPage = () => {
         return renderSection(key);
       })}
 
-      {/* Footer */}
-      <footer className="py-8 border-t border-border">
-        <div className="mx-auto max-w-7xl px-4 text-center">
-          <CopyrightText />
-        </div>
-      </footer>
+      {/* Dynamic Footer */}
+      {(() => {
+        const ft = general.footer || defaultFooterContent;
+        const cols: FooterColumn[] = (ft.columns || []).slice(0, ft.columns_count || 3);
+        const ftTitle = isAr ? (ft.title_ar || ft.title) : ft.title;
+        const ftDesc = isAr ? (ft.description_ar || ft.description) : ft.description;
+        const gridCols = ft.columns_count === 1 ? 'grid-cols-1' : ft.columns_count === 2 ? 'sm:grid-cols-2' : ft.columns_count === 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3';
+
+        return (
+          <footer className="py-12 border-t border-border bg-muted/30">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <div className={`grid gap-8 ${cols.length > 0 ? 'lg:grid-cols-[1.5fr_2fr]' : ''}`}>
+                {/* Branding column */}
+                {(ft.logo || ftTitle || ftDesc) && (
+                  <div className="space-y-4">
+                    {ft.logo && <img src={ft.logo} alt={ftTitle || appName} className="h-10 max-w-[180px] object-contain" />}
+                    {ftTitle && <h3 className="text-lg font-bold text-foreground">{ftTitle}</h3>}
+                    {ftDesc && <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">{ftDesc}</p>}
+                  </div>
+                )}
+
+                {/* Link columns */}
+                {cols.length > 0 && (
+                  <div className={`grid gap-8 ${gridCols}`}>
+                    {cols.map((col, ci) => (
+                      <div key={ci}>
+                        {(isAr ? (col.title_ar || col.title) : col.title) && (
+                          <h4 className="text-sm font-semibold text-foreground mb-3">{isAr ? (col.title_ar || col.title) : col.title}</h4>
+                        )}
+                        <ul className="space-y-2">
+                          {col.items.map((link, li) => (
+                            <li key={li}>
+                              <a
+                                href={link.url}
+                                onClick={e => {
+                                  if (link.url.startsWith('#')) {
+                                    e.preventDefault();
+                                    scrollTo(link.url.slice(1));
+                                  } else if (link.url.startsWith('/')) {
+                                    e.preventDefault();
+                                    navigate(link.url);
+                                  }
+                                }}
+                                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                              >
+                                {isAr ? (link.label_ar || link.label) : link.label}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Copyright */}
+              <div className="mt-10 pt-6 border-t border-border/50 text-center">
+                <CopyrightText />
+              </div>
+            </div>
+          </footer>
+        );
+      })()}
     </div>
   );
 };
