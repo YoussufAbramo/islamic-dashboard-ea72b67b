@@ -17,7 +17,7 @@ import { Send, Ban, CheckCircle, Trash2, Plus, Search, ArrowDown, ArrowUp, Users
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { format } from 'date-fns';
-import islamicBg from '@/assets/islamic-bg.jpg';
+import islamicBg from '@/assets/other/islamic-bg.jpg';
 import { ChatSkeleton } from '@/components/PageSkeleton';
 
 type SortOrder = 'newest' | 'oldest';

@@ -6,10 +6,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { FolderOpen, Image, FileText, Upload, Search, HardDrive, Lock, Globe, RefreshCw, Trash2, ExternalLink, Info, Download, CheckSquare, X } from 'lucide-react';
+import { FolderOpen, Image, FileText, Upload, Search, HardDrive, Lock, Globe, RefreshCw, Trash2, ExternalLink, Info, Download, CheckSquare, X, ChevronRight, FolderPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 interface BucketInfo {
   id: string;
@@ -21,9 +23,9 @@ interface BucketInfo {
 
 interface FileObject {
   name: string;
-  id?: string;
+  id?: string | null;
   created_at?: string;
-  metadata?: { size?: number; mimetype?: string };
+  metadata?: { size?: number; mimetype?: string } | null;
 }
 
 const BUCKETS: BucketInfo[] = [
@@ -38,6 +40,8 @@ const Media = () => {
   const { language } = useLanguage();
   const isAr = language === 'ar';
   const [selectedBucket, setSelectedBucket] = useState<string | null>(null);
+  const [currentPath, setCurrentPath] = useState('');
+  const [folders, setFolders] = useState<string[]>([]);
   const [files, setFiles] = useState<FileObject[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -47,22 +51,61 @@ const Media = () => {
   const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [bulkDownloading, setBulkDownloading] = useState(false);
+  const [newFolderOpen, setNewFolderOpen] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
 
-  const fetchFiles = async (bucketName: string) => {
+  const fetchFiles = async (bucketName: string, path = '') => {
     setLoading(true);
     setSelectedBucket(bucketName);
+    setCurrentPath(path);
     setSelectedFile(null);
     setSelectedNames(new Set());
-    const { data, error } = await supabase.storage.from(bucketName).list('', { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
+    const { data, error } = await supabase.storage.from(bucketName).list(path, { limit: 200, sortBy: { column: 'created_at', order: 'desc' } });
     if (error) {
       toast.error(isAr ? 'خطأ في تحميل الملفات' : 'Error loading files');
       setFiles([]);
+      setFolders([]);
     } else {
-      setFiles(data || []);
+      const items = data || [];
+      // Folders: id is null or metadata is empty placeholder
+      const folderItems = items.filter(f => f.id === null);
+      const fileItems = items.filter(f => f.id !== null && f.name && f.name !== '.emptyFolderPlaceholder');
+      setFolders(folderItems.map(f => f.name));
+      setFiles(fileItems);
     }
     setLoading(false);
+  };
+
+  const navigateToFolder = (folderName: string) => {
+    if (!selectedBucket) return;
+    const newPath = currentPath ? `${currentPath}/${folderName}` : folderName;
+    fetchFiles(selectedBucket, newPath);
+  };
+
+  const navigateUp = () => {
+    if (!selectedBucket) return;
+    if (!currentPath) return;
+    const parts = currentPath.split('/');
+    parts.pop();
+    fetchFiles(selectedBucket, parts.join('/'));
+  };
+
+  const createFolder = async () => {
+    if (!selectedBucket || !newFolderName.trim()) return;
+    const folderPath = currentPath
+      ? `${currentPath}/${newFolderName.trim()}/.emptyFolderPlaceholder`
+      : `${newFolderName.trim()}/.emptyFolderPlaceholder`;
+    const { error } = await supabase.storage.from(selectedBucket).upload(folderPath, new Blob(['']), { cacheControl: '3600', upsert: true });
+    if (error) {
+      toast.error(isAr ? 'خطأ في إنشاء المجلد' : 'Error creating folder');
+    } else {
+      toast.success(isAr ? 'تم إنشاء المجلد' : 'Folder created');
+      fetchFiles(selectedBucket, currentPath);
+    }
+    setNewFolderName('');
+    setNewFolderOpen(false);
   };
 
   const uploadFiles = useCallback(async (fileList: File[]) => {
@@ -70,7 +113,9 @@ const Media = () => {
     setUploading(true);
     const uploadedCount = { success: 0, fail: 0 };
     for (const file of fileList) {
-      const filePath = `${Date.now()}-${file.name}`;
+      const filePath = currentPath
+        ? `${currentPath}/${Date.now()}-${file.name}`
+        : `${Date.now()}-${file.name}`;
       const { error } = await supabase.storage.from(selectedBucket).upload(filePath, file, { cacheControl: '3600', upsert: false });
       if (error) { uploadedCount.fail++; } else { uploadedCount.success++; }
     }
@@ -78,8 +123,8 @@ const Media = () => {
     if (uploadedCount.fail > 0) toast.error(isAr ? `فشل رفع ${uploadedCount.fail} ملف` : `${uploadedCount.fail} file(s) failed`);
     if (fileInputRef.current) fileInputRef.current.value = '';
     setUploading(false);
-    fetchFiles(selectedBucket);
-  }, [selectedBucket, isAr]);
+    fetchFiles(selectedBucket, currentPath);
+  }, [selectedBucket, currentPath, isAr]);
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.length) uploadFiles(Array.from(e.target.files));
@@ -90,16 +135,18 @@ const Media = () => {
   const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); }, []);
   const handleDrop = useCallback((e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); dragCounter.current = 0; if (e.dataTransfer.files?.length) uploadFiles(Array.from(e.dataTransfer.files)); }, [uploadFiles]);
 
+  const getFullPath = (fileName: string) => currentPath ? `${currentPath}/${fileName}` : fileName;
+
   const handleDelete = async (fileName: string) => {
     if (!selectedBucket) return;
-    const { error } = await supabase.storage.from(selectedBucket).remove([fileName]);
+    const { error } = await supabase.storage.from(selectedBucket).remove([getFullPath(fileName)]);
     if (error) { toast.error(isAr ? 'خطأ في حذف الملف' : 'Error deleting file'); }
     else { toast.success(isAr ? 'تم حذف الملف' : 'File deleted'); setFiles(prev => prev.filter(f => f.name !== fileName)); if (selectedFile?.name === fileName) setSelectedFile(null); setSelectedNames(prev => { const n = new Set(prev); n.delete(fileName); return n; }); }
   };
 
   const getPublicUrl = (fileName: string) => {
     if (!selectedBucket) return '';
-    return supabase.storage.from(selectedBucket).getPublicUrl(fileName).data.publicUrl;
+    return supabase.storage.from(selectedBucket).getPublicUrl(getFullPath(fileName)).data.publicUrl;
   };
 
   const isImageFile = (name: string) => IMAGE_EXTS.includes(name.split('.').pop()?.toLowerCase() || '');
@@ -118,7 +165,7 @@ const Media = () => {
       a.click();
       document.body.removeChild(a);
     } else {
-      const { data, error } = await supabase.storage.from(selectedBucket).download(fileName);
+      const { data, error } = await supabase.storage.from(selectedBucket).download(getFullPath(fileName));
       if (error || !data) { toast.error(isAr ? 'خطأ في تحميل الملف' : 'Error downloading file'); return; }
       const url = URL.createObjectURL(data);
       const a = document.createElement('a');
@@ -131,7 +178,6 @@ const Media = () => {
     }
   };
 
-  // Bulk operations
   const toggleSelect = (name: string) => {
     setSelectedNames(prev => {
       const n = new Set(prev);
@@ -151,13 +197,13 @@ const Media = () => {
   const handleBulkDelete = async () => {
     if (!selectedBucket || selectedNames.size === 0) return;
     setBulkDeleting(true);
-    const names = Array.from(selectedNames);
-    const { error } = await supabase.storage.from(selectedBucket).remove(names);
+    const paths = Array.from(selectedNames).map(n => getFullPath(n));
+    const { error } = await supabase.storage.from(selectedBucket).remove(paths);
     setBulkDeleting(false);
     if (error) {
       toast.error(isAr ? 'خطأ في حذف الملفات' : 'Error deleting files');
     } else {
-      toast.success(isAr ? `تم حذف ${names.length} ملف` : `${names.length} file(s) deleted`);
+      toast.success(isAr ? `تم حذف ${selectedNames.size} ملف` : `${selectedNames.size} file(s) deleted`);
       setFiles(prev => prev.filter(f => !selectedNames.has(f.name)));
       if (selectedFile && selectedNames.has(selectedFile.name)) setSelectedFile(null);
       setSelectedNames(new Set());
@@ -168,12 +214,9 @@ const Media = () => {
     if (!selectedBucket || selectedNames.size === 0) return;
     setBulkDownloading(true);
     const names = Array.from(selectedNames);
-    let done = 0;
-    for (const name of names) {
-      await handleDownload(name);
-      done++;
-      // Small delay between downloads to avoid browser blocking
-      if (done < names.length) await new Promise(r => setTimeout(r, 400));
+    for (let i = 0; i < names.length; i++) {
+      await handleDownload(names[i]);
+      if (i < names.length - 1) await new Promise(r => setTimeout(r, 400));
     }
     setBulkDownloading(false);
     toast.success(isAr ? `تم تحميل ${names.length} ملف` : `${names.length} file(s) downloaded`);
@@ -187,9 +230,11 @@ const Media = () => {
   };
 
   const filteredFiles = files.filter(f => f.name.toLowerCase().includes(search.toLowerCase()));
+  const filteredFolders = folders.filter(f => f.toLowerCase().includes(search.toLowerCase()));
   const currentBucket = BUCKETS.find(b => b.id === selectedBucket);
   const hasSelection = selectedNames.size > 0;
   const allSelected = filteredFiles.length > 0 && selectedNames.size === filteredFiles.length;
+  const breadcrumbs = currentPath ? currentPath.split('/') : [];
 
   return (
     <div className="space-y-6">
@@ -211,7 +256,7 @@ const Media = () => {
             {BUCKETS.map(bucket => (
               <button
                 key={bucket.id}
-                onClick={() => fetchFiles(bucket.id)}
+                onClick={() => fetchFiles(bucket.id, '')}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-start ${
                   selectedBucket === bucket.id
                     ? 'bg-primary/10 text-primary border border-primary/20'
@@ -262,11 +307,38 @@ const Media = () => {
                           <Badge variant="secondary" className="text-[10px] gap-0.5"><Lock className="h-2.5 w-2.5" />{isAr ? 'خاص' : 'Private'}</Badge>
                         )}
                         <Badge variant="outline" className="text-[10px]">{filteredFiles.length} {isAr ? 'ملف' : 'files'}</Badge>
+                        {filteredFolders.length > 0 && (
+                          <Badge variant="outline" className="text-[10px]">{filteredFolders.length} {isAr ? 'مجلد' : 'folders'}</Badge>
+                        )}
                       </div>
                       <p className="text-xs text-muted-foreground">{isAr ? currentBucket.descriptionAr : currentBucket.description}</p>
                     </div>
                   </CardContent>
                 </Card>
+              )}
+
+              {/* Breadcrumb navigation */}
+              {currentPath && (
+                <div className="flex items-center gap-1 text-sm overflow-x-auto">
+                  <button
+                    onClick={() => fetchFiles(selectedBucket, '')}
+                    className="text-muted-foreground hover:text-foreground transition-colors shrink-0 flex items-center gap-1"
+                  >
+                    <FolderOpen className="h-3.5 w-3.5" />
+                    {selectedBucket}
+                  </button>
+                  {breadcrumbs.map((part, i) => (
+                    <span key={i} className="flex items-center gap-1 shrink-0">
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                      <button
+                        onClick={() => fetchFiles(selectedBucket, breadcrumbs.slice(0, i + 1).join('/'))}
+                        className={`transition-colors ${i === breadcrumbs.length - 1 ? 'text-foreground font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+                      >
+                        {part}
+                      </button>
+                    </span>
+                  ))}
+                </div>
               )}
 
               {/* Toolbar */}
@@ -280,7 +352,11 @@ const Media = () => {
                   <Upload className="h-3.5 w-3.5" />
                   {uploading ? (isAr ? 'جاري الرفع...' : 'Uploading...') : (isAr ? 'رفع ملف' : 'Upload')}
                 </Button>
-                <Button variant="outline" size="sm" className="h-9" onClick={() => fetchFiles(selectedBucket)}>
+                <Button variant="outline" size="sm" className="h-9 gap-1.5" onClick={() => setNewFolderOpen(true)}>
+                  <FolderPlus className="h-3.5 w-3.5" />
+                  {isAr ? 'مجلد جديد' : 'New Folder'}
+                </Button>
+                <Button variant="outline" size="sm" className="h-9" onClick={() => fetchFiles(selectedBucket, currentPath)}>
                   <RefreshCw className="h-3.5 w-3.5" />
                 </Button>
               </div>
@@ -345,25 +421,51 @@ const Media = () => {
                   <CardContent className="p-3">
                     {loading ? (
                       <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-10 bg-muted/50 rounded animate-pulse" />)}</div>
-                    ) : filteredFiles.length === 0 ? (
+                    ) : filteredFolders.length === 0 && filteredFiles.length === 0 ? (
                       <div className="text-center py-12 text-muted-foreground">
                         <FolderOpen className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                        <p>{isAr ? 'لا توجد ملفات' : 'No files found'}</p>
+                        <p>{isAr ? 'لا توجد ملفات أو مجلدات' : 'No files or folders found'}</p>
                         <p className="text-xs mt-1">{isAr ? 'اسحب ملفات هنا أو اضغط "رفع ملف"' : 'Drag files here or click "Upload"'}</p>
                       </div>
                     ) : (
                       <div className="space-y-0.5">
-                        {/* Select all header */}
-                        <div className="flex items-center gap-3 p-2 border-b border-border mb-1">
-                          <Checkbox
-                            checked={allSelected}
-                            onCheckedChange={toggleSelectAll}
-                            className="shrink-0"
-                          />
-                          <span className="text-xs text-muted-foreground font-medium">
-                            {isAr ? 'تحديد الكل' : 'Select all'}
-                          </span>
-                        </div>
+                        {/* Back row */}
+                        {currentPath && (
+                          <button
+                            onClick={navigateUp}
+                            className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors text-muted-foreground"
+                          >
+                            <div className="h-8 w-8 rounded flex items-center justify-center bg-muted/50 flex-shrink-0">
+                              <ChevronRight className="h-3.5 w-3.5 rotate-180" />
+                            </div>
+                            <span className="text-sm">..</span>
+                          </button>
+                        )}
+
+                        {/* Folders */}
+                        {filteredFolders.map(folder => (
+                          <button
+                            key={`folder-${folder}`}
+                            onClick={() => navigateToFolder(folder)}
+                            className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                          >
+                            <div className="h-8 w-8 rounded flex items-center justify-center bg-primary/10 flex-shrink-0">
+                              <FolderOpen className="h-4 w-4 text-primary" />
+                            </div>
+                            <span className="text-sm font-medium flex-1 text-start truncate">{folder}</span>
+                            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          </button>
+                        ))}
+
+                        {/* Select all header (only if files exist) */}
+                        {filteredFiles.length > 0 && (
+                          <div className="flex items-center gap-3 p-2 border-b border-border mb-1 mt-1">
+                            <Checkbox checked={allSelected} onCheckedChange={toggleSelectAll} className="shrink-0" />
+                            <span className="text-xs text-muted-foreground font-medium">{isAr ? 'تحديد الكل' : 'Select all'}</span>
+                          </div>
+                        )}
+
+                        {/* Files */}
                         {filteredFiles.map((file, idx) => (
                           <div
                             key={idx}
@@ -415,6 +517,12 @@ const Media = () => {
                           <span className="text-muted-foreground">{isAr ? 'الاسم' : 'Name'}</span>
                           <p className="font-medium break-all mt-0.5">{selectedFile.name}</p>
                         </div>
+                        {currentPath && (
+                          <div>
+                            <span className="text-muted-foreground">{isAr ? 'المسار' : 'Path'}</span>
+                            <p className="font-medium break-all mt-0.5 font-mono text-[10px]">{currentPath}/</p>
+                          </div>
+                        )}
                         <div>
                           <span className="text-muted-foreground">{isAr ? 'الحجم' : 'Size'}</span>
                           <p className="font-medium mt-0.5">{formatSize(selectedFile.metadata?.size)}</p>
@@ -473,6 +581,34 @@ const Media = () => {
           )}
         </div>
       </div>
+
+      {/* New Folder Dialog */}
+      <Dialog open={newFolderOpen} onOpenChange={setNewFolderOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FolderPlus className="h-5 w-5 text-primary" />
+              {isAr ? 'مجلد جديد' : 'New Folder'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>{isAr ? 'اسم المجلد' : 'Folder Name'}</Label>
+            <Input
+              value={newFolderName}
+              onChange={e => setNewFolderName(e.target.value)}
+              placeholder={isAr ? 'أدخل اسم المجلد...' : 'Enter folder name...'}
+              onKeyDown={e => { if (e.key === 'Enter') createFolder(); }}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNewFolderOpen(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
+            <Button onClick={createFolder} disabled={!newFolderName.trim()}>
+              <FolderPlus className="h-4 w-4 me-1" />
+              {isAr ? 'إنشاء' : 'Create'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

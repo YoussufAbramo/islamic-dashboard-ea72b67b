@@ -11,7 +11,7 @@ import CopyrightText from '@/components/CopyrightText';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { GraduationCap, Users, Eye, EyeOff, BookOpen } from 'lucide-react';
-import islamicBg from '@/assets/islamic-bg.jpg';
+import islamicBg from '@/assets/other/islamic-bg.jpg';
 
 const Signup = () => {
   const [email, setEmail] = useState('');
