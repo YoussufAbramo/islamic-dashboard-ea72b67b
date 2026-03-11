@@ -260,17 +260,24 @@ const Chats = () => {
           </CardHeader>
           <CardContent className="p-0">
             <ScrollArea className="h-[calc(100vh-320px)]">
-              {paginatedChats.map((chat) => (
-                <div key={chat.id} className={`p-3 border-b cursor-pointer hover:bg-muted/50 transition-colors ${selectedChat?.id === chat.id ? 'bg-muted' : ''}`} onClick={() => setSelectedChat(chat)}>
+              {paginatedChats.map((chat) => {
+                const lastCheck = localStorage.getItem(`chat_read_${chat.id}`) || '1970-01-01T00:00:00Z';
+                const isUnread = chat.latest_message_at && new Date(chat.latest_message_at) > new Date(lastCheck);
+                return (
+                <div key={chat.id} className={`p-3 border-b cursor-pointer hover:bg-muted/50 transition-colors ${selectedChat?.id === chat.id ? 'bg-muted' : ''} ${isUnread ? 'bg-primary/5 border-s-2 border-s-primary' : ''}`} onClick={() => { setSelectedChat(chat); localStorage.setItem(`chat_read_${chat.id}`, new Date().toISOString()); }}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-sm">{getChatLabel(chat)}</p>
+                      <p className={`text-sm ${isUnread ? 'font-bold' : 'font-medium'}`}>{getChatLabel(chat)}</p>
                       {chat.is_group && <Badge variant="outline" className="text-[10px] mt-1">{isAr ? 'مجموعة' : 'Group'}</Badge>}
                     </div>
-                    {chat.is_suspended && <Badge variant="destructive" className="text-xs">{t('chats.suspended')}</Badge>}
+                    <div className="flex items-center gap-1">
+                      {isUnread && <div className="h-2 w-2 rounded-full bg-primary" />}
+                      {chat.is_suspended && <Badge variant="destructive" className="text-xs">{t('chats.suspended')}</Badge>}
+                    </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
               {filteredChats.length === 0 && (
                 <p className="p-4 text-center text-muted-foreground text-sm">
                   {searchQuery ? (isAr ? 'لا توجد نتائج' : 'No results') : t('common.noData')}

@@ -95,6 +95,57 @@ export type Database = {
           },
         ]
       }
+      blog_posts: {
+        Row: {
+          content: string | null
+          content_ar: string | null
+          created_at: string
+          created_by: string | null
+          excerpt: string | null
+          excerpt_ar: string | null
+          featured_image: string | null
+          id: string
+          published_at: string | null
+          slug: string
+          status: string
+          title: string
+          title_ar: string | null
+          updated_at: string
+        }
+        Insert: {
+          content?: string | null
+          content_ar?: string | null
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string | null
+          excerpt_ar?: string | null
+          featured_image?: string | null
+          id?: string
+          published_at?: string | null
+          slug: string
+          status?: string
+          title: string
+          title_ar?: string | null
+          updated_at?: string
+        }
+        Update: {
+          content?: string | null
+          content_ar?: string | null
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string | null
+          excerpt_ar?: string | null
+          featured_image?: string | null
+          id?: string
+          published_at?: string | null
+          slug?: string
+          status?: string
+          title?: string
+          title_ar?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       certificates: {
         Row: {
           certificate_number: string
@@ -569,6 +620,42 @@ export type Database = {
         }
         Relationships: []
       }
+      policies: {
+        Row: {
+          content: string | null
+          content_ar: string | null
+          id: string
+          is_published: boolean
+          slug: string
+          title: string
+          title_ar: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          content?: string | null
+          content_ar?: string | null
+          id?: string
+          is_published?: boolean
+          slug: string
+          title: string
+          title_ar?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          content?: string | null
+          content_ar?: string | null
+          id?: string
+          is_published?: boolean
+          slug?: string
+          title?: string
+          title_ar?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       pricing_packages: {
         Row: {
           billing_cycle: string
@@ -991,6 +1078,45 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      website_pages: {
+        Row: {
+          content: string | null
+          content_ar: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          slug: string
+          status: string
+          title: string
+          title_ar: string | null
+          updated_at: string
+        }
+        Insert: {
+          content?: string | null
+          content_ar?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          slug: string
+          status?: string
+          title: string
+          title_ar?: string | null
+          updated_at?: string
+        }
+        Update: {
+          content?: string | null
+          content_ar?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          slug?: string
+          status?: string
+          title?: string
+          title_ar?: string | null
+          updated_at?: string
         }
         Relationships: []
       }

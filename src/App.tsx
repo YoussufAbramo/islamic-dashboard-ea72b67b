@@ -39,6 +39,11 @@ import NotFound from "./pages/NotFound";
 import ErrorDetails from "./pages/ErrorDetails";
 import ErrorDocs from "./pages/ErrorDocs";
 import Media from "./pages/Media";
+import LandingPageManager from "./pages/LandingPageManager";
+import Policies from "./pages/Policies";
+import WebsitePages from "./pages/WebsitePages";
+import BlogPosts from "./pages/BlogPosts";
+import ActivityLog from "./pages/ActivityLog";
 
 const queryClient = new QueryClient();
 
@@ -82,6 +87,11 @@ const App = () => (
                       <Route path="error/:code" element={<ErrorDetails />} />
                       <Route path="error-docs" element={<RoleGuard allowed={['admin']}><ErrorDocs /></RoleGuard>} />
                       <Route path="media" element={<RoleGuard allowed={['admin']}><Media /></RoleGuard>} />
+                      <Route path="landing-page" element={<RoleGuard allowed={['admin']}><LandingPageManager /></RoleGuard>} />
+                      <Route path="policies" element={<RoleGuard allowed={['admin']}><Policies /></RoleGuard>} />
+                      <Route path="website-pages" element={<RoleGuard allowed={['admin']}><WebsitePages /></RoleGuard>} />
+                      <Route path="blog" element={<RoleGuard allowed={['admin']}><BlogPosts /></RoleGuard>} />
+                      <Route path="activity-log" element={<RoleGuard allowed={['admin']}><ActivityLog /></RoleGuard>} />
                       <Route path="profile" element={<Profile />} />
                     </Route>
                     <Route path="/invoice/:id" element={<InvoiceView />} />
