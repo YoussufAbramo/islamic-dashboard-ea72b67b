@@ -134,6 +134,36 @@ export type Database = {
         }
         Relationships: []
       }
+      auto_backup_config: {
+        Row: {
+          enabled: boolean
+          format: string
+          id: string
+          retention_count: number
+          schedule: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          enabled?: boolean
+          format?: string
+          id?: string
+          retention_count?: number
+          schedule?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          enabled?: boolean
+          format?: string
+          id?: string
+          retention_count?: number
+          schedule?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           content: string | null
