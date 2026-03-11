@@ -35,7 +35,7 @@ const WhatsAppIcon = () => (
 
 const Support = () => {
   const { t, language } = useLanguage();
-  const { user, role } = useAuth();
+  const { user, role, profile } = useAuth();
   const isAr = language === 'ar';
   const isAdmin = role === 'admin';
   const [tickets, setTickets] = useState<any[]>([]);
