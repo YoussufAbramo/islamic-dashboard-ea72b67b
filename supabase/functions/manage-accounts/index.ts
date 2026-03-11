@@ -405,7 +405,39 @@ Deno.serve(async (req) => {
         await adminClient.from('certificates').insert(certsInsert)
         counts.certificates = certsInsert.length
       }
-        counts.certificates = certsInsert.length
+
+      // Create invoices
+      if (categories.includes('invoices') && sIds.length > 0) {
+        // Get subscriptions to link invoices
+        const { data: existingSubs } = await adminClient.from('subscriptions').select('id, student_id, course_id, price, subscription_type').limit(20)
+        const subsForInvoices = existingSubs || createdSubs || []
+        
+        if (subsForInvoices.length > 0) {
+          const invoiceStatuses = ['pending', 'paid', 'overdue', 'cancelled']
+          const invCount = Math.min(qty.invoices, Math.max(subsForInvoices.length * 2, qty.invoices))
+          const invoicesInsert = Array.from({ length: invCount }, (_, i) => {
+            const sub = subsForInvoices[i % subsForInvoices.length]
+            const status = invoiceStatuses[i % invoiceStatuses.length]
+            const amount = sub.price || [50, 100, 75, 120][i % 4]
+            const dueDate = new Date()
+            dueDate.setDate(dueDate.getDate() + (status === 'overdue' ? -15 : 30))
+            return {
+              subscription_id: sub.id,
+              student_id: sub.student_id,
+              course_id: sub.course_id || (cIds.length > 0 ? cIds[i % cIds.length] : null),
+              amount,
+              original_price: amount,
+              sale_price: i % 3 === 0 ? amount * 0.8 : null,
+              billing_cycle: sub.subscription_type || 'monthly',
+              due_date: dueDate.toISOString().split('T')[0],
+              status,
+              paid_at: status === 'paid' ? new Date().toISOString() : null,
+              notes: status === 'paid' ? 'Payment received' : status === 'overdue' ? 'Payment overdue - follow up needed' : '',
+            }
+          })
+          const { data: createdInvoices } = await adminClient.from('invoices').insert(invoicesInsert).select('id')
+          counts.invoices = createdInvoices?.length || 0
+        }
       }
 
       return new Response(JSON.stringify({ success: true, counts }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
