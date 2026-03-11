@@ -33,6 +33,7 @@ const Notifications = () => {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
     setNotifications(data || []);
+    setLoading(false);
   };
 
   useEffect(() => { fetchNotifications(); }, [user]);
