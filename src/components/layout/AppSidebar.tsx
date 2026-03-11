@@ -140,6 +140,7 @@ const AppSidebar = () => {
         { key: 'webhook-log', label: isAr ? 'سجل الويب هوك' : 'Webhook Log', icon: Webhook, path: '/dashboard/webhook-log', roles: ['admin'] },
         { key: 'activity-log', label: isAr ? 'سجل النشاطات' : 'Activity Log', icon: Activity, path: '/dashboard/activity-log', roles: ['admin'], comingSoon: true },
         { key: 'error-log', label: isAr ? 'سجل الأخطاء' : 'Error Log', icon: Bug, path: '/dashboard/error-log', roles: ['admin'] },
+        { key: 'audit-trail', label: isAr ? 'سجل التدقيق' : 'Audit Trail', icon: ClipboardList, path: '/dashboard/audit-trail', roles: ['admin'] },
       ],
     },
   ];
