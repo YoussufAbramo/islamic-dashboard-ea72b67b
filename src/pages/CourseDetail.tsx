@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
@@ -78,6 +79,7 @@ const CourseDetail = () => {
   const [editingContentId, setEditingContentId] = useState<string | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: 'lesson' | 'section' | 'content' } | null>(null);
 
   // Forms
   const [lessonForm, setLessonForm] = useState({ title: '', title_ar: '' });
@@ -165,32 +167,21 @@ const CourseDetail = () => {
     toast.success(isAr ? 'تمت إضافة الدرس' : 'Lesson added');
   };
 
-  const deleteLesson = async (lessonId: string) => {
-    await supabase.from('course_sections').delete().eq('id', lessonId);
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    const { id, type } = deleteTarget;
+    if (type === 'lesson') {
+      await supabase.from('course_sections').delete().eq('id', id);
+      toast.success(isAr ? 'تم حذف الدرس' : 'Lesson deleted');
+    } else if (type === 'section') {
+      await supabase.from('lesson_sections' as any).delete().eq('id', id);
+      toast.success(isAr ? 'تم حذف القسم' : 'Section deleted');
+    } else {
+      await supabase.from('lessons').delete().eq('id', id);
+      toast.success(isAr ? 'تم حذف المحتوى' : 'Content deleted');
+    }
+    setDeleteTarget(null);
     fetchHierarchy();
-    toast.success(isAr ? 'تم حذف الدرس' : 'Lesson deleted');
-  };
-
-  // CRUD: Sections (lesson_sections)
-  const addSection = async () => {
-    if (!activeLessonId) return;
-    const currentSections = sections[activeLessonId] || [];
-    await supabase.from('lesson_sections' as any).insert([{
-      course_section_id: activeLessonId,
-      title: sectionForm.title,
-      title_ar: sectionForm.title_ar,
-      sort_order: currentSections.length,
-    }] as any);
-    setSectionDialog(false);
-    setSectionForm({ title: '', title_ar: '' });
-    fetchHierarchy();
-    toast.success(isAr ? 'تمت إضافة القسم' : 'Section added');
-  };
-
-  const deleteSection = async (sectionId: string) => {
-    await supabase.from('lesson_sections' as any).delete().eq('id', sectionId);
-    fetchHierarchy();
-    toast.success(isAr ? 'تم حذف القسم' : 'Section deleted');
   };
 
   // CRUD: Content (lessons)
@@ -227,10 +218,20 @@ const CourseDetail = () => {
     setContentDialog(true);
   };
 
-  const deleteContent = async (contentId: string) => {
-    await supabase.from('lessons').delete().eq('id', contentId);
+  // CRUD: Sections (lesson_sections)
+  const addSection = async () => {
+    if (!activeLessonId) return;
+    const currentSections = sections[activeLessonId] || [];
+    await supabase.from('lesson_sections' as any).insert([{
+      course_section_id: activeLessonId,
+      title: sectionForm.title,
+      title_ar: sectionForm.title_ar,
+      sort_order: currentSections.length,
+    }] as any);
+    setSectionDialog(false);
+    setSectionForm({ title: '', title_ar: '' });
     fetchHierarchy();
-    toast.success(isAr ? 'تم حذف المحتوى' : 'Content deleted');
+    toast.success(isAr ? 'تمت إضافة القسم' : 'Section added');
   };
 
   if (!course) return <div className="text-muted-foreground">{t('common.loading')}</div>;
@@ -325,7 +326,7 @@ const CourseDetail = () => {
                 </div>
               </AccordionTrigger>
               {canEdit && (
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={(e) => { e.stopPropagation(); deleteLesson(lesson.id); }}>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: lesson.id, type: 'lesson' }); }}>
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               )}
@@ -377,7 +378,7 @@ const CourseDetail = () => {
                           </div>
                         </AccordionTrigger>
                         {canEdit && (
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={(e) => { e.stopPropagation(); deleteSection(section.id); }}>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: section.id, type: 'section' }); }}>
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         )}
@@ -399,7 +400,7 @@ const CourseDetail = () => {
                                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditContent(content, section.id)}>
                                     <Pencil className="h-3 w-3" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteContent(content.id)}>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteTarget({ id: content.id, type: 'content' })}>
                                     <Trash2 className="h-3 w-3" />
                                   </Button>
                                 </div>
@@ -456,6 +457,26 @@ const CourseDetail = () => {
       </Accordion>
 
       {lessons.length === 0 && <p className="text-center text-muted-foreground py-8">{t('common.noData')}</p>}
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {isAr ? 'تأكيد الحذف' : 'Confirm Delete'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {isAr ? 'هل أنت متأكد من الحذف؟ لا يمكن التراجع عن هذا الإجراء.' : 'Are you sure? This action cannot be undone.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleConfirmDelete}>
+              {isAr ? 'حذف' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
