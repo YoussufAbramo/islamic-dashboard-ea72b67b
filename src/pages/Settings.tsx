@@ -15,6 +15,30 @@ import SaaSPricingSettings from '@/components/settings/SaaSPricingSettings';
 import BackupsSettings from '@/components/settings/BackupsSettings';
 import EducationSystemSettings from '@/components/settings/EducationSystemSettings';
 import PixelsIntegrationSettings from '@/components/settings/PixelsIntegrationSettings';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+
+const DeveloperSettings = () => {
+  const { language } = useLanguage();
+  const { developerMode, setDeveloperMode, saveSettings } = useAppSettings();
+  const isAr = language === 'ar';
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{isAr ? 'وضع المطور' : 'Developer Mode'}</CardTitle>
+        <CardDescription>{isAr ? 'تفعيل أدوات المطور في القائمة الرئيسية' : 'Enable developer tools in the main menu'}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="dev-mode">{isAr ? 'تفعيل وضع المطور' : 'Enable Developer Mode'}</Label>
+          <Switch id="dev-mode" checked={developerMode} onCheckedChange={setDeveloperMode} />
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">{isAr ? 'عند التفعيل، ستظهر فئة "المطور" في القائمة الرئيسية مع توثيق الأخطاء وسجل الويب هوك.' : 'When enabled, the "Developer" category will appear in the main menu with Error Documentation and Webhook Log.'}</p>
+      </CardContent>
+    </Card>
+  );
+};
 
 type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing' | 'backups' | 'education' | 'pixels' | 'developer';
 
