@@ -91,10 +91,15 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
 
       if (c.students) addLog(isAr ? `👨‍🎓 تم إضافة ${c.students} طلاب` : `👨‍🎓 Added ${c.students} students`);
       if (c.teachers) addLog(isAr ? `👨‍🏫 تم إضافة ${c.teachers} معلمين` : `👨‍🏫 Added ${c.teachers} teachers`);
+      if (c.tracks) addLog(isAr ? `🛤️ تم إضافة ${c.tracks} مسارات` : `🛤️ Added ${c.tracks} tracks`);
+      if (c.categories) addLog(isAr ? `📂 تم إضافة ${c.categories} تصنيفات` : `📂 Added ${c.categories} categories`);
+      if (c.levels) addLog(isAr ? `📊 تم إضافة ${c.levels} مستويات` : `📊 Added ${c.levels} levels`);
       if (c.courses) addLog(isAr ? `📚 تم إضافة ${c.courses} دورات` : `📚 Added ${c.courses} courses`);
       if (c.sections) addLog(isAr ? `📑 تم إضافة ${c.sections} أقسام` : `📑 Added ${c.sections} sections`);
+      if (c.lesson_sections) addLog(isAr ? `📋 تم إضافة ${c.lesson_sections} أقسام دروس` : `📋 Added ${c.lesson_sections} lesson sections`);
       if (c.lessons) addLog(isAr ? `📖 تم إضافة ${c.lessons} دروس` : `📖 Added ${c.lessons} lessons`);
       if (c.subscriptions) addLog(isAr ? `💳 تم إضافة ${c.subscriptions} اشتراكات` : `💳 Added ${c.subscriptions} subscriptions`);
+      if (c.invoices) addLog(isAr ? `🧾 تم إضافة ${c.invoices} فواتير` : `🧾 Added ${c.invoices} invoices`);
       if (c.timetable) addLog(isAr ? `📅 تم إضافة ${c.timetable} مواعيد` : `📅 Added ${c.timetable} timetable entries`);
       if (c.attendance) addLog(isAr ? `✅ تم إضافة ${c.attendance} سجلات حضور` : `✅ Added ${c.attendance} attendance records`);
       if (c.announcements) addLog(isAr ? `📢 تم إضافة ${c.announcements} إعلانات` : `📢 Added ${c.announcements} announcements`);
