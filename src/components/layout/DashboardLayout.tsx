@@ -83,7 +83,7 @@ const FloatingButtons = () => {
             <TooltipTrigger asChild>
               <button
                 onClick={() => setTicketOpen(true)}
-                className="flex items-center justify-center h-9 w-9 rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-110 transition-transform duration-200"
+                className="flex items-center justify-center h-9 w-9 rounded-full bg-muted text-muted-foreground shadow-md hover:scale-110 hover:bg-accent transition-all duration-200"
               >
                 <Bug className="h-4 w-4" />
               </button>
