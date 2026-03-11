@@ -119,7 +119,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       toast.success(isAr ? 'تم مسح البيانات التجريبية بنجاح' : 'Sample data erased successfully');
     } catch (err: any) {
       addLog(`❌ ${err.message || 'Failed to erase sample data'}`);
-      toast.error(err.message || 'Failed to erase sample data');
+      notifyError({ error: 'DB_OPERATION_FAILED', isAr, rawMessage: err.message || 'Failed to erase sample data' });
     } finally {
       setEraseSeedLoading(false);
     }
