@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 const DEFAULT_LOGO = '/logo.png';
+const DEFAULT_DARK_LOGO = '/logo-dark.png';
 const DEFAULT_FAVICON = '/favicon.png';
 const DEFAULT_APP_NAME = 'Quran E-Learning Platform - CodeCom.dev';
 const DEFAULT_APP_DESCRIPTION = 'An interactive Quran learning platform offering courses in Tajweed, memorization, and Quran reading with qualified teachers. Study from anywhere and follow a structured path to improve your recitation and understanding.';
@@ -149,7 +150,7 @@ function loadSaved(): PendingSettings {
     appName: localStorage.getItem('app_name') || DEFAULT_APP_NAME,
     appDescription: localStorage.getItem('app_description') || DEFAULT_APP_DESCRIPTION,
     appLogo: localStorage.getItem('app_logo') || DEFAULT_LOGO,
-    darkLogo: localStorage.getItem('app_dark_logo') || '',
+    darkLogo: localStorage.getItem('app_dark_logo') || DEFAULT_DARK_LOGO,
     signatureImage: localStorage.getItem('app_signature_image') || DEFAULT_SIGNATURE,
     stampImage: localStorage.getItem('app_stamp_image') || DEFAULT_STAMP,
     signaturePosition: (localStorage.getItem('app_signature_position') as FooterPosition) || 'left',
