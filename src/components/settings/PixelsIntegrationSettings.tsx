@@ -134,25 +134,46 @@ const PixelsIntegrationSettings = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid gap-5">
-            {pixelFields.map(field => {
-              const Logo = field.logo;
+          <div className="space-y-4">
+            {pixelGroups.map(group => {
+              const GroupLogo = group.logo;
               return (
-                <div key={field.key} className="flex items-start gap-3 p-4 rounded-lg border border-border hover:border-primary/30 transition-colors">
-                  <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
-                    <Logo />
-                  </div>
-                  <div className="flex-1 space-y-1.5">
-                    <Label className="font-medium">{field.label}</Label>
-                    <p className="text-xs text-muted-foreground">{field.description}</p>
-                    <Input
-                      value={pixels[field.key]}
-                      onChange={e => setPixels(prev => ({ ...prev, [field.key]: e.target.value }))}
-                      placeholder={field.placeholder}
-                      className="h-9 text-sm font-mono"
-                    />
-                  </div>
-                </div>
+                <Collapsible key={group.groupLabel} defaultOpen={group.groupLabel === 'Google'}>
+                  <CollapsibleTrigger className="flex items-center justify-between w-full p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-2">
+                      {GroupLogo && <GroupLogo />}
+                      <span className="font-medium text-sm">{isAr ? group.groupLabelAr : group.groupLabel}</span>
+                      <span className="text-xs text-muted-foreground">({group.fields.length})</span>
+                    </div>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="grid gap-3 pt-3 ps-2">
+                      {group.fields.map(field => {
+                        const Logo = (field as any).logo || GroupLogo;
+                        return (
+                          <div key={field.key} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/30 transition-colors">
+                            {Logo && (
+                              <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                                <Logo />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <Label className="text-sm font-medium">{field.label}</Label>
+                              <p className="text-[11px] text-muted-foreground">{field.description}</p>
+                            </div>
+                            <Input
+                              value={pixels[field.key]}
+                              onChange={e => setPixels(prev => ({ ...prev, [field.key]: e.target.value }))}
+                              placeholder={field.placeholder}
+                              className="h-8 text-sm font-mono max-w-[280px]"
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
               );
             })}
           </div>
