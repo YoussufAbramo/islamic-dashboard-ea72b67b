@@ -168,7 +168,7 @@ const AppSidebar = () => {
               <SidebarGroupLabel>
                 {isAr ? cat.labelAr : cat.label}
                 {cat.requiresDeveloperMode && (
-                  <Badge variant="outline" className="text-[8px] px-1 py-0 h-3.5 ms-1.5">
+                  <Badge className="text-[8px] px-1 py-0 h-3.5 ms-1.5 border-none bg-primary/15 text-primary">
                     <Code className="h-2 w-2 me-0.5" />
                     DEV
                   </Badge>
