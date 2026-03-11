@@ -46,6 +46,7 @@ import BlogPosts from "./pages/BlogPosts";
 import ActivityLog from "./pages/ActivityLog";
 import WebhookLog from "./pages/WebhookLog";
 import ErrorLog from "./pages/ErrorLog";
+import AuditTrail from "./pages/AuditTrail";
 
 const queryClient = new QueryClient();
 
