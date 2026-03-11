@@ -674,12 +674,33 @@
     --sidebar-primary-foreground: var(--primary-foreground);
     --sidebar-ring: var(--ring);
   }
-  /* Force light sidebar text colors via CSS variables — no class overrides needed */
+  /* Force light sidebar text colors */
   [data-sidebar-mode="light"] [data-sidebar="sidebar"] * {
     --tw-text-opacity: 1;
   }
   [data-sidebar-mode="light"] [data-sidebar="sidebar"] [data-sidebar="group-label"] {
     color: hsl(var(--sidebar-light-foreground) / 0.6);
+  }
+  [data-sidebar-mode="light"] [data-sidebar="sidebar"] [data-sidebar="menu-button"] {
+    color: hsl(var(--sidebar-light-foreground));
+  }
+  [data-sidebar-mode="light"] [data-sidebar="sidebar"] [data-sidebar="menu-button"] span {
+    color: hsl(var(--sidebar-light-foreground));
+  }
+  [data-sidebar-mode="light"] [data-sidebar="sidebar"] [data-sidebar="menu-button"] svg {
+    color: hsl(var(--sidebar-light-foreground) / 0.7);
+  }
+  [data-sidebar-mode="light"] [data-sidebar="sidebar"] [data-sidebar="menu-button"][data-active="true"] {
+    color: hsl(var(--sidebar-light-foreground));
+    background: hsl(var(--sidebar-light-accent));
+  }
+  [data-sidebar-mode="light"] [data-sidebar="sidebar"] .text-muted-foreground {
+    color: hsl(var(--sidebar-light-foreground) / 0.6) !important;
+  }
+  [data-sidebar-mode="light"] [data-sidebar="sidebar"] p,
+  [data-sidebar-mode="light"] [data-sidebar="sidebar"] span,
+  [data-sidebar-mode="light"] [data-sidebar="sidebar"] a {
+    color: hsl(var(--sidebar-light-foreground));
   }
 
   /* Fix RTL switch positioning */
