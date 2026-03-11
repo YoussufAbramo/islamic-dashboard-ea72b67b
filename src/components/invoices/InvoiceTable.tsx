@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Eye, Copy, ExternalLink, Trash2, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
+import { ACTION_BTN, ACTION_BTN_DESTRUCTIVE, ACTION_ICON } from '@/lib/actionBtnClass';
 
 const statusConfig: Record<string, { bg: string; label: string; labelAr: string }> = {
   pending: { bg: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30', label: 'Pending', labelAr: 'قيد الانتظار' },
@@ -30,8 +31,6 @@ interface Props {
   onEdit?: (inv: any) => void;
   isAdmin?: boolean;
 }
-
-const actionBtnClass = "rounded-full h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted";
 
 const InvoiceTable = ({ invoices, loading, isAr, formatPrice, onPreview, onCopyUrl, onDelete, onEdit, isAdmin }: Props) => {
   if (loading) {
