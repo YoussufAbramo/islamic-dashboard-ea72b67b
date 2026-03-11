@@ -23,13 +23,15 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     })
 
-    const { data: { user: caller } } = await callerClient.auth.getUser()
-    if (!caller) {
+    const token = authHeader.replace('Bearer ', '')
+    const { data: claimsData, error: claimsError } = await callerClient.auth.getClaims(token)
+    if (claimsError || !claimsData?.claims) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
+    const callerId = claimsData.claims.sub
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey)
-    const { data: roleData } = await adminClient.from('user_roles').select('role').eq('user_id', caller.id).single()
+    const { data: roleData } = await adminClient.from('user_roles').select('role').eq('user_id', callerId).single()
     if (roleData?.role !== 'admin') {
       return new Response(JSON.stringify({ error: 'Admin access required' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
@@ -230,12 +232,12 @@ Deno.serve(async (req) => {
         counts.levels = levelIds.length
 
         const allCourses = [
-          { title: 'Quran Memorization - Juz Amma', title_ar: 'حفظ القرآن - جزء عم', description: 'Complete memorization course for Juz Amma with tajweed rules', description_ar: 'دورة حفظ كاملة لجزء عم مع أحكام التجويد', status: 'active', created_by: caller.id },
-          { title: 'Arabic Language Fundamentals', title_ar: 'أساسيات اللغة العربية', description: 'Learn Arabic grammar, reading, and writing from basics', description_ar: 'تعلم قواعد اللغة العربية والقراءة والكتابة من الأساسيات', status: 'active', created_by: caller.id },
-          { title: 'Islamic Studies & Fiqh', title_ar: 'الدراسات الإسلامية والفقه', description: 'Comprehensive Islamic studies covering fiqh, aqeedah, and seerah', description_ar: 'دراسات إسلامية شاملة تغطي الفقه والعقيدة والسيرة', status: 'active', created_by: caller.id },
-          { title: 'Tajweed Rules', title_ar: 'أحكام التجويد', description: 'Learn the rules of Quran recitation', description_ar: 'تعلم أحكام تلاوة القرآن الكريم', status: 'active', created_by: caller.id },
-          { title: 'Hadith Sciences', title_ar: 'علوم الحديث', description: 'Introduction to Hadith authentication and sciences', description_ar: 'مقدمة في تخريج الأحاديث وعلومها', status: 'active', created_by: caller.id },
-          { title: 'Islamic History', title_ar: 'التاريخ الإسلامي', description: 'Comprehensive overview of Islamic civilization history', description_ar: 'نظرة شاملة على تاريخ الحضارة الإسلامية', status: 'active', created_by: caller.id },
+          { title: 'Quran Memorization - Juz Amma', title_ar: 'حفظ القرآن - جزء عم', description: 'Complete memorization course for Juz Amma with tajweed rules', description_ar: 'دورة حفظ كاملة لجزء عم مع أحكام التجويد', status: 'active', created_by: callerId },
+          { title: 'Arabic Language Fundamentals', title_ar: 'أساسيات اللغة العربية', description: 'Learn Arabic grammar, reading, and writing from basics', description_ar: 'تعلم قواعد اللغة العربية والقراءة والكتابة من الأساسيات', status: 'active', created_by: callerId },
+          { title: 'Islamic Studies & Fiqh', title_ar: 'الدراسات الإسلامية والفقه', description: 'Comprehensive Islamic studies covering fiqh, aqeedah, and seerah', description_ar: 'دراسات إسلامية شاملة تغطي الفقه والعقيدة والسيرة', status: 'active', created_by: callerId },
+          { title: 'Tajweed Rules', title_ar: 'أحكام التجويد', description: 'Learn the rules of Quran recitation', description_ar: 'تعلم أحكام تلاوة القرآن الكريم', status: 'active', created_by: callerId },
+          { title: 'Hadith Sciences', title_ar: 'علوم الحديث', description: 'Introduction to Hadith authentication and sciences', description_ar: 'مقدمة في تخريج الأحاديث وعلومها', status: 'active', created_by: callerId },
+          { title: 'Islamic History', title_ar: 'التاريخ الإسلامي', description: 'Comprehensive overview of Islamic civilization history', description_ar: 'نظرة شاملة على تاريخ الحضارة الإسلامية', status: 'active', created_by: callerId },
         ]
         const coursesInsert = allCourses.slice(0, qty.courses).map((c, i) => ({
           ...c,
@@ -371,27 +373,27 @@ Deno.serve(async (req) => {
       // Create communications (announcements & notifications only)
       if (categories.includes('communications')) {
         const allAnnouncements = [
-          { title: 'Welcome to the New Semester', title_ar: 'مرحباً بالفصل الدراسي الجديد', content: 'We are excited to start a new semester. Please check your schedules.', content_ar: 'نحن متحمسون لبدء فصل دراسي جديد. يرجى مراجعة جداولكم.', target_audience: 'all', created_by: caller.id, is_active: true },
-          { title: 'Exam Schedule Released', title_ar: 'تم نشر جدول الامتحانات', content: 'Final exam schedule has been published. Check the timetable section.', content_ar: 'تم نشر جدول الامتحانات النهائية. راجع قسم الجدول.', target_audience: 'students', created_by: caller.id, is_active: true },
-          { title: 'Teacher Meeting This Friday', title_ar: 'اجتماع المعلمين يوم الجمعة', content: 'All teachers are required to attend the monthly meeting.', content_ar: 'جميع المعلمين مطالبون بحضور الاجتماع الشهري.', target_audience: 'teachers', created_by: caller.id, is_active: true },
-          { title: 'Holiday Schedule', title_ar: 'جدول الإجازات', content: 'Please note the upcoming holiday dates.', content_ar: 'يرجى ملاحظة مواعيد الإجازات القادمة.', target_audience: 'all', created_by: caller.id, is_active: true },
-          { title: 'New Course Available', title_ar: 'دورة جديدة متاحة', content: 'A new course has been added to the curriculum.', content_ar: 'تمت إضافة دورة جديدة إلى المنهج.', target_audience: 'all', created_by: caller.id, is_active: true },
+          { title: 'Welcome to the New Semester', title_ar: 'مرحباً بالفصل الدراسي الجديد', content: 'We are excited to start a new semester. Please check your schedules.', content_ar: 'نحن متحمسون لبدء فصل دراسي جديد. يرجى مراجعة جداولكم.', target_audience: 'all', created_by: callerId, is_active: true },
+          { title: 'Exam Schedule Released', title_ar: 'تم نشر جدول الامتحانات', content: 'Final exam schedule has been published. Check the timetable section.', content_ar: 'تم نشر جدول الامتحانات النهائية. راجع قسم الجدول.', target_audience: 'students', created_by: callerId, is_active: true },
+          { title: 'Teacher Meeting This Friday', title_ar: 'اجتماع المعلمين يوم الجمعة', content: 'All teachers are required to attend the monthly meeting.', content_ar: 'جميع المعلمين مطالبون بحضور الاجتماع الشهري.', target_audience: 'teachers', created_by: callerId, is_active: true },
+          { title: 'Holiday Schedule', title_ar: 'جدول الإجازات', content: 'Please note the upcoming holiday dates.', content_ar: 'يرجى ملاحظة مواعيد الإجازات القادمة.', target_audience: 'all', created_by: callerId, is_active: true },
+          { title: 'New Course Available', title_ar: 'دورة جديدة متاحة', content: 'A new course has been added to the curriculum.', content_ar: 'تمت إضافة دورة جديدة إلى المنهج.', target_audience: 'all', created_by: callerId, is_active: true },
         ]
         const annInsert = allAnnouncements.slice(0, qty.announcements)
         await adminClient.from('announcements').insert(annInsert)
         counts.announcements = annInsert.length
 
         const allNotifs = [
-          { user_id: caller.id, title: 'New Student Enrolled', message: 'Ahmed Ali has enrolled in Quran Memorization', link: '/dashboard/students' },
-          { user_id: caller.id, title: 'Subscription Payment', message: 'New subscription payment of $100 received', link: '/dashboard/subscriptions' },
-          { user_id: caller.id, title: 'Support Ticket', message: 'New support ticket requires attention', link: '/dashboard/support' },
-          { user_id: caller.id, title: 'Attendance Alert', message: 'A student was absent from today\'s lesson', link: '/dashboard/attendance' },
-          { user_id: caller.id, title: 'Course Update', message: 'Arabic Language Fundamentals has been updated', link: '/dashboard/courses' },
-          { user_id: caller.id, title: 'New Certificate Issued', message: 'A new certificate has been issued', link: '/dashboard/certificates' },
-          { user_id: caller.id, title: 'Schedule Change', message: 'A lesson has been rescheduled', link: '/dashboard/timetable' },
-          { user_id: caller.id, title: 'New Message', message: 'You have a new message from a teacher', link: '/dashboard/chats' },
-          { user_id: caller.id, title: 'Backup Complete', message: 'System backup completed successfully', link: '/dashboard/settings' },
-          { user_id: caller.id, title: 'System Update', message: 'The system has been updated to the latest version', link: '/dashboard/settings' },
+          { user_id: callerId, title: 'New Student Enrolled', message: 'Ahmed Ali has enrolled in Quran Memorization', link: '/dashboard/students' },
+          { user_id: callerId, title: 'Subscription Payment', message: 'New subscription payment of $100 received', link: '/dashboard/subscriptions' },
+          { user_id: callerId, title: 'Support Ticket', message: 'New support ticket requires attention', link: '/dashboard/support' },
+          { user_id: callerId, title: 'Attendance Alert', message: 'A student was absent from today\'s lesson', link: '/dashboard/attendance' },
+          { user_id: callerId, title: 'Course Update', message: 'Arabic Language Fundamentals has been updated', link: '/dashboard/courses' },
+          { user_id: callerId, title: 'New Certificate Issued', message: 'A new certificate has been issued', link: '/dashboard/certificates' },
+          { user_id: callerId, title: 'Schedule Change', message: 'A lesson has been rescheduled', link: '/dashboard/timetable' },
+          { user_id: callerId, title: 'New Message', message: 'You have a new message from a teacher', link: '/dashboard/chats' },
+          { user_id: callerId, title: 'Backup Complete', message: 'System backup completed successfully', link: '/dashboard/settings' },
+          { user_id: callerId, title: 'System Update', message: 'The system has been updated to the latest version', link: '/dashboard/settings' },
         ]
         const notifInsert = allNotifs.slice(0, qty.notifications)
         await adminClient.from('notifications').insert(notifInsert)
@@ -429,12 +431,12 @@ Deno.serve(async (req) => {
 
         // Support tickets
         const allTickets = [
-          { name: 'Ahmed Ali', email: 'ahmed@example.com', subject: 'Cannot access course materials', message: 'I enrolled in the Quran Memorization course but cannot see the lesson content.', department: 'technical', priority: 'high', status: 'open', user_id: caller.id },
-          { name: 'Fatima Hassan', email: 'fatima@example.com', subject: 'Payment not reflected', message: 'I made a payment yesterday but my subscription still shows as pending.', department: 'billing', priority: 'high', status: 'open', user_id: caller.id },
-          { name: 'Omar Khan', email: 'omar@example.com', subject: 'Request for schedule change', message: 'I would like to change my class timings from morning to evening.', department: 'general', priority: 'medium', status: 'in_progress', user_id: caller.id },
-          { name: 'Aisha Mahmoud', email: 'aisha@example.com', subject: 'Certificate not received', message: 'I completed the Arabic course last week but have not received my certificate.', department: 'general', priority: 'medium', status: 'resolved', resolution_notes: 'Certificate has been issued and sent via email.', user_id: caller.id },
-          { name: 'Yusuf Ibrahim', email: 'yusuf@example.com', subject: 'App crashes on mobile', message: 'The app keeps crashing when I try to open the chat section on my phone.', department: 'technical', priority: 'high', status: 'open', user_id: caller.id },
-          { name: 'Maryam Saleh', email: 'maryam@example.com', subject: 'Refund request', message: 'I would like to request a refund for the Premium package as I am unable to continue.', department: 'billing', priority: 'low', status: 'closed', resolution_notes: 'Refund processed successfully.', user_id: caller.id },
+          { name: 'Ahmed Ali', email: 'ahmed@example.com', subject: 'Cannot access course materials', message: 'I enrolled in the Quran Memorization course but cannot see the lesson content.', department: 'technical', priority: 'high', status: 'open', user_id: callerId },
+          { name: 'Fatima Hassan', email: 'fatima@example.com', subject: 'Payment not reflected', message: 'I made a payment yesterday but my subscription still shows as pending.', department: 'billing', priority: 'high', status: 'open', user_id: callerId },
+          { name: 'Omar Khan', email: 'omar@example.com', subject: 'Request for schedule change', message: 'I would like to change my class timings from morning to evening.', department: 'general', priority: 'medium', status: 'in_progress', user_id: callerId },
+          { name: 'Aisha Mahmoud', email: 'aisha@example.com', subject: 'Certificate not received', message: 'I completed the Arabic course last week but have not received my certificate.', department: 'general', priority: 'medium', status: 'resolved', resolution_notes: 'Certificate has been issued and sent via email.', user_id: callerId },
+          { name: 'Yusuf Ibrahim', email: 'yusuf@example.com', subject: 'App crashes on mobile', message: 'The app keeps crashing when I try to open the chat section on my phone.', department: 'technical', priority: 'high', status: 'open', user_id: callerId },
+          { name: 'Maryam Saleh', email: 'maryam@example.com', subject: 'Refund request', message: 'I would like to request a refund for the Premium package as I am unable to continue.', department: 'billing', priority: 'low', status: 'closed', resolution_notes: 'Refund processed successfully.', user_id: callerId },
         ]
         const ticketsInsert = allTickets.slice(0, qty.tickets)
         const { data: createdTickets } = await adminClient.from('support_tickets').insert(ticketsInsert).select('id')
@@ -446,12 +448,12 @@ Deno.serve(async (req) => {
       if (categories.includes('website')) {
         // Blog posts
         const allBlogs = [
-          { title: 'Welcome to Our Academy', title_ar: 'مرحباً بكم في أكاديميتنا', slug: 'welcome-to-our-academy', excerpt: 'Learn about our mission and vision for Islamic education.', excerpt_ar: 'تعرف على رسالتنا ورؤيتنا للتعليم الإسلامي.', content: '<h2>Welcome</h2><p>We are dedicated to providing high-quality Islamic education online. Our academy offers courses in Quran memorization, Arabic language, and Islamic studies.</p><p>Join us on this journey of knowledge and spiritual growth.</p>', content_ar: '<h2>مرحباً</h2><p>نحن ملتزمون بتقديم تعليم إسلامي عالي الجودة عبر الإنترنت. تقدم أكاديميتنا دورات في حفظ القرآن واللغة العربية والدراسات الإسلامية.</p>', status: 'published', published_at: new Date().toISOString(), created_by: caller.id },
-          { title: 'Tips for Effective Quran Memorization', title_ar: 'نصائح لحفظ القرآن بفعالية', slug: 'quran-memorization-tips', excerpt: 'Practical advice for memorizing the Quran efficiently.', excerpt_ar: 'نصائح عملية لحفظ القرآن بكفاءة.', content: '<h2>Memorization Tips</h2><p>Consistency is key. Set a daily schedule and stick to it. Review previously memorized portions regularly.</p><ul><li>Start with short surahs</li><li>Listen to recitations repeatedly</li><li>Recite in your prayers</li></ul>', content_ar: '<h2>نصائح للحفظ</h2><p>الاستمرارية هي المفتاح. حدد جدولاً يومياً والتزم به. راجع الأجزاء المحفوظة بانتظام.</p>', status: 'published', published_at: new Date().toISOString(), created_by: caller.id },
-          { title: 'The Importance of Learning Arabic', title_ar: 'أهمية تعلم اللغة العربية', slug: 'importance-of-arabic', excerpt: 'Why every Muslim should strive to learn the Arabic language.', excerpt_ar: 'لماذا يجب على كل مسلم السعي لتعلم اللغة العربية.', content: '<h2>Why Arabic?</h2><p>Arabic is the language of the Quran. Understanding it deepens your connection with the holy book and enriches your prayers.</p>', content_ar: '<h2>لماذا العربية؟</h2><p>العربية هي لغة القرآن. فهمها يعمق صلتك بالكتاب الكريم ويثري صلاتك.</p>', status: 'published', published_at: new Date().toISOString(), created_by: caller.id },
-          { title: 'Understanding Tajweed Rules', title_ar: 'فهم أحكام التجويد', slug: 'understanding-tajweed', excerpt: 'A beginner guide to Tajweed rules.', excerpt_ar: 'دليل المبتدئين لأحكام التجويد.', content: '<h2>Tajweed Basics</h2><p>Tajweed ensures proper pronunciation of Quran letters. It includes rules for elongation, nasalization, and proper stops.</p>', content_ar: '<h2>أساسيات التجويد</h2><p>التجويد يضمن النطق الصحيح لحروف القرآن. يشمل قواعد المد والغنة والوقف.</p>', status: 'published', published_at: new Date().toISOString(), created_by: caller.id },
-          { title: 'Student Success Stories', title_ar: 'قصص نجاح الطلاب', slug: 'student-success-stories', excerpt: 'Inspiring stories from our students.', excerpt_ar: 'قصص ملهمة من طلابنا.', content: '<h2>Success Stories</h2><p>Read about students who memorized the entire Quran through our program.</p>', content_ar: '<h2>قصص نجاح</h2><p>اقرأ عن الطلاب الذين حفظوا القرآن كاملاً من خلال برنامجنا.</p>', status: 'draft', created_by: caller.id },
-          { title: 'New Courses Coming Soon', title_ar: 'دورات جديدة قريباً', slug: 'new-courses-coming-soon', excerpt: 'Exciting new courses are on the way!', excerpt_ar: 'دورات جديدة مثيرة في الطريق!', content: '<h2>Coming Soon</h2><p>We are preparing new courses in Hadith sciences and Islamic history. Stay tuned!</p>', content_ar: '<h2>قريباً</h2><p>نحن نحضر دورات جديدة في علوم الحديث والتاريخ الإسلامي. ترقبوا!</p>', status: 'draft', created_by: caller.id },
+          { title: 'Welcome to Our Academy', title_ar: 'مرحباً بكم في أكاديميتنا', slug: 'welcome-to-our-academy', excerpt: 'Learn about our mission and vision for Islamic education.', excerpt_ar: 'تعرف على رسالتنا ورؤيتنا للتعليم الإسلامي.', content: '<h2>Welcome</h2><p>We are dedicated to providing high-quality Islamic education online. Our academy offers courses in Quran memorization, Arabic language, and Islamic studies.</p><p>Join us on this journey of knowledge and spiritual growth.</p>', content_ar: '<h2>مرحباً</h2><p>نحن ملتزمون بتقديم تعليم إسلامي عالي الجودة عبر الإنترنت. تقدم أكاديميتنا دورات في حفظ القرآن واللغة العربية والدراسات الإسلامية.</p>', status: 'published', published_at: new Date().toISOString(), created_by: callerId },
+          { title: 'Tips for Effective Quran Memorization', title_ar: 'نصائح لحفظ القرآن بفعالية', slug: 'quran-memorization-tips', excerpt: 'Practical advice for memorizing the Quran efficiently.', excerpt_ar: 'نصائح عملية لحفظ القرآن بكفاءة.', content: '<h2>Memorization Tips</h2><p>Consistency is key. Set a daily schedule and stick to it. Review previously memorized portions regularly.</p><ul><li>Start with short surahs</li><li>Listen to recitations repeatedly</li><li>Recite in your prayers</li></ul>', content_ar: '<h2>نصائح للحفظ</h2><p>الاستمرارية هي المفتاح. حدد جدولاً يومياً والتزم به. راجع الأجزاء المحفوظة بانتظام.</p>', status: 'published', published_at: new Date().toISOString(), created_by: callerId },
+          { title: 'The Importance of Learning Arabic', title_ar: 'أهمية تعلم اللغة العربية', slug: 'importance-of-arabic', excerpt: 'Why every Muslim should strive to learn the Arabic language.', excerpt_ar: 'لماذا يجب على كل مسلم السعي لتعلم اللغة العربية.', content: '<h2>Why Arabic?</h2><p>Arabic is the language of the Quran. Understanding it deepens your connection with the holy book and enriches your prayers.</p>', content_ar: '<h2>لماذا العربية؟</h2><p>العربية هي لغة القرآن. فهمها يعمق صلتك بالكتاب الكريم ويثري صلاتك.</p>', status: 'published', published_at: new Date().toISOString(), created_by: callerId },
+          { title: 'Understanding Tajweed Rules', title_ar: 'فهم أحكام التجويد', slug: 'understanding-tajweed', excerpt: 'A beginner guide to Tajweed rules.', excerpt_ar: 'دليل المبتدئين لأحكام التجويد.', content: '<h2>Tajweed Basics</h2><p>Tajweed ensures proper pronunciation of Quran letters. It includes rules for elongation, nasalization, and proper stops.</p>', content_ar: '<h2>أساسيات التجويد</h2><p>التجويد يضمن النطق الصحيح لحروف القرآن. يشمل قواعد المد والغنة والوقف.</p>', status: 'published', published_at: new Date().toISOString(), created_by: callerId },
+          { title: 'Student Success Stories', title_ar: 'قصص نجاح الطلاب', slug: 'student-success-stories', excerpt: 'Inspiring stories from our students.', excerpt_ar: 'قصص ملهمة من طلابنا.', content: '<h2>Success Stories</h2><p>Read about students who memorized the entire Quran through our program.</p>', content_ar: '<h2>قصص نجاح</h2><p>اقرأ عن الطلاب الذين حفظوا القرآن كاملاً من خلال برنامجنا.</p>', status: 'draft', created_by: callerId },
+          { title: 'New Courses Coming Soon', title_ar: 'دورات جديدة قريباً', slug: 'new-courses-coming-soon', excerpt: 'Exciting new courses are on the way!', excerpt_ar: 'دورات جديدة مثيرة في الطريق!', content: '<h2>Coming Soon</h2><p>We are preparing new courses in Hadith sciences and Islamic history. Stay tuned!</p>', content_ar: '<h2>قريباً</h2><p>نحن نحضر دورات جديدة في علوم الحديث والتاريخ الإسلامي. ترقبوا!</p>', status: 'draft', created_by: callerId },
         ]
         const blogsInsert = allBlogs.slice(0, qty.blogs)
         const { data: createdBlogs } = await adminClient.from('blog_posts').insert(blogsInsert).select('id')
@@ -459,11 +461,11 @@ Deno.serve(async (req) => {
 
         // Website pages
         const allPages = [
-          { title: 'About Us', title_ar: 'من نحن', slug: 'about-us', content: '<h1>About Us</h1><p>We are an online Islamic education academy committed to providing accessible, high-quality learning experiences. Our team of qualified scholars and educators brings years of experience in Quran, Arabic, and Islamic studies.</p><h2>Our Mission</h2><p>To make Islamic education accessible to everyone, everywhere.</p><h2>Our Vision</h2><p>A world where every Muslim has access to authentic Islamic knowledge.</p>', content_ar: '<h1>من نحن</h1><p>نحن أكاديمية تعليم إسلامي عبر الإنترنت ملتزمة بتقديم تجارب تعليمية عالية الجودة. يتمتع فريقنا من العلماء والمعلمين المؤهلين بسنوات من الخبرة.</p>', status: 'published', created_by: caller.id },
-          { title: 'Contact Us', title_ar: 'اتصل بنا', slug: 'contact-us', content: '<h1>Contact Us</h1><p>We would love to hear from you! Reach out to us for any questions or feedback.</p><h2>Email</h2><p>info@academy.com</p><h2>Phone</h2><p>+1 234 567 890</p><h2>Address</h2><p>123 Education Street, Knowledge City</p>', content_ar: '<h1>اتصل بنا</h1><p>يسعدنا سماع رأيك! تواصل معنا لأي أسئلة أو ملاحظات.</p>', status: 'published', created_by: caller.id },
-          { title: 'FAQ', title_ar: 'الأسئلة الشائعة', slug: 'faq', content: '<h1>Frequently Asked Questions</h1><h3>How do I enroll?</h3><p>Simply create an account and browse our courses.</p><h3>What are the class timings?</h3><p>Classes are scheduled based on your availability.</p><h3>Do you offer certificates?</h3><p>Yes, certificates are issued upon course completion.</p>', content_ar: '<h1>الأسئلة الشائعة</h1><h3>كيف أسجل؟</h3><p>ببساطة أنشئ حساباً وتصفح دوراتنا.</p>', status: 'published', created_by: caller.id },
-          { title: 'Our Teachers', title_ar: 'معلمونا', slug: 'our-teachers', content: '<h1>Our Teachers</h1><p>Our teachers are certified scholars with ijazah in Quran recitation and years of teaching experience.</p>', content_ar: '<h1>معلمونا</h1><p>معلمونا علماء معتمدون حاصلون على إجازة في تلاوة القرآن وسنوات من الخبرة التدريسية.</p>', status: 'published', created_by: caller.id },
-          { title: 'Terms of Service', title_ar: 'شروط الخدمة', slug: 'terms-of-service', content: '<h1>Terms of Service</h1><p>By using our platform, you agree to our terms and conditions.</p>', content_ar: '<h1>شروط الخدمة</h1><p>باستخدام منصتنا، فإنك توافق على الشروط والأحكام الخاصة بنا.</p>', status: 'draft', created_by: caller.id },
+          { title: 'About Us', title_ar: 'من نحن', slug: 'about-us', content: '<h1>About Us</h1><p>We are an online Islamic education academy committed to providing accessible, high-quality learning experiences. Our team of qualified scholars and educators brings years of experience in Quran, Arabic, and Islamic studies.</p><h2>Our Mission</h2><p>To make Islamic education accessible to everyone, everywhere.</p><h2>Our Vision</h2><p>A world where every Muslim has access to authentic Islamic knowledge.</p>', content_ar: '<h1>من نحن</h1><p>نحن أكاديمية تعليم إسلامي عبر الإنترنت ملتزمة بتقديم تجارب تعليمية عالية الجودة. يتمتع فريقنا من العلماء والمعلمين المؤهلين بسنوات من الخبرة.</p>', status: 'published', created_by: callerId },
+          { title: 'Contact Us', title_ar: 'اتصل بنا', slug: 'contact-us', content: '<h1>Contact Us</h1><p>We would love to hear from you! Reach out to us for any questions or feedback.</p><h2>Email</h2><p>info@academy.com</p><h2>Phone</h2><p>+1 234 567 890</p><h2>Address</h2><p>123 Education Street, Knowledge City</p>', content_ar: '<h1>اتصل بنا</h1><p>يسعدنا سماع رأيك! تواصل معنا لأي أسئلة أو ملاحظات.</p>', status: 'published', created_by: callerId },
+          { title: 'FAQ', title_ar: 'الأسئلة الشائعة', slug: 'faq', content: '<h1>Frequently Asked Questions</h1><h3>How do I enroll?</h3><p>Simply create an account and browse our courses.</p><h3>What are the class timings?</h3><p>Classes are scheduled based on your availability.</p><h3>Do you offer certificates?</h3><p>Yes, certificates are issued upon course completion.</p>', content_ar: '<h1>الأسئلة الشائعة</h1><h3>كيف أسجل؟</h3><p>ببساطة أنشئ حساباً وتصفح دوراتنا.</p>', status: 'published', created_by: callerId },
+          { title: 'Our Teachers', title_ar: 'معلمونا', slug: 'our-teachers', content: '<h1>Our Teachers</h1><p>Our teachers are certified scholars with ijazah in Quran recitation and years of teaching experience.</p>', content_ar: '<h1>معلمونا</h1><p>معلمونا علماء معتمدون حاصلون على إجازة في تلاوة القرآن وسنوات من الخبرة التدريسية.</p>', status: 'published', created_by: callerId },
+          { title: 'Terms of Service', title_ar: 'شروط الخدمة', slug: 'terms-of-service', content: '<h1>Terms of Service</h1><p>By using our platform, you agree to our terms and conditions.</p>', content_ar: '<h1>شروط الخدمة</h1><p>باستخدام منصتنا، فإنك توافق على الشروط والأحكام الخاصة بنا.</p>', status: 'draft', created_by: callerId },
         ]
         const pagesInsert = allPages.slice(0, qty.pages)
         const { data: createdPages } = await adminClient.from('website_pages').insert(pagesInsert).select('id')
@@ -743,7 +745,7 @@ Deno.serve(async (req) => {
           encrypted_keys: { cipher: encryptedValue },
           is_active: true,
           updated_at: new Date().toISOString(),
-          updated_by: caller.id,
+          updated_by: callerId,
         }, { onConflict: 'gateway_id' })
 
       if (error) {
