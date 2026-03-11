@@ -327,6 +327,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       sidebarMode: saved.sidebarMode, setSidebarMode,
       timeFormat: saved.timeFormat, setTimeFormat,
       developerMode: saved.developerMode, setDeveloperMode,
+      websiteMode: saved.websiteMode, setWebsiteMode,
       pending, updatePending, saveSettings, hasPendingChanges, discardChanges,
     }}>
       {children}
