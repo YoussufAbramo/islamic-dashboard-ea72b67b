@@ -86,6 +86,8 @@ const LandingContentSettings = () => {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'sections' | 'header' | 'seo'>('sections');
   const [saving, setSaving] = useState(false);
+  const [websitePages, setWebsitePages] = useState<{ slug: string; title: string; title_ar: string | null }[]>([]);
+  const [policies, setPolicies] = useState<{ slug: string; title: string; title_ar: string | null }[]>([]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
