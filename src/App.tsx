@@ -73,10 +73,10 @@ const App = () => (
                     <Route path="/dashboard" element={<DashboardLayout />}>
                       <Route index element={<Dashboard />} />
                       <Route path="courses" element={<Courses />} />
-                      <Route path="courses/:id" element={<CourseDetail />} />
                       <Route path="courses/tracks" element={<RoleGuard allowed={['admin']}><CourseTracks /></RoleGuard>} />
                       <Route path="courses/categories" element={<RoleGuard allowed={['admin']}><CourseCategories /></RoleGuard>} />
                       <Route path="courses/levels" element={<RoleGuard allowed={['admin']}><CourseLevels /></RoleGuard>} />
+                      <Route path="courses/:id" element={<CourseDetail />} />
                       <Route path="students" element={<RoleGuard allowed={['admin', 'teacher']}><Students /></RoleGuard>} />
                       <Route path="teachers" element={<RoleGuard allowed={['admin']}><Teachers /></RoleGuard>} />
                       <Route path="admins" element={<RoleGuard allowed={['admin']}><Admins /></RoleGuard>} />
