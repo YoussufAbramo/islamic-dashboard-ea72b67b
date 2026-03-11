@@ -62,7 +62,6 @@ const FloatingButtons = () => {
       email: profile?.email || user?.email || prev.email,
     }));
   };
-  const [submitting, setSubmitting] = useState(false);
 
   const whatsappUrl = `https://wa.me/201558612808?text=${encodeURIComponent("Hello Dear, I'm texting you regarding Quran.CodeCom.dev, are you available to talk?")}`;
 
