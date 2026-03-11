@@ -144,7 +144,7 @@ const BackupsSettings = () => {
       toast.success(isAr ? 'تم حذف النسخة الاحتياطية' : 'Backup deleted');
       setDeleteTarget(null);
       fetchBackups();
-    } catch (err: any) { toast.error(err.message || 'Failed to delete backup'); }
+    } catch (err: any) { notifyError({ error: 'DB_OPERATION_FAILED', isAr, rawMessage: err.message || 'Failed to delete backup' }); }
     finally { setDeleting(false); }
   };
 

@@ -250,7 +250,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       toast.success(isAr ? `تم حذف ${data.total_deleted} سجل` : `Deleted ${data.total_deleted} records`);
     } catch (err: any) {
       addLog(`❌ ${err.message || 'Failed to delete tables data'}`);
-      toast.error(err.message || 'Failed to delete tables data');
+      notifyError({ error: 'DB_OPERATION_FAILED', isAr, rawMessage: err.message || 'Failed to delete tables data' });
     } finally {
       setDeleteTablesLoading(false);
     }

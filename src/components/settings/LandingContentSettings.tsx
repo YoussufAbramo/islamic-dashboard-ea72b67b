@@ -242,7 +242,7 @@ const LandingContentSettings = () => {
                         const path = `branding/og-image-${Date.now()}.${ext}`;
                         const { uploadAndGetSignedUrl } = await import('@/lib/storage');
                         const { signedUrl, error: uploadErr } = await uploadAndGetSignedUrl(path, file);
-                        if (uploadErr) { toast.error(uploadErr); return; }
+                        if (uploadErr) { notifyError({ error: 'STORAGE_UPLOAD_FAILED', isAr, rawMessage: uploadErr }); return; }
                         updateField('general', 'og_image', signedUrl);
                         toast.success(isAr ? 'تم رفع الصورة' : 'Image uploaded');
                       }}

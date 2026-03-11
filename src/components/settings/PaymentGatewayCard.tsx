@@ -166,7 +166,7 @@ const PaymentGatewayCard = ({ isAr }: PaymentGatewayCardProps) => {
       setSavedGateways(prev => new Set(prev).add(gwId));
       setApiValues(prev => ({ ...prev, [gwId]: {} }));
     } catch (err: any) {
-      toast.error(isAr ? 'فشل حفظ مفاتيح API. يرجى المحاولة مرة أخرى.' : 'Failed to save API keys. Please try again.');
+      notifyError({ error: 'GENERAL_SAVE_FAILED', isAr, rawMessage: err.message });
       console.error('Payment key save error:', err);
     } finally {
       setSaving(null);
