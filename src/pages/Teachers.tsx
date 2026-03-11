@@ -28,14 +28,17 @@ const Teachers = () => {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ bio: '', specialization: '', full_name: '', phone: '', email: '' });
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const [addOpen, setAddOpen] = useState(false);
   const [addForm, setAddForm] = useState({ full_name: '', email: '', password: '', phone: '', specialization: '', bio: '' });
   const [addLoading, setAddLoading] = useState(false);
 
   const fetchTeachers = async () => {
+    setLoading(true);
     const { data } = await supabase.from('teachers').select('*, profiles:teachers_user_id_profiles_fkey(full_name, phone, email)');
     setTeachers(data || []);
+    setLoading(false);
   };
 
   useEffect(() => { fetchTeachers(); }, []);
