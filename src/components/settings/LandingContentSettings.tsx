@@ -12,8 +12,9 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import {
   Save, Plus, Trash2, GripVertical, ChevronDown, ChevronUp, Pencil, X, Search, Globe,
-  Star, Sparkles, Shield, Megaphone, BookOpen, Users, BarChart3, HelpCircle, Mail, Layers, CreditCard, Quote, Handshake, Settings2, Eye, EyeOff,
+  Star, Sparkles, Shield, Megaphone, BookOpen, Users, BarChart3, HelpCircle, Mail, Layers, CreditCard, Quote, Handshake, Settings2, Eye, EyeOff, LayoutTemplate, Check,
 } from 'lucide-react';
+import { HEADER_STYLES, type HeaderStyleKey } from '@/components/landing/LandingHeaders';
 import ImagePickerField from '@/components/media/ImagePickerField';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -436,6 +437,68 @@ const LandingContentSettings = () => {
   // ─── SEO / General settings ───
   const renderSEO = () => (
     <div className="space-y-6">
+      {/* Header Style Picker */}
+      <div className="rounded-lg border border-border p-4 space-y-4">
+        <h3 className="font-medium flex items-center gap-2"><LayoutTemplate className="h-4 w-4" />{isAr ? 'نمط الهيدر' : 'Header Style'}</h3>
+        <p className="text-xs text-muted-foreground">{isAr ? 'اختر نمط شريط التنقل العلوي لصفحة الهبوط' : 'Choose the top navigation bar style for the landing page'}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {(Object.entries(HEADER_STYLES) as [HeaderStyleKey, typeof HEADER_STYLES[HeaderStyleKey]][]).map(([key, meta]) => {
+            const isSelected = (general.header_style || 'classic') === key;
+            return (
+              <button
+                key={key}
+                onClick={() => updateGeneralField('header_style', key)}
+                className={`relative flex flex-col items-start gap-2 p-4 rounded-lg border-2 transition-all text-start ${
+                  isSelected
+                    ? 'border-primary bg-primary/5 shadow-sm'
+                    : 'border-border hover:border-primary/40 hover:bg-muted/50'
+                }`}
+              >
+                {isSelected && (
+                  <div className="absolute top-2 end-2 h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                    <Check className="h-3 w-3 text-primary-foreground" />
+                  </div>
+                )}
+                {/* Mini preview bar */}
+                <div className="w-full h-8 rounded-md bg-muted/70 border border-border/50 flex items-center px-2 gap-1.5">
+                  {key === 'classic' && (
+                    <>
+                      <div className="h-3 w-3 rounded-sm bg-primary/60" />
+                      <div className="flex-1" />
+                      <div className="h-1.5 w-4 rounded-full bg-muted-foreground/30" />
+                      <div className="h-1.5 w-4 rounded-full bg-muted-foreground/30" />
+                      <div className="h-3 w-6 rounded-sm bg-primary/40" />
+                    </>
+                  )}
+                  {key === 'centered' && (
+                    <>
+                      <div className="h-1.5 w-4 rounded-full bg-muted-foreground/30" />
+                      <div className="flex-1" />
+                      <div className="h-3 w-3 rounded-sm bg-primary/60" />
+                      <div className="flex-1" />
+                      <div className="h-1.5 w-4 rounded-full bg-muted-foreground/30" />
+                    </>
+                  )}
+                  {key === 'cta-focused' && (
+                    <>
+                      <div className="h-3 w-3 rounded-sm bg-primary/60" />
+                      <div className="flex-1" />
+                      <div className="h-1.5 w-3 rounded-full bg-muted-foreground/30" />
+                      <div className="h-1.5 w-3 rounded-full bg-muted-foreground/30" />
+                      <div className="h-3 w-8 rounded-sm bg-primary" />
+                    </>
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm font-medium">{isAr ? meta.labelAr : meta.label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{isAr ? meta.descriptionAr : meta.description}</p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="rounded-lg border border-border p-4 space-y-4">
         <h3 className="font-medium flex items-center gap-2"><Search className="h-4 w-4" />{isAr ? 'بيانات SEO' : 'SEO Meta Data'}</h3>
         <div className="grid sm:grid-cols-2 gap-4">

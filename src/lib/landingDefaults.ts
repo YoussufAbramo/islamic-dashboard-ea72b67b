@@ -156,6 +156,7 @@ export const defaultGeneralContent: Record<string, any> = {
   og_title: '',
   og_description: '',
   og_image: '',
+  header_style: 'classic',
   sections_order: DEFAULT_SECTION_ORDER,
   sections_visible: Object.fromEntries(DEFAULT_SECTION_ORDER.map(k => [k, true])),
 };
