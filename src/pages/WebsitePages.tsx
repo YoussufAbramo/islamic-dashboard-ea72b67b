@@ -46,28 +46,6 @@ const emptySeo: SeoData = { meta_title: '', meta_description: '', og_title: '', 
 /* ─── System page card (Blogs) ─── */
 const SystemPageCard = ({ isAr }: { isAr: boolean }) => {
   const navigate = useNavigate();
-  const [enabled, setEnabled] = useState(true);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      const { data } = await supabase.from('landing_content').select('content').eq('section_key', 'system_page_blogs').maybeSingle();
-      if (data?.content && typeof data.content === 'object' && 'enabled' in (data.content as any)) {
-        setEnabled((data.content as any).enabled);
-      }
-      setLoading(false);
-    })();
-  }, []);
-
-  const toggleEnabled = async (val: boolean) => {
-    setEnabled(val);
-    await supabase.from('landing_content').upsert({
-      section_key: 'system_page_blogs',
-      content: { enabled: val } as any,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'section_key' });
-    toast.success(isAr ? (val ? 'تم التفعيل' : 'تم التعطيل') : (val ? 'Enabled' : 'Disabled'));
-  };
 
   return (
     <Card className="border-primary/20 bg-primary/[0.02]">
@@ -85,15 +63,9 @@ const SystemPageCard = ({ isAr }: { isAr: boolean }) => {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">{isAr ? (enabled ? 'مفعّل' : 'معطّل') : (enabled ? 'Enabled' : 'Disabled')}</span>
-            <Switch checked={enabled} onCheckedChange={toggleEnabled} disabled={loading} />
-          </div>
-          {enabled && (
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => window.open('/blogs', '_blank')}>
-              <ExternalLink className="h-3.5 w-3.5" />
-            </Button>
-          )}
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => window.open('/blogs', '_blank')}>
+            <ExternalLink className="h-3.5 w-3.5" />
+          </Button>
           <Button variant="outline" size="sm" onClick={() => navigate('/dashboard/blog')} className="gap-1">
             {isAr ? 'إدارة المقالات' : 'Manage Posts'} <ArrowRight className="h-3.5 w-3.5 rtl:-scale-x-100" />
           </Button>
