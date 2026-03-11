@@ -66,8 +66,6 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const [appNameInput, setAppNameInput] = useState('');
   const [deleteCodeInput, setDeleteCodeInput] = useState('');
   const [understandCheck, setUnderstandCheck] = useState(false);
-  const [deleteTablesOpen, setDeleteTablesOpen] = useState(false);
-  const [deleteTablesLoading, setDeleteTablesLoading] = useState(false);
   const [seedCategories, setSeedCategories] = useState<SeedCategory[]>(['students', 'teachers', 'courses', 'billing', 'schedule', 'communications', 'support', 'certificates', 'website', 'packages']);
   const [seedQuantity, setSeedQuantity] = useState<SeedQuantity>(3);
 
