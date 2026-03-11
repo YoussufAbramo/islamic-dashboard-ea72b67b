@@ -71,7 +71,14 @@ const SortableSectionCard = ({ sectionKey, isAr, visible, expanded, onToggleVisi
           </button>
         </div>
       </div>
-      {expanded && <div className="px-4 pb-4 border-t border-border pt-4">{children}</div>}
+      <div
+        className="grid transition-all duration-300 ease-out"
+        style={{ gridTemplateRows: expanded ? '1fr' : '0fr' }}
+      >
+        <div className="overflow-hidden">
+          <div className="px-4 pb-4 border-t border-border pt-4">{children}</div>
+        </div>
+      </div>
     </div>
   );
 };
