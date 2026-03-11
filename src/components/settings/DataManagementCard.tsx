@@ -21,7 +21,7 @@ interface DataManagementCardProps {
 const SEED_LOG_KEY = 'app_seed_log_history';
 
 type SeedCategory = 'students' | 'teachers' | 'courses' | 'billing' | 'schedule' | 'communications' | 'support' | 'certificates' | 'website' | 'packages';
-type SeedQuantity = 'little' | 'medium' | 'many';
+type SeedQuantity = number;
 
 const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon: string }[] = [
   { key: 'students', label: 'Students', labelAr: 'طلاب', icon: '👨‍🎓' },
@@ -36,11 +36,15 @@ const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon
   { key: 'packages', label: 'Pricing Packages', labelAr: 'باقات الأسعار', icon: '📦' },
 ];
 
-const SEED_QUANTITIES: { key: SeedQuantity; label: string; labelAr: string; desc: string; descAr: string }[] = [
-  { key: 'little', label: 'Little', labelAr: 'قليل', desc: '2 students, 1 teacher, 1 course', descAr: '2 طلاب، 1 معلم، 1 دورة' },
-  { key: 'medium', label: 'Medium', labelAr: 'متوسط', desc: '5 students, 2 teachers, 3 courses', descAr: '5 طلاب، 2 معلمين، 3 دورات' },
-  { key: 'many', label: 'Many', labelAr: 'كثير', desc: '10 students, 4 teachers, 6 courses', descAr: '10 طلاب، 4 معلمين، 6 دورات' },
-];
+// Estimated counts per multiplier for display
+const getEstimatedCounts = (multiplier: number) => ({
+  students: multiplier * 2,
+  teachers: Math.max(1, Math.ceil(multiplier * 0.8)),
+  courses: Math.max(1, Math.ceil(multiplier * 0.6)),
+  timetable: multiplier * 3,
+  tickets: Math.max(1, multiplier),
+  blogs: Math.max(1, Math.ceil(multiplier * 0.6)),
+});
 
 const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const { appName } = useAppSettings();
