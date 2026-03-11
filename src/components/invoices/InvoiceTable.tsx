@@ -161,23 +161,23 @@ const InvoiceTable = ({ invoices, loading, isAr, formatPrice, onPreview, onCopyU
                   <TableCell className="text-sm">{inv.due_date ? format(new Date(inv.due_date), 'MMM dd, yyyy') : '-'}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" className={actionBtnClass} onClick={() => onPreview(inv)} title={isAr ? 'معاينة' : 'Preview'}>
-                        <Eye className="h-4 w-4" />
+                      <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => onPreview(inv)} title={isAr ? 'معاينة' : 'Preview'}>
+                        <Eye className={ACTION_ICON} />
                       </Button>
-                      <Button variant="ghost" size="icon" className={actionBtnClass} onClick={() => window.open(getInvoiceUrl(inv), '_blank')} title={isAr ? 'عرض' : 'View'}>
-                        <ExternalLink className="h-4 w-4" />
+                      <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => window.open(getInvoiceUrl(inv), '_blank')} title={isAr ? 'عرض' : 'View'}>
+                        <ExternalLink className={ACTION_ICON} />
                       </Button>
-                      <Button variant="ghost" size="icon" className={actionBtnClass} onClick={() => onCopyUrl(inv)} title={isAr ? 'نسخ الرابط' : 'Copy URL'}>
-                        <Copy className="h-4 w-4" />
+                      <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => onCopyUrl(inv)} title={isAr ? 'نسخ الرابط' : 'Copy URL'}>
+                        <Copy className={ACTION_ICON} />
                       </Button>
                       {isAdmin && onEdit && (
-                        <Button variant="ghost" size="icon" className={actionBtnClass} onClick={() => onEdit(inv)} title={isAr ? 'تعديل' : 'Edit'}>
-                          <Pencil className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => onEdit(inv)} title={isAr ? 'تعديل' : 'Edit'}>
+                          <Pencil className={ACTION_ICON} />
                         </Button>
                       )}
                       {isAdmin && onDelete && (
-                        <Button variant="ghost" size="icon" className={`${actionBtnClass} hover:text-destructive hover:bg-destructive/10`} onClick={() => onDelete(inv)} title={isAr ? 'حذف' : 'Delete'}>
-                          <Trash2 className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => onDelete(inv)} title={isAr ? 'حذف' : 'Delete'}>
+                          <Trash2 className={ACTION_ICON} />
                         </Button>
                       )}
                     </div>
