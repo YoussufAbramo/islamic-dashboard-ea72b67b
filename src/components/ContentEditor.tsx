@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import DOMPurify from 'dompurify';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Bold, Italic, Underline, List, ListOrdered, Link, Heading1, Heading2, Code, Eye, FileText, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
@@ -111,7 +112,7 @@ const ContentEditor = ({ value, onChange, placeholder, minHeight = '300px' }: Co
           className="p-4 outline-none prose prose-sm max-w-none dark:prose-invert overflow-auto"
           style={{ minHeight }}
           onInput={handleInput}
-          dangerouslySetInnerHTML={{ __html: value }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(value) }}
         />
       ) : (
         <Textarea
