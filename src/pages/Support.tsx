@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
-import { Plus, Search, Eye, MessageSquare, Mail, Phone, ArrowDown, ArrowUp, Trash2 } from 'lucide-react';
+import { Plus, Search, Eye, MessageSquare, Mail, Phone, ArrowDown, ArrowUp, Trash2, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ticketStatusLabels, ticketPriorityLabels, getLabel } from '@/lib/statusLabels';
