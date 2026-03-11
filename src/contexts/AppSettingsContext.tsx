@@ -167,6 +167,7 @@ function loadSaved(): PendingSettings {
     defaultLanguage: (localStorage.getItem('app_default_language') as 'en' | 'ar') || 'en',
     defaultTimezone: localStorage.getItem('app_default_timezone') || Intl.DateTimeFormat().resolvedOptions().timeZone,
     sidebarMode: (localStorage.getItem('app_sidebar_mode') as SidebarMode) || 'dark',
+    timeFormat: (localStorage.getItem('app_time_format') as TimeFormat) || '12h',
   };
 }
 
