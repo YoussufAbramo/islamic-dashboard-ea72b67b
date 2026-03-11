@@ -73,7 +73,7 @@ const FloatingButtons = () => {
     }
     setSubmitting(true);
     const { error } = await supabase.from('support_tickets').insert({
-      name: form.name, email: form.email, subject: form.subject,
+      name: form.name, email: form.email, phone: form.phone, subject: form.subject,
       message: form.message, department: form.department, priority: form.priority,
       user_id: user?.id
     });
