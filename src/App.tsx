@@ -45,6 +45,7 @@ import WebsitePages from "./pages/WebsitePages";
 import BlogPosts from "./pages/BlogPosts";
 import ActivityLog from "./pages/ActivityLog";
 import WebhookLog from "./pages/WebhookLog";
+import ErrorLog from "./pages/ErrorLog";
 
 const queryClient = new QueryClient();
 
