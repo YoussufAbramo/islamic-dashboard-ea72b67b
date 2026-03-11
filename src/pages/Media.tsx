@@ -37,7 +37,9 @@ const Media = () => {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dragCounter = useRef(0);
 
   const fetchFiles = async (bucketName: string) => {
     setLoading(true);
@@ -52,12 +54,12 @@ const Media = () => {
     setLoading(false);
   };
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!selectedBucket || !e.target.files?.length) return;
+  const uploadFiles = useCallback(async (fileList: File[]) => {
+    if (!selectedBucket || !fileList.length) return;
     setUploading(true);
     const uploadedCount = { success: 0, fail: 0 };
 
-    for (const file of Array.from(e.target.files)) {
+    for (const file of fileList) {
       const filePath = `${Date.now()}-${file.name}`;
       const { error } = await supabase.storage.from(selectedBucket).upload(filePath, file, {
         cacheControl: '3600',
@@ -78,11 +80,43 @@ const Media = () => {
       toast.error(isAr ? `فشل رفع ${uploadedCount.fail} ملف` : `${uploadedCount.fail} file(s) failed to upload`);
     }
 
-    // Reset input and refresh
     if (fileInputRef.current) fileInputRef.current.value = '';
     setUploading(false);
     fetchFiles(selectedBucket);
+  }, [selectedBucket, isAr]);
+
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.length) uploadFiles(Array.from(e.target.files));
   };
+
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current++;
+    if (e.dataTransfer.items?.length) setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current--;
+    if (dragCounter.current === 0) setIsDragging(false);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    dragCounter.current = 0;
+    if (e.dataTransfer.files?.length) {
+      uploadFiles(Array.from(e.dataTransfer.files));
+    }
+  }, [uploadFiles]);
 
   const handleDelete = async (fileName: string) => {
     if (!selectedBucket) return;
