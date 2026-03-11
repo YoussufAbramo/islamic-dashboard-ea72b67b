@@ -303,6 +303,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const setSidebarMode = useCallback((m: SidebarMode) => { setPending(p => ({ ...p, sidebarMode: m })); }, []);
   const setTimeFormat = useCallback((f: TimeFormat) => { setPending(p => ({ ...p, timeFormat: f })); }, []);
   const setDeveloperMode = useCallback((d: boolean) => { setPending(p => ({ ...p, developerMode: d })); }, []);
+  const setWebsiteMode = useCallback((w: boolean) => { setPending(p => ({ ...p, websiteMode: w })); }, []);
 
   return (
     <AppSettingsContext.Provider value={{
