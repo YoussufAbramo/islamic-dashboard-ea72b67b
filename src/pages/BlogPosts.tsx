@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
 import ContentEditor from '@/components/ContentEditor';
-import MediaPickerDialog from '@/components/media/MediaPickerDialog';
+import ImagePickerField from '@/components/media/ImagePickerField';
 import { format } from 'date-fns';
 
 interface BlogPost {
