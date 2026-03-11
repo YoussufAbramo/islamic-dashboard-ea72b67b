@@ -16,6 +16,7 @@ import { Plus, Megaphone, Trash2, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { format } from 'date-fns';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Announcements = () => {
   const { language } = useLanguage();
