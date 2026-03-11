@@ -400,7 +400,7 @@ const CourseDetail = () => {
                                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditContent(content, section.id)}>
                                     <Pencil className="h-3 w-3" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteContent(content.id)}>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteTarget({ id: content.id, type: 'content' })}>
                                     <Trash2 className="h-3 w-3" />
                                   </Button>
                                 </div>
