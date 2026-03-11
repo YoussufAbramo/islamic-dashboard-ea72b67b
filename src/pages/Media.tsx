@@ -144,7 +144,7 @@ const Media = () => {
     if (!selectedBucket) return;
     const { error } = await supabase.storage.from(selectedBucket).remove([getFullPath(fileName)]);
     if (error) { toast.error(isAr ? 'خطأ في حذف الملف' : 'Error deleting file'); }
-    else { toast.success(isAr ? 'تم حذف الملف' : 'File deleted'); setFiles(prev => prev.filter(f => f.name !== fileName)); if (selectedFile?.name === fileName) setSelectedFile(null); setSelectedNames(prev => { const n = new Set(prev); n.delete(fileName); return n; }); }
+    else { toast.success(isAr ? 'تم حذف الملف' : 'File deleted'); setFiles(prev => prev.filter(f => f.name !== fileName)); if (selectedFile?.name === fileName) { setSelectedFile(null); setPreviewUrl(''); } setSelectedNames(prev => { const n = new Set(prev); n.delete(fileName); return n; }); }
   };
 
   const getPublicUrl = (fileName: string) => {
