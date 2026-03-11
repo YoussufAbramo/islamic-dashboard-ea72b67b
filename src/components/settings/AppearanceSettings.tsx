@@ -16,11 +16,6 @@ const AppearanceSettings = () => {
   const { language } = useLanguage();
   const { pending, updatePending, themes, setAppLogo, appLogo, darkLogo, setDarkLogo, signatureImage, setSignatureImage, stampImage, setStampImage, signaturePosition, stampPosition, setFavicon, favicon } = useAppSettings();
   const isAr = language === 'ar';
-  const fileRef = useRef<HTMLInputElement>(null);
-  const darkLogoRef = useRef<HTMLInputElement>(null);
-  const signatureRef = useRef<HTMLInputElement>(null);
-  const stampRef = useRef<HTMLInputElement>(null);
-  const faviconRef = useRef<HTMLInputElement>(null);
 
   const [ltrSearch, setLtrSearch] = useState('');
   const [rtlSearch, setRtlSearch] = useState('');
