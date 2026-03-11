@@ -94,7 +94,7 @@ const FloatingButtons = () => {
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="group flex items-center gap-2 pe-2 ps-3 py-2.5 rounded-s-xl bg-[#128C7E] text-white shadow-md translate-x-[calc(100%-40px)] hover:translate-x-0 transition-transform duration-300 ease-out"
+          className={`group flex items-center gap-2 pe-2 ps-3 py-2.5 bg-[#128C7E] text-white shadow-md transition-transform duration-300 ease-out ${isAr ? 'rounded-e-xl translate-x-[calc(-100%+40px)] hover:translate-x-0' : 'rounded-s-xl translate-x-[calc(100%-40px)] hover:translate-x-0'}`}
         >
           <WhatsAppIcon />
           <span className="text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
