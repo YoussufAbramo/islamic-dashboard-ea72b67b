@@ -618,12 +618,12 @@ const Media = () => {
       </div>
 
       {/* Lightbox Dialog */}
-      {selectedFile && isImageFile(selectedFile.name) && currentBucket?.public && (
+      {selectedFile && isImageFile(selectedFile.name) && previewUrl && (
         <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
           <DialogContent className="max-w-[90vw] max-h-[90vh] p-2 bg-background/95 backdrop-blur-sm">
             <div className="flex items-center justify-center w-full h-full min-h-[60vh]">
               <img
-                src={getPublicUrl(selectedFile.name)}
+                src={previewUrl}
                 alt={selectedFile.name}
                 className="max-w-full max-h-[80vh] object-contain rounded-lg"
               />
@@ -634,7 +634,7 @@ const Media = () => {
                 <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => handleDownload(selectedFile.name)}>
                   <Download className="h-3 w-3" />{isAr ? 'تحميل' : 'Download'}
                 </Button>
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => window.open(getPublicUrl(selectedFile.name), '_blank')}>
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => window.open(previewUrl, '_blank')}>
                   <ExternalLink className="h-3 w-3" />{isAr ? 'فتح' : 'Open'}
                 </Button>
               </div>
