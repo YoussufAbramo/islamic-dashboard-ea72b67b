@@ -1,5 +1,5 @@
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAppSettings } from '@/contexts/AppSettingsContext';
+import { useAppSettings, type SocialLinks } from '@/contexts/AppSettingsContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { Coins, MessageSquare, Globe, Building2, Clock, Check, ChevronsUpDown } from 'lucide-react';
+import { Coins, MessageSquare, Globe, Building2, Clock, Check, ChevronsUpDown, Share2 } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 
