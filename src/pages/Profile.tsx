@@ -78,8 +78,7 @@ const Profile = () => {
   const handleSelectCartoonAvatar = async (avatarId: string) => {
     if (!user) return;
     await supabase.from('profiles').update({ avatar_url: avatarId }).eq('id', user.id);
-    const cartoon = CARTOON_AVATARS.find(a => a.id === avatarId);
-    if (cartoon) setAvatarUrl(cartoon.src);
+    setLocalAvatarId(avatarId);
     toast.success(isAr ? 'تم تحديث الصورة' : 'Avatar updated');
   };
 
