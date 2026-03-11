@@ -77,18 +77,18 @@ const FloatingButtons = () => {
 
   return (
     <>
-      <div className={`fixed top-1/2 -translate-y-1/2 z-50 flex flex-col gap-1 ${isAr ? 'left-0' : 'right-0'}`}>
+      <div className={`fixed top-1/2 -translate-y-1/2 z-50 flex flex-col gap-0.5 md:gap-1 ${isAr ? 'left-0' : 'right-0'}`}>
         {/* Support Ticket */}
         <button
           onClick={() => setTicketOpen(true)}
-          className={`group flex items-center gap-2 py-2.5 bg-primary text-primary-foreground shadow-md transition-transform duration-300 ease-out ${
+          className={`group flex items-center gap-1.5 md:gap-2 py-1.5 md:py-2.5 bg-primary text-primary-foreground shadow-md transition-transform duration-300 ease-out ${
             isAr
-              ? 'flex-row-reverse ps-2 pe-3 rounded-e-xl translate-x-[calc(-100%+40px)] hover:translate-x-0'
-              : 'pe-2 ps-3 rounded-s-xl translate-x-[calc(100%-40px)] hover:translate-x-0'
+              ? 'flex-row-reverse ps-1.5 md:ps-2 pe-2 md:pe-3 rounded-e-xl translate-x-[calc(-100%+32px)] md:translate-x-[calc(-100%+40px)] hover:translate-x-0'
+              : 'pe-1.5 md:pe-2 ps-2 md:ps-3 rounded-s-xl translate-x-[calc(100%-32px)] md:translate-x-[calc(100%-40px)] hover:translate-x-0'
           }`}>
           
-          <Bug className="h-4 w-4 shrink-0" />
-          <span className="text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <Bug className="h-3.5 w-3.5 md:h-4 md:w-4 shrink-0" />
+          <span className="text-[10px] md:text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             {isAr ? 'الإبلاغ عن خطأ' : 'Report a Bug'}
           </span>
         </button>
@@ -98,14 +98,14 @@ const FloatingButtons = () => {
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className={`group flex items-center gap-2 py-2.5 bg-[#128C7E] text-white shadow-md transition-transform duration-300 ease-out ${
+          className={`group flex items-center gap-1.5 md:gap-2 py-1.5 md:py-2.5 bg-[#128C7E] text-white shadow-md transition-transform duration-300 ease-out ${
             isAr
-              ? 'flex-row-reverse ps-2 pe-3 rounded-e-xl translate-x-[calc(-100%+40px)] hover:translate-x-0'
-              : 'pe-2 ps-3 rounded-s-xl translate-x-[calc(100%-40px)] hover:translate-x-0'
+              ? 'flex-row-reverse ps-1.5 md:ps-2 pe-2 md:pe-3 rounded-e-xl translate-x-[calc(-100%+32px)] md:translate-x-[calc(-100%+40px)] hover:translate-x-0'
+              : 'pe-1.5 md:pe-2 ps-2 md:ps-3 rounded-s-xl translate-x-[calc(100%-32px)] md:translate-x-[calc(100%-40px)] hover:translate-x-0'
           }`}>
           
           <WhatsAppIcon />
-          <span className="text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <span className="text-[10px] md:text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             {isAr ? 'تواصل مع المبيعات' : 'Contact Sales'}
           </span>
         </a>
