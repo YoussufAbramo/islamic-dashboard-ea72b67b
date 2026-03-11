@@ -280,7 +280,7 @@ const Media = () => {
         {/* Left: Folder list */}
         <div className="w-56 shrink-0 rounded-lg border border-border bg-muted/40 p-3">
           <nav className="space-y-1">
-            {BUCKETS.map(bucket => (
+            {buckets.map(bucket => (
               <button
                 key={bucket.id}
                 onClick={() => fetchFiles(bucket.id, '')}
