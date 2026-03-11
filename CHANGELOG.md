@@ -2,6 +2,12 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.3.5] - 2026-03-11
+
+### Added
+- Phone number field in the support ticket dialog, auto-filled from the user's profile
+- Version bumped to 4.3.5
+
 ## [4.3.4] - 2026-03-11
 
 ### Added

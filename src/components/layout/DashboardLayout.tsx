@@ -52,7 +52,7 @@ const FloatingButtons = () => {
   const { user, profile } = useAuth();
   const isAr = language === 'ar';
   const [ticketOpen, setTicketOpen] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '', department: 'general', priority: 'medium' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '', department: 'general', priority: 'medium' });
   const [submitting, setSubmitting] = useState(false);
 
   const handleAutoFill = () => {
@@ -60,6 +60,7 @@ const FloatingButtons = () => {
       ...prev,
       name: profile?.full_name || prev.name,
       email: profile?.email || user?.email || prev.email,
+      phone: profile?.phone || prev.phone,
     }));
   };
 
@@ -72,7 +73,7 @@ const FloatingButtons = () => {
     }
     setSubmitting(true);
     const { error } = await supabase.from('support_tickets').insert({
-      name: form.name, email: form.email, subject: form.subject,
+      name: form.name, email: form.email, phone: form.phone, subject: form.subject,
       message: form.message, department: form.department, priority: form.priority,
       user_id: user?.id
     });
@@ -80,7 +81,7 @@ const FloatingButtons = () => {
     if (error) {notifyError({ error, isAr, rawMessage: error.message });return;}
     toast.success(isAr ? 'تم إرسال التذكرة بنجاح' : 'Ticket submitted successfully');
     setTicketOpen(false);
-    setForm({ name: '', email: '', subject: '', message: '', department: 'general', priority: 'medium' });
+    setForm({ name: '', email: '', phone: '', subject: '', message: '', department: 'general', priority: 'medium' });
   };
 
   return (
@@ -134,9 +135,10 @@ const FloatingButtons = () => {
                 {isAr ? 'ملء تلقائي' : 'Auto Fill'}
               </Button>
             </div>
-            <div className="grid sm:grid-cols-2 gap-3">
+            <div className="grid sm:grid-cols-3 gap-3">
               <div><Label>{isAr ? 'الاسم' : 'Name'}</Label><Input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} /></div>
               <div><Label>{isAr ? 'البريد' : 'Email'}</Label><Input type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} /></div>
+              <div><Label>{isAr ? 'الهاتف' : 'Phone'}</Label><Input type="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} /></div>
             </div>
             <div><Label>{isAr ? 'الموضوع' : 'Subject'}</Label><Input value={form.subject} onChange={(e) => setForm((p) => ({ ...p, subject: e.target.value }))} /></div>
             <div className="grid sm:grid-cols-2 gap-3">
