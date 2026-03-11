@@ -125,6 +125,7 @@ const Media = () => {
         {/* Left: Folder list */}
         <div className="w-56 shrink-0">
           <nav className="space-y-1">
+            <TooltipProvider delayDuration={300}>
             {BUCKETS.map(bucket => (
               <button
                 key={bucket.id}
@@ -150,6 +151,7 @@ const Media = () => {
                 )}
               </button>
             ))}
+            </TooltipProvider>
           </nav>
         </div>
 
