@@ -99,6 +99,7 @@ const AppSidebar = () => {
         { key: 'chats', label: t('nav.chats'), icon: MessageSquare, path: '/dashboard/chats', roles: ['admin', 'teacher', 'student'], badgeKey: 'chats' },
         { key: 'announcements', label: isAr ? 'الإعلانات' : 'Announcements', icon: Megaphone, path: '/dashboard/announcements', roles: ['admin', 'teacher', 'student'] },
         { key: 'notifications', label: isAr ? 'الإشعارات' : 'Notifications', icon: Bell, path: '/dashboard/notifications', roles: ['admin', 'teacher', 'student'] },
+        { key: 'error-docs', label: isAr ? 'توثيق الأخطاء' : 'Error Documentation', icon: AlertCircle, path: '/dashboard/error-docs', roles: ['admin'] },
       ],
     },
     {
