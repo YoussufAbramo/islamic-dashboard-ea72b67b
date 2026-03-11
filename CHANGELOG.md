@@ -2,6 +2,17 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.3.2] - 2026-03-11
+
+### Changed
+- Standardized all action buttons across the entire project to match the Invoice page reference style
+- Created shared `actionBtnClass.ts` module with `ACTION_BTN`, `ACTION_BTN_DESTRUCTIVE`, and `ACTION_ICON` constants
+- Updated 14 files to use the shared action button classes: Courses, CourseDetail, CourseTracks, CourseLevels, CourseCategories, Teachers, Students, Support, Timetable, Subscriptions, Certificates, AuditTrail, BlogPosts, WebsitePages, Policies
+- Unified icon sizes from mixed `h-3.5 w-3.5` / `h-3 w-3` to consistent `h-4 w-4` across all action buttons
+- Unified button dimensions from mixed `h-7 w-7` / `h-6 w-6` to consistent `h-8 w-8` across all action buttons
+- Standardized hover states: `text-muted-foreground hover:text-foreground hover:bg-muted` for default, `hover:text-destructive hover:bg-destructive/10` for destructive
+- Version bumped to 4.3.2
+
 ## [4.3.1] - 2026-03-11
 
 ### Fixed
