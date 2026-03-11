@@ -97,7 +97,7 @@ const Chats = () => {
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedChat || !user) return;
-    if (selectedChat.is_suspended) { toast.error(t('chats.suspended')); return; }
+    if (selectedChat.is_suspended) { notifyError({ error: 'CHAT_SUSPENDED', isAr }); return; }
     await supabase.from('chat_messages').insert({ chat_id: selectedChat.id, sender_id: user.id, message: newMessage });
     setNewMessage('');
     fetchMessages(selectedChat.id);
