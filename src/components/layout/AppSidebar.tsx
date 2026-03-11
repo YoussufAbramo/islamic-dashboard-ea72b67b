@@ -222,6 +222,7 @@ const AppSidebar = () => {
                           {hasChildren && (
                             <span
                               role="button"
+                              data-expand-toggle
                               onClick={toggleExpand}
                               className="p-0.5 rounded hover:bg-sidebar-accent shrink-0 ms-auto"
                             >
