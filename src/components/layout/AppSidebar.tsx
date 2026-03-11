@@ -41,6 +41,7 @@ const AppSidebar = () => {
   const location = useLocation();
   const [resolvedAvatarUrl, setResolvedAvatarUrl] = useState('');
   const [unreadChats, setUnreadChats] = useState(0);
+  const [hoveredMenus, setHoveredMenus] = useState<Set<string>>(new Set());
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
 
   useEffect(() => {
