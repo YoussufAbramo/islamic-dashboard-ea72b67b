@@ -745,7 +745,7 @@ Deno.serve(async (req) => {
           encrypted_keys: { cipher: encryptedValue },
           is_active: true,
           updated_at: new Date().toISOString(),
-          updated_by: caller.id,
+          updated_by: callerId,
         }, { onConflict: 'gateway_id' })
 
       if (error) {
