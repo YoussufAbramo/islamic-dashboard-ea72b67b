@@ -434,11 +434,11 @@ const CourseDetail = () => {
                                             </div>
                                             {canEdit && (
                                               <div className="flex items-center gap-1">
-                                                <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted" onClick={() => openEditContent(content, section.id)}>
-                                                  <Pencil className="h-3.5 w-3.5" />
+                                                <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => openEditContent(content, section.id)}>
+                                                  <Pencil className={ACTION_ICON} />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => setDeleteTarget({ id: content.id, type: 'content' })}>
-                                                  <Trash2 className="h-3.5 w-3.5" />
+                                                <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteTarget({ id: content.id, type: 'content' })}>
+                                                  <Trash2 className={ACTION_ICON} />
                                                 </Button>
                                               </div>
                                             )}

@@ -166,8 +166,8 @@ const CourseCategories = () => {
                             </div>
                           </div>
                           <div className="flex gap-1 shrink-0">
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEdit(child)}><Pencil className="h-3 w-3" /></Button>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => setDeleteId(child.id)}><Trash2 className="h-3 w-3" /></Button>
+                            <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => openEdit(child)}><Pencil className={ACTION_ICON} /></Button>
+                            <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteId(child.id)}><Trash2 className={ACTION_ICON} /></Button>
                           </div>
                         </div>
                       ))}

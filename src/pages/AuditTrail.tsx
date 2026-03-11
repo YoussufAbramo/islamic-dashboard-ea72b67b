@@ -295,8 +295,8 @@ const AuditTrail = () => {
                     </TableCell>
                     <TableCell>{renderChangeSummary(log)}</TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); setDetailLog(log); }}>
-                        <Eye className="h-3.5 w-3.5" />
+                      <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={(e) => { e.stopPropagation(); setDetailLog(log); }}>
+                        <Eye className={ACTION_ICON} />
                       </Button>
                     </TableCell>
                   </TableRow>

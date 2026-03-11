@@ -459,8 +459,8 @@ const Certificates = () => {
                     <TableCell>{format(new Date(cert.issued_at), 'PP')}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setPreviewCert(cert)}>
-                          <Eye className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => setPreviewCert(cert)}>
+                          <Eye className={ACTION_ICON} />
                         </Button>
                         <CertActionsMenu cert={cert} />
                       </div>

@@ -294,8 +294,8 @@ const Subscriptions = () => {
                 <TableCell><Badge variant={statusColors[sub.status] as any}>{getLabel(subscriptionStatusLabels, sub.status, isAr)}</Badge></TableCell>
                 <TableCell>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className={actionBtnClass} onClick={() => viewDetails(sub)}><Eye className="h-4 w-4" /></Button>
-                    {isAdmin && <Button variant="ghost" size="icon" className={`${actionBtnClass} hover:text-destructive hover:bg-destructive/10`} onClick={() => setDeleteTarget(sub.id)}><Trash2 className="h-4 w-4" /></Button>}
+                    <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => viewDetails(sub)}><Eye className={ACTION_ICON} /></Button>
+                    {isAdmin && <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteTarget(sub.id)}><Trash2 className={ACTION_ICON} /></Button>}
                   </div>
                 </TableCell>
               </TableRow>
