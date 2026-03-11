@@ -99,7 +99,7 @@ const TopBar = () => {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" className={iconBtnClass} onClick={() => window.open('/', '_blank')}>
-                <Home className="h-4 w-4" />
+                <Eye className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>{isAr ? 'الصفحة الرئيسية' : 'Landing Page'}</TooltipContent>
