@@ -58,14 +58,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   });
   const [showSeedLog, setShowSeedLog] = useState(false);
   const [confirmEraseSeed, setConfirmEraseSeed] = useState(false);
-  const [clearStep, setClearStep] = useState(0);
-  const [clearLoading, setClearLoading] = useState(false);
-  const [backupDownloaded, setBackupDownloaded] = useState(false);
-  const [backupLoading, setBackupLoading] = useState(false);
   const [eraseSummary, setEraseSummary] = useState<{ counts: Record<string, number>; total: number } | null>(null);
-  const [appNameInput, setAppNameInput] = useState('');
-  const [deleteCodeInput, setDeleteCodeInput] = useState('');
-  const [understandCheck, setUnderstandCheck] = useState(false);
   const [seedCategories, setSeedCategories] = useState<SeedCategory[]>(['students', 'teachers', 'courses', 'billing', 'schedule', 'communications', 'support', 'certificates', 'website', 'packages']);
   const [seedQuantity, setSeedQuantity] = useState<SeedQuantity>(3);
 
