@@ -185,29 +185,51 @@ const AppSidebar = () => {
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {visibleItems.map((item) => (
-                    <SidebarMenuItem key={item.key}>
-                      <SidebarMenuButton
-                        isActive={location.pathname === item.path}
-                        onClick={() => navigate(item.path)}
-                        tooltip={item.label}
-                      >
-                        <item.icon className="h-4 w-4" />
-                        <span className="flex-1">{item.label}</span>
-                        {item.comingSoon && (
-                          <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 shrink-0 ms-auto">
-                            <Sparkles className="h-2 w-2 me-0.5" />
-                            {isAr ? 'قريباً' : 'Soon'}
-                          </Badge>
+                  {visibleItems.map((item) => {
+                    const hasChildren = item.children && item.children.length > 0;
+                    const isParentActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+                    const visibleChildren = hasChildren ? item.children!.filter(c => role && c.roles.includes(role)) : [];
+                    return (
+                      <SidebarMenuItem key={item.key}>
+                        <SidebarMenuButton
+                          isActive={location.pathname === item.path}
+                          onClick={() => navigate(item.path)}
+                          tooltip={item.label}
+                        >
+                          <item.icon className="h-4 w-4" />
+                          <span className="flex-1">{item.label}</span>
+                          {item.comingSoon && (
+                            <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 shrink-0 ms-auto">
+                              <Sparkles className="h-2 w-2 me-0.5" />
+                              {isAr ? 'قريباً' : 'Soon'}
+                            </Badge>
+                          )}
+                          {item.badgeKey === 'chats' && unreadChats > 0 && (
+                            <Badge variant="destructive" className="text-[9px] px-1.5 py-0 h-4 min-w-[18px] shrink-0 ms-auto">
+                              {unreadChats > 99 ? '99+' : unreadChats}
+                            </Badge>
+                          )}
+                        </SidebarMenuButton>
+                        {visibleChildren.length > 0 && isParentActive && (
+                          <SidebarMenu className="ms-4 mt-0.5 border-s border-border ps-2">
+                            {visibleChildren.map((child) => (
+                              <SidebarMenuItem key={child.key}>
+                                <SidebarMenuButton
+                                  isActive={location.pathname === child.path}
+                                  onClick={() => navigate(child.path)}
+                                  tooltip={child.label}
+                                  className="h-7 text-xs"
+                                >
+                                  <child.icon className="h-3.5 w-3.5" />
+                                  <span>{child.label}</span>
+                                </SidebarMenuButton>
+                              </SidebarMenuItem>
+                            ))}
+                          </SidebarMenu>
                         )}
-                        {item.badgeKey === 'chats' && unreadChats > 0 && (
-                          <Badge variant="destructive" className="text-[9px] px-1.5 py-0 h-4 min-w-[18px] shrink-0 ms-auto">
-                            {unreadChats > 99 ? '99+' : unreadChats}
-                          </Badge>
-                        )}
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                      </SidebarMenuItem>
+                    );
+                  })}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
