@@ -302,6 +302,11 @@ const Courses = () => {
                   {getTrackLabel(course) && (
                     <Badge variant="outline" className="text-[10px]">{getTrackLabel(course)}</Badge>
                   )}
+                  {course.duration_weeks && (
+                    <Badge variant="outline" className="text-[10px] gap-0.5">
+                      {course.duration_weeks} {isAr ? 'أسابيع' : 'weeks'}
+                    </Badge>
+                  )}
                 </div>
                 {canEdit && (
                   <div className="flex gap-1 pt-1" onClick={(e) => e.stopPropagation()}>
