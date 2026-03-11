@@ -11,11 +11,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { PenLine, Plus, Save, Trash2, Search, Image } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { PenLine, Plus, Save, Trash2, Search, ExternalLink, ChevronDown, Image as ImageIcon, HardDrive } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
 import ContentEditor from '@/components/ContentEditor';
+import MediaPickerDialog from '@/components/media/MediaPickerDialog';
 import { format } from 'date-fns';
 
 interface BlogPost {
@@ -34,6 +36,16 @@ interface BlogPost {
   updated_at: string;
 }
 
+interface SeoData {
+  meta_title: string;
+  meta_description: string;
+  og_title: string;
+  og_description: string;
+  og_image: string;
+}
+
+const emptySeo: SeoData = { meta_title: '', meta_description: '', og_title: '', og_description: '', og_image: '' };
+
 const BlogPosts = () => {
   const { language } = useLanguage();
   const { user } = useAuth();
@@ -44,6 +56,9 @@ const BlogPosts = () => {
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
+  const [seo, setSeo] = useState<SeoData>(emptySeo);
+  const [seoOpen, setSeoOpen] = useState(false);
+  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -55,9 +70,24 @@ const BlogPosts = () => {
 
   useEffect(() => { fetchPosts(); }, []);
 
+  const loadSeo = async (postId: string) => {
+    const { data } = await supabase.from('landing_content').select('content').eq('section_key', `seo_blog_${postId}`).maybeSingle();
+    if (data?.content) setSeo({ ...emptySeo, ...(data.content as any) });
+    else setSeo(emptySeo);
+  };
+
   const handleNew = () => {
     setIsNew(true);
+    setSeo(emptySeo);
+    setSeoOpen(false);
     setEditPost({ id: '', slug: '', title: '', title_ar: '', content: '', content_ar: '', excerpt: '', excerpt_ar: '', featured_image: '', status: 'draft', published_at: null, created_at: '', updated_at: '' });
+  };
+
+  const handleEdit = async (post: BlogPost) => {
+    setIsNew(false);
+    setEditPost({ ...post });
+    setSeoOpen(false);
+    await loadSeo(post.id);
   };
 
   const generateSlug = (title: string) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -68,49 +98,42 @@ const BlogPosts = () => {
     if (!editPost.slug.trim()) { toast.error(isAr ? 'الرابط مطلوب' : 'Slug is required'); return; }
     setSaving(true);
     const publishedAt = editPost.status === 'published' && !editPost.published_at ? new Date().toISOString() : editPost.published_at;
+    let postId = editPost.id;
     if (isNew) {
-      const { error } = await supabase.from('blog_posts').insert({
-        slug: editPost.slug,
-        title: editPost.title,
-        title_ar: editPost.title_ar,
-        content: editPost.content,
-        content_ar: editPost.content_ar,
-        excerpt: editPost.excerpt,
-        excerpt_ar: editPost.excerpt_ar,
-        featured_image: editPost.featured_image,
-        status: editPost.status,
-        published_at: publishedAt,
-        created_by: user?.id,
-      });
+      const { data, error } = await supabase.from('blog_posts').insert({
+        slug: editPost.slug, title: editPost.title, title_ar: editPost.title_ar,
+        content: editPost.content, content_ar: editPost.content_ar,
+        excerpt: editPost.excerpt, excerpt_ar: editPost.excerpt_ar,
+        featured_image: editPost.featured_image, status: editPost.status,
+        published_at: publishedAt, created_by: user?.id,
+      }).select('id').single();
       if (error) { notifyError({ error, isAr, rawMessage: error.message }); setSaving(false); return; }
+      postId = data.id;
     } else {
       const { error } = await supabase.from('blog_posts').update({
-        title: editPost.title,
-        title_ar: editPost.title_ar,
-        slug: editPost.slug,
-        content: editPost.content,
-        content_ar: editPost.content_ar,
-        excerpt: editPost.excerpt,
-        excerpt_ar: editPost.excerpt_ar,
-        featured_image: editPost.featured_image,
-        status: editPost.status,
-        published_at: publishedAt,
-        updated_at: new Date().toISOString(),
+        title: editPost.title, title_ar: editPost.title_ar, slug: editPost.slug,
+        content: editPost.content, content_ar: editPost.content_ar,
+        excerpt: editPost.excerpt, excerpt_ar: editPost.excerpt_ar,
+        featured_image: editPost.featured_image, status: editPost.status,
+        published_at: publishedAt, updated_at: new Date().toISOString(),
       }).eq('id', editPost.id);
       if (error) { notifyError({ error, isAr, rawMessage: error.message }); setSaving(false); return; }
     }
+    // Save SEO data
+    if (seo.meta_title || seo.meta_description || seo.og_title || seo.og_description || seo.og_image) {
+      await supabase.from('landing_content').upsert({
+        section_key: `seo_blog_${postId}`, content: seo as any, updated_at: new Date().toISOString(),
+      }, { onConflict: 'section_key' });
+    }
     setSaving(false);
     toast.success(isAr ? 'تم الحفظ' : 'Saved successfully');
-    setEditPost(null);
-    setIsNew(false);
-    fetchPosts();
+    setEditPost(null); setIsNew(false); fetchPosts();
   };
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('blog_posts').delete().eq('id', id);
     if (error) { notifyError({ error, isAr, rawMessage: error.message }); return; }
-    toast.success(isAr ? 'تم الحذف' : 'Deleted');
-    fetchPosts();
+    toast.success(isAr ? 'تم الحذف' : 'Deleted'); fetchPosts();
   };
 
   const filtered = posts.filter(p => p.title.toLowerCase().includes(search.toLowerCase()) || p.slug.toLowerCase().includes(search.toLowerCase()));
@@ -166,7 +189,12 @@ const BlogPosts = () => {
                   <Badge variant={post.status === 'published' ? 'default' : 'secondary'} className="text-xs">
                     {post.status === 'published' ? (isAr ? 'منشور' : 'Published') : (isAr ? 'مسودة' : 'Draft')}
                   </Badge>
-                  <Button variant="outline" size="sm" onClick={() => { setIsNew(false); setEditPost({ ...post }); }}>
+                  {post.status === 'published' && (
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => window.open(`/blogs/${post.slug}`, '_blank')}>
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                  <Button variant="outline" size="sm" onClick={() => handleEdit(post)}>
                     {isAr ? 'تعديل' : 'Edit'}
                   </Button>
                   <AlertDialog>
@@ -191,7 +219,6 @@ const BlogPosts = () => {
         </div>
       )}
 
-      {/* Edit/Create Dialog */}
       <Dialog open={!!editPost} onOpenChange={(open) => { if (!open) { setEditPost(null); setIsNew(false); } }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -221,8 +248,13 @@ const BlogPosts = () => {
                 <div><Label>Excerpt (AR)</Label><Textarea dir="rtl" value={editPost.excerpt_ar} onChange={e => setEditPost({ ...editPost, excerpt_ar: e.target.value })} rows={2} placeholder="ملخص قصير..." /></div>
               </div>
               <div>
-                <Label>Featured Image URL</Label>
-                <Input value={editPost.featured_image} onChange={e => setEditPost({ ...editPost, featured_image: e.target.value })} placeholder="https://..." />
+                <Label className="flex items-center gap-1.5"><ImageIcon className="h-3.5 w-3.5" />Featured Image URL</Label>
+                <div className="flex gap-2">
+                  <Input value={editPost.featured_image} onChange={e => setEditPost({ ...editPost, featured_image: e.target.value })} placeholder="https://..." className="flex-1" />
+                  <Button variant="outline" size="sm" className="shrink-0 gap-1.5" onClick={() => setMediaPickerOpen(true)}>
+                    <HardDrive className="h-3.5 w-3.5" />{isAr ? 'الوسائط' : 'Media'}
+                  </Button>
+                </div>
               </div>
               <div>
                 <Label className="mb-2 block">Content (EN)</Label>
@@ -232,6 +264,31 @@ const BlogPosts = () => {
                 <Label className="mb-2 block">Content (AR)</Label>
                 <ContentEditor value={editPost.content_ar} onChange={v => setEditPost({ ...editPost, content_ar: v })} />
               </div>
+
+              {/* SEO Section */}
+              <Collapsible open={seoOpen} onOpenChange={setSeoOpen}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="outline" className="w-full justify-between">
+                    <span className="flex items-center gap-2"><Search className="h-4 w-4" />{isAr ? 'إعدادات SEO' : 'SEO Settings'}</span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${seoOpen ? 'rotate-180' : ''}`} />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-3 pt-3">
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div><Label>Meta Title</Label><Input value={seo.meta_title} onChange={e => setSeo(p => ({ ...p, meta_title: e.target.value }))} placeholder="Post title for search engines" /></div>
+                    <div><Label>OG Title</Label><Input value={seo.og_title} onChange={e => setSeo(p => ({ ...p, og_title: e.target.value }))} placeholder="Title for social sharing" /></div>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div><Label>Meta Description</Label><Textarea value={seo.meta_description} onChange={e => setSeo(p => ({ ...p, meta_description: e.target.value }))} rows={2} placeholder="Brief description for search results" /></div>
+                    <div><Label>OG Description</Label><Textarea value={seo.og_description} onChange={e => setSeo(p => ({ ...p, og_description: e.target.value }))} rows={2} placeholder="Description for social sharing" /></div>
+                  </div>
+                  <div>
+                    <Label className="flex items-center gap-1.5"><ImageIcon className="h-3.5 w-3.5" />OG Image URL</Label>
+                    <Input value={seo.og_image} onChange={e => setSeo(p => ({ ...p, og_image: e.target.value }))} placeholder="https://..." className="font-mono text-sm" />
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => { setEditPost(null); setIsNew(false); }}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
                 <Button onClick={handleSave} disabled={saving}>
@@ -242,6 +299,12 @@ const BlogPosts = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      <MediaPickerDialog
+        open={mediaPickerOpen}
+        onOpenChange={setMediaPickerOpen}
+        onSelect={(url) => editPost && setEditPost({ ...editPost, featured_image: url })}
+      />
     </div>
   );
 };

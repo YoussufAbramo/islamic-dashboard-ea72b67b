@@ -2,6 +2,25 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [3.7.0] - 2026-03-11
+
+### Added
+- Floating support ticket and WhatsApp sales buttons on dashboard
+- Advanced SEO settings tab in App Settings (canonical URL, robots, JSON-LD, social links)
+- SEO metadata fields (meta title, description, OG) for Main Pages and Blog posts
+- Media picker dialog for selecting featured images from storage in Blog editor
+- Visit page (external link) buttons on published Main Pages and Blog posts
+- SeoSettings component for global SEO configuration
+
+### Changed
+- Fixed Appearance settings save button not dismissing (useEffect cleanup bug with discardChanges ref)
+- Renamed "Website Pages" to "Main Pages" in sidebar and page header
+- Replaced language switcher Globe icon with Arabic letter "ع" icon
+- Replaced generic Pixels & Tracking icons with company brand logos (Google, Meta, Snapchat, TikTok, Microsoft Clarity)
+- Moved Activity Log from System to Developer category
+- Removed System category (now empty)
+- Version bumped to 3.7.0
+
 ## [3.6.0] - 2026-03-11
 
 ### Added
