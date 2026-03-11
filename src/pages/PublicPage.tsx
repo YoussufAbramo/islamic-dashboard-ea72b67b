@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useLocation, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ArrowLeft } from 'lucide-react';
@@ -8,27 +8,42 @@ import CopyrightText from '@/components/CopyrightText';
 
 const PublicPage = () => {
   const { slug } = useParams<{ slug: string }>();
+  const location = useLocation();
   const { language } = useLanguage();
   const isAr = language === 'ar';
   const [page, setPage] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
+  const isPolicy = location.pathname.startsWith('/policies/');
+
   useEffect(() => {
     const fetchPage = async () => {
       if (!slug) { setNotFound(true); setLoading(false); return; }
-      const { data, error } = await supabase
-        .from('website_pages')
-        .select('*')
-        .eq('slug', slug)
-        .eq('status', 'published')
-        .maybeSingle();
-      if (error || !data) setNotFound(true);
-      else setPage(data);
+      
+      if (isPolicy) {
+        const { data, error } = await supabase
+          .from('policies')
+          .select('*')
+          .eq('slug', slug)
+          .eq('is_published', true)
+          .maybeSingle();
+        if (error || !data) setNotFound(true);
+        else setPage({ title: data.title, title_ar: data.title_ar, content: data.content, content_ar: data.content_ar });
+      } else {
+        const { data, error } = await supabase
+          .from('website_pages')
+          .select('*')
+          .eq('slug', slug)
+          .eq('status', 'published')
+          .maybeSingle();
+        if (error || !data) setNotFound(true);
+        else setPage(data);
+      }
       setLoading(false);
     };
     fetchPage();
-  }, [slug]);
+  }, [slug, isPolicy]);
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-background">
