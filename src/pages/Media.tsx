@@ -53,6 +53,23 @@ const Media = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
 
+  // Dynamically fetch storage buckets
+  useEffect(() => {
+    const fetchBuckets = async () => {
+      const { data, error } = await supabase.storage.listBuckets();
+      if (!error && data) {
+        setBuckets(data.map(b => ({
+          id: b.id,
+          name: b.name,
+          public: b.public,
+          description: `Storage bucket: ${b.name}`,
+          descriptionAr: `مجلد التخزين: ${b.name}`,
+        })));
+      }
+    };
+    fetchBuckets();
+  }, []);
+
   const fetchFiles = async (bucketName: string, path = '') => {
     setLoading(true);
     setSelectedBucket(bucketName);
