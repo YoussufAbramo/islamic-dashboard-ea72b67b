@@ -341,15 +341,22 @@ const CourseDetail = () => {
                 <Accordion type="multiple" className="space-y-1">
                   {(sections[lesson.id] || []).map((section: any) => (
                     <AccordionItem key={section.id} value={section.id} className="border rounded-md px-3 bg-muted/30">
-                      <AccordionTrigger className="hover:no-underline py-3 text-sm">
-                        <div className="flex items-center gap-2">
-                          <Layers className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span>{isAr && section.title_ar ? section.title_ar : section.title}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {(contents[section.id] || []).length} {t('courses.content')}
-                          </Badge>
-                        </div>
-                      </AccordionTrigger>
+                      <div className="flex items-center">
+                        <AccordionTrigger className="hover:no-underline py-3 text-sm flex-1">
+                          <div className="flex items-center gap-2">
+                            <Layers className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span>{isAr && section.title_ar ? section.title_ar : section.title}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {(contents[section.id] || []).length} {t('courses.content')}
+                            </Badge>
+                          </div>
+                        </AccordionTrigger>
+                        {canEdit && (
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={(e) => { e.stopPropagation(); deleteSection(section.id); }}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </div>
                       <AccordionContent>
                         <div className="space-y-2 pt-1">
                           {/* Level 3: Content items */}
