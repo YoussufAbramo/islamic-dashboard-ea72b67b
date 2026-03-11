@@ -485,7 +485,7 @@ const Media = () => {
                         {filteredFiles.map((file, idx) => (
                           <div
                             key={idx}
-                            onClick={() => setSelectedFile(file)}
+                            onClick={() => selectFile(file)}
                             onDoubleClick={() => handleDownload(file.name)}
                             className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors group ${
                               selectedFile?.name === file.name ? 'bg-primary/10 border border-primary/20' : selectedNames.has(file.name) ? 'bg-muted/70' : 'hover:bg-muted/50'
