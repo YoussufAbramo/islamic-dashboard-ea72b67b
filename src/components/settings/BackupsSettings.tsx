@@ -102,7 +102,7 @@ const BackupsSettings = () => {
   useEffect(() => { fetchBackups(); }, [fetchBackups]);
 
   const handleCreate = async () => {
-    if (!backupName.trim()) { toast.error(isAr ? 'أدخل اسم الملف' : 'Enter a file name'); return; }
+    if (!backupName.trim()) { notifyError({ error: 'VAL_BACKUP_NAME', isAr }); return; }
     setCreating(true);
     try {
       const tablesToBackup = Object.keys(selectedTables).filter(k => selectedTables[k]);
