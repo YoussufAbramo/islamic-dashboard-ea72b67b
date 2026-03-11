@@ -23,6 +23,7 @@ interface FileObj {
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
 const BUCKETS = [
   { id: 'course-images', name: 'course-images', public: true },
+  { id: 'avatars', name: 'avatars', public: false },
 ];
 
 const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket }: MediaPickerDialogProps) => {
