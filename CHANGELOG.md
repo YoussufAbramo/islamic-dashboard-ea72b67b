@@ -2,6 +2,20 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.2.0] - 2026-03-11
+
+### Added
+- Seed data quantity slider: replaced preset buttons (small/medium/large) with a dynamic 1x–10x range slider showing real-time estimated counts per category
+- Separated "Pricing Packages" into its own independent seed category (📦) distinct from Website
+- Media Manager: loading spinner on image thumbnails (file list & detail panel) while images load
+- Media Manager: 1px border on preview images in the detail panel
+
+### Changed
+- Seed data backend refactored: accepts numeric multiplier (1–10) with proportional entity generation for all categories
+- Media Manager: fixed width overflow caused by long file names — added `min-w-0` to file rows for proper truncation
+- Website seed category renamed to "Blogs & Pages" (🌐) now focused on blog posts and website pages only
+- Version bumped to 4.2.0
+
 ## [4.1.0] - 2026-03-11
 
 ### Added
