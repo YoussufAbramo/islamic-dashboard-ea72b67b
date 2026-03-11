@@ -51,7 +51,11 @@ const Settings = () => {
   const { saveSettings, hasPendingChanges, discardChanges } = useAppSettings();
   const isAr = language === 'ar';
   const isAdmin = role === 'admin';
-  const [activeTab, setActiveTab] = useState<SettingsTab>('general');
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<SettingsTab>(() => {
+    const tab = searchParams.get('tab');
+    return tab && ['general','appearance','auth','payment','data','landing','pricing','backups','education','pixels','seo','supabase','developer'].includes(tab) ? tab as SettingsTab : 'general';
+  });
 
   // Auto-discard pending changes when leaving settings - use ref to avoid re-running on discardChanges change
   const discardRef = useRef(discardChanges);
