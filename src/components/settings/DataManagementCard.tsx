@@ -69,6 +69,10 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   };
 
   const handleSeedData = async () => {
+    if (seedCategories.length === 0) {
+      toast.error(isAr ? 'اختر فئة واحدة على الأقل' : 'Select at least one category');
+      return;
+    }
     setSeedLoading(true);
     const log = [...seedLog];
     const addLog = (msg: string) => {
@@ -76,9 +80,9 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       persistLog([...log]);
     };
     try {
-      addLog(isAr ? '🚀 بدء إضافة البيانات التجريبية...' : '🚀 Starting seed process...');
+      addLog(isAr ? `🚀 بدء إضافة البيانات التجريبية (${seedQuantity})...` : `🚀 Starting seed process (${seedQuantity})...`);
       const { data, error } = await supabase.functions.invoke('manage-accounts', {
-        body: { action: 'seed_all' },
+        body: { action: 'seed_all', categories: seedCategories, quantity: seedQuantity },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
