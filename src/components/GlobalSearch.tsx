@@ -72,37 +72,9 @@ const GlobalSearch = ({ open, onOpenChange }: { open: boolean; onOpenChange: (op
   const loadData = useCallback(async () => {
     if (loaded) return;
 
-    const [studentsRes, coursesRes, invoicesRes] = await Promise.all([
-      role === 'admin' || role === 'teacher'
-        ? supabase.from('students').select('id, user_id, profiles:students_user_id_profiles_fkey(full_name, email)').limit(200)
-        : Promise.resolve({ data: [] }),
-      supabase.from('courses').select('id, title, title_ar, status').limit(200),
-      role === 'admin'
-        ? supabase.from('invoices').select('id, invoice_number, amount, status, students:invoices_student_id_fkey(user_id, profiles:students_user_id_profiles_fkey(full_name))').limit(200)
-        : Promise.resolve({ data: [] }),
-    ]);
-
-    setStudents(
-      (studentsRes.data || []).map((s: any) => ({
-        id: `s-${s.id}`,
-        title: s.profiles?.full_name || 'Student',
-        subtitle: s.profiles?.email || '',
-        icon: GraduationCap,
-        path: '/dashboard/students',
-        category: 'students',
-      }))
-    );
-
-    setCourses(
-      (coursesRes.data || []).map((c: any) => ({
-        id: `c-${c.id}`,
-        title: isAr && c.title_ar ? c.title_ar : c.title,
-        subtitle: c.status,
-        icon: BookOpen,
-        path: `/dashboard/courses/${c.id}`,
-        category: 'courses',
-      }))
-    );
+    const invoicesRes = role === 'admin'
+      ? await supabase.from('invoices').select('id, invoice_number, amount, status, students:invoices_student_id_fkey(user_id, profiles:students_user_id_profiles_fkey(full_name))').limit(200)
+      : { data: [] };
 
     setInvoices(
       (invoicesRes.data || []).map((inv: any) => ({
