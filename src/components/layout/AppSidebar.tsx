@@ -230,22 +230,29 @@ const AppSidebar = () => {
                             </Badge>
                           )}
                         </SidebarMenuButton>
-                        {visibleChildren.length > 0 && isExpanded && (
-                          <SidebarMenu className="ms-4 mt-0.5 border-s border-border ps-2 overflow-hidden w-[90%]">
-                            {visibleChildren.map((child) => (
-                              <SidebarMenuItem key={child.key}>
-                                <SidebarMenuButton
-                                  isActive={location.pathname === child.path}
-                                  onClick={() => navigate(child.path)}
-                                  tooltip={child.label}
-                                  className="h-7 text-xs"
-                                >
-                                  <child.icon className="h-3.5 w-3.5" />
-                                  <span>{child.label}</span>
-                                </SidebarMenuButton>
-                              </SidebarMenuItem>
-                            ))}
-                          </SidebarMenu>
+                        {visibleChildren.length > 0 && (
+                          <div
+                            className="grid transition-[grid-template-rows] duration-200 ease-out"
+                            style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
+                          >
+                            <div className="overflow-hidden">
+                              <SidebarMenu className="ms-4 mt-0.5 border-s border-border ps-2 w-[90%]">
+                                {visibleChildren.map((child) => (
+                                  <SidebarMenuItem key={child.key}>
+                                    <SidebarMenuButton
+                                      isActive={location.pathname === child.path}
+                                      onClick={() => navigate(child.path)}
+                                      tooltip={child.label}
+                                      className="h-7 text-xs"
+                                    >
+                                      <child.icon className="h-3.5 w-3.5" />
+                                      <span>{child.label}</span>
+                                    </SidebarMenuButton>
+                                  </SidebarMenuItem>
+                                ))}
+                              </SidebarMenu>
+                            </div>
+                          </div>
                         )}
                       </SidebarMenuItem>
                     );
