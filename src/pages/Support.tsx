@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
-import { Plus, Search, Eye, MessageSquare, Mail, Phone, ArrowDown, ArrowUp, Trash2 } from 'lucide-react';
+import { Plus, Search, Eye, MessageSquare, Mail, Phone, ArrowDown, ArrowUp, Trash2, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ticketStatusLabels, ticketPriorityLabels, getLabel } from '@/lib/statusLabels';
@@ -35,7 +35,7 @@ const WhatsAppIcon = () => (
 
 const Support = () => {
   const { t, language } = useLanguage();
-  const { user, role } = useAuth();
+  const { user, role, profile } = useAuth();
   const isAr = language === 'ar';
   const isAdmin = role === 'admin';
   const [tickets, setTickets] = useState<any[]>([]);
@@ -148,11 +148,22 @@ const Support = () => {
             <DialogContent className="max-w-lg">
               <DialogHeader><DialogTitle>{t('support.createTicket')}</DialogTitle></DialogHeader>
               <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center justify-between">
+                  <Button type="button" variant="outline" size="sm" onClick={() => setForm(prev => ({
+                    ...prev,
+                    name: profile?.full_name || prev.name,
+                    email: profile?.email || user?.email || prev.email,
+                    phone: profile?.phone || prev.phone,
+                  }))} className="gap-1.5 text-xs">
+                    <UserCheck className="h-3.5 w-3.5" />
+                    {isAr ? 'ملء تلقائي' : 'Auto Fill'}
+                  </Button>
+                </div>
+                <div className="grid sm:grid-cols-3 gap-3">
                   <div><Label>{t('students.name')}</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
                   <div><Label>{t('students.email')}</Label><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
+                  <div><Label>{t('students.phone')}</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
                 </div>
-                <div><Label>{t('students.phone')}</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
                 <div><Label>{t('support.subject')}</Label><Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} /></div>
                 <div><Label>{t('support.message')}</Label><Textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} /></div>
                 <div className="grid grid-cols-2 gap-3">
