@@ -19,16 +19,17 @@ interface DataManagementCardProps {
 
 const SEED_LOG_KEY = 'app_seed_log_history';
 
-type SeedCategory = 'users' | 'courses' | 'subscriptions' | 'schedule' | 'communications' | 'support' | 'certificates' | 'invoices' | 'website';
+type SeedCategory = 'students' | 'teachers' | 'courses' | 'billing' | 'schedule' | 'communications' | 'chats' | 'support' | 'certificates' | 'website';
 type SeedQuantity = 'little' | 'medium' | 'many';
 
 const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon: string }[] = [
-  { key: 'users', label: 'Students & Teachers', labelAr: 'طلاب ومعلمون', icon: '👥' },
+  { key: 'students', label: 'Students', labelAr: 'طلاب', icon: '👨‍🎓' },
+  { key: 'teachers', label: 'Teachers', labelAr: 'معلمون', icon: '👨‍🏫' },
   { key: 'courses', label: 'Courses, Tracks, Categories & Levels', labelAr: 'دورات ومسارات وتصنيفات ومستويات', icon: '📚' },
-  { key: 'subscriptions', label: 'Subscriptions', labelAr: 'اشتراكات', icon: '💳' },
-  { key: 'invoices', label: 'Invoices', labelAr: 'فواتير', icon: '🧾' },
+  { key: 'billing', label: 'Subscriptions & Invoices', labelAr: 'اشتراكات وفواتير', icon: '💳' },
   { key: 'schedule', label: 'Timetable & Attendance', labelAr: 'جدول وحضور', icon: '📅' },
-  { key: 'communications', label: 'Announcements, Notifications & Chats', labelAr: 'إعلانات وإشعارات ومحادثات', icon: '💬' },
+  { key: 'communications', label: 'Announcements & Notifications', labelAr: 'إعلانات وإشعارات', icon: '📢' },
+  { key: 'chats', label: 'Chats & Messages', labelAr: 'محادثات ورسائل', icon: '💬' },
   { key: 'support', label: 'Support Tickets', labelAr: 'تذاكر الدعم', icon: '🎫' },
   { key: 'certificates', label: 'Certificates', labelAr: 'شهادات', icon: '🏅' },
   { key: 'website', label: 'Blogs, Pages & Packages', labelAr: 'مدونات وصفحات وباقات', icon: '🌐' },
@@ -62,7 +63,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const [understandCheck, setUnderstandCheck] = useState(false);
   const [deleteTablesOpen, setDeleteTablesOpen] = useState(false);
   const [deleteTablesLoading, setDeleteTablesLoading] = useState(false);
-  const [seedCategories, setSeedCategories] = useState<SeedCategory[]>(['users', 'courses', 'subscriptions', 'invoices', 'schedule', 'communications', 'support', 'certificates', 'website']);
+  const [seedCategories, setSeedCategories] = useState<SeedCategory[]>(['students', 'teachers', 'courses', 'billing', 'schedule', 'communications', 'chats', 'support', 'certificates', 'website']);
   const [seedQuantity, setSeedQuantity] = useState<SeedQuantity>('medium');
 
   const persistLog = (log: string[]) => {

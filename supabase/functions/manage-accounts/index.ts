@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
 
     // ==================== SEED ALL ====================
     if (action === 'seed_all') {
-      const categories: string[] = body.categories || ['users', 'courses', 'subscriptions', 'schedule', 'communications', 'support', 'certificates', 'invoices', 'website']
+      const categories: string[] = body.categories || ['students', 'teachers', 'courses', 'billing', 'schedule', 'communications', 'chats', 'support', 'certificates', 'website']
       const quantity: string = body.quantity || 'medium'
       
       // Quantity multipliers
@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
       const teacherData = allTeacherEmails.slice(0, qty.teachers)
 
       const studentUserIds: string[] = []
-      if (categories.includes('users')) {
+      if (categories.includes('students')) {
         for (const s of studentData) {
           try {
             const { data, error } = await adminClient.auth.admin.createUser({
@@ -134,7 +134,9 @@ Deno.serve(async (req) => {
             if (!error && data.user) { studentUserIds.push(data.user.id); counts.students++ }
           } catch (_) { /* skip if exists */ }
         }
+      }
 
+      if (categories.includes('teachers')) {
         for (const t of teacherData) {
           try {
             const { data, error } = await adminClient.auth.admin.createUser({
@@ -159,8 +161,8 @@ Deno.serve(async (req) => {
 
       if (sIds.length === 0 || tIds.length === 0) {
         // If only seeding non-user categories, we still need users to exist
-        if (categories.some(c => ['courses', 'subscriptions', 'schedule', 'communications', 'certificates'].includes(c))) {
-          return new Response(JSON.stringify({ error: 'Need at least 1 student and 1 teacher to seed data. Add "users" category first.' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        if (categories.some(c => ['courses', 'billing', 'schedule', 'communications', 'chats', 'certificates'].includes(c))) {
+          return new Response(JSON.stringify({ error: 'Need at least 1 student and 1 teacher to seed data. Add "students" and "teachers" categories first.' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
         }
       }
 
@@ -280,8 +282,8 @@ Deno.serve(async (req) => {
         cIds = (existingCourses || []).map(c => c.id)
       }
 
-      // Create subscriptions
-      if (categories.includes('subscriptions') && sIds.length > 0 && cIds.length > 0) {
+      // Create subscriptions & invoices (billing)
+      if (categories.includes('billing') && sIds.length > 0 && cIds.length > 0) {
         const subsInsert = sIds.slice(0, Math.min(sIds.length, cIds.length * 2)).map((sid, i) => ({
           student_id: sid, course_id: cIds[i % cIds.length], teacher_id: tIds[i % tIds.length],
           status: i === 0 ? 'expired' : 'active', subscription_type: i % 2 === 0 ? 'monthly' : 'yearly',
@@ -291,124 +293,8 @@ Deno.serve(async (req) => {
         const { data: subs } = await adminClient.from('subscriptions').insert(subsInsert).select('id')
         createdSubs = subs || []
         counts.subscriptions = createdSubs.length
-      }
 
-      // Create timetable entries & attendance
-      if (categories.includes('schedule') && sIds.length > 0 && tIds.length > 0 && cIds.length > 0) {
-        const now = new Date()
-        const ttInsert = []
-        for (let i = 0; i < qty.timetable; i++) {
-          const d = new Date(now); d.setDate(d.getDate() + i - Math.floor(qty.timetable / 3)); d.setHours(8 + (i % 6), 0, 0, 0)
-          ttInsert.push({
-            student_id: sIds[i % sIds.length], teacher_id: tIds[i % tIds.length],
-            course_id: cIds[i % cIds.length], scheduled_at: d.toISOString(),
-            duration_minutes: [30, 45, 60][i % 3],
-            status: i < Math.floor(qty.timetable / 3) ? 'completed' : i === qty.timetable - 1 ? 'cancelled' : 'scheduled',
-          })
-        }
-        const { data: createdTT } = await adminClient.from('timetable_entries').insert(ttInsert).select('id')
-        counts.timetable = createdTT?.length || 0
-
-        const completedTT = (createdTT || []).filter((_, i) => i < Math.floor(qty.timetable / 3))
-        if (completedTT.length > 0) {
-          const attInsert = completedTT.map((tt, i) => ({
-            timetable_entry_id: tt.id, student_id: sIds[i % sIds.length],
-            status: i % 3 === 2 ? 'absent' : 'present', notes: i % 3 === 2 ? 'Student was sick' : '',
-          }))
-          await adminClient.from('attendance').insert(attInsert)
-          counts.attendance = attInsert.length
-        }
-      }
-
-      // Create communications
-      if (categories.includes('communications')) {
-        const allAnnouncements = [
-          { title: 'Welcome to the New Semester', title_ar: 'مرحباً بالفصل الدراسي الجديد', content: 'We are excited to start a new semester. Please check your schedules.', content_ar: 'نحن متحمسون لبدء فصل دراسي جديد. يرجى مراجعة جداولكم.', target_audience: 'all', created_by: caller.id, is_active: true },
-          { title: 'Exam Schedule Released', title_ar: 'تم نشر جدول الامتحانات', content: 'Final exam schedule has been published. Check the timetable section.', content_ar: 'تم نشر جدول الامتحانات النهائية. راجع قسم الجدول.', target_audience: 'students', created_by: caller.id, is_active: true },
-          { title: 'Teacher Meeting This Friday', title_ar: 'اجتماع المعلمين يوم الجمعة', content: 'All teachers are required to attend the monthly meeting.', content_ar: 'جميع المعلمين مطالبون بحضور الاجتماع الشهري.', target_audience: 'teachers', created_by: caller.id, is_active: true },
-          { title: 'Holiday Schedule', title_ar: 'جدول الإجازات', content: 'Please note the upcoming holiday dates.', content_ar: 'يرجى ملاحظة مواعيد الإجازات القادمة.', target_audience: 'all', created_by: caller.id, is_active: true },
-          { title: 'New Course Available', title_ar: 'دورة جديدة متاحة', content: 'A new course has been added to the curriculum.', content_ar: 'تمت إضافة دورة جديدة إلى المنهج.', target_audience: 'all', created_by: caller.id, is_active: true },
-        ]
-        const annInsert = allAnnouncements.slice(0, qty.announcements)
-        await adminClient.from('announcements').insert(annInsert)
-        counts.announcements = annInsert.length
-
-        const allNotifs = [
-          { user_id: caller.id, title: 'New Student Enrolled', message: 'Ahmed Ali has enrolled in Quran Memorization', link: '/dashboard/students' },
-          { user_id: caller.id, title: 'Subscription Payment', message: 'New subscription payment of $100 received', link: '/dashboard/subscriptions' },
-          { user_id: caller.id, title: 'Support Ticket', message: 'New support ticket requires attention', link: '/dashboard/support' },
-          { user_id: caller.id, title: 'Attendance Alert', message: 'A student was absent from today\'s lesson', link: '/dashboard/attendance' },
-          { user_id: caller.id, title: 'Course Update', message: 'Arabic Language Fundamentals has been updated', link: '/dashboard/courses' },
-          { user_id: caller.id, title: 'New Certificate Issued', message: 'A new certificate has been issued', link: '/dashboard/certificates' },
-          { user_id: caller.id, title: 'Schedule Change', message: 'A lesson has been rescheduled', link: '/dashboard/timetable' },
-          { user_id: caller.id, title: 'New Message', message: 'You have a new message from a teacher', link: '/dashboard/chats' },
-          { user_id: caller.id, title: 'Backup Complete', message: 'System backup completed successfully', link: '/dashboard/settings' },
-          { user_id: caller.id, title: 'System Update', message: 'The system has been updated to the latest version', link: '/dashboard/settings' },
-        ]
-        const notifInsert = allNotifs.slice(0, qty.notifications)
-        await adminClient.from('notifications').insert(notifInsert)
-        counts.notifications = notifInsert.length
-
-        // Create chats
-        if (sIds.length > 0 && tIds.length > 0) {
-          const chatCount = Math.min(qty.chats, sIds.length, tIds.length)
-          const chatsInsert = Array.from({ length: chatCount }, (_, i) => ({
-            student_id: sIds[i % sIds.length], teacher_id: tIds[i % tIds.length],
-            name: ['Quran Progress', 'Arabic Help', 'Fiqh Discussion', 'General'][i % 4],
-            is_group: false, subscription_id: createdSubs[i]?.id || null,
-          }))
-          const { data: createdChats } = await adminClient.from('chats').insert(chatsInsert).select('id')
-          counts.chats = createdChats?.length || 0
-
-          if (createdChats && createdChats.length > 0) {
-            const sUserIds = (allStudents || []).map(s => s.user_id)
-            const tUserIds = (allTeachers || []).map(t => t.user_id)
-            const msgsInsert: { chat_id: string; sender_id: string; message: string }[] = []
-            for (let i = 0; i < createdChats.length; i++) {
-              msgsInsert.push(
-                { chat_id: createdChats[i].id, sender_id: tUserIds[i % tUserIds.length], message: 'Assalamu alaikum! How is your progress?' },
-                { chat_id: createdChats[i].id, sender_id: sUserIds[i % sUserIds.length], message: 'Wa alaikum assalam! Alhamdulillah, going well.' },
-                { chat_id: createdChats[i].id, sender_id: tUserIds[i % tUserIds.length], message: 'Great! Keep up the good work.' },
-              )
-            }
-            await adminClient.from('chat_messages').insert(msgsInsert)
-            counts.messages = msgsInsert.length
-          }
-        }
-      }
-
-      // Create support tickets
-      if (categories.includes('support')) {
-        const allTickets = [
-          { name: 'Ahmed Ali', email: 'student1@sample.edu', subject: 'Cannot access course material', message: 'I am unable to view the lessons in Quran Memorization course. Please help.', department: 'technical', priority: 'high', status: 'open', user_id: studentUserIds[0] || null },
-          { name: 'Sara Hassan', email: 'student2@sample.edu', subject: 'Payment issue', message: 'My subscription payment was charged twice. Please refund.', department: 'billing', priority: 'medium', status: 'in_progress', user_id: studentUserIds[1] || null },
-          { name: 'Omar Khalil', email: 'student3@sample.edu', subject: 'Request for schedule change', message: 'I would like to change my lesson time from morning to evening.', department: 'general', priority: 'low', status: 'resolved', resolution_notes: 'Schedule updated as requested.', user_id: studentUserIds[2] || null },
-          { name: 'Fatima Noor', email: 'student4@sample.edu', subject: 'App not loading', message: 'The application does not load on my device.', department: 'technical', priority: 'high', status: 'open', user_id: studentUserIds[3] || null },
-          { name: 'Youssef Mahmoud', email: 'student5@sample.edu', subject: 'Certificate request', message: 'I completed the course but did not receive my certificate.', department: 'general', priority: 'medium', status: 'open', user_id: studentUserIds[4] || null },
-          { name: 'Layla Ibrahim', email: 'student6@sample.edu', subject: 'Feature suggestion', message: 'It would be great to have a dark mode option.', department: 'general', priority: 'low', status: 'resolved', resolution_notes: 'Dark mode is now available.', user_id: null },
-        ]
-        const ticketsInsert = allTickets.slice(0, qty.tickets)
-        await adminClient.from('support_tickets').insert(ticketsInsert)
-        counts.tickets = ticketsInsert.length
-      }
-
-      // Create certificates
-      if (categories.includes('certificates') && sIds.length > 0 && cIds.length > 0) {
-        const certCount = Math.min(qty.certs, sIds.length)
-        const certsInsert = Array.from({ length: certCount }, (_, i) => ({
-          title: `Certificate ${i + 1}`, title_ar: `شهادة ${i + 1}`,
-          description: 'Successfully completed the course', description_ar: 'أكمل الدورة بنجاح',
-          recipient_id: (allStudents || [])[i % (allStudents || []).length]?.user_id,
-          recipient_type: 'student', course_id: cIds[i % cIds.length],
-          issued_by: caller.id, status: 'active',
-        }))
-        await adminClient.from('certificates').insert(certsInsert)
-        counts.certificates = certsInsert.length
-      }
-
-      // Create invoices
-      if (categories.includes('invoices') && sIds.length > 0) {
-        // Get subscriptions to link invoices
+        // Also create invoices within billing
         const { data: existingSubs } = await adminClient.from('subscriptions').select('id, student_id, course_id, price, subscription_type').limit(20)
         const subsForInvoices = existingSubs || createdSubs || []
         
@@ -439,6 +325,91 @@ Deno.serve(async (req) => {
           counts.invoices = createdInvoices?.length || 0
         }
       }
+
+      // Create timetable entries & attendance
+      if (categories.includes('schedule') && sIds.length > 0 && tIds.length > 0 && cIds.length > 0) {
+        const now = new Date()
+        const ttInsert = []
+        for (let i = 0; i < qty.timetable; i++) {
+          const d = new Date(now); d.setDate(d.getDate() + i - Math.floor(qty.timetable / 3)); d.setHours(8 + (i % 6), 0, 0, 0)
+          ttInsert.push({
+            student_id: sIds[i % sIds.length], teacher_id: tIds[i % tIds.length],
+            course_id: cIds[i % cIds.length], scheduled_at: d.toISOString(),
+            duration_minutes: [30, 45, 60][i % 3],
+            status: i < Math.floor(qty.timetable / 3) ? 'completed' : i === qty.timetable - 1 ? 'cancelled' : 'scheduled',
+          })
+        }
+        const { data: createdTT } = await adminClient.from('timetable_entries').insert(ttInsert).select('id')
+        counts.timetable = createdTT?.length || 0
+
+        const completedTT = (createdTT || []).filter((_, i) => i < Math.floor(qty.timetable / 3))
+        if (completedTT.length > 0) {
+          const attInsert = completedTT.map((tt, i) => ({
+            timetable_entry_id: tt.id, student_id: sIds[i % sIds.length],
+            status: i % 3 === 2 ? 'absent' : 'present', notes: i % 3 === 2 ? 'Student was sick' : '',
+          }))
+          await adminClient.from('attendance').insert(attInsert)
+          counts.attendance = attInsert.length
+        }
+      }
+
+      // Create communications (announcements & notifications only)
+      if (categories.includes('communications')) {
+        const allAnnouncements = [
+          { title: 'Welcome to the New Semester', title_ar: 'مرحباً بالفصل الدراسي الجديد', content: 'We are excited to start a new semester. Please check your schedules.', content_ar: 'نحن متحمسون لبدء فصل دراسي جديد. يرجى مراجعة جداولكم.', target_audience: 'all', created_by: caller.id, is_active: true },
+          { title: 'Exam Schedule Released', title_ar: 'تم نشر جدول الامتحانات', content: 'Final exam schedule has been published. Check the timetable section.', content_ar: 'تم نشر جدول الامتحانات النهائية. راجع قسم الجدول.', target_audience: 'students', created_by: caller.id, is_active: true },
+          { title: 'Teacher Meeting This Friday', title_ar: 'اجتماع المعلمين يوم الجمعة', content: 'All teachers are required to attend the monthly meeting.', content_ar: 'جميع المعلمين مطالبون بحضور الاجتماع الشهري.', target_audience: 'teachers', created_by: caller.id, is_active: true },
+          { title: 'Holiday Schedule', title_ar: 'جدول الإجازات', content: 'Please note the upcoming holiday dates.', content_ar: 'يرجى ملاحظة مواعيد الإجازات القادمة.', target_audience: 'all', created_by: caller.id, is_active: true },
+          { title: 'New Course Available', title_ar: 'دورة جديدة متاحة', content: 'A new course has been added to the curriculum.', content_ar: 'تمت إضافة دورة جديدة إلى المنهج.', target_audience: 'all', created_by: caller.id, is_active: true },
+        ]
+        const annInsert = allAnnouncements.slice(0, qty.announcements)
+        await adminClient.from('announcements').insert(annInsert)
+        counts.announcements = annInsert.length
+
+        const allNotifs = [
+          { user_id: caller.id, title: 'New Student Enrolled', message: 'Ahmed Ali has enrolled in Quran Memorization', link: '/dashboard/students' },
+          { user_id: caller.id, title: 'Subscription Payment', message: 'New subscription payment of $100 received', link: '/dashboard/subscriptions' },
+          { user_id: caller.id, title: 'Support Ticket', message: 'New support ticket requires attention', link: '/dashboard/support' },
+          { user_id: caller.id, title: 'Attendance Alert', message: 'A student was absent from today\'s lesson', link: '/dashboard/attendance' },
+          { user_id: caller.id, title: 'Course Update', message: 'Arabic Language Fundamentals has been updated', link: '/dashboard/courses' },
+          { user_id: caller.id, title: 'New Certificate Issued', message: 'A new certificate has been issued', link: '/dashboard/certificates' },
+          { user_id: caller.id, title: 'Schedule Change', message: 'A lesson has been rescheduled', link: '/dashboard/timetable' },
+          { user_id: caller.id, title: 'New Message', message: 'You have a new message from a teacher', link: '/dashboard/chats' },
+          { user_id: caller.id, title: 'Backup Complete', message: 'System backup completed successfully', link: '/dashboard/settings' },
+          { user_id: caller.id, title: 'System Update', message: 'The system has been updated to the latest version', link: '/dashboard/settings' },
+        ]
+        const notifInsert = allNotifs.slice(0, qty.notifications)
+        await adminClient.from('notifications').insert(notifInsert)
+        counts.notifications = notifInsert.length
+      }
+
+      // Create chats (separate category)
+      if (categories.includes('chats') && sIds.length > 0 && tIds.length > 0) {
+        const chatCount = Math.min(qty.chats, sIds.length, tIds.length)
+        const chatsInsert = Array.from({ length: chatCount }, (_, i) => ({
+          student_id: sIds[i % sIds.length], teacher_id: tIds[i % tIds.length],
+          name: ['Quran Progress', 'Arabic Help', 'Fiqh Discussion', 'General'][i % 4],
+          is_group: false, subscription_id: createdSubs[i]?.id || null,
+        }))
+        const { data: createdChats } = await adminClient.from('chats').insert(chatsInsert).select('id')
+        counts.chats = createdChats?.length || 0
+
+        if (createdChats && createdChats.length > 0) {
+          const sUserIds = (allStudents || []).map(s => s.user_id)
+          const tUserIds = (allTeachers || []).map(t => t.user_id)
+          const msgsInsert: { chat_id: string; sender_id: string; message: string }[] = []
+          for (let i = 0; i < createdChats.length; i++) {
+            msgsInsert.push(
+              { chat_id: createdChats[i].id, sender_id: tUserIds[i % tUserIds.length], message: 'Assalamu alaikum! How is your progress?' },
+              { chat_id: createdChats[i].id, sender_id: sUserIds[i % sUserIds.length], message: 'Wa alaikum assalam! Alhamdulillah, going well.' },
+              { chat_id: createdChats[i].id, sender_id: tUserIds[i % tUserIds.length], message: 'Great! Keep up the good work.' },
+            )
+          }
+          await adminClient.from('chat_messages').insert(msgsInsert)
+          counts.messages = msgsInsert.length
+        }
+      }
+
 
       // Create website content (blogs, pages, packages)
       if (categories.includes('website')) {
