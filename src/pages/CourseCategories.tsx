@@ -149,9 +149,9 @@ const CourseCategories = () => {
                       {getDesc(parent) && <p className="text-sm text-muted-foreground mt-1">{getDesc(parent)}</p>}
                     </div>
                     <div className="flex gap-1 shrink-0">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openNew(parent.id)} title={isAr ? 'إضافة فرعي' : 'Add Sub-category'}><Plus className="h-3.5 w-3.5" /></Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(parent)}><Pencil className="h-3.5 w-3.5" /></Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteId(parent.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => openNew(parent.id)} title={isAr ? 'إضافة فرعي' : 'Add Sub-category'}><Plus className={ACTION_ICON} /></Button>
+                      <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => openEdit(parent)}><Pencil className={ACTION_ICON} /></Button>
+                      <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteId(parent.id)}><Trash2 className={ACTION_ICON} /></Button>
                     </div>
                   </div>
                   {children.length > 0 && (
