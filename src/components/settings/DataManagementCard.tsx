@@ -69,7 +69,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const [deleteTablesOpen, setDeleteTablesOpen] = useState(false);
   const [deleteTablesLoading, setDeleteTablesLoading] = useState(false);
   const [seedCategories, setSeedCategories] = useState<SeedCategory[]>(['students', 'teachers', 'courses', 'billing', 'schedule', 'communications', 'support', 'certificates', 'website', 'packages']);
-  const [seedQuantity, setSeedQuantity] = useState<SeedQuantity>('medium');
+  const [seedQuantity, setSeedQuantity] = useState<SeedQuantity>(3);
 
   const persistLog = (log: string[]) => {
     setSeedLog(log);
