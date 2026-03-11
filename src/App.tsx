@@ -53,6 +53,7 @@ import AuditTrail from "./pages/AuditTrail";
 import PublicBlogPost from "./pages/PublicBlogPost";
 import PublicPage from "./pages/PublicPage";
 import PublicRouteGuard from "./components/PublicRouteGuard";
+import WebsiteModeGuard from "./components/WebsiteModeGuard";
 
 const queryClient = new QueryClient();
 
