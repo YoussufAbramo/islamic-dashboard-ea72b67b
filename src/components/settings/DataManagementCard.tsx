@@ -11,12 +11,32 @@ import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface DataManagementCardProps {
   isAr: boolean;
 }
 
 const SEED_LOG_KEY = 'app_seed_log_history';
+
+type SeedCategory = 'users' | 'courses' | 'subscriptions' | 'schedule' | 'communications' | 'support' | 'certificates';
+type SeedQuantity = 'little' | 'medium' | 'many';
+
+const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon: string }[] = [
+  { key: 'users', label: 'Students & Teachers', labelAr: 'طلاب ومعلمون', icon: '👥' },
+  { key: 'courses', label: 'Courses & Lessons', labelAr: 'دورات ودروس', icon: '📚' },
+  { key: 'subscriptions', label: 'Subscriptions', labelAr: 'اشتراكات', icon: '💳' },
+  { key: 'schedule', label: 'Timetable & Attendance', labelAr: 'جدول وحضور', icon: '📅' },
+  { key: 'communications', label: 'Announcements, Notifications & Chats', labelAr: 'إعلانات وإشعارات ومحادثات', icon: '💬' },
+  { key: 'support', label: 'Support Tickets', labelAr: 'تذاكر الدعم', icon: '🎫' },
+  { key: 'certificates', label: 'Certificates', labelAr: 'شهادات', icon: '🏅' },
+];
+
+const SEED_QUANTITIES: { key: SeedQuantity; label: string; labelAr: string; desc: string; descAr: string }[] = [
+  { key: 'little', label: 'Little', labelAr: 'قليل', desc: '2 students, 1 teacher, 1 course', descAr: '2 طلاب، 1 معلم، 1 دورة' },
+  { key: 'medium', label: 'Medium', labelAr: 'متوسط', desc: '5 students, 2 teachers, 3 courses', descAr: '5 طلاب، 2 معلمين، 3 دورات' },
+  { key: 'many', label: 'Many', labelAr: 'كثير', desc: '10 students, 4 teachers, 6 courses', descAr: '10 طلاب، 4 معلمين، 6 دورات' },
+];
 
 const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const { appName } = useAppSettings();
@@ -40,6 +60,8 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const [understandCheck, setUnderstandCheck] = useState(false);
   const [deleteTablesOpen, setDeleteTablesOpen] = useState(false);
   const [deleteTablesLoading, setDeleteTablesLoading] = useState(false);
+  const [seedCategories, setSeedCategories] = useState<SeedCategory[]>(['users', 'courses', 'subscriptions', 'schedule', 'communications', 'support', 'certificates']);
+  const [seedQuantity, setSeedQuantity] = useState<SeedQuantity>('medium');
 
   const persistLog = (log: string[]) => {
     setSeedLog(log);
@@ -47,6 +69,10 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   };
 
   const handleSeedData = async () => {
+    if (seedCategories.length === 0) {
+      toast.error(isAr ? 'اختر فئة واحدة على الأقل' : 'Select at least one category');
+      return;
+    }
     setSeedLoading(true);
     const log = [...seedLog];
     const addLog = (msg: string) => {
@@ -54,9 +80,9 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       persistLog([...log]);
     };
     try {
-      addLog(isAr ? '🚀 بدء إضافة البيانات التجريبية...' : '🚀 Starting seed process...');
+      addLog(isAr ? `🚀 بدء إضافة البيانات التجريبية (${seedQuantity})...` : `🚀 Starting seed process (${seedQuantity})...`);
       const { data, error } = await supabase.functions.invoke('manage-accounts', {
-        body: { action: 'seed_all' },
+        body: { action: 'seed_all', categories: seedCategories, quantity: seedQuantity },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -275,15 +301,71 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
           {/* Seed Data */}
           <div className="flex items-start gap-4 p-4 rounded-lg border border-border">
             <PackagePlus className="h-8 w-8 text-primary shrink-0 mt-0.5" />
-            <div className="flex-1 space-y-2">
+            <div className="flex-1 space-y-3">
               <h4 className="font-medium">{isAr ? 'إضافة بيانات تجريبية' : 'Add Sample Data'}</h4>
               <p className="text-sm text-muted-foreground">
                 {isAr
-                  ? 'إنشاء دورات ودروس وطلاب ومعلمين واشتراكات وحضور وإعلانات وإشعارات ومحادثات وتذاكر دعم وشهادات تجريبية'
-                  : 'Create sample courses, lessons, students, teachers, subscriptions, attendance, announcements, notifications, chats, support tickets, and certificates'}
+                  ? 'اختر الفئات والكمية لإنشاء بيانات تجريبية'
+                  : 'Choose categories and quantity to generate sample data'}
               </p>
+
+              {/* Quantity selector */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-muted-foreground">{isAr ? 'الكمية' : 'Quantity'}</Label>
+                <div className="flex gap-2">
+                  {SEED_QUANTITIES.map(q => (
+                    <button
+                      key={q.key}
+                      onClick={() => setSeedQuantity(q.key)}
+                      className={`flex-1 p-2 rounded-lg border text-center transition-colors ${
+                        seedQuantity === q.key
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border hover:border-primary/30'
+                      }`}
+                    >
+                      <span className="text-sm font-medium block">{isAr ? q.labelAr : q.label}</span>
+                      <span className="text-[10px] text-muted-foreground">{isAr ? q.descAr : q.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Category checkboxes */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-medium text-muted-foreground">{isAr ? 'الفئات' : 'Categories'}</Label>
+                  <button
+                    className="text-[10px] text-primary hover:underline"
+                    onClick={() => setSeedCategories(
+                      seedCategories.length === SEED_CATEGORIES.length ? [] : SEED_CATEGORIES.map(c => c.key)
+                    )}
+                  >
+                    {seedCategories.length === SEED_CATEGORIES.length ? (isAr ? 'إلغاء الكل' : 'Deselect all') : (isAr ? 'تحديد الكل' : 'Select all')}
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {SEED_CATEGORIES.map(cat => (
+                    <label
+                      key={cat.key}
+                      className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors ${
+                        seedCategories.includes(cat.key) ? 'border-primary/30 bg-primary/5' : 'border-border opacity-60'
+                      }`}
+                    >
+                      <Checkbox
+                        checked={seedCategories.includes(cat.key)}
+                        onCheckedChange={(checked) => {
+                          if (checked) setSeedCategories(prev => [...prev, cat.key]);
+                          else setSeedCategories(prev => prev.filter(c => c !== cat.key));
+                        }}
+                      />
+                      <span className="text-xs">{cat.icon} {isAr ? cat.labelAr : cat.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               <div className="flex gap-2 flex-wrap">
-                <Button onClick={handleSeedData} disabled={seedLoading} size="sm">
+                <Button onClick={handleSeedData} disabled={seedLoading || seedCategories.length === 0} size="sm">
                   {seedLoading && <Loader2 className="h-4 w-4 me-1 animate-spin" />}
                   {isAr ? 'إضافة بيانات تجريبية' : 'Seed Sample Data'}
                 </Button>

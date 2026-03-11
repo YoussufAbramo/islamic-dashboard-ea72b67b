@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,17 +28,12 @@ interface FileObject {
   metadata?: { size?: number; mimetype?: string } | null;
 }
 
-const BUCKETS: BucketInfo[] = [
-  { id: 'avatars', name: 'avatars', public: false, description: 'User profile pictures and avatar images', descriptionAr: 'صور الملفات الشخصية والأفاتار' },
-  { id: 'course-images', name: 'course-images', public: true, description: 'Course thumbnails and educational media', descriptionAr: 'صور الدورات والوسائط التعليمية' },
-  { id: 'backups', name: 'backups', public: false, description: 'System backup files and exports', descriptionAr: 'ملفات النسخ الاحتياطي والتصدير' },
-];
-
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
 
 const Media = () => {
   const { language } = useLanguage();
   const isAr = language === 'ar';
+  const [buckets, setBuckets] = useState<BucketInfo[]>([]);
   const [selectedBucket, setSelectedBucket] = useState<string | null>(null);
   const [currentPath, setCurrentPath] = useState('');
   const [folders, setFolders] = useState<string[]>([]);
@@ -57,6 +52,23 @@ const Media = () => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
+
+  // Dynamically fetch storage buckets
+  useEffect(() => {
+    const fetchBuckets = async () => {
+      const { data, error } = await supabase.storage.listBuckets();
+      if (!error && data) {
+        setBuckets(data.map(b => ({
+          id: b.id,
+          name: b.name,
+          public: b.public,
+          description: `Storage bucket: ${b.name}`,
+          descriptionAr: `مجلد التخزين: ${b.name}`,
+        })));
+      }
+    };
+    fetchBuckets();
+  }, []);
 
   const fetchFiles = async (bucketName: string, path = '') => {
     setLoading(true);
@@ -159,7 +171,7 @@ const Media = () => {
     setSelectedFile(file);
     setPreviewUrl('');
     if (!file || !selectedBucket || !isImageFile(file.name)) return;
-    const bucket = BUCKETS.find(b => b.id === selectedBucket);
+    const bucket = buckets.find(b => b.id === selectedBucket);
     if (bucket?.public) {
       setPreviewUrl(getPublicUrl(file.name));
     } else {
@@ -170,7 +182,7 @@ const Media = () => {
 
   const handleDownload = async (fileName: string) => {
     if (!selectedBucket) return;
-    const bucket = BUCKETS.find(b => b.id === selectedBucket);
+    const bucket = buckets.find(b => b.id === selectedBucket);
     if (bucket?.public) {
       const url = getPublicUrl(fileName);
       const a = document.createElement('a');
@@ -247,7 +259,7 @@ const Media = () => {
 
   const filteredFiles = files.filter(f => f.name.toLowerCase().includes(search.toLowerCase()));
   const filteredFolders = folders.filter(f => f.toLowerCase().includes(search.toLowerCase()));
-  const currentBucket = BUCKETS.find(b => b.id === selectedBucket);
+  const currentBucket = buckets.find(b => b.id === selectedBucket);
   const hasSelection = selectedNames.size > 0;
   const allSelected = filteredFiles.length > 0 && selectedNames.size === filteredFiles.length;
   const breadcrumbs = currentPath ? currentPath.split('/') : [];
@@ -268,7 +280,7 @@ const Media = () => {
         {/* Left: Folder list */}
         <div className="w-56 shrink-0 rounded-lg border border-border bg-muted/40 p-3">
           <nav className="space-y-1">
-            {BUCKETS.map(bucket => (
+            {buckets.map(bucket => (
               <button
                 key={bucket.id}
                 onClick={() => fetchFiles(bucket.id, '')}

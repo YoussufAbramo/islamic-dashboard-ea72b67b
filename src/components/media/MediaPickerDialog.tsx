@@ -20,16 +20,19 @@ interface FileObj {
   metadata?: { mimetype?: string } | null;
 }
 
+interface BucketItem {
+  id: string;
+  name: string;
+  public: boolean;
+}
+
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
-const BUCKETS = [
-  { id: 'course-images', name: 'course-images', public: true },
-  { id: 'avatars', name: 'avatars', public: false },
-];
 
 const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket }: MediaPickerDialogProps) => {
   const { language } = useLanguage();
   const isAr = language === 'ar';
   const [bucket, setBucket] = useState<string | null>(defaultBucket || null);
+  const [availableBuckets, setAvailableBuckets] = useState<BucketItem[]>([]);
   const [currentPath, setCurrentPath] = useState('');
   const [folders, setFolders] = useState<string[]>([]);
   const [files, setFiles] = useState<FileObj[]>([]);
@@ -38,6 +41,15 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch available buckets
+  useEffect(() => {
+    const loadBuckets = async () => {
+      const { data } = await supabase.storage.listBuckets();
+      if (data) setAvailableBuckets(data.map(b => ({ id: b.id, name: b.name, public: b.public })));
+    };
+    loadBuckets();
+  }, []);
 
   const isImage = (name: string) => IMAGE_EXTS.includes(name.split('.').pop()?.toLowerCase() || '');
 
@@ -55,7 +67,7 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
     setFiles(fileItems);
 
     // Generate URLs (signed for private buckets, public for public ones)
-    const bucketInfo = BUCKETS.find(b => b.id === bucketId);
+    const bucketInfo = availableBuckets.find(b => b.id === bucketId);
     const urls: Record<string, string> = {};
     if (bucketInfo && !bucketInfo.public && fileItems.length > 0) {
       const paths = fileItems.map(f => path ? `${path}/${f.name}` : f.name);
@@ -100,7 +112,7 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
   const getUrl = async (fileName: string): Promise<string> => {
     if (!bucket) return '';
     const fullPath = currentPath ? `${currentPath}/${fileName}` : fileName;
-    const bucketInfo = BUCKETS.find(b => b.id === bucket);
+    const bucketInfo = availableBuckets.find(b => b.id === bucket);
     if (bucketInfo && !bucketInfo.public) {
       const { data } = await supabase.storage.from(bucket).createSignedUrl(fullPath, 3600);
       return data?.signedUrl || '';
@@ -171,7 +183,7 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
 
         {!bucket ? (
           <div className="grid grid-cols-2 gap-3">
-            {BUCKETS.map(b => (
+            {availableBuckets.map(b => (
               <button
                 key={b.id}
                 onClick={() => fetchFiles(b.id, '')}

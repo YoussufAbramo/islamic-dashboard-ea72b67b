@@ -50,6 +50,8 @@ import ActivityLog from "./pages/ActivityLog";
 import WebhookLog from "./pages/WebhookLog";
 import ErrorLog from "./pages/ErrorLog";
 import AuditTrail from "./pages/AuditTrail";
+import PublicBlogPost from "./pages/PublicBlogPost";
+import PublicPage from "./pages/PublicPage";
 
 const queryClient = new QueryClient();
 
@@ -107,6 +109,9 @@ const App = () => (
                       <Route path="profile" element={<Profile />} />
                     </Route>
                     <Route path="/invoice/:id" element={<InvoiceView />} />
+                    <Route path="/blog/:slug" element={<PublicBlogPost />} />
+                    <Route path="/pages/:slug" element={<PublicPage />} />
+                    <Route path="/policies/:slug" element={<PublicPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </BrowserRouter>
