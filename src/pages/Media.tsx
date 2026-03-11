@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { FolderOpen, Image, FileText, Upload, Search, HardDrive, Lock, Globe, RefreshCw, Trash2, ExternalLink, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface BucketInfo {
   id: string;
@@ -124,6 +125,7 @@ const Media = () => {
         {/* Left: Folder list */}
         <div className="w-56 shrink-0">
           <nav className="space-y-1">
+            <TooltipProvider delayDuration={300}>
             {BUCKETS.map(bucket => (
               <button
                 key={bucket.id}
@@ -137,12 +139,19 @@ const Media = () => {
                 <FolderOpen className={`h-4 w-4 shrink-0 ${selectedBucket === bucket.id ? 'text-primary' : 'text-muted-foreground'}`} />
                 <span className="flex-1 truncate">{bucket.name}</span>
                 {bucket.public ? (
-                  <Globe className="h-3 w-3 text-muted-foreground shrink-0" />
+                  <Tooltip>
+                    <TooltipTrigger asChild><Globe className="h-3 w-3 text-muted-foreground shrink-0" /></TooltipTrigger>
+                    <TooltipContent>{isAr ? 'ملفات عامة' : 'Public files'}</TooltipContent>
+                  </Tooltip>
                 ) : (
-                  <Lock className="h-3 w-3 text-muted-foreground shrink-0" />
+                  <Tooltip>
+                    <TooltipTrigger asChild><Lock className="h-3 w-3 text-muted-foreground shrink-0" /></TooltipTrigger>
+                    <TooltipContent>{isAr ? 'ملفات خاصة' : 'Private files'}</TooltipContent>
+                  </Tooltip>
                 )}
               </button>
             ))}
+            </TooltipProvider>
           </nav>
         </div>
 
