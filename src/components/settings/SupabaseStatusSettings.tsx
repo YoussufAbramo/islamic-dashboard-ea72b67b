@@ -20,8 +20,7 @@ const SupabaseStatusSettings = () => {
   useEffect(() => {
     if (!supabaseUrl) { setStatus('error'); return; }
     supabase.from('profiles').select('id', { count: 'exact', head: true }).limit(1)
-      .then(({ error }) => setStatus(error ? 'error' : 'connected'))
-      .catch(() => setStatus('error'));
+      .then(({ error }) => setStatus(error ? 'error' : 'connected'));
   }, [supabaseUrl]);
 
   const badgeClass =
