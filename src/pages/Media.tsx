@@ -63,6 +63,7 @@ const Media = () => {
     setSelectedBucket(bucketName);
     setCurrentPath(path);
     setSelectedFile(null);
+    setPreviewUrl('');
     setSelectedNames(new Set());
     const { data, error } = await supabase.storage.from(bucketName).list(path, { limit: 200, sortBy: { column: 'created_at', order: 'desc' } });
     if (error) {
