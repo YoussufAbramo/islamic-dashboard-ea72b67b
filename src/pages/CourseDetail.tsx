@@ -378,7 +378,7 @@ const CourseDetail = () => {
                           </div>
                         </AccordionTrigger>
                         {canEdit && (
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={(e) => { e.stopPropagation(); deleteSection(section.id); }}>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: section.id, type: 'section' }); }}>
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         )}
