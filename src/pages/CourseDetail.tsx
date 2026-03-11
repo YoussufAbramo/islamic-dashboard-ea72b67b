@@ -167,32 +167,21 @@ const CourseDetail = () => {
     toast.success(isAr ? 'تمت إضافة الدرس' : 'Lesson added');
   };
 
-  const deleteLesson = async (lessonId: string) => {
-    await supabase.from('course_sections').delete().eq('id', lessonId);
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    const { id, type } = deleteTarget;
+    if (type === 'lesson') {
+      await supabase.from('course_sections').delete().eq('id', id);
+      toast.success(isAr ? 'تم حذف الدرس' : 'Lesson deleted');
+    } else if (type === 'section') {
+      await supabase.from('lesson_sections' as any).delete().eq('id', id);
+      toast.success(isAr ? 'تم حذف القسم' : 'Section deleted');
+    } else {
+      await supabase.from('lessons').delete().eq('id', id);
+      toast.success(isAr ? 'تم حذف المحتوى' : 'Content deleted');
+    }
+    setDeleteTarget(null);
     fetchHierarchy();
-    toast.success(isAr ? 'تم حذف الدرس' : 'Lesson deleted');
-  };
-
-  // CRUD: Sections (lesson_sections)
-  const addSection = async () => {
-    if (!activeLessonId) return;
-    const currentSections = sections[activeLessonId] || [];
-    await supabase.from('lesson_sections' as any).insert([{
-      course_section_id: activeLessonId,
-      title: sectionForm.title,
-      title_ar: sectionForm.title_ar,
-      sort_order: currentSections.length,
-    }] as any);
-    setSectionDialog(false);
-    setSectionForm({ title: '', title_ar: '' });
-    fetchHierarchy();
-    toast.success(isAr ? 'تمت إضافة القسم' : 'Section added');
-  };
-
-  const deleteSection = async (sectionId: string) => {
-    await supabase.from('lesson_sections' as any).delete().eq('id', sectionId);
-    fetchHierarchy();
-    toast.success(isAr ? 'تم حذف القسم' : 'Section deleted');
   };
 
   // CRUD: Content (lessons)
