@@ -51,21 +51,6 @@ const contentTypeGroups = [
 
 const allContentTypes = contentTypeGroups.flatMap((g) => g.items);
 
-const CATEGORIES = [
-  { value: 'quran', label: 'Quran', labelAr: 'القرآن الكريم' },
-  { value: 'tajweed', label: 'Tajweed', labelAr: 'التجويد' },
-  { value: 'arabic', label: 'Arabic Language', labelAr: 'اللغة العربية' },
-  { value: 'islamic_studies', label: 'Islamic Studies', labelAr: 'الدراسات الإسلامية' },
-  { value: 'memorization', label: 'Memorization', labelAr: 'الحفظ' },
-  { value: 'other', label: 'Other', labelAr: 'أخرى' },
-];
-
-const SKILL_LEVELS = [
-  { value: 'beginner', label: 'Beginner', labelAr: 'مبتدئ' },
-  { value: 'intermediate', label: 'Intermediate', labelAr: 'متوسط' },
-  { value: 'advanced', label: 'Advanced', labelAr: 'متقدم' },
-  { value: 'all_levels', label: 'All Levels', labelAr: 'جميع المستويات' },
-];
 
 const CourseDetail = () => {
   const { id } = useParams();
