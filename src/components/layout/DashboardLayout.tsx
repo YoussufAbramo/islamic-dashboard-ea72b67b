@@ -81,7 +81,7 @@ const FloatingButtons = () => {
     if (error) {notifyError({ error, isAr, rawMessage: error.message });return;}
     toast.success(isAr ? 'تم إرسال التذكرة بنجاح' : 'Ticket submitted successfully');
     setTicketOpen(false);
-    setForm({ name: '', email: '', subject: '', message: '', department: 'general', priority: 'medium' });
+    setForm({ name: '', email: '', phone: '', subject: '', message: '', department: 'general', priority: 'medium' });
   };
 
   return (
