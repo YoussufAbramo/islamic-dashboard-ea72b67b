@@ -136,7 +136,7 @@ const PaymentGatewayCard = ({ isAr }: PaymentGatewayCardProps) => {
     const keys = apiValues[gwId] || {};
     const hasValues = Object.values(keys).some(v => v.trim() !== '');
     if (!hasValues) {
-      toast.error(isAr ? 'يرجى إدخال مفتاح واحد على الأقل' : 'Please enter at least one key');
+      notifyError({ error: 'VAL_API_KEY_EMPTY', isAr });
       return;
     }
 
