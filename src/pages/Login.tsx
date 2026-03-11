@@ -103,9 +103,8 @@ const Login = () => {
         </button>
         <button
           onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-          className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-full border border-border bg-card/80 backdrop-blur-sm">
-          
-          {language === 'en' ? 'العربية' : 'English'}
+          className="h-9 w-9 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors border border-border bg-card/80 backdrop-blur-sm">
+          <span className="text-sm font-bold leading-none" style={{ fontFamily: "'Noto Kufi Arabic', sans-serif" }}>ع</span>
         </button>
       </div>
 

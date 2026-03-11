@@ -80,9 +80,9 @@ const Signup = () => {
 
       <button
         onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-        className="absolute top-4 end-4 z-10 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-md border border-border bg-card/80 backdrop-blur-sm"
+        className="absolute top-4 end-4 z-10 h-9 w-9 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors border border-border bg-card/80 backdrop-blur-sm"
       >
-        {language === 'en' ? 'العربية' : 'English'}
+        <span className="text-sm font-bold leading-none" style={{ fontFamily: "'Noto Kufi Arabic', sans-serif" }}>ع</span>
       </button>
 
       <div className="relative z-10 w-full max-w-md px-4 py-8">
