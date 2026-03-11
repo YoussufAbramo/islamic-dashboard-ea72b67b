@@ -265,7 +265,7 @@ const Media = () => {
   const breadcrumbs = currentPath ? currentPath.split('/') : [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full min-w-0 overflow-x-hidden">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <HardDrive className="h-6 w-6 text-primary" />
@@ -276,7 +276,7 @@ const Media = () => {
         </p>
       </div>
 
-      <div className="flex gap-6 min-w-0 overflow-hidden">
+      <div className="flex gap-6 min-w-0 overflow-hidden w-full">
         {/* Left: Folder list */}
         <div className="w-56 shrink-0 rounded-lg border border-border bg-muted/40 p-3">
           <nav className="space-y-1">
@@ -424,7 +424,7 @@ const Media = () => {
               )}
 
               {/* File list + detail */}
-              <div className="flex gap-4">
+              <div className="flex gap-4 min-w-0 overflow-hidden">
                 <Card
                   className={`flex-1 min-w-0 relative transition-colors ${isDragging ? 'ring-2 ring-primary border-primary bg-primary/5' : ''}`}
                   onDragEnter={handleDragEnter}
