@@ -323,6 +323,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const setDefaultTimezone = useCallback((tz: string) => { setPending(p => ({ ...p, defaultTimezone: tz })); }, []);
   const setSidebarMode = useCallback((m: SidebarMode) => { setPending(p => ({ ...p, sidebarMode: m })); }, []);
   const setTimeFormat = useCallback((f: TimeFormat) => { setPending(p => ({ ...p, timeFormat: f })); }, []);
+  const setDeveloperMode = useCallback((d: boolean) => { setPending(p => ({ ...p, developerMode: d })); }, []);
 
   return (
     <AppSettingsContext.Provider value={{
