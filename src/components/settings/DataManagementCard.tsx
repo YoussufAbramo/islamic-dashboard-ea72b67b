@@ -19,7 +19,7 @@ interface DataManagementCardProps {
 
 const SEED_LOG_KEY = 'app_seed_log_history';
 
-type SeedCategory = 'students' | 'teachers' | 'courses' | 'billing' | 'schedule' | 'communications' | 'support' | 'certificates' | 'website';
+type SeedCategory = 'students' | 'teachers' | 'courses' | 'billing' | 'schedule' | 'communications' | 'support' | 'certificates' | 'website' | 'packages';
 type SeedQuantity = 'little' | 'medium' | 'many';
 
 const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon: string }[] = [
@@ -31,7 +31,8 @@ const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon
   { key: 'communications', label: 'Announcements & Notifications', labelAr: 'إعلانات وإشعارات', icon: '📢' },
   { key: 'support', label: 'Chats, Messages & Support Tickets', labelAr: 'محادثات ورسائل وتذاكر دعم', icon: '💬' },
   { key: 'certificates', label: 'Certificates', labelAr: 'شهادات', icon: '🏅' },
-  { key: 'website', label: 'Blogs, Pages & Packages', labelAr: 'مدونات وصفحات وباقات', icon: '🌐' },
+  { key: 'website', label: 'Blogs & Pages', labelAr: 'مدونات وصفحات', icon: '🌐' },
+  { key: 'packages', label: 'Pricing Packages', labelAr: 'باقات الأسعار', icon: '📦' },
 ];
 
 const SEED_QUANTITIES: { key: SeedQuantity; label: string; labelAr: string; desc: string; descAr: string }[] = [
@@ -62,7 +63,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const [understandCheck, setUnderstandCheck] = useState(false);
   const [deleteTablesOpen, setDeleteTablesOpen] = useState(false);
   const [deleteTablesLoading, setDeleteTablesLoading] = useState(false);
-  const [seedCategories, setSeedCategories] = useState<SeedCategory[]>(['students', 'teachers', 'courses', 'billing', 'schedule', 'communications', 'support', 'certificates', 'website']);
+  const [seedCategories, setSeedCategories] = useState<SeedCategory[]>(['students', 'teachers', 'courses', 'billing', 'schedule', 'communications', 'support', 'certificates', 'website', 'packages']);
   const [seedQuantity, setSeedQuantity] = useState<SeedQuantity>('medium');
 
   const persistLog = (log: string[]) => {
