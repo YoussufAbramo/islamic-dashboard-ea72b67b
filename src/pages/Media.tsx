@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FolderOpen, Image, FileText, Upload, Search, HardDrive, Lock, Globe, RefreshCw, Trash2, ExternalLink, Info } from 'lucide-react';
+import { FolderOpen, Image, FileText, Upload, Search, HardDrive, Lock, Globe, RefreshCw, Trash2, ExternalLink, Info, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -98,6 +98,34 @@ const Media = () => {
   };
 
   const isImageFile = (name: string) => IMAGE_EXTS.includes(name.split('.').pop()?.toLowerCase() || '');
+  const getFileExt = (name: string) => (name.split('.').pop()?.toUpperCase() || '—');
+
+  const handleDownload = async (fileName: string) => {
+    if (!selectedBucket) return;
+    const bucket = BUCKETS.find(b => b.id === selectedBucket);
+    if (bucket?.public) {
+      const url = getPublicUrl(fileName);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } else {
+      const { data, error } = await supabase.storage.from(selectedBucket).download(fileName);
+      if (error || !data) { toast.error(isAr ? 'خطأ في تحميل الملف' : 'Error downloading file'); return; }
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    toast.success(isAr ? 'جاري التحميل...' : 'Downloading...');
+  };
 
   const formatSize = (bytes?: number) => {
     if (!bytes) return '—';
@@ -233,6 +261,7 @@ const Media = () => {
                           <div
                             key={idx}
                             onClick={() => setSelectedFile(file)}
+                            onDoubleClick={() => handleDownload(file.name)}
                             className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors group ${
                               selectedFile?.name === file.name ? 'bg-primary/10 border border-primary/20' : 'hover:bg-muted/50'
                             }`}
@@ -247,7 +276,8 @@ const Media = () => {
                               </div>
                             )}
                             <span className="text-sm flex-1 truncate">{file.name}</span>
-                            <span className="text-[11px] text-muted-foreground">{formatSize(file.metadata?.size)}</span>
+                            <Badge variant="outline" className="text-[10px] font-mono px-1.5 py-0 shrink-0">{getFileExt(file.name)}</Badge>
+                            <span className="text-[11px] text-muted-foreground shrink-0">{formatSize(file.metadata?.size)}</span>
                           </div>
                         ))}
                       </div>
@@ -277,7 +307,11 @@ const Media = () => {
                           <p className="font-medium mt-0.5">{formatSize(selectedFile.metadata?.size)}</p>
                         </div>
                         <div>
-                          <span className="text-muted-foreground">{isAr ? 'النوع' : 'Type'}</span>
+                          <span className="text-muted-foreground">{isAr ? 'الصيغة' : 'Format'}</span>
+                          <p className="font-medium mt-0.5"><Badge variant="outline" className="text-[10px] font-mono">{getFileExt(selectedFile.name)}</Badge></p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">{isAr ? 'النوع' : 'MIME Type'}</span>
                           <p className="font-medium mt-0.5">{selectedFile.metadata?.mimetype || '—'}</p>
                         </div>
                         {selectedFile.created_at && (
@@ -288,6 +322,9 @@ const Media = () => {
                         )}
                       </div>
                       <div className="flex flex-col gap-1.5 pt-2">
+                        <Button variant="default" size="sm" className="w-full gap-1.5 text-xs" onClick={() => handleDownload(selectedFile.name)}>
+                          <Download className="h-3 w-3" />{isAr ? 'تحميل' : 'Download'}
+                        </Button>
                         {currentBucket?.public && (
                           <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs" onClick={() => window.open(getPublicUrl(selectedFile.name), '_blank')}>
                             <ExternalLink className="h-3 w-3" />{isAr ? 'فتح' : 'Open'}
