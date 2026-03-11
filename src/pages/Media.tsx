@@ -154,6 +154,19 @@ const Media = () => {
   const isImageFile = (name: string) => IMAGE_EXTS.includes(name.split('.').pop()?.toLowerCase() || '');
   const getFileExt = (name: string) => (name.split('.').pop()?.toUpperCase() || '—');
 
+  const selectFile = async (file: FileObject | null) => {
+    setSelectedFile(file);
+    setPreviewUrl('');
+    if (!file || !selectedBucket || !isImageFile(file.name)) return;
+    const bucket = BUCKETS.find(b => b.id === selectedBucket);
+    if (bucket?.public) {
+      setPreviewUrl(getPublicUrl(file.name));
+    } else {
+      const { data } = await supabase.storage.from(selectedBucket).createSignedUrl(getFullPath(file.name), 3600);
+      if (data?.signedUrl) setPreviewUrl(data.signedUrl);
+    }
+  };
+
   const handleDownload = async (fileName: string) => {
     if (!selectedBucket) return;
     const bucket = BUCKETS.find(b => b.id === selectedBucket);
