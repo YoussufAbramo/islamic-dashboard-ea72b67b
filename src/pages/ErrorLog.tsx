@@ -210,12 +210,10 @@ const ErrorLog = () => {
             <Card key={entry.id} className="hover:shadow-sm transition-shadow cursor-pointer overflow-hidden" onClick={() => setSelectedError(entry)}>
               <CardContent className="p-3 flex items-start gap-3 min-w-0">
                 {levelIcon(entry.level)}
+                {levelBadge(entry.level)}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-mono truncate max-w-full">{entry.message}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    {levelBadge(entry.level)}
-                    {entry.source && <span className="text-[10px] text-muted-foreground font-mono truncate">{entry.source}</span>}
-                  </div>
+                  {entry.source && <span className="text-[10px] text-muted-foreground font-mono truncate block mt-1">{entry.source}</span>}
                 </div>
                 <span className="text-[10px] text-muted-foreground whitespace-nowrap flex items-center gap-1 shrink-0">
                   <Clock className="h-3 w-3" />
