@@ -123,6 +123,9 @@ const ErrorLog = () => {
     return true;
   });
 
+  // Reset visible count when filters change
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [search, levelFilter]);
+
   const levelIcon = (level: string) => {
     switch (level) {
       case 'error': return <AlertCircle className="h-4 w-4 text-destructive" />;
