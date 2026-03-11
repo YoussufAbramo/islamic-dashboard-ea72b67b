@@ -444,7 +444,7 @@ const LandingPage = () => {
           <h2 className="text-3xl md:text-4xl font-bold font-amiri text-foreground">{ct('cta', 'title')}</h2>
           <p className="text-muted-foreground text-lg">{ct('cta', 'subtitle')}</p>
           <Button size="lg" onClick={() => navigate('/login')} className="text-base">
-            {t('Start Free Trial', 'ابدأ التجربة المجانية')} <ChevronRight className="h-5 w-5 ms-2" />
+            {t('Start Free Trial', 'ابدأ التجربة المجانية')} <ChevronRight className="h-5 w-5 ms-2 rtl:-scale-x-100" />
           </Button>
         </div>
       </section>
