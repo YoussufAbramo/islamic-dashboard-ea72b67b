@@ -12,8 +12,9 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import {
   Save, Plus, Trash2, GripVertical, ChevronDown, ChevronUp, Pencil, X, Search, Globe,
-  Star, Sparkles, Shield, Megaphone, BookOpen, Users, BarChart3, HelpCircle, Mail, Layers, CreditCard, Quote, Handshake, Settings2, Eye, EyeOff,
+  Star, Sparkles, Shield, Megaphone, BookOpen, Users, BarChart3, HelpCircle, Mail, Layers, CreditCard, Quote, Handshake, Settings2, Eye, EyeOff, LayoutTemplate, Check,
 } from 'lucide-react';
+import { HEADER_STYLES, type HeaderStyleKey } from '@/components/landing/LandingHeaders';
 import ImagePickerField from '@/components/media/ImagePickerField';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
