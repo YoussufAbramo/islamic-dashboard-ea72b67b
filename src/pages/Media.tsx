@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { FolderOpen, Image, FileText, Upload, Search, HardDrive, Lock, Globe, RefreshCw, Trash2, ExternalLink, Info, Download, CheckSquare, X, ChevronRight, FolderPlus, Maximize2 } from 'lucide-react';
+import { FolderOpen, Image, FileText, Upload, Search, HardDrive, Lock, Globe, RefreshCw, Trash2, ExternalLink, Info, Download, CheckSquare, X, ChevronRight, FolderPlus, Maximize2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -491,8 +491,11 @@ const Media = () => {
                               className="shrink-0"
                             />
                             {isImageFile(file.name) && currentBucket?.public ? (
-                              <div className="h-8 w-8 rounded overflow-hidden border border-border flex-shrink-0 bg-muted">
-                                <img src={getPublicUrl(file.name)} alt={file.name} className="h-full w-full object-cover" loading="lazy" />
+                              <div className="h-8 w-8 rounded overflow-hidden border border-border flex-shrink-0 bg-muted relative">
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                                </div>
+                                <img src={getPublicUrl(file.name)} alt={file.name} className="h-full w-full object-cover relative z-10" loading="lazy" onLoad={(e) => { (e.target as HTMLElement).previousElementSibling?.classList.add('hidden'); }} />
                               </div>
                             ) : (
                               <div className="h-8 w-8 rounded flex items-center justify-center bg-muted/50 flex-shrink-0">
@@ -523,10 +526,14 @@ const Media = () => {
                             onClick={() => setLightboxOpen(true)}
                             className="relative w-full rounded-lg overflow-hidden border border-border bg-muted group cursor-zoom-in"
                           >
+                            <div className="flex items-center justify-center py-8 preview-loader">
+                              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                            </div>
                             <img
                               src={previewUrl}
                               alt={selectedFile.name}
-                              className="w-full h-auto max-h-72 object-contain"
+                              className="w-full h-auto max-h-72 object-contain border border-border rounded"
+                              onLoad={(e) => { (e.target as HTMLElement).previousElementSibling?.classList.add('hidden'); }}
                             />
                             <div className="absolute inset-0 bg-background/0 group-hover:bg-background/40 transition-colors flex items-center justify-center">
                               <Maximize2 className="h-6 w-6 text-foreground opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
