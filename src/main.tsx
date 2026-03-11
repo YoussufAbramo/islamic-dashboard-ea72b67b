@@ -14,10 +14,13 @@ const removeLoader = () => {
 createRoot(document.getElementById("root")!).render(<App />);
 requestAnimationFrame(() => setTimeout(removeLoader, 100));
 
-// Remove #lovable-badge whenever it appears
+// White-label: hide any injected badges via CSS + MutationObserver
+const style = document.createElement('style');
+style.textContent = '#lovable-badge, [id*="lovable"], a[href*="lovable.dev"] { display: none !important; visibility: hidden !important; }';
+document.head.appendChild(style);
+
 const removeBadge = () => {
-  const badge = document.getElementById('lovable-badge');
-  if (badge) badge.remove();
+  document.querySelectorAll('#lovable-badge, [id*="lovable"], a[href*="lovable.dev"]').forEach(el => el.remove());
 };
 removeBadge();
 const observer = new MutationObserver(removeBadge);
