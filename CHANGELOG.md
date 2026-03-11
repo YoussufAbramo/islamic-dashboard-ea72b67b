@@ -2,6 +2,12 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.3.6] - 2026-03-11
+
+### Added
+- Auto Fill button in the Support page's Create Ticket dialog, matching the Report a Bug dialog style
+- Version bumped to 4.3.6
+
 ## [4.3.5] - 2026-03-11
 
 ### Added
