@@ -383,31 +383,47 @@ Deno.serve(async (req) => {
         counts.notifications = notifInsert.length
       }
 
-      // Create chats (separate category)
-      if (categories.includes('chats') && sIds.length > 0 && tIds.length > 0) {
-        const chatCount = Math.min(qty.chats, sIds.length, tIds.length)
-        const chatsInsert = Array.from({ length: chatCount }, (_, i) => ({
-          student_id: sIds[i % sIds.length], teacher_id: tIds[i % tIds.length],
-          name: ['Quran Progress', 'Arabic Help', 'Fiqh Discussion', 'General'][i % 4],
-          is_group: false, subscription_id: createdSubs[i]?.id || null,
-        }))
-        const { data: createdChats } = await adminClient.from('chats').insert(chatsInsert).select('id')
-        counts.chats = createdChats?.length || 0
+      // Create chats, messages & support tickets (merged into 'support' category)
+      if (categories.includes('support')) {
+        // Chats & messages
+        if (sIds.length > 0 && tIds.length > 0) {
+          const chatCount = Math.min(qty.chats, sIds.length, tIds.length)
+          const chatsInsert = Array.from({ length: chatCount }, (_, i) => ({
+            student_id: sIds[i % sIds.length], teacher_id: tIds[i % tIds.length],
+            name: ['Quran Progress', 'Arabic Help', 'Fiqh Discussion', 'General'][i % 4],
+            is_group: false, subscription_id: createdSubs[i]?.id || null,
+          }))
+          const { data: createdChats } = await adminClient.from('chats').insert(chatsInsert).select('id')
+          counts.chats = createdChats?.length || 0
 
-        if (createdChats && createdChats.length > 0) {
-          const sUserIds = (allStudents || []).map(s => s.user_id)
-          const tUserIds = (allTeachers || []).map(t => t.user_id)
-          const msgsInsert: { chat_id: string; sender_id: string; message: string }[] = []
-          for (let i = 0; i < createdChats.length; i++) {
-            msgsInsert.push(
-              { chat_id: createdChats[i].id, sender_id: tUserIds[i % tUserIds.length], message: 'Assalamu alaikum! How is your progress?' },
-              { chat_id: createdChats[i].id, sender_id: sUserIds[i % sUserIds.length], message: 'Wa alaikum assalam! Alhamdulillah, going well.' },
-              { chat_id: createdChats[i].id, sender_id: tUserIds[i % tUserIds.length], message: 'Great! Keep up the good work.' },
-            )
+          if (createdChats && createdChats.length > 0) {
+            const sUserIds = (allStudents || []).map(s => s.user_id)
+            const tUserIds = (allTeachers || []).map(t => t.user_id)
+            const msgsInsert: { chat_id: string; sender_id: string; message: string }[] = []
+            for (let i = 0; i < createdChats.length; i++) {
+              msgsInsert.push(
+                { chat_id: createdChats[i].id, sender_id: tUserIds[i % tUserIds.length], message: 'Assalamu alaikum! How is your progress?' },
+                { chat_id: createdChats[i].id, sender_id: sUserIds[i % sUserIds.length], message: 'Wa alaikum assalam! Alhamdulillah, going well.' },
+                { chat_id: createdChats[i].id, sender_id: tUserIds[i % tUserIds.length], message: 'Great! Keep up the good work.' },
+              )
+            }
+            await adminClient.from('chat_messages').insert(msgsInsert)
+            counts.messages = msgsInsert.length
           }
-          await adminClient.from('chat_messages').insert(msgsInsert)
-          counts.messages = msgsInsert.length
         }
+
+        // Support tickets
+        const allTickets = [
+          { name: 'Ahmed Ali', email: 'ahmed@example.com', subject: 'Cannot access course materials', message: 'I enrolled in the Quran Memorization course but cannot see the lesson content.', department: 'technical', priority: 'high', status: 'open', user_id: caller.id },
+          { name: 'Fatima Hassan', email: 'fatima@example.com', subject: 'Payment not reflected', message: 'I made a payment yesterday but my subscription still shows as pending.', department: 'billing', priority: 'high', status: 'open', user_id: caller.id },
+          { name: 'Omar Khan', email: 'omar@example.com', subject: 'Request for schedule change', message: 'I would like to change my class timings from morning to evening.', department: 'general', priority: 'medium', status: 'in_progress', user_id: caller.id },
+          { name: 'Aisha Mahmoud', email: 'aisha@example.com', subject: 'Certificate not received', message: 'I completed the Arabic course last week but have not received my certificate.', department: 'general', priority: 'medium', status: 'resolved', resolution_notes: 'Certificate has been issued and sent via email.', user_id: caller.id },
+          { name: 'Yusuf Ibrahim', email: 'yusuf@example.com', subject: 'App crashes on mobile', message: 'The app keeps crashing when I try to open the chat section on my phone.', department: 'technical', priority: 'high', status: 'open', user_id: caller.id },
+          { name: 'Maryam Saleh', email: 'maryam@example.com', subject: 'Refund request', message: 'I would like to request a refund for the Premium package as I am unable to continue.', department: 'billing', priority: 'low', status: 'closed', resolution_notes: 'Refund processed successfully.', user_id: caller.id },
+        ]
+        const ticketsInsert = allTickets.slice(0, qty.tickets)
+        const { data: createdTickets } = await adminClient.from('support_tickets').insert(ticketsInsert).select('id')
+        counts.tickets = createdTickets?.length || 0
       }
 
 
