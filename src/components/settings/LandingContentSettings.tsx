@@ -84,7 +84,7 @@ const LandingContentSettings = () => {
   const [general, setGeneral] = useState<Record<string, any>>({ ...defaultGeneralContent });
   const [sectionsOrder, setSectionsOrder] = useState<SectionKey[]>([...DEFAULT_SECTION_ORDER]);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'sections' | 'header' | 'seo'>('sections');
+  const [activeTab, setActiveTab] = useState<'header' | 'sections' | 'footer' | 'seo'>('header');
   const [saving, setSaving] = useState(false);
   const [websitePages, setWebsitePages] = useState<{ slug: string; title: string; title_ar: string | null }[]>([]);
   const [policies, setPolicies] = useState<{ slug: string; title: string; title_ar: string | null }[]>([]);
