@@ -197,7 +197,19 @@ const Media = () => {
 
       {/* File Browser */}
       {selectedBucket && (
-        <Card>
+        <Card
+          className={`relative transition-colors ${isDragging ? 'ring-2 ring-primary border-primary bg-primary/5' : ''}`}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+        >
+          {isDragging && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg border-2 border-dashed border-primary">
+              <Upload className="h-10 w-10 text-primary mb-2 animate-bounce" />
+              <p className="text-sm font-medium text-primary">{isAr ? 'أفلت الملفات هنا للرفع' : 'Drop files here to upload'}</p>
+            </div>
+          )}
           <CardHeader>
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div>
