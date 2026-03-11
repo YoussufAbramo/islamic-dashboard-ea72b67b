@@ -16,7 +16,7 @@ import BackupsSettings from '@/components/settings/BackupsSettings';
 import EducationSystemSettings from '@/components/settings/EducationSystemSettings';
 import PixelsIntegrationSettings from '@/components/settings/PixelsIntegrationSettings';
 
-type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing' | 'backups' | 'education' | 'pixels';
+type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing' | 'backups' | 'education' | 'pixels' | 'developer';
 
 const Settings = () => {
   const { language } = useLanguage();
