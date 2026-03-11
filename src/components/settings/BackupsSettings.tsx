@@ -221,21 +221,7 @@ const BackupsSettings = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2"><Clock className="h-4 w-4 text-primary" />{isAr ? 'النسخ الاحتياطي التلقائي' : 'Auto Backups'}</CardTitle>
-            <CardDescription>{isAr ? 'هذه الميزة قيد التطوير وستكون متاحة قريباً' : 'This feature is under development and will be available soon'}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between opacity-50 pointer-events-none">
-              <div>
-                <p className="text-sm font-medium">{isAr ? 'تفعيل النسخ الاحتياطي التلقائي' : 'Enable Auto Backups'}</p>
-                <p className="text-xs text-muted-foreground">{isAr ? 'إنشاء نسخة احتياطية تلقائياً كل يوم/أسبوع' : 'Automatically create backups daily/weekly'}</p>
-              </div>
-              <Switch disabled />
-            </div>
-          </CardContent>
-        </Card>
+        <AutoBackupCard isAr={isAr} />
       </div>
 
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
