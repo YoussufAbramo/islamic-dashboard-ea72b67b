@@ -36,7 +36,7 @@ interface MenuCategory {
 const AppSidebar = () => {
   const { role, profile, signOut, user } = useAuth();
   const { t, language } = useLanguage();
-  const { appLogo, appName, sidebarMode, darkLogo, developerMode } = useAppSettings();
+  const { appLogo, appName, sidebarMode, darkLogo, developerMode, websiteMode } = useAppSettings();
   const navigate = useNavigate();
   const isAr = language === 'ar';
   const location = useLocation();
