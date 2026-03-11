@@ -2,6 +2,22 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [3.8.1] - 2026-03-11
+
+### Added
+- Global Search command palette (Ctrl+K / ⌘K) searching across pages, students, courses, and invoices
+- Audit Trail system with database triggers on 10 key tables, diff viewer, and admin-only dashboard page
+- Automated recurring invoice generation edge function with daily pg_cron trigger
+- Manual "Auto-Renew" button on Invoices page for on-demand invoice generation
+- CodeCom.dev developer logo in dashboard footer
+
+### Changed
+- Full white-label: removed all Lovable branding from frontend (meta tags, OG images, badges)
+- Dashboard footer layout: developer logo on left, copyright text on right
+- CodeCom.dev link styled without underline decoration
+- Badge removal hardened with CSS injection and MutationObserver
+- Version bumped to 3.8.1
+
 ## [3.8.0] - 2026-03-11
 
 ### Added
