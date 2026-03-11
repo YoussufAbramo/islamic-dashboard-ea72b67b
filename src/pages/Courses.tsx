@@ -66,7 +66,6 @@ const Courses = () => {
   const openEdit = (course: any) => {
     setEditCourse(course);
     setForm({ title: course.title, title_ar: course.title_ar || '', description: course.description || '', description_ar: course.description_ar || '', status: course.status, image_url: course.image_url || '' });
-    setImageFile(null);
     setDialogOpen(true);
   };
 
