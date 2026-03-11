@@ -424,7 +424,7 @@ const Media = () => {
               )}
 
               {/* File list + detail */}
-              <div className="flex gap-4">
+              <div className="flex gap-4 min-w-0 overflow-hidden">
                 <Card
                   className={`flex-1 min-w-0 relative transition-colors ${isDragging ? 'ring-2 ring-primary border-primary bg-primary/5' : ''}`}
                   onDragEnter={handleDragEnter}
