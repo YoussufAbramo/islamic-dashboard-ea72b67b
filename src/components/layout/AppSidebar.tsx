@@ -205,7 +205,7 @@ const AppSidebar = () => {
                             </Badge>
                           )}
                           {hasChildren && (
-                            <ChevronDown className={`h-3.5 w-3.5 shrink-0 ms-auto text-muted-foreground transition-transform duration-200 ${isParentActive ? 'rotate-180' : ''}`} />
+                            <ChevronDown className={`h-3.5 w-3.5 shrink-0 ms-auto text-sidebar-foreground transition-transform duration-200 ${isParentActive ? 'rotate-180' : ''}`} />
                           )}
                           {item.badgeKey === 'chats' && unreadChats > 0 && (
                             <Badge variant="destructive" className="text-[9px] px-1.5 py-0 h-4 min-w-[18px] shrink-0 ms-auto">
