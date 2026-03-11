@@ -562,6 +562,7 @@ export type Database = {
       courses: {
         Row: {
           category: string
+          category_id: string | null
           created_at: string
           created_by: string | null
           description: string | null
@@ -569,14 +570,17 @@ export type Database = {
           duration_weeks: number | null
           id: string
           image_url: string | null
+          level_id: string | null
           skill_level: string
           status: string
           title: string
           title_ar: string | null
+          track_id: string | null
           updated_at: string
         }
         Insert: {
           category?: string
+          category_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -584,14 +588,17 @@ export type Database = {
           duration_weeks?: number | null
           id?: string
           image_url?: string | null
+          level_id?: string | null
           skill_level?: string
           status?: string
           title: string
           title_ar?: string | null
+          track_id?: string | null
           updated_at?: string
         }
         Update: {
           category?: string
+          category_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -599,13 +606,37 @@ export type Database = {
           duration_weeks?: number | null
           id?: string
           image_url?: string | null
+          level_id?: string | null
           skill_level?: string
           status?: string
           title?: string
           title_ar?: string | null
+          track_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "courses_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "course_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courses_level_id_fkey"
+            columns: ["level_id"]
+            isOneToOne: false
+            referencedRelation: "course_levels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courses_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "course_tracks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invoices: {
         Row: {

@@ -51,21 +51,6 @@ const contentTypeGroups = [
 
 const allContentTypes = contentTypeGroups.flatMap((g) => g.items);
 
-const CATEGORIES = [
-  { value: 'quran', label: 'Quran', labelAr: 'القرآن الكريم' },
-  { value: 'tajweed', label: 'Tajweed', labelAr: 'التجويد' },
-  { value: 'arabic', label: 'Arabic Language', labelAr: 'اللغة العربية' },
-  { value: 'islamic_studies', label: 'Islamic Studies', labelAr: 'الدراسات الإسلامية' },
-  { value: 'memorization', label: 'Memorization', labelAr: 'الحفظ' },
-  { value: 'other', label: 'Other', labelAr: 'أخرى' },
-];
-
-const SKILL_LEVELS = [
-  { value: 'beginner', label: 'Beginner', labelAr: 'مبتدئ' },
-  { value: 'intermediate', label: 'Intermediate', labelAr: 'متوسط' },
-  { value: 'advanced', label: 'Advanced', labelAr: 'متقدم' },
-  { value: 'all_levels', label: 'All Levels', labelAr: 'جميع المستويات' },
-];
 
 const CourseDetail = () => {
   const { id } = useParams();
@@ -76,6 +61,9 @@ const CourseDetail = () => {
   const canEdit = role === 'admin' || role === 'teacher';
 
   const [course, setCourse] = useState<any>(null);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [levels, setLevels] = useState<any[]>([]);
+  const [tracks, setTracks] = useState<any[]>([]);
   // Level 1: Lessons (course_sections)
   const [lessons, setLessons] = useState<any[]>([]);
   // Level 2: Sections (lesson_sections) keyed by course_section_id
@@ -100,8 +88,16 @@ const CourseDetail = () => {
   }, [contents]);
 
   const fetchCourse = async () => {
-    const { data } = await supabase.from('courses').select('*').eq('id', id).single();
-    setCourse(data);
+    const [courseRes, catRes, lvlRes, trkRes] = await Promise.all([
+      supabase.from('courses').select('*').eq('id', id).single(),
+      supabase.from('course_categories').select('*').order('sort_order'),
+      supabase.from('course_levels').select('*').order('sort_order'),
+      supabase.from('course_tracks').select('*').order('sort_order'),
+    ]);
+    setCourse(courseRes.data);
+    setCategories(catRes.data || []);
+    setLevels(lvlRes.data || []);
+    setTracks(trkRes.data || []);
   };
 
   const fetchHierarchy = async () => {
@@ -221,8 +217,9 @@ const CourseDetail = () => {
 
   if (!course) return <div className="text-muted-foreground">{t('common.loading')}</div>;
 
-  const categoryLabel = CATEGORIES.find(c => c.value === course.category);
-  const skillLabel = SKILL_LEVELS.find(l => l.value === course.skill_level);
+  const categoryLabel = categories.find(c => c.id === course.category_id);
+  const skillLabel = levels.find(l => l.id === course.level_id);
+  const trackLabel = tracks.find(t => t.id === course.track_id);
 
   return (
     <div className="space-y-4">
@@ -244,13 +241,18 @@ const CourseDetail = () => {
                 {categoryLabel && (
                   <Badge variant="outline" className="gap-1 text-xs">
                     <FolderTree className="h-3 w-3" />
-                    {isAr ? categoryLabel.labelAr : categoryLabel.label}
+                    {isAr && categoryLabel.title_ar ? categoryLabel.title_ar : categoryLabel.title}
                   </Badge>
                 )}
                 {skillLabel && (
                   <Badge variant="outline" className="gap-1 text-xs">
                     <Signal className="h-3 w-3" />
-                    {isAr ? skillLabel.labelAr : skillLabel.label}
+                    {isAr && skillLabel.title_ar ? skillLabel.title_ar : skillLabel.title}
+                  </Badge>
+                )}
+                {trackLabel && (
+                  <Badge variant="outline" className="gap-1 text-xs">
+                    {isAr && trackLabel.title_ar ? trackLabel.title_ar : trackLabel.title}
                   </Badge>
                 )}
                 {course.duration_weeks && (

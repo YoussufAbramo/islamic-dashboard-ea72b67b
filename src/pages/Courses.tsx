@@ -24,22 +24,6 @@ import { useNavigate } from 'react-router-dom';
 import { courseStatusLabels, getLabel } from '@/lib/statusLabels';
 import { TableSkeleton } from '@/components/PageSkeleton';
 
-const CATEGORIES = [
-  { value: 'quran', label: 'Quran', labelAr: 'القرآن الكريم' },
-  { value: 'tajweed', label: 'Tajweed', labelAr: 'التجويد' },
-  { value: 'arabic', label: 'Arabic Language', labelAr: 'اللغة العربية' },
-  { value: 'islamic_studies', label: 'Islamic Studies', labelAr: 'الدراسات الإسلامية' },
-  { value: 'memorization', label: 'Memorization', labelAr: 'الحفظ' },
-  { value: 'other', label: 'Other', labelAr: 'أخرى' },
-];
-
-const SKILL_LEVELS = [
-  { value: 'beginner', label: 'Beginner', labelAr: 'مبتدئ' },
-  { value: 'intermediate', label: 'Intermediate', labelAr: 'متوسط' },
-  { value: 'advanced', label: 'Advanced', labelAr: 'متقدم' },
-  { value: 'all_levels', label: 'All Levels', labelAr: 'جميع المستويات' },
-];
-
 const Courses = () => {
   const { t, language } = useLanguage();
   const { role } = useAuth();
@@ -50,16 +34,32 @@ const Courses = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editCourse, setEditCourse] = useState<any>(null);
-  const [form, setForm] = useState({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft', image_url: '', category: '', duration_weeks: '', skill_level: '' });
+  const [form, setForm] = useState({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft', image_url: '', category_id: '', level_id: '', track_id: '', duration_weeks: '' });
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => (localStorage.getItem('courses_view') as any) || 'list');
+
+  // Dynamic lookups
+  const [categories, setCategories] = useState<any[]>([]);
+  const [levels, setLevels] = useState<any[]>([]);
+  const [tracks, setTracks] = useState<any[]>([]);
 
   const canEdit = role === 'admin' || role === 'teacher';
 
   const toggleView = (mode: 'grid' | 'list') => {
     setViewMode(mode);
     localStorage.setItem('courses_view', mode);
+  };
+
+  const fetchLookups = async () => {
+    const [catRes, lvlRes, trkRes] = await Promise.all([
+      supabase.from('course_categories').select('*').order('sort_order'),
+      supabase.from('course_levels').select('*').order('sort_order'),
+      supabase.from('course_tracks').select('*').order('sort_order'),
+    ]);
+    setCategories(catRes.data || []);
+    setLevels(lvlRes.data || []);
+    setTracks(trkRes.data || []);
   };
 
   const fetchCourses = async () => {
@@ -69,19 +69,38 @@ const Courses = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchCourses(); }, []);
+  useEffect(() => { fetchCourses(); fetchLookups(); }, []);
+
+  const getCategoryLabel = (course: any) => {
+    const cat = categories.find(c => c.id === course.category_id);
+    if (cat) return isAr && cat.title_ar ? cat.title_ar : cat.title;
+    return course.category || null;
+  };
+
+  const getLevelLabel = (course: any) => {
+    const lvl = levels.find(l => l.id === course.level_id);
+    if (lvl) return isAr && lvl.title_ar ? lvl.title_ar : lvl.title;
+    return course.skill_level || null;
+  };
+
+  const getTrackLabel = (course: any) => {
+    const trk = tracks.find(t => t.id === course.track_id);
+    if (trk) return isAr && trk.title_ar ? trk.title_ar : trk.title;
+    return null;
+  };
 
   const handleSave = async () => {
-    const saveData = {
+    const saveData: any = {
       title: form.title,
       title_ar: form.title_ar,
       description: form.description,
       description_ar: form.description_ar,
       status: form.status,
       image_url: form.image_url,
-      category: form.category,
+      category_id: form.category_id || null,
+      level_id: form.level_id || null,
+      track_id: form.track_id || null,
       duration_weeks: form.duration_weeks ? parseInt(form.duration_weeks) : null,
-      skill_level: form.skill_level,
     };
     if (editCourse) {
       await supabase.from('courses').update(saveData).eq('id', editCourse.id);
@@ -96,7 +115,7 @@ const Courses = () => {
     fetchCourses();
   };
 
-  const resetForm = () => setForm({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft', image_url: '', category: '', duration_weeks: '', skill_level: '' });
+  const resetForm = () => setForm({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft', image_url: '', category_id: '', level_id: '', track_id: '', duration_weeks: '' });
 
   const openEdit = (course: any) => {
     setEditCourse(course);
@@ -107,9 +126,10 @@ const Courses = () => {
       description_ar: course.description_ar || '',
       status: course.status,
       image_url: course.image_url || '',
-      category: course.category || '',
+      category_id: course.category_id || '',
+      level_id: course.level_id || '',
+      track_id: course.track_id || '',
       duration_weeks: course.duration_weeks?.toString() || '',
-      skill_level: course.skill_level || '',
     });
     setDialogOpen(true);
   };
@@ -177,22 +197,31 @@ const Courses = () => {
                     <div><Label>{t('courses.description')} (EN)</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
                     <div><Label>{t('courses.description')} (AR)</Label><Textarea value={form.description_ar} onChange={(e) => setForm({ ...form, description_ar: e.target.value })} dir="rtl" className="text-right" /></div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-3">
                     <div>
                       <Label>{isAr ? 'التصنيف' : 'Category'}</Label>
-                      <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
+                      <Select value={form.category_id} onValueChange={(v) => setForm({ ...form, category_id: v })}>
                         <SelectTrigger><SelectValue placeholder={isAr ? 'اختر التصنيف' : 'Select category'} /></SelectTrigger>
                         <SelectContent>
-                          {CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{isAr ? c.labelAr : c.label}</SelectItem>)}
+                          {categories.map(c => <SelectItem key={c.id} value={c.id}>{isAr && c.title_ar ? c.title_ar : c.title}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label>{isAr ? 'مستوى المهارة' : 'Skill Level'}</Label>
-                      <Select value={form.skill_level} onValueChange={(v) => setForm({ ...form, skill_level: v })}>
+                      <Label>{isAr ? 'المستوى' : 'Level'}</Label>
+                      <Select value={form.level_id} onValueChange={(v) => setForm({ ...form, level_id: v })}>
                         <SelectTrigger><SelectValue placeholder={isAr ? 'اختر المستوى' : 'Select level'} /></SelectTrigger>
                         <SelectContent>
-                          {SKILL_LEVELS.map(l => <SelectItem key={l.value} value={l.value}>{isAr ? l.labelAr : l.label}</SelectItem>)}
+                          {levels.map(l => <SelectItem key={l.id} value={l.id}>{isAr && l.title_ar ? l.title_ar : l.title}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>{isAr ? 'المسار' : 'Track'}</Label>
+                      <Select value={form.track_id} onValueChange={(v) => setForm({ ...form, track_id: v })}>
+                        <SelectTrigger><SelectValue placeholder={isAr ? 'اختر المسار' : 'Select track'} /></SelectTrigger>
+                        <SelectContent>
+                          {tracks.map(tr => <SelectItem key={tr.id} value={tr.id}>{isAr && tr.title_ar ? tr.title_ar : tr.title}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
@@ -264,15 +293,14 @@ const Courses = () => {
                   <p className="text-xs text-muted-foreground line-clamp-2">{isAr && course.description_ar ? course.description_ar : course.description}</p>
                 )}
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  {course.category && (
-                    <Badge variant="outline" className="text-[10px]">
-                      {isAr ? CATEGORIES.find(c => c.value === course.category)?.labelAr : CATEGORIES.find(c => c.value === course.category)?.label || course.category}
-                    </Badge>
+                  {getCategoryLabel(course) && (
+                    <Badge variant="outline" className="text-[10px]">{getCategoryLabel(course)}</Badge>
                   )}
-                  {course.skill_level && (
-                    <Badge variant="outline" className="text-[10px]">
-                      {isAr ? SKILL_LEVELS.find(l => l.value === course.skill_level)?.labelAr : SKILL_LEVELS.find(l => l.value === course.skill_level)?.label || course.skill_level}
-                    </Badge>
+                  {getLevelLabel(course) && (
+                    <Badge variant="outline" className="text-[10px]">{getLevelLabel(course)}</Badge>
+                  )}
+                  {getTrackLabel(course) && (
+                    <Badge variant="outline" className="text-[10px]">{getTrackLabel(course)}</Badge>
                   )}
                 </div>
                 {canEdit && (
@@ -316,10 +344,8 @@ const Courses = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {course.category ? (
-                      <Badge variant="outline" className="text-xs">
-                        {isAr ? CATEGORIES.find(c => c.value === course.category)?.labelAr : CATEGORIES.find(c => c.value === course.category)?.label || course.category}
-                      </Badge>
+                    {getCategoryLabel(course) ? (
+                      <Badge variant="outline" className="text-xs">{getCategoryLabel(course)}</Badge>
                     ) : '—'}
                   </TableCell>
                   <TableCell><Badge variant={statusColor[course.status] as any}>{getLabel(courseStatusLabels, course.status, isAr)}</Badge></TableCell>
