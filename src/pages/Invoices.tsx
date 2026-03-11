@@ -220,6 +220,8 @@ const Invoices = () => {
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
 
+  if (loading) return <TableSkeleton />;
+
   return (
     <div className="space-y-6">
       {/* Header */}
