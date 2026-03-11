@@ -322,6 +322,9 @@ const Media = () => {
                         )}
                       </div>
                       <div className="flex flex-col gap-1.5 pt-2">
+                        <Button variant="default" size="sm" className="w-full gap-1.5 text-xs" onClick={() => handleDownload(selectedFile.name)}>
+                          <Download className="h-3 w-3" />{isAr ? 'تحميل' : 'Download'}
+                        </Button>
                         {currentBucket?.public && (
                           <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs" onClick={() => window.open(getPublicUrl(selectedFile.name), '_blank')}>
                             <ExternalLink className="h-3 w-3" />{isAr ? 'فتح' : 'Open'}
