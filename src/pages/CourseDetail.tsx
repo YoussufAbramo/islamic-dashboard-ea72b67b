@@ -61,6 +61,9 @@ const CourseDetail = () => {
   const canEdit = role === 'admin' || role === 'teacher';
 
   const [course, setCourse] = useState<any>(null);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [levels, setLevels] = useState<any[]>([]);
+  const [tracks, setTracks] = useState<any[]>([]);
   // Level 1: Lessons (course_sections)
   const [lessons, setLessons] = useState<any[]>([]);
   // Level 2: Sections (lesson_sections) keyed by course_section_id
