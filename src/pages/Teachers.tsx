@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Search, Eye, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Teachers = () => {
   const { t, language } = useLanguage();
