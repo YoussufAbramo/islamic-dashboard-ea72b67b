@@ -182,7 +182,7 @@ const Media = () => {
 
   const handleDownload = async (fileName: string) => {
     if (!selectedBucket) return;
-    const bucket = BUCKETS.find(b => b.id === selectedBucket);
+    const bucket = buckets.find(b => b.id === selectedBucket);
     if (bucket?.public) {
       const url = getPublicUrl(fileName);
       const a = document.createElement('a');
