@@ -44,6 +44,7 @@ import Policies from "./pages/Policies";
 import WebsitePages from "./pages/WebsitePages";
 import BlogPosts from "./pages/BlogPosts";
 import ActivityLog from "./pages/ActivityLog";
+import WebhookLog from "./pages/WebhookLog";
 
 const queryClient = new QueryClient();
 
