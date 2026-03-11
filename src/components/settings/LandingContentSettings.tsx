@@ -68,8 +68,6 @@ const LandingContentSettings = () => {
   const [activeSection, setActiveSection] = useState<ContentSection>('general');
   const [content, setContent] = useState<Record<string, Record<string, any>>>(defaultContent);
   const [saving, setSaving] = useState(false);
-  const [ogImageMode, setOgImageMode] = useState<'url' | 'upload'>('url');
-  const ogImageRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetch = async () => {
