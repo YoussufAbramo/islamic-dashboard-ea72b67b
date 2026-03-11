@@ -102,20 +102,16 @@ const LandingPage = () => {
   const headerStyle: HeaderStyleKey = general.header_style || 'classic';
   const HeaderComponent = getHeaderComponent(headerStyle);
 
-  // For centered style, merge left+right; otherwise use nav_items
-  const navSections: { label: string; id: string }[] = (() => {
-    if (headerStyle === 'centered' && general.nav_items_left && general.nav_items_right) {
-      return [...general.nav_items_left, ...general.nav_items_right].map((item: any) => ({
-        label: isAr ? (item.label_ar || item.label) : item.label,
-        id: item.id,
-      }));
-    }
-    const items = general.nav_items || defaultNavItems;
-    return items.map((item: any) => ({
-      label: isAr ? (item.label_ar || item.label) : item.label,
-      id: item.id,
-    }));
-  })();
+  // Build nav items from settings
+  const rawNavItems = general.nav_items || defaultNavItems;
+  const resolveItems = (items: any[]) => items.map((item: any) => ({
+    label: isAr ? (item.label_ar || item.label) : item.label,
+    id: item.id,
+  }));
+
+  const navSections = resolveItems(rawNavItems);
+  const navSectionsLeft = general.nav_items_left ? resolveItems(general.nav_items_left) : undefined;
+  const navSectionsRight = general.nav_items_right ? resolveItems(general.nav_items_right) : undefined;
 
   const renderSection = (key: SectionKey) => {
     const s = content[key] || defaultSectionContent[key] || {};
