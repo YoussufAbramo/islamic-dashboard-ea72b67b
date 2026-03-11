@@ -282,7 +282,20 @@ const Media = () => {
               <div className="space-y-1">
                 {filteredFiles.map((file, idx) => (
                   <div key={idx} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors group">
-                    {getFileIcon(file.name)}
+                    {isImageFile(file.name) && currentBucket?.public ? (
+                      <div className="h-9 w-9 rounded-md overflow-hidden border border-border flex-shrink-0 bg-muted">
+                        <img
+                          src={getThumbnailUrl(file.name) || ''}
+                          alt={file.name}
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-9 w-9 rounded-md flex items-center justify-center bg-muted/50 flex-shrink-0">
+                        {getFileIcon(file.name)}
+                      </div>
+                    )}
                     <span className="text-sm flex-1 truncate">{file.name}</span>
                     <span className="text-xs text-muted-foreground">{formatSize(file.metadata?.size)}</span>
                     <Badge variant="outline" className="text-[10px]">{file.metadata?.mimetype || '—'}</Badge>
