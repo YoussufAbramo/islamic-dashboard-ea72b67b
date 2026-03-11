@@ -280,21 +280,6 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
             </div>
           </div>
 
-          {/* Erase All Data */}
-          <div className="flex items-start gap-4 p-4 rounded-lg border border-destructive/30 bg-destructive/5">
-            <Trash2 className="h-8 w-8 text-destructive shrink-0 mt-0.5" />
-            <div className="flex-1 space-y-2">
-              <h4 className="font-medium text-destructive">{isAr ? 'مسح جميع البيانات' : 'Erase All Data'}</h4>
-              <p className="text-sm text-muted-foreground">
-                {isAr
-                  ? 'سيتم حذف جميع البيانات والمستخدمين نهائياً. سيتم الاحتفاظ فقط بحسابات المدير.'
-                  : 'Permanently erase all data and users. Only admin accounts will be preserved.'}
-              </p>
-              <Button variant="destructive" size="sm" onClick={() => setClearStep(1)}>
-                {isAr ? 'مسح جميع البيانات' : 'Erase All Data'}
-              </Button>
-            </div>
-          </div>
         </CardContent>
       </Card>
 
