@@ -6,15 +6,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
-import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree } from 'lucide-react';
+import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree, Layers, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 
-const lessonTypes = [
+const contentTypes = [
   { value: 'table_of_content', label: 'Table of Content' },
   { value: 'revision', label: 'Revision' },
   { value: 'read_listen', label: 'Read & Listen' },
@@ -54,66 +54,147 @@ const CourseDetail = () => {
   const canEdit = role === 'admin' || role === 'teacher';
 
   const [course, setCourse] = useState<any>(null);
-  const [sections, setSections] = useState<any[]>([]);
-  const [lessons, setLessons] = useState<Record<string, any[]>>({});
-  const [sectionDialog, setSectionDialog] = useState(false);
-  const [lessonDialog, setLessonDialog] = useState(false);
-  const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
-  const [sectionForm, setSectionForm] = useState({ title: '', title_ar: '' });
-  const [lessonForm, setLessonForm] = useState({ title: '', title_ar: '', lesson_type: 'read_listen' });
+  // Level 1: Lessons (course_sections)
+  const [lessons, setLessons] = useState<any[]>([]);
+  // Level 2: Sections (lesson_sections) keyed by course_section_id
+  const [sections, setSections] = useState<Record<string, any[]>>({});
+  // Level 3: Content (lessons table) keyed by lesson_section_id
+  const [contents, setContents] = useState<Record<string, any[]>>({});
 
-  const totalLessons = useMemo(() => {
-    return Object.values(lessons).reduce((sum, arr) => sum + arr.length, 0);
-  }, [lessons]);
+  // Dialog states
+  const [lessonDialog, setLessonDialog] = useState(false);
+  const [sectionDialog, setSectionDialog] = useState(false);
+  const [contentDialog, setContentDialog] = useState(false);
+  const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+  const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
+
+  // Forms
+  const [lessonForm, setLessonForm] = useState({ title: '', title_ar: '' });
+  const [sectionForm, setSectionForm] = useState({ title: '', title_ar: '' });
+  const [contentForm, setContentForm] = useState({ title: '', title_ar: '', lesson_type: 'read_listen' });
+
+  const totalContent = useMemo(() => {
+    return Object.values(contents).reduce((sum, arr) => sum + arr.length, 0);
+  }, [contents]);
 
   const fetchCourse = async () => {
     const { data } = await supabase.from('courses').select('*').eq('id', id).single();
     setCourse(data);
   };
 
-  const fetchSections = async () => {
-    const { data } = await supabase.from('course_sections').select('*').eq('course_id', id).order('sort_order');
-    setSections(data || []);
-    if (data) {
-      const lessonMap: Record<string, any[]> = {};
-      for (const section of data) {
-        const { data: lessonData } = await supabase.from('lessons').select('*').eq('section_id', section.id).order('sort_order');
-        lessonMap[section.id] = lessonData || [];
-      }
-      setLessons(lessonMap);
+  const fetchHierarchy = async () => {
+    // Level 1: Lessons (course_sections)
+    const { data: lessonData } = await supabase
+      .from('course_sections')
+      .select('*')
+      .eq('course_id', id)
+      .order('sort_order');
+    setLessons(lessonData || []);
+
+    if (!lessonData?.length) {
+      setSections({});
+      setContents({});
+      return;
     }
+
+    // Level 2: Sections (lesson_sections)
+    const lessonIds = lessonData.map((l: any) => l.id);
+    const { data: sectionData } = await supabase
+      .from('lesson_sections' as any)
+      .select('*')
+      .in('course_section_id', lessonIds)
+      .order('sort_order');
+
+    const sectionMap: Record<string, any[]> = {};
+    for (const ls of lessonData) sectionMap[ls.id] = [];
+    for (const s of (sectionData || [])) {
+      const key = (s as any).course_section_id;
+      if (!sectionMap[key]) sectionMap[key] = [];
+      sectionMap[key].push(s);
+    }
+    setSections(sectionMap);
+
+    // Level 3: Content (lessons table)
+    const sectionIds = (sectionData || []).map((s: any) => s.id);
+    if (!sectionIds.length) {
+      setContents({});
+      return;
+    }
+    const { data: contentData } = await supabase
+      .from('lessons')
+      .select('*')
+      .in('section_id', sectionIds)
+      .order('sort_order');
+
+    const contentMap: Record<string, any[]> = {};
+    for (const s of (sectionData || [])) contentMap[(s as any).id] = [];
+    for (const c of (contentData || [])) {
+      if (!contentMap[c.section_id]) contentMap[c.section_id] = [];
+      contentMap[c.section_id].push(c);
+    }
+    setContents(contentMap);
   };
 
-  useEffect(() => { fetchCourse(); fetchSections(); }, [id]);
+  useEffect(() => { fetchCourse(); fetchHierarchy(); }, [id]);
 
-  const addSection = async () => {
-    await supabase.from('course_sections').insert({ ...sectionForm, course_id: id, sort_order: sections.length });
-    setSectionDialog(false);
-    setSectionForm({ title: '', title_ar: '' });
-    fetchSections();
-    toast.success('Section added');
-  };
-
+  // CRUD: Lessons (course_sections)
   const addLesson = async () => {
-    if (!activeSectionId) return;
-    const currentLessons = lessons[activeSectionId] || [];
-    await supabase.from('lessons').insert([{ title: lessonForm.title, title_ar: lessonForm.title_ar, lesson_type: lessonForm.lesson_type as any, section_id: activeSectionId, sort_order: currentLessons.length }]);
+    await supabase.from('course_sections').insert({ ...lessonForm, course_id: id, sort_order: lessons.length });
     setLessonDialog(false);
-    setLessonForm({ title: '', title_ar: '', lesson_type: 'read_listen' });
-    fetchSections();
-    toast.success('Lesson added');
-  };
-
-  const deleteSection = async (sectionId: string) => {
-    await supabase.from('course_sections').delete().eq('id', sectionId);
-    fetchSections();
-    toast.success('Section deleted');
+    setLessonForm({ title: '', title_ar: '' });
+    fetchHierarchy();
+    toast.success(isAr ? 'تمت إضافة الدرس' : 'Lesson added');
   };
 
   const deleteLesson = async (lessonId: string) => {
-    await supabase.from('lessons').delete().eq('id', lessonId);
-    fetchSections();
-    toast.success('Lesson deleted');
+    await supabase.from('course_sections').delete().eq('id', lessonId);
+    fetchHierarchy();
+    toast.success(isAr ? 'تم حذف الدرس' : 'Lesson deleted');
+  };
+
+  // CRUD: Sections (lesson_sections)
+  const addSection = async () => {
+    if (!activeLessonId) return;
+    const currentSections = sections[activeLessonId] || [];
+    await supabase.from('lesson_sections' as any).insert([{
+      course_section_id: activeLessonId,
+      title: sectionForm.title,
+      title_ar: sectionForm.title_ar,
+      sort_order: currentSections.length,
+    }] as any);
+    setSectionDialog(false);
+    setSectionForm({ title: '', title_ar: '' });
+    fetchHierarchy();
+    toast.success(isAr ? 'تمت إضافة القسم' : 'Section added');
+  };
+
+  const deleteSection = async (sectionId: string) => {
+    await supabase.from('lesson_sections' as any).delete().eq('id', sectionId);
+    fetchHierarchy();
+    toast.success(isAr ? 'تم حذف القسم' : 'Section deleted');
+  };
+
+  // CRUD: Content (lessons)
+  const addContent = async () => {
+    if (!activeSectionId) return;
+    const currentContents = contents[activeSectionId] || [];
+    await supabase.from('lessons').insert([{
+      title: contentForm.title,
+      title_ar: contentForm.title_ar,
+      lesson_type: contentForm.lesson_type as any,
+      section_id: activeSectionId,
+      sort_order: currentContents.length,
+    }]);
+    setContentDialog(false);
+    setContentForm({ title: '', title_ar: '', lesson_type: 'read_listen' });
+    fetchHierarchy();
+    toast.success(isAr ? 'تمت إضافة المحتوى' : 'Content added');
+  };
+
+  const deleteContent = async (contentId: string) => {
+    await supabase.from('lessons').delete().eq('id', contentId);
+    fetchHierarchy();
+    toast.success(isAr ? 'تم حذف المحتوى' : 'Content deleted');
   };
 
   if (!course) return <div className="text-muted-foreground">{t('common.loading')}</div>;
@@ -123,8 +204,11 @@ const CourseDetail = () => {
 
   return (
     <div className="space-y-4">
-      <Button variant="ghost" onClick={() => navigate('/dashboard/courses')}><ArrowLeft className="h-4 w-4 me-2" />{t('common.back')}</Button>
+      <Button variant="ghost" onClick={() => navigate('/dashboard/courses')}>
+        <ArrowLeft className="h-4 w-4 me-2" />{t('common.back')}
+      </Button>
 
+      {/* Course Header */}
       <Card>
         <CardHeader>
           <div className="flex items-start gap-4">
@@ -155,7 +239,7 @@ const CourseDetail = () => {
                 )}
                 <Badge variant="secondary" className="gap-1 text-xs">
                   <BookOpen className="h-3 w-3" />
-                  {totalLessons} {isAr ? 'درس' : 'lessons'}
+                  {totalContent} {t('courses.content')}
                 </Badge>
               </div>
             </div>
@@ -163,21 +247,22 @@ const CourseDetail = () => {
         </CardHeader>
       </Card>
 
+      {/* Level 1: Lessons */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">{t('courses.sections')}</h2>
+        <h2 className="text-xl font-semibold">{t('courses.lessons')}</h2>
         {canEdit && (
-          <Dialog open={sectionDialog} onOpenChange={setSectionDialog}>
+          <Dialog open={lessonDialog} onOpenChange={setLessonDialog}>
             <DialogTrigger asChild>
-              <Button size="sm"><Plus className="h-4 w-4 me-2" />{t('courses.addSection')}</Button>
+              <Button size="sm"><Plus className="h-4 w-4 me-2" />{t('courses.addLesson')}</Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>{t('courses.addSection')}</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{t('courses.addLesson')}</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
-                  <div><Label>Title (EN)</Label><Input value={sectionForm.title} onChange={(e) => setSectionForm({ ...sectionForm, title: e.target.value })} /></div>
-                  <div><Label>Title (AR)</Label><Input value={sectionForm.title_ar} onChange={(e) => setSectionForm({ ...sectionForm, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
+                  <div><Label>Title (EN)</Label><Input value={lessonForm.title} onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })} /></div>
+                  <div><Label>Title (AR)</Label><Input value={lessonForm.title_ar} onChange={(e) => setLessonForm({ ...lessonForm, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
                 </div>
-                <Button onClick={addSection} className="w-full">{t('common.save')}</Button>
+                <Button onClick={addLesson} className="w-full">{t('common.save')}</Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -185,60 +270,129 @@ const CourseDetail = () => {
       </div>
 
       <Accordion type="multiple" className="space-y-2">
-        {sections.map((section) => (
-          <AccordionItem key={section.id} value={section.id} className="border rounded-lg px-4">
+        {lessons.map((lesson) => (
+          <AccordionItem key={lesson.id} value={lesson.id} className="border rounded-lg px-4">
             <AccordionTrigger className="hover:no-underline">
               <div className="flex items-center gap-2">
-                <span>{isAr && section.title_ar ? section.title_ar : section.title}</span>
-                <Badge variant="secondary">{(lessons[section.id] || []).length} {t('courses.lessons')}</Badge>
+                <BookOpen className="h-4 w-4 text-primary" />
+                <span>{isAr && lesson.title_ar ? lesson.title_ar : lesson.title}</span>
+                <Badge variant="secondary" className="text-xs">
+                  {(sections[lesson.id] || []).length} {t('courses.sections')}
+                </Badge>
               </div>
             </AccordionTrigger>
             <AccordionContent>
-              <div className="space-y-2 pt-2">
-                {(lessons[section.id] || []).map((lesson) => (
-                  <div key={lesson.id} className="flex items-center justify-between p-2 rounded bg-muted/50">
-                    <div>
-                      <span className="font-medium">{isAr && lesson.title_ar ? lesson.title_ar : lesson.title}</span>
-                      <Badge variant="outline" className="ms-2 text-xs">{lessonTypes.find(lt => lt.value === lesson.lesson_type)?.label || lesson.lesson_type}</Badge>
-                    </div>
-                    {canEdit && (
-                      <Button variant="ghost" size="icon" onClick={() => deleteLesson(lesson.id)}><Trash2 className="h-3 w-3" /></Button>
-                    )}
-                  </div>
-                ))}
-                {canEdit && (
-                  <Dialog open={lessonDialog && activeSectionId === section.id} onOpenChange={(o) => { setLessonDialog(o); if (o) setActiveSectionId(section.id); }}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" onClick={() => setActiveSectionId(section.id)}>
-                        <Plus className="h-3 w-3 me-1" />{t('courses.addLesson')}
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader><DialogTitle>{t('courses.addLesson')}</DialogTitle></DialogHeader>
-                      <div className="space-y-3">
-                        <div className="grid grid-cols-2 gap-3">
-                          <div><Label>Title (EN)</Label><Input value={lessonForm.title} onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })} /></div>
-                          <div><Label>Title (AR)</Label><Input value={lessonForm.title_ar} onChange={(e) => setLessonForm({ ...lessonForm, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
+              <div className="space-y-3 pt-2">
+                {/* Level 2: Sections inside this Lesson */}
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-1">
+                    <Layers className="h-3.5 w-3.5" />
+                    {t('courses.sections')}
+                  </h3>
+                  {canEdit && (
+                    <Dialog open={sectionDialog && activeLessonId === lesson.id} onOpenChange={(o) => { setSectionDialog(o); if (o) setActiveLessonId(lesson.id); }}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" onClick={() => setActiveLessonId(lesson.id)}>
+                          <Plus className="h-3 w-3 me-1" />{t('courses.addSection')}
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader><DialogTitle>{t('courses.addSection')}</DialogTitle></DialogHeader>
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div><Label>Title (EN)</Label><Input value={sectionForm.title} onChange={(e) => setSectionForm({ ...sectionForm, title: e.target.value })} /></div>
+                            <div><Label>Title (AR)</Label><Input value={sectionForm.title_ar} onChange={(e) => setSectionForm({ ...sectionForm, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
+                          </div>
+                          <Button onClick={addSection} className="w-full">{t('common.save')}</Button>
                         </div>
-                        <div>
-                          <Label>{t('courses.lessonType')}</Label>
-                          <Select value={lessonForm.lesson_type} onValueChange={(v) => setLessonForm({ ...lessonForm, lesson_type: v })}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              {lessonTypes.map((lt) => <SelectItem key={lt.value} value={lt.value}>{lt.label}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <Button onClick={addLesson} className="w-full">{t('common.save')}</Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                      </DialogContent>
+                    </Dialog>
+                  )}
+                </div>
+
+                {(sections[lesson.id] || []).length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center py-2">{t('common.noData')}</p>
                 )}
+
+                <Accordion type="multiple" className="space-y-1">
+                  {(sections[lesson.id] || []).map((section: any) => (
+                    <AccordionItem key={section.id} value={section.id} className="border rounded-md px-3 bg-muted/30">
+                      <AccordionTrigger className="hover:no-underline py-3 text-sm">
+                        <div className="flex items-center gap-2">
+                          <Layers className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span>{isAr && section.title_ar ? section.title_ar : section.title}</span>
+                          <Badge variant="outline" className="text-xs">
+                            {(contents[section.id] || []).length} {t('courses.content')}
+                          </Badge>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-2 pt-1">
+                          {/* Level 3: Content items */}
+                          {(contents[section.id] || []).map((content: any) => (
+                            <div key={content.id} className="flex items-center justify-between p-2 rounded bg-background border">
+                              <div className="flex items-center gap-2">
+                                <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                                <span className="font-medium text-sm">{isAr && content.title_ar ? content.title_ar : content.title}</span>
+                                <Badge variant="outline" className="text-xs">
+                                  {contentTypes.find(ct => ct.value === content.lesson_type)?.label || content.lesson_type}
+                                </Badge>
+                              </div>
+                              {canEdit && (
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => deleteContent(content.id)}>
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+
+                          {canEdit && (
+                            <Dialog open={contentDialog && activeSectionId === section.id} onOpenChange={(o) => { setContentDialog(o); if (o) setActiveSectionId(section.id); }}>
+                              <DialogTrigger asChild>
+                                <Button variant="outline" size="sm" className="w-full" onClick={() => setActiveSectionId(section.id)}>
+                                  <Plus className="h-3 w-3 me-1" />{t('courses.addContent')}
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader><DialogTitle>{t('courses.addContent')}</DialogTitle></DialogHeader>
+                                <div className="space-y-3">
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <div><Label>Title (EN)</Label><Input value={contentForm.title} onChange={(e) => setContentForm({ ...contentForm, title: e.target.value })} /></div>
+                                    <div><Label>Title (AR)</Label><Input value={contentForm.title_ar} onChange={(e) => setContentForm({ ...contentForm, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
+                                  </div>
+                                  <div>
+                                    <Label>{t('courses.contentType')}</Label>
+                                    <Select value={contentForm.lesson_type} onValueChange={(v) => setContentForm({ ...contentForm, lesson_type: v })}>
+                                      <SelectTrigger><SelectValue /></SelectTrigger>
+                                      <SelectContent>
+                                        {contentTypes.map((ct) => <SelectItem key={ct.value} value={ct.value}>{ct.label}</SelectItem>)}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <Button onClick={addContent} className="w-full">{t('common.save')}</Button>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          )}
+                        </div>
+
+                        {canEdit && (
+                          <div className="pt-2">
+                            <Button variant="ghost" size="sm" className="text-destructive" onClick={() => deleteSection(section.id)}>
+                              <Trash2 className="h-3 w-3 me-1" />{t('common.delete')} {t('courses.sections')}
+                            </Button>
+                          </div>
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
               </div>
+
               {canEdit && (
-                <div className="pt-2">
-                  <Button variant="ghost" size="sm" className="text-destructive" onClick={() => deleteSection(section.id)}>
-                    <Trash2 className="h-3 w-3 me-1" />{t('common.delete')} {t('courses.sections')}
+                <div className="pt-2 border-t mt-3">
+                  <Button variant="ghost" size="sm" className="text-destructive" onClick={() => deleteLesson(lesson.id)}>
+                    <Trash2 className="h-3 w-3 me-1" />{t('common.delete')} {t('courses.lessons')}
                   </Button>
                 </div>
               )}
@@ -247,7 +401,7 @@ const CourseDetail = () => {
         ))}
       </Accordion>
 
-      {sections.length === 0 && <p className="text-center text-muted-foreground py-8">{t('common.noData')}</p>}
+      {lessons.length === 0 && <p className="text-center text-muted-foreground py-8">{t('common.noData')}</p>}
     </div>
   );
 };
