@@ -498,7 +498,6 @@ const LandingContentSettings = () => {
           <Button variant="ghost" size="icon" className="h-8 w-8 mt-5 text-muted-foreground hover:text-destructive shrink-0" onClick={() => removeNavItem(listKey, i)}>
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
-          </Button>
         </div>
       ))}
       {items.length === 0 && <p className="text-xs text-muted-foreground text-center py-3 border border-dashed border-border rounded-lg">{isAr ? 'لا توجد عناصر' : 'No items'}</p>}
