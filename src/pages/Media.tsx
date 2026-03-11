@@ -526,10 +526,14 @@ const Media = () => {
                             onClick={() => setLightboxOpen(true)}
                             className="relative w-full rounded-lg overflow-hidden border border-border bg-muted group cursor-zoom-in"
                           >
+                            <div className="flex items-center justify-center py-8 preview-loader">
+                              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                            </div>
                             <img
                               src={previewUrl}
                               alt={selectedFile.name}
-                              className="w-full h-auto max-h-72 object-contain"
+                              className="w-full h-auto max-h-72 object-contain border border-border rounded"
+                              onLoad={(e) => { (e.target as HTMLElement).previousElementSibling?.classList.add('hidden'); }}
                             />
                             <div className="absolute inset-0 bg-background/0 group-hover:bg-background/40 transition-colors flex items-center justify-center">
                               <Maximize2 className="h-6 w-6 text-foreground opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
