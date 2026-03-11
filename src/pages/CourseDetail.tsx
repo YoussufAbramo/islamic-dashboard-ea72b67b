@@ -357,7 +357,7 @@ const CourseDetail = () => {
                                 <FileText className="h-3.5 w-3.5 text-muted-foreground" />
                                 <span className="font-medium text-sm">{isAr && content.title_ar ? content.title_ar : content.title}</span>
                                 <Badge variant="outline" className="text-xs">
-                                  {contentTypes.find(ct => ct.value === content.lesson_type)?.label || content.lesson_type}
+                                  {allContentTypes.find(ct => ct.value === content.lesson_type)?.label || content.lesson_type}
                                 </Badge>
                               </div>
                               {canEdit && (
