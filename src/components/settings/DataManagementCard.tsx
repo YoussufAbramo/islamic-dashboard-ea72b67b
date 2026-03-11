@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Database, Trash2, Download, AlertTriangle, Loader2, PackagePlus, ShieldAlert, CheckCircle2, ScrollText } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
@@ -20,7 +21,7 @@ interface DataManagementCardProps {
 const SEED_LOG_KEY = 'app_seed_log_history';
 
 type SeedCategory = 'students' | 'teachers' | 'courses' | 'billing' | 'schedule' | 'communications' | 'support' | 'certificates' | 'website' | 'packages';
-type SeedQuantity = 'little' | 'medium' | 'many';
+type SeedQuantity = number;
 
 const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon: string }[] = [
   { key: 'students', label: 'Students', labelAr: 'طلاب', icon: '👨‍🎓' },
@@ -35,11 +36,15 @@ const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon
   { key: 'packages', label: 'Pricing Packages', labelAr: 'باقات الأسعار', icon: '📦' },
 ];
 
-const SEED_QUANTITIES: { key: SeedQuantity; label: string; labelAr: string; desc: string; descAr: string }[] = [
-  { key: 'little', label: 'Little', labelAr: 'قليل', desc: '2 students, 1 teacher, 1 course', descAr: '2 طلاب، 1 معلم، 1 دورة' },
-  { key: 'medium', label: 'Medium', labelAr: 'متوسط', desc: '5 students, 2 teachers, 3 courses', descAr: '5 طلاب، 2 معلمين، 3 دورات' },
-  { key: 'many', label: 'Many', labelAr: 'كثير', desc: '10 students, 4 teachers, 6 courses', descAr: '10 طلاب، 4 معلمين، 6 دورات' },
-];
+// Estimated counts per multiplier for display
+const getEstimatedCounts = (multiplier: number) => ({
+  students: multiplier * 2,
+  teachers: Math.max(1, Math.ceil(multiplier * 0.8)),
+  courses: Math.max(1, Math.ceil(multiplier * 0.6)),
+  timetable: multiplier * 3,
+  tickets: Math.max(1, multiplier),
+  blogs: Math.max(1, Math.ceil(multiplier * 0.6)),
+});
 
 const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const { appName } = useAppSettings();
@@ -64,7 +69,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const [deleteTablesOpen, setDeleteTablesOpen] = useState(false);
   const [deleteTablesLoading, setDeleteTablesLoading] = useState(false);
   const [seedCategories, setSeedCategories] = useState<SeedCategory[]>(['students', 'teachers', 'courses', 'billing', 'schedule', 'communications', 'support', 'certificates', 'website', 'packages']);
-  const [seedQuantity, setSeedQuantity] = useState<SeedQuantity>('medium');
+  const [seedQuantity, setSeedQuantity] = useState<SeedQuantity>(3);
 
   const persistLog = (log: string[]) => {
     setSeedLog(log);
@@ -83,7 +88,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       persistLog([...log]);
     };
     try {
-      addLog(isAr ? `🚀 بدء إضافة البيانات التجريبية (${seedQuantity})...` : `🚀 Starting seed process (${seedQuantity})...`);
+      addLog(isAr ? `🚀 بدء إضافة البيانات التجريبية (${seedQuantity}x)...` : `🚀 Starting seed process (${seedQuantity}x multiplier)...`);
       const { data, error } = await supabase.functions.invoke('manage-accounts', {
         body: { action: 'seed_all', categories: seedCategories, quantity: seedQuantity },
       });
@@ -320,25 +325,33 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
                   : 'Choose categories and quantity to generate sample data'}
               </p>
 
-              {/* Quantity selector */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-muted-foreground">{isAr ? 'الكمية' : 'Quantity'}</Label>
-                <div className="flex gap-2">
-                  {SEED_QUANTITIES.map(q => (
-                    <button
-                      key={q.key}
-                      onClick={() => setSeedQuantity(q.key)}
-                      className={`flex-1 p-2 rounded-lg border text-center transition-colors ${
-                        seedQuantity === q.key
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-border hover:border-primary/30'
-                      }`}
-                    >
-                      <span className="text-sm font-medium block">{isAr ? q.labelAr : q.label}</span>
-                      <span className="text-[10px] text-muted-foreground">{isAr ? q.descAr : q.desc}</span>
-                    </button>
-                  ))}
+              {/* Quantity slider */}
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-medium text-muted-foreground">{isAr ? 'الكمية' : 'Quantity'}</Label>
+                  <span className="text-xs font-bold text-primary tabular-nums">{seedQuantity}x</span>
                 </div>
+                <Slider
+                  value={[seedQuantity]}
+                  onValueChange={([v]) => setSeedQuantity(v)}
+                  min={1}
+                  max={10}
+                  step={1}
+                  className="w-full"
+                />
+                {(() => {
+                  const est = getEstimatedCounts(seedQuantity);
+                  return (
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
+                      <span>👨‍🎓 {est.students} {isAr ? 'طالب' : 'students'}</span>
+                      <span>👨‍🏫 {est.teachers} {isAr ? 'معلم' : 'teachers'}</span>
+                      <span>📚 {est.courses} {isAr ? 'دورات' : 'courses'}</span>
+                      <span>📅 {est.timetable} {isAr ? 'مواعيد' : 'entries'}</span>
+                      <span>🎫 {est.tickets} {isAr ? 'تذاكر' : 'tickets'}</span>
+                      <span>📝 {est.blogs} {isAr ? 'مقالات' : 'blogs'}</span>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Category checkboxes */}
