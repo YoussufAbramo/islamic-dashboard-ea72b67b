@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Save, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
@@ -21,10 +22,27 @@ interface PixelConfig {
   clarity_pixel: string;
 }
 
+interface PixelEnabledConfig {
+  google_analytics: boolean;
+  google_tag_manager: boolean;
+  meta_pixel: boolean;
+  google_search_console: boolean;
+  gosopro_pixel: boolean;
+  snapchat_pixel: boolean;
+  tiktok_pixel: boolean;
+  clarity_pixel: boolean;
+}
+
 const defaultPixels: PixelConfig = {
   google_analytics: '', google_tag_manager: '', meta_pixel: '',
   google_search_console: '', gosopro_pixel: '', snapchat_pixel: '',
   tiktok_pixel: '', clarity_pixel: '',
+};
+
+const defaultEnabled: PixelEnabledConfig = {
+  google_analytics: false, google_tag_manager: false, meta_pixel: false,
+  google_search_console: false, gosopro_pixel: false, snapchat_pixel: false,
+  tiktok_pixel: false, clarity_pixel: false,
 };
 
 // Brand logo components
@@ -101,12 +119,17 @@ const PixelsIntegrationSettings = () => {
   const { language } = useLanguage();
   const isAr = language === 'ar';
   const [pixels, setPixels] = useState<PixelConfig>(defaultPixels);
+  const [enabled, setEnabled] = useState<PixelEnabledConfig>(defaultEnabled);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const fetch = async () => {
       const { data } = await supabase.from('landing_content').select('content').eq('section_key', 'pixels_config').maybeSingle();
-      if (data?.content) setPixels({ ...defaultPixels, ...(data.content as any) });
+      if (data?.content) {
+        const content = data.content as any;
+        setPixels({ ...defaultPixels, ...content });
+        if (content._enabled) setEnabled({ ...defaultEnabled, ...content._enabled });
+      }
     };
     fetch();
   }, []);
@@ -114,7 +137,7 @@ const PixelsIntegrationSettings = () => {
   const handleSave = async () => {
     setSaving(true);
     const { error } = await supabase.from('landing_content').upsert({
-      section_key: 'pixels_config', content: pixels as any, updated_at: new Date().toISOString(),
+      section_key: 'pixels_config', content: { ...pixels, _enabled: enabled } as any, updated_at: new Date().toISOString(),
     }, { onConflict: 'section_key' });
     setSaving(false);
     if (error) { notifyError({ error: 'GENERAL_SAVE_FAILED', isAr }); return; }
@@ -151,8 +174,9 @@ const PixelsIntegrationSettings = () => {
                     <div className="grid gap-3 pt-3 ps-2">
                       {group.fields.map(field => {
                         const Logo = (field as any).logo || GroupLogo;
+                        const isEnabled = enabled[field.key];
                         return (
-                          <div key={field.key} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/30 transition-colors">
+                          <div key={field.key} className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${isEnabled ? 'border-primary/30 bg-primary/5' : 'border-border opacity-60'}`}>
                             {Logo && (
                               <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
                                 <Logo />
@@ -167,6 +191,11 @@ const PixelsIntegrationSettings = () => {
                               onChange={e => setPixels(prev => ({ ...prev, [field.key]: e.target.value }))}
                               placeholder={field.placeholder}
                               className="h-8 text-sm font-mono max-w-[280px]"
+                              disabled={!isEnabled}
+                            />
+                            <Switch
+                              checked={isEnabled}
+                              onCheckedChange={v => setEnabled(prev => ({ ...prev, [field.key]: v }))}
                             />
                           </div>
                         );
