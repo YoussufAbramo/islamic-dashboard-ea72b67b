@@ -68,7 +68,7 @@ const AppSidebar = () => {
   };
 
   const isDarkMode = document.documentElement.classList.contains('dark');
-  const showDarkLogo = (sidebarMode === 'dark' || isDarkMode) && darkLogo;
+  const showDarkLogo = sidebarMode === 'light' ? false : (sidebarMode === 'dark' || isDarkMode) && darkLogo;
   const displayLogo = showDarkLogo ? darkLogo : appLogo;
 
   const categories: MenuCategory[] = [
