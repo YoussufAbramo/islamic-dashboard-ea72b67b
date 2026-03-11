@@ -9,6 +9,7 @@ import { Check, CreditCard, Eye, EyeOff, Loader2, Save } from 'lucide-react';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 
 interface PaymentGatewayCardProps {
   isAr: boolean;
