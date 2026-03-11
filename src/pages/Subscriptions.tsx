@@ -224,7 +224,7 @@ const Subscriptions = () => {
   const getCourseName = (id: string) => courses.find(c => c.id === id)?.title || '';
   const getTeacherName = (id: string) => teachers.find(t => t.id === id)?.profiles?.full_name || '';
 
-  const actionBtnClass = "rounded-full h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted";
+  // Action button classes imported from shared module
 
   if (loading) {
     return (
