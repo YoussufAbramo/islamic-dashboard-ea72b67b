@@ -9,12 +9,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
-import { Camera, Lock, Check } from 'lucide-react';
-import { getAvatarSignedUrl, uploadAndGetSignedUrl } from '@/lib/storage';
+import { Lock, Check } from 'lucide-react';
+import { getAvatarSignedUrl } from '@/lib/storage';
 import { useEffect } from 'react';
 import avatar1 from '@/assets/avatars/avatar-1.png';
 import avatar2 from '@/assets/avatars/avatar-2.png';
 import avatar3 from '@/assets/avatars/avatar-3.png';
+import ImagePickerField from '@/components/media/ImagePickerField';
 
 const CARTOON_AVATARS = [
   { id: 'avatar-1', src: avatar1 },
@@ -32,15 +33,15 @@ const Profile = () => {
   });
   const [loading, setLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('');
-  const [uploading, setUploading] = useState(false);
   const isAr = language === 'ar';
 
   useEffect(() => {
     if (profile?.avatar_url) {
-      // Check if it's a cartoon avatar
       const cartoon = CARTOON_AVATARS.find(a => profile.avatar_url === a.id);
       if (cartoon) {
         setAvatarUrl(cartoon.src);
+      } else if (profile.avatar_url.startsWith('http')) {
+        setAvatarUrl(profile.avatar_url);
       } else {
         getAvatarSignedUrl(profile.avatar_url).then(setAvatarUrl);
       }
@@ -58,33 +59,18 @@ const Profile = () => {
     toast.success(isAr ? 'تم تحديث الملف الشخصي' : 'Profile updated');
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || !e.target.files[0] || !user) return;
-    const file = e.target.files[0];
-    const ext = file.name.split('.').pop();
-    const filePath = `${user.id}/avatar.${ext}`;
-
-    setUploading(true);
-    const { signedUrl, error: uploadErr } = await uploadAndGetSignedUrl(filePath, file);
-    if (uploadErr) {
-      notifyError({ error: 'STORAGE_UPLOAD_FAILED', isAr, rawMessage: uploadErr });
-      setUploading(false);
-      return;
-    }
-
-    await supabase.from('profiles').update({ avatar_url: filePath }).eq('id', user.id);
-    setAvatarUrl(signedUrl);
-    setUploading(false);
+  const handleAvatarChange = async (url: string) => {
+    if (!user) return;
+    await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id);
+    setAvatarUrl(url);
     toast.success(isAr ? 'تم تحديث الصورة' : 'Avatar updated');
   };
 
   const handleSelectCartoonAvatar = async (avatarId: string) => {
     if (!user) return;
-    setUploading(true);
     await supabase.from('profiles').update({ avatar_url: avatarId }).eq('id', user.id);
     const cartoon = CARTOON_AVATARS.find(a => a.id === avatarId);
     if (cartoon) setAvatarUrl(cartoon.src);
-    setUploading(false);
     toast.success(isAr ? 'تم تحديث الصورة' : 'Avatar updated');
   };
 
@@ -118,24 +104,25 @@ const Profile = () => {
       <Card>
         <CardContent className="pt-6 space-y-4">
           <div className="flex items-center gap-4">
-            <div className="relative group">
-              <Avatar className="h-20 w-20">
-                <AvatarImage src={avatarUrl} />
-                <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
-                  {form.full_name?.charAt(0)?.toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <label className="absolute inset-0 flex items-center justify-center bg-background/60 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
-                <Camera className="h-5 w-5 text-foreground" />
-                <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploading} />
-              </label>
-            </div>
-            <div>
+            <Avatar className="h-20 w-20">
+              <AvatarImage src={avatarUrl} />
+              <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
+                {form.full_name?.charAt(0)?.toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="space-y-1">
               <p className="font-medium">{form.full_name || 'User'}</p>
               <p className="text-sm text-muted-foreground">{role || ''}</p>
-              <p className="text-xs text-muted-foreground">{uploading ? (isAr ? 'جاري الرفع...' : 'Uploading...') : (isAr ? 'انقر على الصورة للتغيير' : 'Click avatar to change')}</p>
             </div>
           </div>
+
+          {/* Image picker (same as logo in app settings) */}
+          <ImagePickerField
+            label={isAr ? 'تغيير الصورة الشخصية' : 'Change Avatar'}
+            value={avatarUrl}
+            onChange={handleAvatarChange}
+            bucket="avatars"
+          />
 
           {/* Cartoon avatar picker */}
           <div>
@@ -145,7 +132,6 @@ const Profile = () => {
                 <button
                   key={av.id}
                   onClick={() => handleSelectCartoonAvatar(av.id)}
-                  disabled={uploading}
                   className={`relative rounded-full overflow-hidden border-2 transition-all h-14 w-14 shrink-0 ${
                     currentAvatarId === av.id ? 'border-primary ring-2 ring-primary/30' : 'border-border hover:border-primary/50'
                   }`}
