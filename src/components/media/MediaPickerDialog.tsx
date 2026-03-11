@@ -266,7 +266,7 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
                         onClick={() => handleSelect(file.name)}
                         className="group relative aspect-square rounded-lg overflow-hidden border border-border hover:border-primary transition-colors"
                       >
-                        <img src={getUrl(file.name)} alt={file.name} className="h-full w-full object-cover" loading="lazy" />
+                        <img src={fileUrls[file.name] || ''} alt={file.name} className="h-full w-full object-cover" loading="lazy" />
                         <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/20 transition-colors flex items-center justify-center">
                           <Check className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
                         </div>
