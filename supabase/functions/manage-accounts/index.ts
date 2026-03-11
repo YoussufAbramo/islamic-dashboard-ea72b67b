@@ -282,8 +282,8 @@ Deno.serve(async (req) => {
         cIds = (existingCourses || []).map(c => c.id)
       }
 
-      // Create subscriptions
-      if (categories.includes('subscriptions') && sIds.length > 0 && cIds.length > 0) {
+      // Create subscriptions & invoices (billing)
+      if (categories.includes('billing') && sIds.length > 0 && cIds.length > 0) {
         const subsInsert = sIds.slice(0, Math.min(sIds.length, cIds.length * 2)).map((sid, i) => ({
           student_id: sid, course_id: cIds[i % cIds.length], teacher_id: tIds[i % tIds.length],
           status: i === 0 ? 'expired' : 'active', subscription_type: i % 2 === 0 ? 'monthly' : 'yearly',
