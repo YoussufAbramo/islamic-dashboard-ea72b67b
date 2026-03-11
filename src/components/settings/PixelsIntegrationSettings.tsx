@@ -119,12 +119,17 @@ const PixelsIntegrationSettings = () => {
   const { language } = useLanguage();
   const isAr = language === 'ar';
   const [pixels, setPixels] = useState<PixelConfig>(defaultPixels);
+  const [enabled, setEnabled] = useState<PixelEnabledConfig>(defaultEnabled);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const fetch = async () => {
       const { data } = await supabase.from('landing_content').select('content').eq('section_key', 'pixels_config').maybeSingle();
-      if (data?.content) setPixels({ ...defaultPixels, ...(data.content as any) });
+      if (data?.content) {
+        const content = data.content as any;
+        setPixels({ ...defaultPixels, ...content });
+        if (content._enabled) setEnabled({ ...defaultEnabled, ...content._enabled });
+      }
     };
     fetch();
   }, []);
@@ -132,7 +137,7 @@ const PixelsIntegrationSettings = () => {
   const handleSave = async () => {
     setSaving(true);
     const { error } = await supabase.from('landing_content').upsert({
-      section_key: 'pixels_config', content: pixels as any, updated_at: new Date().toISOString(),
+      section_key: 'pixels_config', content: { ...pixels, _enabled: enabled } as any, updated_at: new Date().toISOString(),
     }, { onConflict: 'section_key' });
     setSaving(false);
     if (error) { notifyError({ error: 'GENERAL_SAVE_FAILED', isAr }); return; }
