@@ -10,18 +10,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { Lock, Check } from 'lucide-react';
-import { getAvatarSignedUrl } from '@/lib/storage';
+import { resolveAvatarUrl, CARTOON_AVATARS } from '@/lib/storage';
 import { useEffect } from 'react';
-import avatar1 from '@/assets/avatars/avatar-1.png';
-import avatar2 from '@/assets/avatars/avatar-2.png';
-import avatar3 from '@/assets/avatars/avatar-3.png';
 import ImagePickerField from '@/components/media/ImagePickerField';
 
-const CARTOON_AVATARS = [
-  { id: 'avatar-1', src: avatar1 },
-  { id: 'avatar-2', src: avatar2 },
-  { id: 'avatar-3', src: avatar3 },
-];
+const CARTOON_AVATAR_LIST = Object.entries(CARTOON_AVATARS).map(([id, src]) => ({ id, src }));
 
 const Profile = () => {
   const { user, profile, role } = useAuth();
@@ -35,7 +28,6 @@ const Profile = () => {
   const [avatarUrl, setAvatarUrl] = useState('');
   const isAr = language === 'ar';
 
-  // Track the local avatar_url separately so it updates immediately on change
   const [localAvatarId, setLocalAvatarId] = useState(profile?.avatar_url || '');
 
   useEffect(() => {
@@ -46,14 +38,7 @@ const Profile = () => {
 
   useEffect(() => {
     if (!localAvatarId) return;
-    const cartoon = CARTOON_AVATARS.find(a => localAvatarId === a.id);
-    if (cartoon) {
-      setAvatarUrl(cartoon.src);
-    } else if (localAvatarId.startsWith('http')) {
-      setAvatarUrl(localAvatarId);
-    } else {
-      getAvatarSignedUrl(localAvatarId).then(setAvatarUrl);
-    }
+    resolveAvatarUrl(localAvatarId).then(setAvatarUrl);
   }, [localAvatarId]);
 
   const [passwords, setPasswords] = useState({ newPassword: '', confirmPassword: '' });
@@ -102,7 +87,7 @@ const Profile = () => {
     }
   };
 
-  const currentAvatarId = profile?.avatar_url;
+  const currentAvatarId = localAvatarId;
 
   return (
     <div className="max-w-lg mx-auto space-y-4">
@@ -136,7 +121,7 @@ const Profile = () => {
           <div>
             <Label className="text-xs text-muted-foreground mb-2 block">{isAr ? 'أو اختر صورة رمزية' : 'Or pick an avatar'}</Label>
             <div className="flex gap-3">
-              {CARTOON_AVATARS.map((av) => (
+              {CARTOON_AVATAR_LIST.map((av) => (
                 <button
                   key={av.id}
                   onClick={() => handleSelectCartoonAvatar(av.id)}

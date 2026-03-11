@@ -7,7 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { getAvatarSignedUrl } from '@/lib/storage';
+import { resolveAvatarUrl } from '@/lib/storage';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -45,7 +45,7 @@ const AppSidebar = () => {
 
   useEffect(() => {
     if (profile?.avatar_url) {
-      getAvatarSignedUrl(profile.avatar_url).then(setResolvedAvatarUrl);
+      resolveAvatarUrl(profile.avatar_url).then(setResolvedAvatarUrl);
     }
   }, [profile?.avatar_url]);
 

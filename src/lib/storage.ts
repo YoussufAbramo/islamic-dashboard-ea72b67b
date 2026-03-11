@@ -1,4 +1,34 @@
 import { supabase } from '@/integrations/supabase/client';
+import avatar1 from '@/assets/avatars/avatar-1.png';
+import avatar2 from '@/assets/avatars/avatar-2.png';
+import avatar3 from '@/assets/avatars/avatar-3.png';
+
+export const CARTOON_AVATARS: Record<string, string> = {
+  'avatar-1': avatar1,
+  'avatar-2': avatar2,
+  'avatar-3': avatar3,
+};
+
+/**
+ * Resolve any avatar_url value to a displayable URL.
+ * Handles cartoon IDs, full URLs, and storage paths.
+ */
+export async function resolveAvatarUrl(avatarUrl: string): Promise<string> {
+  if (!avatarUrl) return '';
+
+  // Check cartoon avatars first
+  if (CARTOON_AVATARS[avatarUrl]) {
+    return CARTOON_AVATARS[avatarUrl];
+  }
+
+  // Full URL — return as-is
+  if (avatarUrl.startsWith('http')) {
+    return avatarUrl;
+  }
+
+  // Storage path — get signed URL
+  return getAvatarSignedUrl(avatarUrl);
+}
 
 /**
  * Create a signed URL for a file in the avatars bucket.
