@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Send, Ban, CheckCircle, Trash2, Plus, Search, ArrowDown, ArrowUp, Users, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 import { format } from 'date-fns';
 import islamicBg from '@/assets/islamic-bg.jpg';
 import { ChatSkeleton } from '@/components/PageSkeleton';
@@ -97,7 +98,7 @@ const Chats = () => {
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedChat || !user) return;
-    if (selectedChat.is_suspended) { toast.error(t('chats.suspended')); return; }
+    if (selectedChat.is_suspended) { notifyError({ error: 'CHAT_SUSPENDED', isAr }); return; }
     await supabase.from('chat_messages').insert({ chat_id: selectedChat.id, sender_id: user.id, message: newMessage });
     setNewMessage('');
     fetchMessages(selectedChat.id);
@@ -126,7 +127,7 @@ const Chats = () => {
       user_id: userId,
       role: memberRole,
     });
-    if (error) { toast.error(error.message); return; }
+    if (error) { notifyError({ error, isAr, rawMessage: error.message }); return; }
     toast.success(isAr ? 'تمت إضافة العضو' : 'Member added');
     fetchGroupMembers(selectedChat.id);
   };
@@ -140,12 +141,12 @@ const Chats = () => {
   const handleCreateChat = async () => {
     if (chatType === 'direct') {
       if (!createForm.student_id && !createForm.teacher_id) {
-        toast.error(isAr ? 'يرجى اختيار مستخدم واحد على الأقل' : 'Please select at least one user');
+        notifyError({ error: 'VAL_SELECT_USER', isAr });
         return;
       }
     } else {
       if (!createForm.name) {
-        toast.error(isAr ? 'يرجى إدخال اسم المجموعة' : 'Please enter group name');
+        notifyError({ error: 'VAL_GROUP_NAME', isAr });
         return;
       }
     }
@@ -161,7 +162,7 @@ const Chats = () => {
 
     const { data: newChat, error } = await supabase.from('chats').insert(insertData).select().single();
     if (error) {
-      toast.error(error.message);
+      notifyError({ error, isAr, rawMessage: error.message });
       setCreateLoading(false);
       return;
     }

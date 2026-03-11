@@ -16,6 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Search, Plus, FileText, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 import InvoiceStatsCards from '@/components/invoices/InvoiceStatsCards';
 import InvoiceTable from '@/components/invoices/InvoiceTable';
 import InvoicePreviewDialog from '@/components/invoices/InvoicePreviewDialog';
@@ -86,7 +87,7 @@ const Invoices = () => {
 
   const handleCreate = async () => {
     if (!createForm.subscription_id) {
-      toast.error(isAr ? 'يرجى اختيار اشتراك' : 'Please select a subscription');
+      notifyError({ error: 'VAL_SELECT_SUBSCRIPTION', isAr });
       return;
     }
     setCreateLoading(true);
@@ -118,7 +119,7 @@ const Invoices = () => {
 
     setCreateLoading(false);
     if (error) {
-      toast.error(error.message);
+      notifyError({ error, isAr, rawMessage: error.message });
     } else {
       toast.success(isAr ? 'تم إنشاء الفاتورة' : 'Invoice created successfully');
       setCreateOpen(false);
@@ -159,7 +160,7 @@ const Invoices = () => {
     }
     const { error } = await supabase.from('invoices').update(updateData).eq('id', editInvoice.id);
     if (error) {
-      toast.error(error.message);
+      notifyError({ error, isAr, rawMessage: error.message });
     } else {
       toast.success(isAr ? 'تم تحديث الفاتورة' : 'Invoice updated');
       setEditOpen(false);

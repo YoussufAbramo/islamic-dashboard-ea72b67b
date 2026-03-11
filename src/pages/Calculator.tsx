@@ -13,6 +13,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calculator as CalcIcon, DollarSign, Clock, CalendarDays, TrendingUp, Plus, Check, ChevronsUpDown } from 'lucide-react';
 import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 import { cn } from '@/lib/utils';
 import SchedulePicker from '@/components/SchedulePicker';
 
@@ -84,7 +85,7 @@ const Calculator = () => {
 
   const handleCreateSubscription = async () => {
     if (!subForm.student_id || !subForm.course_id) {
-      toast.error(isAr ? 'يرجى اختيار الطالب والدورة' : 'Please select student and course');
+      notifyError({ error: 'VAL_SELECT_STUDENT_COURSE', isAr });
       return;
     }
     setCreating(true);
@@ -101,7 +102,7 @@ const Calculator = () => {
       schedule_time: subForm.schedule_time || null,
     });
     setCreating(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) { notifyError({ error, isAr, rawMessage: error.message }); return; }
     toast.success(isAr ? 'تم إنشاء الاشتراك بنجاح' : 'Subscription created successfully');
     setCreateSubOpen(false);
     setSubForm({ student_id: '', course_id: '', teacher_id: '', schedule_days: [], schedule_time: '' });

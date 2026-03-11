@@ -21,6 +21,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { Award, Plus, Check, Search, ArrowUp, ArrowDown, Trash2, Download, ChevronsUpDown, Printer, LayoutGrid, List, MoreHorizontal, Eye } from 'lucide-react';
 import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 import { format } from 'date-fns';
 import { certificateStatusLabels, getLabel } from '@/lib/statusLabels';
 import { exportCertificatePdf } from '@/lib/certificatePdf';
@@ -64,13 +65,13 @@ const Certificates = () => {
   useEffect(() => { fetchData(); }, []);
 
   const handleCreate = async () => {
-    if (!form.recipient_id || !form.title) { toast.error(isAr ? 'يرجى ملء الحقول المطلوبة' : 'Please fill required fields'); return; }
+    if (!form.recipient_id || !form.title) { notifyError({ error: 'VAL_REQUIRED_FIELDS', isAr }); return; }
     const { error } = await supabase.from('certificates').insert({
       ...form,
       course_id: form.course_id || null,
       issued_by: user?.id,
     });
-    if (error) { toast.error(error.message); return; }
+    if (error) { notifyError({ error, isAr, rawMessage: error.message }); return; }
     toast.success(isAr ? 'تم إنشاء الشهادة' : 'Certificate created');
     setDialogOpen(false);
     setForm({ recipient_id: '', recipient_type: 'student', title: '', title_ar: '', description: '', course_id: '', design: 'classic' });
@@ -108,7 +109,7 @@ const Certificates = () => {
         isAr,
       });
     } catch {
-      toast.error(isAr ? 'فشل التصدير' : 'Export failed');
+      notifyError({ error: 'STORAGE_EXPORT_FAILED', isAr });
     }
   };
 

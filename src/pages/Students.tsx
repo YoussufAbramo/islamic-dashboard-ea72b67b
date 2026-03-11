@@ -13,6 +13,7 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { Badge } from '@/components/ui/badge';
 import { Search, Eye, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 
 const Students = () => {
   const { t, language } = useLanguage();
@@ -67,7 +68,7 @@ const Students = () => {
 
   const handleAddStudent = async () => {
     if (!addForm.email || !addForm.password || !addForm.full_name) {
-      toast.error(isAr ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields');
+      notifyError({ error: 'VAL_REQUIRED_FIELDS', isAr });
       return;
     }
     setAddLoading(true);
@@ -75,7 +76,7 @@ const Students = () => {
       body: { action: 'create', role: 'student', email: addForm.email, password: addForm.password, full_name: addForm.full_name, phone: addForm.phone },
     });
     setAddLoading(false);
-    if (error) { toast.error(error.message); } else {
+    if (error) { notifyError({ error, isAr, rawMessage: error.message }); } else {
       toast.success(isAr ? 'تم إضافة الطالب' : 'Student added successfully');
       setAddOpen(false);
       setAddForm({ full_name: '', email: '', password: '', phone: '' });

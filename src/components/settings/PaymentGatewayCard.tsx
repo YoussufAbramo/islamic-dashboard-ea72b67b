@@ -9,6 +9,7 @@ import { Check, CreditCard, Eye, EyeOff, Loader2, Save } from 'lucide-react';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 
 interface PaymentGatewayCardProps {
   isAr: boolean;
@@ -136,7 +137,7 @@ const PaymentGatewayCard = ({ isAr }: PaymentGatewayCardProps) => {
     const keys = apiValues[gwId] || {};
     const hasValues = Object.values(keys).some(v => v.trim() !== '');
     if (!hasValues) {
-      toast.error(isAr ? 'يرجى إدخال مفتاح واحد على الأقل' : 'Please enter at least one key');
+      notifyError({ error: 'VAL_API_KEY_EMPTY', isAr });
       return;
     }
 
@@ -166,7 +167,7 @@ const PaymentGatewayCard = ({ isAr }: PaymentGatewayCardProps) => {
       setSavedGateways(prev => new Set(prev).add(gwId));
       setApiValues(prev => ({ ...prev, [gwId]: {} }));
     } catch (err: any) {
-      toast.error(isAr ? 'فشل حفظ مفاتيح API. يرجى المحاولة مرة أخرى.' : 'Failed to save API keys. Please try again.');
+      notifyError({ error: 'GENERAL_SAVE_FAILED', isAr, rawMessage: err.message });
       console.error('Payment key save error:', err);
     } finally {
       setSaving(null);

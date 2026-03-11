@@ -8,6 +8,7 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { Database, Trash2, Download, AlertTriangle, Loader2, PackagePlus, ShieldAlert, CheckCircle2, ScrollText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -83,7 +84,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
     } catch (err: any) {
       addLog(`❌ ${err.message || 'Failed to seed data'}`);
       setShowSeedLog(true);
-      toast.error(err.message || 'Failed to seed data');
+      notifyError({ error: 'DB_OPERATION_FAILED', isAr, rawMessage: err.message || 'Failed to seed data' });
     } finally {
       setSeedLoading(false);
     }
@@ -119,7 +120,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       toast.success(isAr ? 'تم مسح البيانات التجريبية بنجاح' : 'Sample data erased successfully');
     } catch (err: any) {
       addLog(`❌ ${err.message || 'Failed to erase sample data'}`);
-      toast.error(err.message || 'Failed to erase sample data');
+      notifyError({ error: 'DB_OPERATION_FAILED', isAr, rawMessage: err.message || 'Failed to erase sample data' });
     } finally {
       setEraseSeedLoading(false);
     }
@@ -170,7 +171,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       setBackupDownloaded(true);
       toast.success(isAr ? 'تم تحميل النسخة الاحتياطية' : 'Backup downloaded successfully');
     } catch (err: any) {
-      toast.error(err.message || 'Failed to export data');
+      notifyError({ error: 'STORAGE_EXPORT_FAILED', isAr, rawMessage: err.message || 'Failed to export data' });
     } finally {
       setBackupLoading(false);
     }
@@ -210,7 +211,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       resetClearState();
     } catch (err: any) {
       addLog(`❌ ${err.message || 'Failed to erase data'}`);
-      toast.error(err.message || 'Failed to erase data');
+      notifyError({ error: 'DB_OPERATION_FAILED', isAr, rawMessage: err.message || 'Failed to erase data' });
     } finally {
       setClearLoading(false);
     }
@@ -250,7 +251,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       toast.success(isAr ? `تم حذف ${data.total_deleted} سجل` : `Deleted ${data.total_deleted} records`);
     } catch (err: any) {
       addLog(`❌ ${err.message || 'Failed to delete tables data'}`);
-      toast.error(err.message || 'Failed to delete tables data');
+      notifyError({ error: 'DB_OPERATION_FAILED', isAr, rawMessage: err.message || 'Failed to delete tables data' });
     } finally {
       setDeleteTablesLoading(false);
     }

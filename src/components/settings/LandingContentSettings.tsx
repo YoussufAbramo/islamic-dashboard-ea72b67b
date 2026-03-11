@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -116,7 +117,7 @@ const LandingContentSettings = () => {
     }, { onConflict: 'section_key' });
     setSaving(false);
     if (error) {
-      toast.error(isAr ? 'فشل الحفظ' : 'Failed to save');
+      notifyError({ error: 'GENERAL_SAVE_FAILED', isAr });
     } else {
       toast.success(isAr ? 'تم الحفظ' : 'Saved successfully');
     }
@@ -242,7 +243,7 @@ const LandingContentSettings = () => {
                         const path = `branding/og-image-${Date.now()}.${ext}`;
                         const { uploadAndGetSignedUrl } = await import('@/lib/storage');
                         const { signedUrl, error: uploadErr } = await uploadAndGetSignedUrl(path, file);
-                        if (uploadErr) { toast.error(uploadErr); return; }
+                        if (uploadErr) { notifyError({ error: 'STORAGE_UPLOAD_FAILED', isAr, rawMessage: uploadErr }); return; }
                         updateField('general', 'og_image', signedUrl);
                         toast.success(isAr ? 'تم رفع الصورة' : 'Image uploaded');
                       }}

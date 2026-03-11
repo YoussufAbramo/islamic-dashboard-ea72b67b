@@ -18,6 +18,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Search, Eye, Plus, ArrowUp, ArrowDown, Trash2, Check, ChevronsUpDown } from 'lucide-react';
 import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 import { subscriptionStatusLabels, subscriptionTypeLabels, getLabel } from '@/lib/statusLabels';
 import { addDays, addYears } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -168,7 +169,7 @@ const Subscriptions = () => {
     });
     setCreateLoading(false);
     if (error) {
-      toast.error(error.message);
+      notifyError({ error, isAr, rawMessage: error.message });
     } else {
       toast.success(isAr ? 'تم إنشاء الاشتراك' : 'Subscription created');
       setCreateOpen(false);

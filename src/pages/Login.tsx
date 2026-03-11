@@ -9,6 +9,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import CopyrightText from '@/components/CopyrightText';
 import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 import { GraduationCap, Users, ShieldCheck, Eye, EyeOff, BookOpen, Moon, Sun, Mail, ExternalLink } from 'lucide-react';
 import islamicBg from '@/assets/islamic-bg.jpg';
 
@@ -59,13 +60,13 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedRole) {
-      toast.error(language === 'ar' ? 'يرجى اختيار نوع الحساب' : 'Please select your account type');
+      notifyError({ error: 'AUTH_NO_ROLE', isAr: language === 'ar' });
       return;
     }
     setLoading(true);
     const { error } = await signIn(email, password);
     if (error) {
-      toast.error(error.message);
+      notifyError({ error, isAr: language === 'ar', rawMessage: error.message });
       setLoading(false);
       return;
     }

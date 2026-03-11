@@ -36,6 +36,7 @@ import InvoiceView from "./pages/InvoiceView";
 import LandingPage from "./pages/LandingPage";
 import CalculatorPage from "./pages/Calculator";
 import NotFound from "./pages/NotFound";
+import ErrorDetails from "./pages/ErrorDetails";
 
 const queryClient = new QueryClient();
 
@@ -76,6 +77,7 @@ const App = () => (
                       <Route path="calculator" element={<RoleGuard allowed={['admin']}><CalculatorPage /></RoleGuard>} />
                       <Route path="announcements" element={<Announcements />} />
                       <Route path="notifications" element={<Notifications />} />
+                      <Route path="error/:code" element={<ErrorDetails />} />
                       <Route path="profile" element={<Profile />} />
                     </Route>
                     <Route path="/invoice/:id" element={<InvoiceView />} />

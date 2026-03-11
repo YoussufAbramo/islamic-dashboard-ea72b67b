@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { HardDrive, Plus, Download, Trash2, Loader2, FileJson, FileText, Database, Clock, AlertTriangle, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 
@@ -95,18 +96,18 @@ const BackupsSettings = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setBackups(data.backups || []);
-    } catch (err: any) { toast.error(err.message || 'Failed to load backups'); }
+    } catch (err: any) { notifyError({ error: 'DB_OPERATION_FAILED', isAr, rawMessage: err.message || 'Failed to load backups' }); }
     finally { setLoading(false); }
   }, []);
 
   useEffect(() => { fetchBackups(); }, [fetchBackups]);
 
   const handleCreate = async () => {
-    if (!backupName.trim()) { toast.error(isAr ? 'أدخل اسم الملف' : 'Enter a file name'); return; }
+    if (!backupName.trim()) { notifyError({ error: 'VAL_BACKUP_NAME', isAr }); return; }
     setCreating(true);
     try {
       const tablesToBackup = Object.keys(selectedTables).filter(k => selectedTables[k]);
-      if (tablesToBackup.length === 0) { toast.error(isAr ? 'اختر جدولاً واحداً على الأقل' : 'Select at least one table'); setCreating(false); return; }
+      if (tablesToBackup.length === 0) { notifyError({ error: 'VAL_SELECT_TABLE', isAr }); setCreating(false); return; }
       const appSettings = { ...pending };
       const { data, error } = await supabase.functions.invoke('manage-backups', {
         body: { action: 'create_backup', name: backupName.trim(), format: backupFormat, appSettings, tables: tablesToBackup },
@@ -119,7 +120,7 @@ const BackupsSettings = () => {
       setBackupName('');
       setBackupComment('');
       fetchBackups();
-    } catch (err: any) { toast.error(err.message || 'Failed to create backup'); }
+    } catch (err: any) { notifyError({ error: 'DB_OPERATION_FAILED', isAr, rawMessage: err.message || 'Failed to create backup' }); }
     finally { setCreating(false); }
   };
 
@@ -130,7 +131,7 @@ const BackupsSettings = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       window.open(data.url, '_blank');
-    } catch (err: any) { toast.error(err.message || 'Failed to download backup'); }
+    } catch (err: any) { notifyError({ error: 'DB_OPERATION_FAILED', isAr, rawMessage: err.message || 'Failed to download backup' }); }
     finally { setDownloading(null); }
   };
 
@@ -144,7 +145,7 @@ const BackupsSettings = () => {
       toast.success(isAr ? 'تم حذف النسخة الاحتياطية' : 'Backup deleted');
       setDeleteTarget(null);
       fetchBackups();
-    } catch (err: any) { toast.error(err.message || 'Failed to delete backup'); }
+    } catch (err: any) { notifyError({ error: 'DB_OPERATION_FAILED', isAr, rawMessage: err.message || 'Failed to delete backup' }); }
     finally { setDeleting(false); }
   };
 

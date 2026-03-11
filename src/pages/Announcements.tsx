@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { Plus, Megaphone, Trash2, Search } from 'lucide-react';
 import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 import { format } from 'date-fns';
 
 const Announcements = () => {
@@ -37,14 +38,14 @@ const Announcements = () => {
   useEffect(() => { fetchAnnouncements(); }, []);
 
   const handleCreate = async () => {
-    if (!form.title || !form.content) { toast.error(isAr ? 'يرجى ملء الحقول المطلوبة' : 'Fill required fields'); return; }
+    if (!form.title || !form.content) { notifyError({ error: 'VAL_REQUIRED_FIELDS', isAr }); return; }
     const { error } = await supabase.from('announcements').insert({
       ...form,
       scheduled_at: form.scheduled_at || null,
       created_by: user?.id,
       is_active: true,
     });
-    if (error) { toast.error(error.message); return; }
+    if (error) { notifyError({ error, isAr, rawMessage: error.message }); return; }
     toast.success(isAr ? 'تم إنشاء الإعلان' : 'Announcement created');
     setCreateOpen(false);
     setForm({ title: '', title_ar: '', content: '', content_ar: '', target_audience: 'all', scheduled_at: '' });
