@@ -87,16 +87,41 @@ Deno.serve(async (req) => {
 
     // ==================== SEED ALL ====================
     if (action === 'seed_all') {
+      const categories: string[] = body.categories || ['users', 'courses', 'subscriptions', 'schedule', 'communications', 'support', 'certificates']
+      const quantity: string = body.quantity || 'medium'
+      
+      // Quantity multipliers
+      const qtyConfig = {
+        little: { students: 2, teachers: 1, courses: 1, sections: 2, lessonsPerSection: 1, timetable: 3, announcements: 1, notifications: 2, chats: 1, tickets: 1, certs: 1 },
+        medium: { students: 5, teachers: 2, courses: 3, sections: 3, lessonsPerSection: 2, timetable: 10, announcements: 3, notifications: 5, chats: 2, tickets: 3, certs: 2 },
+        many:   { students: 10, teachers: 4, courses: 6, sections: 4, lessonsPerSection: 3, timetable: 20, announcements: 5, notifications: 10, chats: 4, tickets: 6, certs: 4 },
+      }
+      const qty = qtyConfig[quantity as keyof typeof qtyConfig] || qtyConfig.medium
+      
       const counts = { students: 0, teachers: 0, courses: 0, sections: 0, lessons: 0, subscriptions: 0, timetable: 0, attendance: 0, announcements: 0, notifications: 0, chats: 0, messages: 0, tickets: 0, certificates: 0 }
 
-      // Create sample students
-      const studentData = [
+      // Build student/teacher data based on quantity
+      const allStudentEmails = [
         { email: 'student1@sample.edu', name: 'Ahmed Ali', phone: '+201000000001' },
         { email: 'student2@sample.edu', name: 'Sara Hassan', phone: '+201000000002' },
         { email: 'student3@sample.edu', name: 'Omar Khalil', phone: '+201000000003' },
         { email: 'student4@sample.edu', name: 'Fatima Noor', phone: '+201000000004' },
         { email: 'student5@sample.edu', name: 'Youssef Mahmoud', phone: '+201000000005' },
+        { email: 'student6@sample.edu', name: 'Layla Ibrahim', phone: '+201000000006' },
+        { email: 'student7@sample.edu', name: 'Khaled Mostafa', phone: '+201000000007' },
+        { email: 'student8@sample.edu', name: 'Nour Adel', phone: '+201000000008' },
+        { email: 'student9@sample.edu', name: 'Zeinab Samir', phone: '+201000000009' },
+        { email: 'student10@sample.edu', name: 'Hassan Reda', phone: '+201000000010' },
       ]
+      const studentData = allStudentEmails.slice(0, qty.students)
+
+      const allTeacherEmails = [
+        { email: 'teacher1@sample.edu', name: 'Dr. Aisha Mohamed', phone: '+201100000001', spec: 'Quran Memorization', bio: 'PhD in Islamic Studies, 10 years teaching experience' },
+        { email: 'teacher2@sample.edu', name: 'Prof. Ibrahim Youssef', phone: '+201100000002', spec: 'Arabic Language', bio: 'Professor of Arabic Literature, specializing in grammar and rhetoric' },
+        { email: 'teacher3@sample.edu', name: 'Dr. Fatima Al-Rashid', phone: '+201100000003', spec: 'Islamic Fiqh', bio: 'Expert in Islamic jurisprudence and comparative fiqh' },
+        { email: 'teacher4@sample.edu', name: 'Prof. Mustafa Kamal', phone: '+201100000004', spec: 'Tajweed', bio: 'Certified Quran reciter with ijazah in multiple qira\'at' },
+      ]
+      const teacherData = allTeacherEmails.slice(0, qty.teachers)
 
       const studentUserIds: string[] = []
       for (const s of studentData) {
