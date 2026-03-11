@@ -298,7 +298,7 @@ const AppSidebar = () => {
                     }}
                     className="p-1.5 rounded-md hover:bg-destructive/10 text-sidebar-foreground/50 hover:text-destructive transition-colors"
                   >
-                    <LogOut className="h-4 w-4" />
+                    <LogOut className="h-4 w-4 rtl:-scale-x-100" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side={isAr ? 'right' : 'left'}>{isAr ? 'تسجيل الخروج' : 'Logout'}</TooltipContent>
