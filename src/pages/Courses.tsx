@@ -34,8 +34,6 @@ const Courses = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editCourse, setEditCourse] = useState<any>(null);
   const [form, setForm] = useState({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft', image_url: '' });
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
