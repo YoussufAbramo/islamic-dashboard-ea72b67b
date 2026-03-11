@@ -1,0 +1,4 @@
+ALTER TABLE public.courses
+  ADD COLUMN IF NOT EXISTS category text NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS duration_weeks integer DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS skill_level text NOT NULL DEFAULT '';

@@ -9,9 +9,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
-import { Camera, Lock } from 'lucide-react';
+import { Camera, Lock, Check } from 'lucide-react';
 import { getAvatarSignedUrl, uploadAndGetSignedUrl } from '@/lib/storage';
 import { useEffect } from 'react';
+import avatar1 from '@/assets/avatars/avatar-1.png';
+import avatar2 from '@/assets/avatars/avatar-2.png';
+import avatar3 from '@/assets/avatars/avatar-3.png';
+
+const CARTOON_AVATARS = [
+  { id: 'avatar-1', src: avatar1 },
+  { id: 'avatar-2', src: avatar2 },
+  { id: 'avatar-3', src: avatar3 },
+];
 
 const Profile = () => {
   const { user, profile, role } = useAuth();
@@ -24,15 +33,20 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('');
   const [uploading, setUploading] = useState(false);
+  const isAr = language === 'ar';
 
-  // Resolve avatar signed URL on mount / profile change
   useEffect(() => {
     if (profile?.avatar_url) {
-      getAvatarSignedUrl(profile.avatar_url).then(setAvatarUrl);
+      // Check if it's a cartoon avatar
+      const cartoon = CARTOON_AVATARS.find(a => profile.avatar_url === a.id);
+      if (cartoon) {
+        setAvatarUrl(cartoon.src);
+      } else {
+        getAvatarSignedUrl(profile.avatar_url).then(setAvatarUrl);
+      }
     }
   }, [profile?.avatar_url]);
 
-  // Password change
   const [passwords, setPasswords] = useState({ newPassword: '', confirmPassword: '' });
   const [changingPassword, setChangingPassword] = useState(false);
 
@@ -41,7 +55,7 @@ const Profile = () => {
     setLoading(true);
     await supabase.from('profiles').update({ full_name: form.full_name, phone: form.phone }).eq('id', user.id);
     setLoading(false);
-    toast.success(language === 'ar' ? 'تم تحديث الملف الشخصي' : 'Profile updated');
+    toast.success(isAr ? 'تم تحديث الملف الشخصي' : 'Profile updated');
   };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,37 +67,48 @@ const Profile = () => {
     setUploading(true);
     const { signedUrl, error: uploadErr } = await uploadAndGetSignedUrl(filePath, file);
     if (uploadErr) {
-      notifyError({ error: 'STORAGE_UPLOAD_FAILED', isAr: language === 'ar', rawMessage: uploadErr });
+      notifyError({ error: 'STORAGE_UPLOAD_FAILED', isAr, rawMessage: uploadErr });
       setUploading(false);
       return;
     }
 
-    // Store the storage path (not a URL) so we can always generate fresh signed URLs
     await supabase.from('profiles').update({ avatar_url: filePath }).eq('id', user.id);
     setAvatarUrl(signedUrl);
     setUploading(false);
-    toast.success(language === 'ar' ? 'تم تحديث الصورة' : 'Avatar updated');
+    toast.success(isAr ? 'تم تحديث الصورة' : 'Avatar updated');
+  };
+
+  const handleSelectCartoonAvatar = async (avatarId: string) => {
+    if (!user) return;
+    setUploading(true);
+    await supabase.from('profiles').update({ avatar_url: avatarId }).eq('id', user.id);
+    const cartoon = CARTOON_AVATARS.find(a => a.id === avatarId);
+    if (cartoon) setAvatarUrl(cartoon.src);
+    setUploading(false);
+    toast.success(isAr ? 'تم تحديث الصورة' : 'Avatar updated');
   };
 
   const handlePasswordChange = async () => {
     if (passwords.newPassword.length < 6) {
-      notifyError({ error: 'AUTH_WEAK_PASSWORD', isAr: language === 'ar' });
+      notifyError({ error: 'AUTH_WEAK_PASSWORD', isAr });
       return;
     }
     if (passwords.newPassword !== passwords.confirmPassword) {
-      notifyError({ error: 'AUTH_PASSWORD_MISMATCH', isAr: language === 'ar' });
+      notifyError({ error: 'AUTH_PASSWORD_MISMATCH', isAr });
       return;
     }
     setChangingPassword(true);
     const { error } = await supabase.auth.updateUser({ password: passwords.newPassword });
     setChangingPassword(false);
     if (error) {
-      notifyError({ error, isAr: language === 'ar', rawMessage: error.message });
+      notifyError({ error, isAr, rawMessage: error.message });
     } else {
-      toast.success(language === 'ar' ? 'تم تغيير كلمة المرور' : 'Password changed successfully');
+      toast.success(isAr ? 'تم تغيير كلمة المرور' : 'Password changed successfully');
       setPasswords({ newPassword: '', confirmPassword: '' });
     }
   };
+
+  const currentAvatarId = profile?.avatar_url;
 
   return (
     <div className="max-w-lg mx-auto space-y-4">
@@ -91,23 +116,49 @@ const Profile = () => {
 
       {/* Avatar */}
       <Card>
-        <CardContent className="flex items-center gap-4 pt-6">
-          <div className="relative group">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={avatarUrl} />
-              <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
-                {form.full_name?.charAt(0)?.toUpperCase() || 'U'}
-              </AvatarFallback>
-            </Avatar>
-            <label className="absolute inset-0 flex items-center justify-center bg-background/60 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
-              <Camera className="h-5 w-5 text-foreground" />
-              <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploading} />
-            </label>
+        <CardContent className="pt-6 space-y-4">
+          <div className="flex items-center gap-4">
+            <div className="relative group">
+              <Avatar className="h-20 w-20">
+                <AvatarImage src={avatarUrl} />
+                <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
+                  {form.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <label className="absolute inset-0 flex items-center justify-center bg-background/60 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                <Camera className="h-5 w-5 text-foreground" />
+                <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploading} />
+              </label>
+            </div>
+            <div>
+              <p className="font-medium">{form.full_name || 'User'}</p>
+              <p className="text-sm text-muted-foreground">{role || ''}</p>
+              <p className="text-xs text-muted-foreground">{uploading ? (isAr ? 'جاري الرفع...' : 'Uploading...') : (isAr ? 'انقر على الصورة للتغيير' : 'Click avatar to change')}</p>
+            </div>
           </div>
+
+          {/* Cartoon avatar picker */}
           <div>
-            <p className="font-medium">{form.full_name || 'User'}</p>
-            <p className="text-sm text-muted-foreground">{role || ''}</p>
-            <p className="text-xs text-muted-foreground">{uploading ? (language === 'ar' ? 'جاري الرفع...' : 'Uploading...') : (language === 'ar' ? 'انقر على الصورة للتغيير' : 'Click avatar to change')}</p>
+            <Label className="text-xs text-muted-foreground mb-2 block">{isAr ? 'أو اختر صورة رمزية' : 'Or pick an avatar'}</Label>
+            <div className="flex gap-3">
+              {CARTOON_AVATARS.map((av) => (
+                <button
+                  key={av.id}
+                  onClick={() => handleSelectCartoonAvatar(av.id)}
+                  disabled={uploading}
+                  className={`relative rounded-full overflow-hidden border-2 transition-all h-14 w-14 shrink-0 ${
+                    currentAvatarId === av.id ? 'border-primary ring-2 ring-primary/30' : 'border-border hover:border-primary/50'
+                  }`}
+                >
+                  <img src={av.src} alt={av.id} className="h-full w-full object-cover" />
+                  {currentAvatarId === av.id && (
+                    <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                      <Check className="h-4 w-4 text-primary drop-shadow" />
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -129,7 +180,7 @@ const Profile = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Lock className="h-4 w-4" />
-            {language === 'ar' ? 'تغيير كلمة المرور' : 'Change Password'}
+            {isAr ? 'تغيير كلمة المرور' : 'Change Password'}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -139,7 +190,7 @@ const Profile = () => {
               type="password"
               value={passwords.newPassword}
               onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
-              placeholder={language === 'ar' ? '6 أحرف على الأقل' : 'Min 6 characters'}
+              placeholder={isAr ? '6 أحرف على الأقل' : 'Min 6 characters'}
             />
           </div>
           <div>
@@ -151,7 +202,7 @@ const Profile = () => {
             />
           </div>
           <Button onClick={handlePasswordChange} disabled={changingPassword} variant="outline">
-            {changingPassword ? t('common.loading') : (language === 'ar' ? 'تغيير كلمة المرور' : 'Change Password')}
+            {changingPassword ? t('common.loading') : (isAr ? 'تغيير كلمة المرور' : 'Change Password')}
           </Button>
         </CardContent>
       </Card>

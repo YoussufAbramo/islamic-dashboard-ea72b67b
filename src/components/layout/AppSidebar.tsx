@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText, LogOut, Calculator, ShieldCheck, Shield, Sparkles, AlertCircle, HardDrive, Globe, ScrollText, PenLine, Activity, Code, Webhook, Bug, ClipboardList } from 'lucide-react';
+import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText, LogOut, Calculator, ShieldCheck, Shield, Sparkles, AlertCircle, HardDrive, Globe, ScrollText, PenLine, Activity, Code, Webhook, Bug, ClipboardList, Route, FolderTree, Signal, ChevronDown } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,6 +22,7 @@ interface MenuItem {
   roles: string[];
   comingSoon?: boolean;
   badgeKey?: string;
+  children?: MenuItem[];
 }
 
 interface MenuCategory {
@@ -84,7 +85,13 @@ const AppSidebar = () => {
       label: 'Educate',
       labelAr: 'التعليم',
       items: [
-        { key: 'courses', label: t('nav.courses'), icon: BookOpen, path: '/dashboard/courses', roles: ['admin', 'teacher', 'student'] },
+        { key: 'courses', label: t('nav.courses'), icon: BookOpen, path: '/dashboard/courses', roles: ['admin', 'teacher', 'student'],
+          children: [
+            { key: 'tracks', label: isAr ? 'المسارات' : 'Tracks', icon: Route, path: '/dashboard/courses/tracks', roles: ['admin'] },
+            { key: 'categories', label: isAr ? 'التصنيفات' : 'Categories', icon: FolderTree, path: '/dashboard/courses/categories', roles: ['admin'] },
+            { key: 'levels', label: isAr ? 'المستويات' : 'Levels', icon: Signal, path: '/dashboard/courses/levels', roles: ['admin'] },
+          ],
+        },
         { key: 'timetable', label: t('nav.timetable'), icon: Calendar, path: '/dashboard/timetable', roles: ['admin', 'teacher', 'student'] },
         { key: 'attendance', label: isAr ? 'الحضور' : 'Attendance', icon: ClipboardCheck, path: '/dashboard/attendance', roles: ['admin', 'teacher'] },
         { key: 'certificates', label: isAr ? 'الشهادات' : 'Certificates', icon: Award, path: '/dashboard/certificates', roles: ['admin', 'teacher', 'student'] },
@@ -178,29 +185,51 @@ const AppSidebar = () => {
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {visibleItems.map((item) => (
-                    <SidebarMenuItem key={item.key}>
-                      <SidebarMenuButton
-                        isActive={location.pathname === item.path}
-                        onClick={() => navigate(item.path)}
-                        tooltip={item.label}
-                      >
-                        <item.icon className="h-4 w-4" />
-                        <span className="flex-1">{item.label}</span>
-                        {item.comingSoon && (
-                          <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 shrink-0 ms-auto">
-                            <Sparkles className="h-2 w-2 me-0.5" />
-                            {isAr ? 'قريباً' : 'Soon'}
-                          </Badge>
+                  {visibleItems.map((item) => {
+                    const hasChildren = item.children && item.children.length > 0;
+                    const isParentActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+                    const visibleChildren = hasChildren ? item.children!.filter(c => role && c.roles.includes(role)) : [];
+                    return (
+                      <SidebarMenuItem key={item.key}>
+                        <SidebarMenuButton
+                          isActive={location.pathname === item.path}
+                          onClick={() => navigate(item.path)}
+                          tooltip={item.label}
+                        >
+                          <item.icon className="h-4 w-4" />
+                          <span className="flex-1">{item.label}</span>
+                          {item.comingSoon && (
+                            <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 shrink-0 ms-auto">
+                              <Sparkles className="h-2 w-2 me-0.5" />
+                              {isAr ? 'قريباً' : 'Soon'}
+                            </Badge>
+                          )}
+                          {item.badgeKey === 'chats' && unreadChats > 0 && (
+                            <Badge variant="destructive" className="text-[9px] px-1.5 py-0 h-4 min-w-[18px] shrink-0 ms-auto">
+                              {unreadChats > 99 ? '99+' : unreadChats}
+                            </Badge>
+                          )}
+                        </SidebarMenuButton>
+                        {visibleChildren.length > 0 && isParentActive && (
+                          <SidebarMenu className="ms-4 mt-0.5 border-s border-border ps-2">
+                            {visibleChildren.map((child) => (
+                              <SidebarMenuItem key={child.key}>
+                                <SidebarMenuButton
+                                  isActive={location.pathname === child.path}
+                                  onClick={() => navigate(child.path)}
+                                  tooltip={child.label}
+                                  className="h-7 text-xs"
+                                >
+                                  <child.icon className="h-3.5 w-3.5" />
+                                  <span>{child.label}</span>
+                                </SidebarMenuButton>
+                              </SidebarMenuItem>
+                            ))}
+                          </SidebarMenu>
                         )}
-                        {item.badgeKey === 'chats' && unreadChats > 0 && (
-                          <Badge variant="destructive" className="text-[9px] px-1.5 py-0 h-4 min-w-[18px] shrink-0 ms-auto">
-                            {unreadChats > 99 ? '99+' : unreadChats}
-                          </Badge>
-                        )}
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                      </SidebarMenuItem>
+                    );
+                  })}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>

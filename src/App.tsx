@@ -16,6 +16,9 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import Courses from "./pages/Courses";
 import CourseDetail from "./pages/CourseDetail";
+import CourseTracks from "./pages/CourseTracks";
+import CourseCategories from "./pages/CourseCategories";
+import CourseLevels from "./pages/CourseLevels";
 import Students from "./pages/Students";
 import Teachers from "./pages/Teachers";
 import Admins from "./pages/Admins";
@@ -70,6 +73,9 @@ const App = () => (
                     <Route path="/dashboard" element={<DashboardLayout />}>
                       <Route index element={<Dashboard />} />
                       <Route path="courses" element={<Courses />} />
+                      <Route path="courses/tracks" element={<RoleGuard allowed={['admin']}><CourseTracks /></RoleGuard>} />
+                      <Route path="courses/categories" element={<RoleGuard allowed={['admin']}><CourseCategories /></RoleGuard>} />
+                      <Route path="courses/levels" element={<RoleGuard allowed={['admin']}><CourseLevels /></RoleGuard>} />
                       <Route path="courses/:id" element={<CourseDetail />} />
                       <Route path="students" element={<RoleGuard allowed={['admin', 'teacher']}><Students /></RoleGuard>} />
                       <Route path="teachers" element={<RoleGuard allowed={['admin']}><Teachers /></RoleGuard>} />

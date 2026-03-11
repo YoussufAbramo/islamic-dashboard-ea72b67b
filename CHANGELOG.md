@@ -2,6 +2,22 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [3.9.0] - 2026-03-11
+
+### Added
+- Courses grid/list view toggle: grid view shows course cover images, category, and skill level badges
+- Courses submenu: Tracks, Categories, and Levels simple list pages under Courses in sidebar
+- Course detail fields: Category (dropdown), Duration in weeks, Skill Level (dropdown), auto-detected Number of Lessons
+- Cartoon avatar picker in Profile settings: 3 pre-generated cartoon avatars to choose from
+- Supabase connection status card in App Settings showing project URL, ID, and dashboard link
+- Database columns: `category`, `duration_weeks`, `skill_level` added to courses table
+
+### Changed
+- Course creation/edit dialog now includes Category, Skill Level, and Duration fields
+- Course detail page shows image, category, skill level, duration, and total lesson count badges
+- Sidebar supports nested submenu items (Courses → Tracks, Categories, Levels)
+- Version bumped to 3.9.0
+
 ## [3.8.1] - 2026-03-11
 
 ### Added

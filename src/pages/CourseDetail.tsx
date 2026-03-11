@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
-import { Plus, ArrowLeft, Edit, Trash2 } from 'lucide-react';
+import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree } from 'lucide-react';
 import { toast } from 'sonner';
 
 const lessonTypes = [
@@ -29,11 +29,28 @@ const lessonTypes = [
   { value: 'homework', label: 'Homework' },
 ];
 
+const CATEGORIES = [
+  { value: 'quran', label: 'Quran', labelAr: 'القرآن الكريم' },
+  { value: 'tajweed', label: 'Tajweed', labelAr: 'التجويد' },
+  { value: 'arabic', label: 'Arabic Language', labelAr: 'اللغة العربية' },
+  { value: 'islamic_studies', label: 'Islamic Studies', labelAr: 'الدراسات الإسلامية' },
+  { value: 'memorization', label: 'Memorization', labelAr: 'الحفظ' },
+  { value: 'other', label: 'Other', labelAr: 'أخرى' },
+];
+
+const SKILL_LEVELS = [
+  { value: 'beginner', label: 'Beginner', labelAr: 'مبتدئ' },
+  { value: 'intermediate', label: 'Intermediate', labelAr: 'متوسط' },
+  { value: 'advanced', label: 'Advanced', labelAr: 'متقدم' },
+  { value: 'all_levels', label: 'All Levels', labelAr: 'جميع المستويات' },
+];
+
 const CourseDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const { role } = useAuth();
+  const isAr = language === 'ar';
   const canEdit = role === 'admin' || role === 'teacher';
 
   const [course, setCourse] = useState<any>(null);
@@ -45,6 +62,10 @@ const CourseDetail = () => {
   const [sectionForm, setSectionForm] = useState({ title: '', title_ar: '' });
   const [lessonForm, setLessonForm] = useState({ title: '', title_ar: '', lesson_type: 'read_listen' });
 
+  const totalLessons = useMemo(() => {
+    return Object.values(lessons).reduce((sum, arr) => sum + arr.length, 0);
+  }, [lessons]);
+
   const fetchCourse = async () => {
     const { data } = await supabase.from('courses').select('*').eq('id', id).single();
     setCourse(data);
@@ -53,7 +74,6 @@ const CourseDetail = () => {
   const fetchSections = async () => {
     const { data } = await supabase.from('course_sections').select('*').eq('course_id', id).order('sort_order');
     setSections(data || []);
-    // Fetch lessons for each section
     if (data) {
       const lessonMap: Record<string, any[]> = {};
       for (const section of data) {
@@ -98,14 +118,48 @@ const CourseDetail = () => {
 
   if (!course) return <div className="text-muted-foreground">{t('common.loading')}</div>;
 
+  const categoryLabel = CATEGORIES.find(c => c.value === course.category);
+  const skillLabel = SKILL_LEVELS.find(l => l.value === course.skill_level);
+
   return (
     <div className="space-y-4">
       <Button variant="ghost" onClick={() => navigate('/dashboard/courses')}><ArrowLeft className="h-4 w-4 me-2" />{t('common.back')}</Button>
 
       <Card>
         <CardHeader>
-          <CardTitle>{language === 'ar' && course.title_ar ? course.title_ar : course.title}</CardTitle>
-          <p className="text-muted-foreground">{language === 'ar' && course.description_ar ? course.description_ar : course.description}</p>
+          <div className="flex items-start gap-4">
+            {course.image_url && (
+              <img src={course.image_url} alt={course.title} className="h-20 w-20 rounded-lg object-cover shrink-0" />
+            )}
+            <div className="flex-1 min-w-0">
+              <CardTitle>{isAr && course.title_ar ? course.title_ar : course.title}</CardTitle>
+              <p className="text-muted-foreground mt-1">{isAr && course.description_ar ? course.description_ar : course.description}</p>
+              <div className="flex flex-wrap items-center gap-2 mt-3">
+                {categoryLabel && (
+                  <Badge variant="outline" className="gap-1 text-xs">
+                    <FolderTree className="h-3 w-3" />
+                    {isAr ? categoryLabel.labelAr : categoryLabel.label}
+                  </Badge>
+                )}
+                {skillLabel && (
+                  <Badge variant="outline" className="gap-1 text-xs">
+                    <Signal className="h-3 w-3" />
+                    {isAr ? skillLabel.labelAr : skillLabel.label}
+                  </Badge>
+                )}
+                {course.duration_weeks && (
+                  <Badge variant="outline" className="gap-1 text-xs">
+                    <Clock className="h-3 w-3" />
+                    {course.duration_weeks} {isAr ? 'أسابيع' : 'weeks'}
+                  </Badge>
+                )}
+                <Badge variant="secondary" className="gap-1 text-xs">
+                  <BookOpen className="h-3 w-3" />
+                  {totalLessons} {isAr ? 'درس' : 'lessons'}
+                </Badge>
+              </div>
+            </div>
+          </div>
         </CardHeader>
       </Card>
 
@@ -135,7 +189,7 @@ const CourseDetail = () => {
           <AccordionItem key={section.id} value={section.id} className="border rounded-lg px-4">
             <AccordionTrigger className="hover:no-underline">
               <div className="flex items-center gap-2">
-                <span>{language === 'ar' && section.title_ar ? section.title_ar : section.title}</span>
+                <span>{isAr && section.title_ar ? section.title_ar : section.title}</span>
                 <Badge variant="secondary">{(lessons[section.id] || []).length} {t('courses.lessons')}</Badge>
               </div>
             </AccordionTrigger>
@@ -144,7 +198,7 @@ const CourseDetail = () => {
                 {(lessons[section.id] || []).map((lesson) => (
                   <div key={lesson.id} className="flex items-center justify-between p-2 rounded bg-muted/50">
                     <div>
-                      <span className="font-medium">{language === 'ar' && lesson.title_ar ? lesson.title_ar : lesson.title}</span>
+                      <span className="font-medium">{isAr && lesson.title_ar ? lesson.title_ar : lesson.title}</span>
                       <Badge variant="outline" className="ms-2 text-xs">{lessonTypes.find(lt => lt.value === lesson.lesson_type)?.label || lesson.lesson_type}</Badge>
                     </div>
                     {canEdit && (

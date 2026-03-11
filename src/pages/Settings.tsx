@@ -3,7 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { Button } from '@/components/ui/button';
-import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, DollarSign, HardDrive, GraduationCap, BarChart3, Code, Search as SearchIcon } from 'lucide-react';
+import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, DollarSign, HardDrive, GraduationCap, BarChart3, Code, Search as SearchIcon, Cloud } from 'lucide-react';
 import { toast } from 'sonner';
 import AppearanceSettings from '@/components/settings/AppearanceSettings';
 import PaymentGatewayCard from '@/components/settings/PaymentGatewayCard';
@@ -16,6 +16,7 @@ import BackupsSettings from '@/components/settings/BackupsSettings';
 import EducationSystemSettings from '@/components/settings/EducationSystemSettings';
 import PixelsIntegrationSettings from '@/components/settings/PixelsIntegrationSettings';
 import SeoSettings from '@/components/settings/SeoSettings';
+import SupabaseStatusSettings from '@/components/settings/SupabaseStatusSettings';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -41,7 +42,7 @@ const DeveloperSettings = () => {
   );
 };
 
-type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing' | 'backups' | 'education' | 'pixels' | 'seo' | 'developer';
+type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing' | 'backups' | 'education' | 'pixels' | 'seo' | 'supabase' | 'developer';
 
 const Settings = () => {
   const { language } = useLanguage();
@@ -77,6 +78,7 @@ const Settings = () => {
     { value: 'payment', label: 'Payment Methods', labelAr: 'طرق الدفع', icon: CreditCard, adminOnly: true },
     { value: 'data', label: 'Data Management', labelAr: 'إدارة البيانات', icon: Database, adminOnly: true },
     { value: 'backups', label: 'Backups', labelAr: 'النسخ الاحتياطية', icon: HardDrive, adminOnly: true },
+    { value: 'supabase', label: 'Supabase', labelAr: 'Supabase', icon: Cloud, adminOnly: true },
     { value: 'developer', label: 'Developer', labelAr: 'المطور', icon: Code, adminOnly: true },
   ];
 
@@ -133,6 +135,7 @@ const Settings = () => {
           {activeTab === 'backups' && isAdmin && <BackupsSettings />}
           {activeTab === 'pixels' && isAdmin && <PixelsIntegrationSettings />}
           {activeTab === 'seo' && isAdmin && <SeoSettings />}
+          {activeTab === 'supabase' && isAdmin && <SupabaseStatusSettings />}
           {activeTab === 'developer' && isAdmin && <DeveloperSettings />}
         </div>
       </div>
