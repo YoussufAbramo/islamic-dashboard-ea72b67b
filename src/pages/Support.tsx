@@ -50,8 +50,10 @@ const Support = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchTickets = async () => {
+    setLoading(true);
     const { data } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
     setTickets(data || []);
+    setLoading(false);
   };
 
   useEffect(() => { fetchTickets(); }, []);
