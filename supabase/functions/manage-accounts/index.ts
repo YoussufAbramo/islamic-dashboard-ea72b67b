@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
       const teacherData = allTeacherEmails.slice(0, qty.teachers)
 
       const studentUserIds: string[] = []
-      if (categories.includes('users')) {
+      if (categories.includes('students')) {
         for (const s of studentData) {
           try {
             const { data, error } = await adminClient.auth.admin.createUser({
@@ -134,7 +134,9 @@ Deno.serve(async (req) => {
             if (!error && data.user) { studentUserIds.push(data.user.id); counts.students++ }
           } catch (_) { /* skip if exists */ }
         }
+      }
 
+      if (categories.includes('teachers')) {
         for (const t of teacherData) {
           try {
             const { data, error } = await adminClient.auth.admin.createUser({
