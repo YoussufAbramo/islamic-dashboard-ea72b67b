@@ -110,12 +110,12 @@ const App = () => (
                       <Route path="profile" element={<Profile />} />
                     </Route>
                     <Route path="/invoice/:id" element={<InvoiceView />} />
-                    <Route path="/blog/:slug" element={<PublicBlogPost />} />
-                    <Route path="/blogs/:slug" element={<PublicBlogPost />} />
-                    <Route path="/pages/:slug" element={<PublicPage />} />
-                    <Route path="/page/:slug" element={<PublicPage />} />
-                    <Route path="/policies/:slug" element={<PublicPage />} />
-                    <Route path="/policy/:slug" element={<PublicPage />} />
+                    <Route path="/blog/:slug" element={<PublicRouteGuard><PublicBlogPost /></PublicRouteGuard>} />
+                    <Route path="/blogs/:slug" element={<PublicRouteGuard><PublicBlogPost /></PublicRouteGuard>} />
+                    <Route path="/pages/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
+                    <Route path="/page/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
+                    <Route path="/policies/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
+                    <Route path="/policy/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </BrowserRouter>
