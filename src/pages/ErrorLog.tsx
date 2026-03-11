@@ -18,6 +18,8 @@ interface ErrorEntry {
   stack?: string;
 }
 
+const PAGE_SIZE = 10;
+
 const ErrorLog = () => {
   const { language } = useLanguage();
   const isAr = language === 'ar';
@@ -25,6 +27,7 @@ const ErrorLog = () => {
   const [search, setSearch] = useState('');
   const [levelFilter, setLevelFilter] = useState<string>('all');
   const [selectedError, setSelectedError] = useState<ErrorEntry | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   // Capture runtime errors
   useEffect(() => {
@@ -120,6 +123,9 @@ const ErrorLog = () => {
     return true;
   });
 
+  // Reset visible count when filters change
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [search, levelFilter]);
+
   const levelIcon = (level: string) => {
     switch (level) {
       case 'error': return <AlertCircle className="h-4 w-4 text-destructive" />;
@@ -198,8 +204,8 @@ const ErrorLog = () => {
           <p className="text-sm mt-1">{isAr ? 'لم يتم تسجيل أي أخطاء حتى الآن' : 'No errors have been recorded yet'}</p>
         </CardContent></Card>
       ) : (
-        <div className="space-y-1.5 w-full max-w-full overflow-hidden">
-          {filtered.map(entry => (
+        <div className="space-y-1.5 w-full max-w-[800px] overflow-hidden">
+          {filtered.slice(0, visibleCount).map(entry => (
             <Card key={entry.id} className="hover:shadow-sm transition-shadow cursor-pointer overflow-hidden" onClick={() => setSelectedError(entry)}>
               <CardContent className="p-3 flex items-start gap-3 min-w-0">
                 {levelIcon(entry.level)}
@@ -217,6 +223,13 @@ const ErrorLog = () => {
               </CardContent>
             </Card>
           ))}
+          {visibleCount < filtered.length && (
+            <div className="flex justify-start pt-2">
+              <Button variant="outline" size="sm" onClick={() => setVisibleCount(prev => prev + PAGE_SIZE)}>
+                {isAr ? 'تحميل المزيد' : 'Load More'} ({filtered.length - visibleCount} {isAr ? 'متبقي' : 'remaining'})
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
