@@ -109,7 +109,7 @@ const GlobalSearch = ({ open, onOpenChange }: { open: boolean; onOpenChange: (op
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <CommandInput placeholder={isAr ? 'ابحث عن صفحات، طلاب، دورات...' : 'Search pages, students, courses...'} />
+      <CommandInput placeholder={isAr ? 'ابحث عن صفحات، فواتير...' : 'Search pages, invoices...'} />
       <CommandList>
         <CommandEmpty>{isAr ? 'لا توجد نتائج' : 'No results found.'}</CommandEmpty>
 
