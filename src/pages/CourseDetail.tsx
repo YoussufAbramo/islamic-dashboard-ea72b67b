@@ -427,13 +427,6 @@ const CourseDetail = () => {
                 </Accordion>
               </div>
 
-              {canEdit && (
-                <div className="pt-2 border-t mt-3">
-                  <Button variant="ghost" size="sm" className="text-destructive" onClick={() => deleteLesson(lesson.id)}>
-                    <Trash2 className="h-3 w-3 me-1" />{t('common.delete')} {t('courses.lessons')}
-                  </Button>
-                </div>
-              )}
             </AccordionContent>
           </AccordionItem>
         ))}
