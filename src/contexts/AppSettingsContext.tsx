@@ -265,6 +265,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     localStorage.setItem('app_sidebar_mode', pending.sidebarMode);
     localStorage.setItem('app_time_format', pending.timeFormat);
     localStorage.setItem('app_developer_mode', String(pending.developerMode));
+    localStorage.setItem('app_website_mode', String(pending.websiteMode));
     localStorage.setItem('app_social_links', JSON.stringify(pending.socialLinks));
     setSaved({ ...pending });
   }, [pending]);
