@@ -389,27 +389,6 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
             </div>
           </div>
 
-          {/* Delete Database Tables Data */}
-          <div className="flex items-start gap-4 p-4 rounded-lg border border-destructive/30 bg-destructive/5">
-            <Database className="h-8 w-8 text-destructive shrink-0 mt-0.5" />
-            <div className="flex-1 space-y-2">
-              <h4 className="font-medium text-destructive">{isAr ? 'حذف بيانات جداول قاعدة البيانات' : 'Delete Database Tables Data'}</h4>
-              <p className="text-sm text-muted-foreground">
-                {isAr
-                  ? 'حذف جميع الإدخالات في جميع جداول قاعدة البيانات لإعادة ضبطها. لن يتم حذف حسابات المستخدمين.'
-                  : 'Delete all entries in all database tables to reset the database. User accounts will NOT be deleted.'}
-              </p>
-              <p className="text-xs text-muted-foreground italic">
-                {isAr
-                  ? '⚠️ يُستخدم عادةً بعد الاختبار وإضافة بيانات تجريبية أو وهمية فقط.'
-                  : '⚠️ Usually only used after testing and adding fake or sample data.'}
-              </p>
-              <Button variant="destructive" size="sm" onClick={() => setDeleteTablesOpen(true)}>
-                {isAr ? 'حذف بيانات الجداول' : 'Delete Tables Data'}
-              </Button>
-            </div>
-          </div>
-
           {/* Erase All Data */}
           <div className="flex items-start gap-4 p-4 rounded-lg border border-destructive/30 bg-destructive/5">
             <Trash2 className="h-8 w-8 text-destructive shrink-0 mt-0.5" />
