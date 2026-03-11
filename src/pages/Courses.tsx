@@ -335,6 +335,8 @@ const Courses = () => {
               <TableRow>
                 <TableHead>{t('courses.name')}</TableHead>
                 <TableHead>{isAr ? 'التصنيف' : 'Category'}</TableHead>
+                <TableHead>{isAr ? 'المسار' : 'Track'}</TableHead>
+                <TableHead>{isAr ? 'المدة' : 'Duration'}</TableHead>
                 <TableHead>{t('courses.status')}</TableHead>
                 <TableHead>{t('common.actions')}</TableHead>
               </TableRow>
@@ -352,6 +354,12 @@ const Courses = () => {
                     {getCategoryLabel(course) ? (
                       <Badge variant="outline" className="text-xs">{getCategoryLabel(course)}</Badge>
                     ) : '—'}
+                  </TableCell>
+                  <TableCell>
+                    {getTrackLabel(course) || '—'}
+                  </TableCell>
+                  <TableCell>
+                    {course.duration_weeks ? `${course.duration_weeks} ${isAr ? 'أسابيع' : 'weeks'}` : '—'}
                   </TableCell>
                   <TableCell><Badge variant={statusColor[course.status] as any}>{getLabel(courseStatusLabels, course.status, isAr)}</Badge></TableCell>
                   <TableCell className="flex gap-1">
