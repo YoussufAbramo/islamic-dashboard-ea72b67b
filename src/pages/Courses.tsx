@@ -41,8 +41,10 @@ const Courses = () => {
   const canEdit = role === 'admin' || role === 'teacher';
 
   const fetchCourses = async () => {
+    setLoading(true);
     const { data } = await supabase.from('courses').select('*').order('created_at', { ascending: false });
     setCourses(data || []);
+    setLoading(false);
   };
 
   useEffect(() => { fetchCourses(); }, []);
