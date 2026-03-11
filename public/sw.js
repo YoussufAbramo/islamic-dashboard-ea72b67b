@@ -1,9 +1,15 @@
-const CACHE_NAME = 'edudash-v42';
-const STATIC_ASSETS = ['/'];
+// Cache name is set dynamically via message from main.tsx
+let CACHE_NAME = 'edudash-v0';
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SET_VERSION') {
+    CACHE_NAME = 'edudash-v' + event.data.version;
+  }
+});
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(['/']))
   );
   self.skipWaiting();
 });
