@@ -195,10 +195,11 @@ const DashboardLayout = () => {
           <main className="flex-1 p-4 md:p-6 overflow-auto">
             <Outlet />
           </main>
-          <footer className="p-3 text-center border-t border-border">
+          <footer className="p-3 border-t border-border flex items-center justify-between gap-3">
+            <img src="/codecom-logo.png" alt="CodeCom.dev" className="h-5 w-auto object-contain opacity-60" />
             <CopyrightText
               className="text-[11px] text-muted-foreground/60"
-              linkClassName="underline hover:text-foreground transition-colors"
+              linkClassName="hover:text-foreground transition-colors no-underline"
             />
           </footer>
         </SidebarInset>
