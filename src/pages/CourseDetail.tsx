@@ -217,8 +217,9 @@ const CourseDetail = () => {
 
   if (!course) return <div className="text-muted-foreground">{t('common.loading')}</div>;
 
-  const categoryLabel = CATEGORIES.find(c => c.value === course.category);
-  const skillLabel = SKILL_LEVELS.find(l => l.value === course.skill_level);
+  const categoryLabel = categories.find(c => c.id === course.category_id);
+  const skillLabel = levels.find(l => l.id === course.level_id);
+  const trackLabel = tracks.find(t => t.id === course.track_id);
 
   return (
     <div className="space-y-4">
