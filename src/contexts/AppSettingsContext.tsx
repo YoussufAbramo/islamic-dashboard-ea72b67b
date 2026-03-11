@@ -150,7 +150,7 @@ function loadSaved(): PendingSettings {
     appName: localStorage.getItem('app_name') || DEFAULT_APP_NAME,
     appDescription: localStorage.getItem('app_description') || DEFAULT_APP_DESCRIPTION,
     appLogo: localStorage.getItem('app_logo') || DEFAULT_LOGO,
-    darkLogo: localStorage.getItem('app_dark_logo') || '',
+    darkLogo: localStorage.getItem('app_dark_logo') || DEFAULT_DARK_LOGO,
     signatureImage: localStorage.getItem('app_signature_image') || DEFAULT_SIGNATURE,
     stampImage: localStorage.getItem('app_stamp_image') || DEFAULT_STAMP,
     signaturePosition: (localStorage.getItem('app_signature_position') as FooterPosition) || 'left',
