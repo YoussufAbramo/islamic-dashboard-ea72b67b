@@ -1,11 +1,12 @@
 import { useState, useRef, useCallback } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FolderOpen, Image, FileText, Upload, Search, HardDrive, Lock, Globe, RefreshCw, Trash2, ExternalLink, Info, Download } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { FolderOpen, Image, FileText, Upload, Search, HardDrive, Lock, Globe, RefreshCw, Trash2, ExternalLink, Info, Download, CheckSquare, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -43,6 +44,9 @@ const Media = () => {
   const [search, setSearch] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<FileObject | null>(null);
+  const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [bulkDownloading, setBulkDownloading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
 
@@ -50,6 +54,7 @@ const Media = () => {
     setLoading(true);
     setSelectedBucket(bucketName);
     setSelectedFile(null);
+    setSelectedNames(new Set());
     const { data, error } = await supabase.storage.from(bucketName).list('', { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
     if (error) {
       toast.error(isAr ? 'خطأ في تحميل الملفات' : 'Error loading files');
@@ -89,7 +94,7 @@ const Media = () => {
     if (!selectedBucket) return;
     const { error } = await supabase.storage.from(selectedBucket).remove([fileName]);
     if (error) { toast.error(isAr ? 'خطأ في حذف الملف' : 'Error deleting file'); }
-    else { toast.success(isAr ? 'تم حذف الملف' : 'File deleted'); setFiles(prev => prev.filter(f => f.name !== fileName)); if (selectedFile?.name === fileName) setSelectedFile(null); }
+    else { toast.success(isAr ? 'تم حذف الملف' : 'File deleted'); setFiles(prev => prev.filter(f => f.name !== fileName)); if (selectedFile?.name === fileName) setSelectedFile(null); setSelectedNames(prev => { const n = new Set(prev); n.delete(fileName); return n; }); }
   };
 
   const getPublicUrl = (fileName: string) => {
@@ -124,7 +129,54 @@ const Media = () => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }
-    toast.success(isAr ? 'جاري التحميل...' : 'Downloading...');
+  };
+
+  // Bulk operations
+  const toggleSelect = (name: string) => {
+    setSelectedNames(prev => {
+      const n = new Set(prev);
+      if (n.has(name)) n.delete(name); else n.add(name);
+      return n;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedNames.size === filteredFiles.length) {
+      setSelectedNames(new Set());
+    } else {
+      setSelectedNames(new Set(filteredFiles.map(f => f.name)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!selectedBucket || selectedNames.size === 0) return;
+    setBulkDeleting(true);
+    const names = Array.from(selectedNames);
+    const { error } = await supabase.storage.from(selectedBucket).remove(names);
+    setBulkDeleting(false);
+    if (error) {
+      toast.error(isAr ? 'خطأ في حذف الملفات' : 'Error deleting files');
+    } else {
+      toast.success(isAr ? `تم حذف ${names.length} ملف` : `${names.length} file(s) deleted`);
+      setFiles(prev => prev.filter(f => !selectedNames.has(f.name)));
+      if (selectedFile && selectedNames.has(selectedFile.name)) setSelectedFile(null);
+      setSelectedNames(new Set());
+    }
+  };
+
+  const handleBulkDownload = async () => {
+    if (!selectedBucket || selectedNames.size === 0) return;
+    setBulkDownloading(true);
+    const names = Array.from(selectedNames);
+    let done = 0;
+    for (const name of names) {
+      await handleDownload(name);
+      done++;
+      // Small delay between downloads to avoid browser blocking
+      if (done < names.length) await new Promise(r => setTimeout(r, 400));
+    }
+    setBulkDownloading(false);
+    toast.success(isAr ? `تم تحميل ${names.length} ملف` : `${names.length} file(s) downloaded`);
   };
 
   const formatSize = (bytes?: number) => {
@@ -136,6 +188,8 @@ const Media = () => {
 
   const filteredFiles = files.filter(f => f.name.toLowerCase().includes(search.toLowerCase()));
   const currentBucket = BUCKETS.find(b => b.id === selectedBucket);
+  const hasSelection = selectedNames.size > 0;
+  const allSelected = filteredFiles.length > 0 && selectedNames.size === filteredFiles.length;
 
   return (
     <div className="space-y-6">
@@ -231,6 +285,48 @@ const Media = () => {
                 </Button>
               </div>
 
+              {/* Bulk action bar */}
+              {hasSelection && (
+                <div className="flex items-center gap-2 p-2.5 rounded-lg border border-primary/20 bg-primary/5 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <Badge variant="secondary" className="text-xs gap-1">
+                    <CheckSquare className="h-3 w-3" />
+                    {selectedNames.size} {isAr ? 'محدد' : 'selected'}
+                  </Badge>
+                  <div className="flex-1" />
+                  <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={handleBulkDownload} disabled={bulkDownloading}>
+                    <Download className="h-3 w-3" />
+                    {bulkDownloading ? (isAr ? 'جاري التحميل...' : 'Downloading...') : (isAr ? 'تحميل الكل' : 'Download All')}
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs text-destructive hover:text-destructive" disabled={bulkDeleting}>
+                        <Trash2 className="h-3 w-3" />
+                        {bulkDeleting ? (isAr ? 'جاري الحذف...' : 'Deleting...') : (isAr ? 'حذف الكل' : 'Delete All')}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>{isAr ? 'حذف ملفات متعددة' : 'Delete Multiple Files'}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {isAr
+                            ? `هل أنت متأكد من حذف ${selectedNames.size} ملف؟ لا يمكن التراجع عن هذا الإجراء.`
+                            : `Are you sure you want to delete ${selectedNames.size} file(s)? This action cannot be undone.`}
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          {isAr ? 'حذف' : 'Delete'}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                  <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => setSelectedNames(new Set())}>
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              )}
+
               {/* File list + detail */}
               <div className="flex gap-4">
                 <Card
@@ -257,15 +353,32 @@ const Media = () => {
                       </div>
                     ) : (
                       <div className="space-y-0.5">
+                        {/* Select all header */}
+                        <div className="flex items-center gap-3 p-2 border-b border-border mb-1">
+                          <Checkbox
+                            checked={allSelected}
+                            onCheckedChange={toggleSelectAll}
+                            className="shrink-0"
+                          />
+                          <span className="text-xs text-muted-foreground font-medium">
+                            {isAr ? 'تحديد الكل' : 'Select all'}
+                          </span>
+                        </div>
                         {filteredFiles.map((file, idx) => (
                           <div
                             key={idx}
                             onClick={() => setSelectedFile(file)}
                             onDoubleClick={() => handleDownload(file.name)}
                             className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors group ${
-                              selectedFile?.name === file.name ? 'bg-primary/10 border border-primary/20' : 'hover:bg-muted/50'
+                              selectedFile?.name === file.name ? 'bg-primary/10 border border-primary/20' : selectedNames.has(file.name) ? 'bg-muted/70' : 'hover:bg-muted/50'
                             }`}
                           >
+                            <Checkbox
+                              checked={selectedNames.has(file.name)}
+                              onCheckedChange={() => toggleSelect(file.name)}
+                              onClick={(e) => e.stopPropagation()}
+                              className="shrink-0"
+                            />
                             {isImageFile(file.name) && currentBucket?.public ? (
                               <div className="h-8 w-8 rounded overflow-hidden border border-border flex-shrink-0 bg-muted">
                                 <img src={getPublicUrl(file.name)} alt={file.name} className="h-full w-full object-cover" loading="lazy" />
