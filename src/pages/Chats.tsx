@@ -123,6 +123,13 @@ const Chats = () => {
   };
 
   const addGroupMember = async (userId: string, memberRole: string) => {
+    // Check if already a member
+    const existing = groupMembers.find(m => m.user_id === userId);
+    if (existing) {
+      toast.error(isAr ? 'هذا العضو موجود بالفعل' : 'This member already exists');
+      setAddMemberKey(prev => prev + 1);
+      return;
+    }
     const { error } = await supabase.from('chat_members').insert({
       chat_id: selectedChat.id,
       user_id: userId,
@@ -130,6 +137,7 @@ const Chats = () => {
     });
     if (error) { notifyError({ error, isAr, rawMessage: error.message }); return; }
     toast.success(isAr ? 'تمت إضافة العضو' : 'Member added');
+    setAddMemberKey(prev => prev + 1);
     fetchGroupMembers(selectedChat.id);
   };
 
