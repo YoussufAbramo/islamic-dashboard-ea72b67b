@@ -6,9 +6,17 @@ import CopyrightText from '@/components/CopyrightText';
 import AppSidebar from './AppSidebar';
 import TopBar from './TopBar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { MessageSquarePlus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 
 const DashboardSkeleton = () => (
   <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-300">
@@ -39,41 +47,107 @@ const WhatsAppIcon = () => (
 );
 
 const FloatingButtons = () => {
-  const navigate = useNavigate();
   const { language } = useLanguage();
+  const { user } = useAuth();
   const isAr = language === 'ar';
+  const [ticketOpen, setTicketOpen] = useState(false);
+  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '', department: 'general', priority: 'medium' });
+  const [submitting, setSubmitting] = useState(false);
 
   const whatsappUrl = `https://wa.me/201558612808?text=${encodeURIComponent("Hello Dear, I'm texting you regarding Quran.CodeCom.dev, are you available to talk?")}`;
 
+  const handleSubmit = async () => {
+    if (!form.name.trim() || !form.email.trim() || !form.subject.trim() || !form.message.trim()) {
+      toast.error(isAr ? 'يرجى ملء جميع الحقول' : 'Please fill all fields');
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await supabase.from('support_tickets').insert({
+      name: form.name, email: form.email, subject: form.subject,
+      message: form.message, department: form.department, priority: form.priority,
+      user_id: user?.id,
+    });
+    setSubmitting(false);
+    if (error) { notifyError({ error, isAr, rawMessage: error.message }); return; }
+    toast.success(isAr ? 'تم إرسال التذكرة بنجاح' : 'Ticket submitted successfully');
+    setTicketOpen(false);
+    setForm({ name: '', email: '', subject: '', message: '', department: 'general', priority: 'medium' });
+  };
+
   return (
-    <TooltipProvider delayDuration={200}>
-      <div className="fixed bottom-6 end-6 z-50 flex flex-col gap-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={() => navigate('/dashboard/support')}
-              className="h-11 w-11 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center"
-            >
-              <MessageSquarePlus className="h-5 w-5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side={isAr ? 'right' : 'left'}>{isAr ? 'إنشاء تذكرة دعم' : 'Create Support Ticket'}</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="h-11 w-11 rounded-full bg-[#25D366] text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center"
-            >
-              <WhatsAppIcon />
-            </a>
-          </TooltipTrigger>
-          <TooltipContent side={isAr ? 'right' : 'left'}>{isAr ? 'تواصل عبر واتساب' : 'WhatsApp Sales'}</TooltipContent>
-        </Tooltip>
+    <>
+      <div className="fixed top-1/2 -translate-y-1/2 end-0 z-50 flex flex-col gap-1">
+        {/* Support Ticket */}
+        <button
+          onClick={() => setTicketOpen(true)}
+          className="group flex items-center gap-2 pe-2 ps-3 py-2.5 rounded-s-xl bg-primary text-primary-foreground shadow-md translate-x-[calc(100%-40px)] hover:translate-x-0 transition-transform duration-300 ease-out"
+        >
+          <MessageSquarePlus className="h-4 w-4 shrink-0" />
+          <span className="text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            {isAr ? 'تذكرة دعم' : 'Support'}
+          </span>
+        </button>
+
+        {/* WhatsApp */}
+        <a
+          href={whatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex items-center gap-2 pe-2 ps-3 py-2.5 rounded-s-xl bg-[#25D366] text-white shadow-md translate-x-[calc(100%-40px)] hover:translate-x-0 transition-transform duration-300 ease-out"
+        >
+          <WhatsAppIcon />
+          <span className="text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            {isAr ? 'واتساب' : 'WhatsApp'}
+          </span>
+        </a>
       </div>
-    </TooltipProvider>
+
+      <Dialog open={ticketOpen} onOpenChange={setTicketOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageSquarePlus className="h-5 w-5 text-primary" />
+              {isAr ? 'إنشاء تذكرة دعم' : 'Create Support Ticket'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div><Label>{isAr ? 'الاسم' : 'Name'}</Label><Input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} /></div>
+              <div><Label>{isAr ? 'البريد' : 'Email'}</Label><Input type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} /></div>
+            </div>
+            <div><Label>{isAr ? 'الموضوع' : 'Subject'}</Label><Input value={form.subject} onChange={e => setForm(p => ({ ...p, subject: e.target.value }))} /></div>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div>
+                <Label>{isAr ? 'القسم' : 'Department'}</Label>
+                <Select value={form.department} onValueChange={v => setForm(p => ({ ...p, department: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="general">{isAr ? 'عام' : 'General'}</SelectItem>
+                    <SelectItem value="technical">{isAr ? 'تقني' : 'Technical'}</SelectItem>
+                    <SelectItem value="billing">{isAr ? 'مالي' : 'Billing'}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>{isAr ? 'الأولوية' : 'Priority'}</Label>
+                <Select value={form.priority} onValueChange={v => setForm(p => ({ ...p, priority: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">{isAr ? 'منخفضة' : 'Low'}</SelectItem>
+                    <SelectItem value="medium">{isAr ? 'متوسطة' : 'Medium'}</SelectItem>
+                    <SelectItem value="high">{isAr ? 'عالية' : 'High'}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div><Label>{isAr ? 'الرسالة' : 'Message'}</Label><Textarea value={form.message} onChange={e => setForm(p => ({ ...p, message: e.target.value }))} rows={4} /></div>
+            <Button onClick={handleSubmit} disabled={submitting} className="w-full">
+              {submitting ? '...' : (isAr ? 'إرسال التذكرة' : 'Submit Ticket')}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
