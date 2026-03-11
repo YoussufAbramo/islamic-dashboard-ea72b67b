@@ -58,7 +58,7 @@ const BlogPosts = () => {
   const [search, setSearch] = useState('');
   const [seo, setSeo] = useState<SeoData>(emptySeo);
   const [seoOpen, setSeoOpen] = useState(false);
-  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
+  
 
   const fetchPosts = async () => {
     setLoading(true);
