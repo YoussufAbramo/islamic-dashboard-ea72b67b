@@ -70,6 +70,7 @@ const Profile = () => {
   const handleAvatarChange = async (url: string) => {
     if (!user) return;
     await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id);
+    setLocalAvatarId(url);
     setAvatarUrl(url);
     toast.success(isAr ? 'تم تحديث الصورة' : 'Avatar updated');
   };
