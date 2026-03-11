@@ -232,12 +232,12 @@ Deno.serve(async (req) => {
         counts.levels = levelIds.length
 
         const allCourses = [
-          { title: 'Quran Memorization - Juz Amma', title_ar: 'حفظ القرآن - جزء عم', description: 'Complete memorization course for Juz Amma with tajweed rules', description_ar: 'دورة حفظ كاملة لجزء عم مع أحكام التجويد', status: 'active', created_by: caller.id },
-          { title: 'Arabic Language Fundamentals', title_ar: 'أساسيات اللغة العربية', description: 'Learn Arabic grammar, reading, and writing from basics', description_ar: 'تعلم قواعد اللغة العربية والقراءة والكتابة من الأساسيات', status: 'active', created_by: caller.id },
-          { title: 'Islamic Studies & Fiqh', title_ar: 'الدراسات الإسلامية والفقه', description: 'Comprehensive Islamic studies covering fiqh, aqeedah, and seerah', description_ar: 'دراسات إسلامية شاملة تغطي الفقه والعقيدة والسيرة', status: 'active', created_by: caller.id },
-          { title: 'Tajweed Rules', title_ar: 'أحكام التجويد', description: 'Learn the rules of Quran recitation', description_ar: 'تعلم أحكام تلاوة القرآن الكريم', status: 'active', created_by: caller.id },
-          { title: 'Hadith Sciences', title_ar: 'علوم الحديث', description: 'Introduction to Hadith authentication and sciences', description_ar: 'مقدمة في تخريج الأحاديث وعلومها', status: 'active', created_by: caller.id },
-          { title: 'Islamic History', title_ar: 'التاريخ الإسلامي', description: 'Comprehensive overview of Islamic civilization history', description_ar: 'نظرة شاملة على تاريخ الحضارة الإسلامية', status: 'active', created_by: caller.id },
+          { title: 'Quran Memorization - Juz Amma', title_ar: 'حفظ القرآن - جزء عم', description: 'Complete memorization course for Juz Amma with tajweed rules', description_ar: 'دورة حفظ كاملة لجزء عم مع أحكام التجويد', status: 'active', created_by: callerId },
+          { title: 'Arabic Language Fundamentals', title_ar: 'أساسيات اللغة العربية', description: 'Learn Arabic grammar, reading, and writing from basics', description_ar: 'تعلم قواعد اللغة العربية والقراءة والكتابة من الأساسيات', status: 'active', created_by: callerId },
+          { title: 'Islamic Studies & Fiqh', title_ar: 'الدراسات الإسلامية والفقه', description: 'Comprehensive Islamic studies covering fiqh, aqeedah, and seerah', description_ar: 'دراسات إسلامية شاملة تغطي الفقه والعقيدة والسيرة', status: 'active', created_by: callerId },
+          { title: 'Tajweed Rules', title_ar: 'أحكام التجويد', description: 'Learn the rules of Quran recitation', description_ar: 'تعلم أحكام تلاوة القرآن الكريم', status: 'active', created_by: callerId },
+          { title: 'Hadith Sciences', title_ar: 'علوم الحديث', description: 'Introduction to Hadith authentication and sciences', description_ar: 'مقدمة في تخريج الأحاديث وعلومها', status: 'active', created_by: callerId },
+          { title: 'Islamic History', title_ar: 'التاريخ الإسلامي', description: 'Comprehensive overview of Islamic civilization history', description_ar: 'نظرة شاملة على تاريخ الحضارة الإسلامية', status: 'active', created_by: callerId },
         ]
         const coursesInsert = allCourses.slice(0, qty.courses).map((c, i) => ({
           ...c,
