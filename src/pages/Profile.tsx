@@ -121,7 +121,7 @@ const Profile = () => {
           <div>
             <Label className="text-xs text-muted-foreground mb-2 block">{isAr ? 'أو اختر صورة رمزية' : 'Or pick an avatar'}</Label>
             <div className="flex gap-3">
-              {CARTOON_AVATARS.map((av) => (
+              {CARTOON_AVATAR_LIST.map((av) => (
                 <button
                   key={av.id}
                   onClick={() => handleSelectCartoonAvatar(av.id)}
