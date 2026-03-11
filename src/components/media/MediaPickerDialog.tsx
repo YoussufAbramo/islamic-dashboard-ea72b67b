@@ -67,7 +67,7 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
     setFiles(fileItems);
 
     // Generate URLs (signed for private buckets, public for public ones)
-    const bucketInfo = BUCKETS.find(b => b.id === bucketId);
+    const bucketInfo = availableBuckets.find(b => b.id === bucketId);
     const urls: Record<string, string> = {};
     if (bucketInfo && !bucketInfo.public && fileItems.length > 0) {
       const paths = fileItems.map(f => path ? `${path}/${f.name}` : f.name);
