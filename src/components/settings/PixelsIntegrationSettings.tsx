@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Save } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Save, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 
@@ -66,15 +67,34 @@ const GoSoProLogo = () => (
   </div>
 );
 
-const pixelFields = [
-  { key: 'google_analytics' as const, label: 'Google Analytics', labelAr: 'Google Analytics', logo: GoogleLogo, placeholder: 'G-XXXXXXXXXX', description: 'Measurement ID from Google Analytics 4' },
-  { key: 'google_tag_manager' as const, label: 'Google Tag Manager', labelAr: 'Google Tag Manager', logo: GoogleLogo, placeholder: 'GTM-XXXXXXX', description: 'Container ID from Google Tag Manager' },
-  { key: 'meta_pixel' as const, label: 'Meta Pixel', labelAr: 'Meta Pixel', logo: MetaLogo, placeholder: 'XXXXXXXXXXXXXXXX', description: 'Pixel ID from Meta Business Suite' },
-  { key: 'google_search_console' as const, label: 'Google Search Console', labelAr: 'Google Search Console', logo: GoogleLogo, placeholder: 'HTML tag verification content', description: 'Meta tag content for verification' },
-  { key: 'gosopro_pixel' as const, label: 'GoSoPro.app Pixel', labelAr: 'GoSoPro.app Pixel', logo: GoSoProLogo, placeholder: 'GSP-XXXXXXXXXX', description: 'Pixel ID from GoSoPro.app' },
-  { key: 'snapchat_pixel' as const, label: 'Snapchat Pixel', labelAr: 'Snapchat Pixel', logo: SnapchatLogo, placeholder: 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX', description: 'Pixel ID from Snapchat Ads Manager' },
-  { key: 'tiktok_pixel' as const, label: 'TikTok Pixel', labelAr: 'TikTok Pixel', logo: TikTokLogo, placeholder: 'XXXXXXXXXXXXXXXXXXXXX', description: 'Pixel ID from TikTok Ads Manager' },
-  { key: 'clarity_pixel' as const, label: 'Microsoft Clarity', labelAr: 'Microsoft Clarity', logo: ClarityLogo, placeholder: 'XXXXXXXXXX', description: 'Project ID from Microsoft Clarity' },
+const pixelGroups = [
+  {
+    groupLabel: 'Google',
+    groupLabelAr: 'جوجل',
+    logo: GoogleLogo,
+    fields: [
+      { key: 'google_analytics' as const, label: 'Google Analytics', placeholder: 'G-XXXXXXXXXX', description: 'Measurement ID from Google Analytics 4' },
+      { key: 'google_tag_manager' as const, label: 'Google Tag Manager', placeholder: 'GTM-XXXXXXX', description: 'Container ID from Google Tag Manager' },
+      { key: 'google_search_console' as const, label: 'Google Search Console', placeholder: 'HTML tag verification content', description: 'Meta tag content for verification' },
+    ],
+  },
+  {
+    groupLabel: 'Social & Ads',
+    groupLabelAr: 'التواصل والإعلانات',
+    fields: [
+      { key: 'meta_pixel' as const, label: 'Meta Pixel', logo: MetaLogo, placeholder: 'XXXXXXXXXXXXXXXX', description: 'Pixel ID from Meta Business Suite' },
+      { key: 'snapchat_pixel' as const, label: 'Snapchat Pixel', logo: SnapchatLogo, placeholder: 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX', description: 'Pixel ID from Snapchat Ads Manager' },
+      { key: 'tiktok_pixel' as const, label: 'TikTok Pixel', logo: TikTokLogo, placeholder: 'XXXXXXXXXXXXXXXXXXXXX', description: 'Pixel ID from TikTok Ads Manager' },
+    ],
+  },
+  {
+    groupLabel: 'Analytics & Other',
+    groupLabelAr: 'التحليلات وأخرى',
+    fields: [
+      { key: 'gosopro_pixel' as const, label: 'GoSoPro.app Pixel', logo: GoSoProLogo, placeholder: 'GSP-XXXXXXXXXX', description: 'Pixel ID from GoSoPro.app' },
+      { key: 'clarity_pixel' as const, label: 'Microsoft Clarity', logo: ClarityLogo, placeholder: 'XXXXXXXXXX', description: 'Project ID from Microsoft Clarity' },
+    ],
+  },
 ];
 
 const PixelsIntegrationSettings = () => {
@@ -114,25 +134,46 @@ const PixelsIntegrationSettings = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid gap-5">
-            {pixelFields.map(field => {
-              const Logo = field.logo;
+          <div className="space-y-4">
+            {pixelGroups.map(group => {
+              const GroupLogo = group.logo;
               return (
-                <div key={field.key} className="flex items-start gap-3 p-4 rounded-lg border border-border hover:border-primary/30 transition-colors">
-                  <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
-                    <Logo />
-                  </div>
-                  <div className="flex-1 space-y-1.5">
-                    <Label className="font-medium">{field.label}</Label>
-                    <p className="text-xs text-muted-foreground">{field.description}</p>
-                    <Input
-                      value={pixels[field.key]}
-                      onChange={e => setPixels(prev => ({ ...prev, [field.key]: e.target.value }))}
-                      placeholder={field.placeholder}
-                      className="h-9 text-sm font-mono"
-                    />
-                  </div>
-                </div>
+                <Collapsible key={group.groupLabel} defaultOpen={group.groupLabel === 'Google'}>
+                  <CollapsibleTrigger className="flex items-center justify-between w-full p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-2">
+                      {GroupLogo && <GroupLogo />}
+                      <span className="font-medium text-sm">{isAr ? group.groupLabelAr : group.groupLabel}</span>
+                      <span className="text-xs text-muted-foreground">({group.fields.length})</span>
+                    </div>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="grid gap-3 pt-3 ps-2">
+                      {group.fields.map(field => {
+                        const Logo = (field as any).logo || GroupLogo;
+                        return (
+                          <div key={field.key} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/30 transition-colors">
+                            {Logo && (
+                              <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                                <Logo />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <Label className="text-sm font-medium">{field.label}</Label>
+                              <p className="text-[11px] text-muted-foreground">{field.description}</p>
+                            </div>
+                            <Input
+                              value={pixels[field.key]}
+                              onChange={e => setPixels(prev => ({ ...prev, [field.key]: e.target.value }))}
+                              placeholder={field.placeholder}
+                              className="h-8 text-sm font-mono max-w-[280px]"
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
               );
             })}
           </div>
