@@ -247,15 +247,11 @@ const BlogPosts = () => {
                 <div><Label>Excerpt (EN)</Label><Textarea value={editPost.excerpt} onChange={e => setEditPost({ ...editPost, excerpt: e.target.value })} rows={2} placeholder="Brief summary..." /></div>
                 <div><Label>Excerpt (AR)</Label><Textarea dir="rtl" value={editPost.excerpt_ar} onChange={e => setEditPost({ ...editPost, excerpt_ar: e.target.value })} rows={2} placeholder="ملخص قصير..." /></div>
               </div>
-              <div>
-                <Label className="flex items-center gap-1.5"><ImageIcon className="h-3.5 w-3.5" />Featured Image URL</Label>
-                <div className="flex gap-2">
-                  <Input value={editPost.featured_image} onChange={e => setEditPost({ ...editPost, featured_image: e.target.value })} placeholder="https://..." className="flex-1" />
-                  <Button variant="outline" size="sm" className="shrink-0 gap-1.5" onClick={() => setMediaPickerOpen(true)}>
-                    <HardDrive className="h-3.5 w-3.5" />{isAr ? 'الوسائط' : 'Media'}
-                  </Button>
-                </div>
-              </div>
+              <ImagePickerField
+                label={isAr ? 'الصورة المميزة' : 'Featured Image'}
+                value={editPost.featured_image}
+                onChange={(url) => setEditPost({ ...editPost, featured_image: url })}
+              />
               <div>
                 <Label className="mb-2 block">Content (EN)</Label>
                 <ContentEditor value={editPost.content} onChange={v => setEditPost({ ...editPost, content: v })} />
