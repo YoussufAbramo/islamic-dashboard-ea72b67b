@@ -103,6 +103,7 @@ const AppSidebar = () => {
     {
       label: 'Website',
       labelAr: 'الموقع',
+      requiresWebsiteMode: true,
       items: [
         { key: 'landing-page', label: isAr ? 'صفحة الهبوط' : 'Landing Page', icon: Globe, path: '/dashboard/landing-page', roles: ['admin'] },
         { key: 'policies', label: isAr ? 'السياسات' : 'Policies', icon: ScrollText, path: '/dashboard/policies', roles: ['admin'] },
