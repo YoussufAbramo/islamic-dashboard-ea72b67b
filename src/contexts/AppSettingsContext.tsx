@@ -144,6 +144,8 @@ interface AppSettingsContextType {
   setTimeFormat: (f: TimeFormat) => void;
   developerMode: boolean;
   setDeveloperMode: (d: boolean) => void;
+  websiteMode: boolean;
+  setWebsiteMode: (w: boolean) => void;
   pending: PendingSettings;
   updatePending: (partial: Partial<PendingSettings>) => void;
   saveSettings: () => void;
