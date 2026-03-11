@@ -51,6 +51,7 @@ import WebhookLog from "./pages/WebhookLog";
 import ErrorLog from "./pages/ErrorLog";
 import AuditTrail from "./pages/AuditTrail";
 import PublicBlogPost from "./pages/PublicBlogPost";
+import PublicBlogArchive from "./pages/PublicBlogArchive";
 import PublicPage from "./pages/PublicPage";
 import PublicRouteGuard from "./components/PublicRouteGuard";
 import WebsiteModeGuard from "./components/WebsiteModeGuard";
@@ -111,6 +112,8 @@ const App = () => (
                       <Route path="profile" element={<Profile />} />
                     </Route>
                     <Route path="/invoice/:id" element={<InvoiceView />} />
+                    <Route path="/blogs" element={<PublicRouteGuard><PublicBlogArchive /></PublicRouteGuard>} />
+                    <Route path="/blog" element={<PublicRouteGuard><PublicBlogArchive /></PublicRouteGuard>} />
                     <Route path="/blog/:slug" element={<PublicRouteGuard><PublicBlogPost /></PublicRouteGuard>} />
                     <Route path="/blogs/:slug" element={<PublicRouteGuard><PublicBlogPost /></PublicRouteGuard>} />
                     <Route path="/pages/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
