@@ -22,6 +22,7 @@ interface MenuItem {
   roles: string[];
   comingSoon?: boolean;
   badgeKey?: string;
+  children?: MenuItem[];
 }
 
 interface MenuCategory {
