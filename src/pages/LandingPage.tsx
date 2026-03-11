@@ -204,8 +204,8 @@ const LandingPage = () => {
               <button onClick={toggleDark} className="h-9 w-9 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                 {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
-              <button onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')} className="h-9 px-3 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-                {language === 'en' ? 'AR' : 'EN'}
+              <button onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')} className="h-9 w-9 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                <span className="text-sm font-bold leading-none" style={{ fontFamily: "'Noto Kufi Arabic', sans-serif" }}>ع</span>
               </button>
               {user ? (
                 <div className="flex items-center gap-2 ms-1">
