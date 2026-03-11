@@ -51,6 +51,25 @@ const Invoices = () => {
   });
   const [createLoading, setCreateLoading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [autoInvoiceLoading, setAutoInvoiceLoading] = useState(false);
+
+  const handleAutoInvoice = async () => {
+    setAutoInvoiceLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('auto-invoice', { method: 'POST' });
+      if (error) throw error;
+      const generated = data?.generated || 0;
+      if (generated > 0) {
+        toast.success(isAr ? `تم إنشاء ${generated} فاتورة تلقائياً` : `Generated ${generated} auto-invoice(s)`);
+        fetchInvoices();
+      } else {
+        toast.info(isAr ? 'لا توجد اشتراكات مستحقة للتجديد' : 'No subscriptions due for renewal');
+      }
+    } catch (err: any) {
+      notifyError({ error: err, isAr, rawMessage: err?.message || 'Auto-invoice failed' });
+    }
+    setAutoInvoiceLoading(false);
+  };
 
   const formatPrice = (amount: number) => `${currency.symbol}${amount.toFixed(currencyDecimals)}`;
 
