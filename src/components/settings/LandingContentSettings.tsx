@@ -598,16 +598,28 @@ const LandingContentSettings = () => {
           <Layers className="h-4 w-4" />
           {isAr ? 'الأقسام' : 'Sections'}
         </button>
+        <button onClick={() => setActiveTab('header')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'header' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+          <LayoutTemplate className="h-4 w-4" />
+          {isAr ? 'نمط الهيدر' : 'Header Style'}
+        </button>
         <button onClick={() => setActiveTab('seo')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'seo' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
           <Settings2 className="h-4 w-4" />
           {isAr ? 'SEO والعامة' : 'SEO & General'}
         </button>
       </div>
 
-      {activeTab === 'seo' ? (
+      {activeTab === 'header' ? (
         <Card>
           <CardHeader>
-            <CardTitle>{isAr ? 'SEO والإعدادات العامة' : 'SEO & General Settings'}</CardTitle>
+            <CardTitle>{isAr ? 'نمط الهيدر والقائمة' : 'Header Style & Menu'}</CardTitle>
+            <CardDescription>{isAr ? 'اختر نمط الهيدر وعدّل عناصر القائمة' : 'Choose header style and customize menu items'}</CardDescription>
+          </CardHeader>
+          <CardContent>{renderHeaderTab()}</CardContent>
+        </Card>
+      ) : activeTab === 'seo' ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>{isAr ? 'إعدادات SEO' : 'SEO Settings'}</CardTitle>
             <CardDescription>{isAr ? 'إعدادات محركات البحث والمشاركة' : 'Search engine and social sharing settings'}</CardDescription>
           </CardHeader>
           <CardContent>{renderSEO()}</CardContent>
