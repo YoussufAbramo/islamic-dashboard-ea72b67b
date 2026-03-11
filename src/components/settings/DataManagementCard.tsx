@@ -11,12 +11,32 @@ import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface DataManagementCardProps {
   isAr: boolean;
 }
 
 const SEED_LOG_KEY = 'app_seed_log_history';
+
+type SeedCategory = 'users' | 'courses' | 'subscriptions' | 'schedule' | 'communications' | 'support' | 'certificates';
+type SeedQuantity = 'little' | 'medium' | 'many';
+
+const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon: string }[] = [
+  { key: 'users', label: 'Students & Teachers', labelAr: 'طلاب ومعلمون', icon: '👥' },
+  { key: 'courses', label: 'Courses & Lessons', labelAr: 'دورات ودروس', icon: '📚' },
+  { key: 'subscriptions', label: 'Subscriptions', labelAr: 'اشتراكات', icon: '💳' },
+  { key: 'schedule', label: 'Timetable & Attendance', labelAr: 'جدول وحضور', icon: '📅' },
+  { key: 'communications', label: 'Announcements, Notifications & Chats', labelAr: 'إعلانات وإشعارات ومحادثات', icon: '💬' },
+  { key: 'support', label: 'Support Tickets', labelAr: 'تذاكر الدعم', icon: '🎫' },
+  { key: 'certificates', label: 'Certificates', labelAr: 'شهادات', icon: '🏅' },
+];
+
+const SEED_QUANTITIES: { key: SeedQuantity; label: string; labelAr: string; desc: string; descAr: string }[] = [
+  { key: 'little', label: 'Little', labelAr: 'قليل', desc: '2 students, 1 teacher, 1 course', descAr: '2 طلاب، 1 معلم، 1 دورة' },
+  { key: 'medium', label: 'Medium', labelAr: 'متوسط', desc: '5 students, 2 teachers, 3 courses', descAr: '5 طلاب، 2 معلمين، 3 دورات' },
+  { key: 'many', label: 'Many', labelAr: 'كثير', desc: '10 students, 4 teachers, 6 courses', descAr: '10 طلاب، 4 معلمين، 6 دورات' },
+];
 
 const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const { appName } = useAppSettings();
@@ -40,6 +60,8 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const [understandCheck, setUnderstandCheck] = useState(false);
   const [deleteTablesOpen, setDeleteTablesOpen] = useState(false);
   const [deleteTablesLoading, setDeleteTablesLoading] = useState(false);
+  const [seedCategories, setSeedCategories] = useState<SeedCategory[]>(['users', 'courses', 'subscriptions', 'schedule', 'communications', 'support', 'certificates']);
+  const [seedQuantity, setSeedQuantity] = useState<SeedQuantity>('medium');
 
   const persistLog = (log: string[]) => {
     setSeedLog(log);
