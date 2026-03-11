@@ -22,9 +22,11 @@ const Notifications = () => {
 
   const [notifications, setNotifications] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const fetchNotifications = async () => {
     if (!user) return;
+    setLoading(true);
     const { data } = await supabase
       .from('notifications')
       .select('*')
