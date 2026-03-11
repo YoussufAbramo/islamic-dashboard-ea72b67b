@@ -584,24 +584,12 @@ const LandingContentSettings = () => {
 
         {isCentered ? (
           <div className="space-y-5">
-            <NavItemEditor
-              listKey="nav_items_left"
-              items={navItemsLeft || navItems.slice(0, Math.ceil(navItems.length / 2))}
-              title={isAr ? 'القائمة اليسرى' : 'Left Menu'}
-            />
+            {renderNavItems('nav_items_left', navItemsLeft || navItems.slice(0, Math.ceil(navItems.length / 2)), isAr ? 'القائمة اليسرى' : 'Left Menu')}
             <div className="border-t border-border" />
-            <NavItemEditor
-              listKey="nav_items_right"
-              items={navItemsRight || navItems.slice(Math.ceil(navItems.length / 2))}
-              title={isAr ? 'القائمة اليمنى' : 'Right Menu'}
-            />
+            {renderNavItems('nav_items_right', navItemsRight || navItems.slice(Math.ceil(navItems.length / 2)), isAr ? 'القائمة اليمنى' : 'Right Menu')}
           </div>
         ) : (
-          <NavItemEditor
-            listKey="nav_items"
-            items={navItems}
-            title={isAr ? 'روابط التنقل' : 'Navigation Links'}
-          />
+          renderNavItems('nav_items', navItems, isAr ? 'روابط التنقل' : 'Navigation Links')
         )}
       </div>
     </div>
