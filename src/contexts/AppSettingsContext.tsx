@@ -237,6 +237,7 @@ function loadSaved(): PendingSettings {
     sidebarMode: (localStorage.getItem('app_sidebar_mode') as SidebarMode) || 'dark',
     timeFormat: (localStorage.getItem('app_time_format') as TimeFormat) || '12h',
     developerMode: localStorage.getItem('app_developer_mode') !== 'false',
+    socialLinks: (() => { try { const s = localStorage.getItem('app_social_links'); return s ? { ...DEFAULT_SOCIAL_LINKS, ...JSON.parse(s) } : DEFAULT_SOCIAL_LINKS; } catch { return DEFAULT_SOCIAL_LINKS; } })(),
   };
 }
 
