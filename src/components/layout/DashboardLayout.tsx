@@ -128,6 +128,12 @@ const FloatingButtons = () => {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Button type="button" variant="outline" size="sm" onClick={handleAutoFill} className="gap-1.5 text-xs">
+                <UserCheck className="h-3.5 w-3.5" />
+                {isAr ? 'ملء تلقائي' : 'Auto Fill'}
+              </Button>
+            </div>
             <div className="grid sm:grid-cols-2 gap-3">
               <div><Label>{isAr ? 'الاسم' : 'Name'}</Label><Input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} /></div>
               <div><Label>{isAr ? 'البريد' : 'Email'}</Label><Input type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} /></div>
