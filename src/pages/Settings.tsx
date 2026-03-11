@@ -113,6 +113,7 @@ const Settings = () => {
           {activeTab === 'data' && isAdmin && <DataManagementCard isAr={isAr} />}
           {activeTab === 'backups' && isAdmin && <BackupsSettings />}
           {activeTab === 'pixels' && isAdmin && <PixelsIntegrationSettings />}
+          {activeTab === 'developer' && isAdmin && <DeveloperSettings />}
         </div>
       </div>
 
