@@ -8,26 +8,48 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree, Layers, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 
-const contentTypes = [
-  { value: 'table_of_content', label: 'Table of Content' },
-  { value: 'revision', label: 'Revision' },
-  { value: 'read_listen', label: 'Read & Listen' },
-  { value: 'memorization', label: 'Memorization' },
-  { value: 'exercise_text_match', label: 'Exercise: Text Match' },
-  { value: 'exercise_choose_correct', label: 'Exercise: Choose Correct' },
-  { value: 'exercise_choose_multiple', label: 'Exercise: Choose Multiple' },
-  { value: 'exercise_rearrange', label: 'Exercise: Rearrange Words' },
-  { value: 'exercise_missing_text', label: 'Exercise: Missing Text' },
-  { value: 'exercise_true_false', label: 'Exercise: True/False' },
-  { value: 'exercise_listen_choose', label: 'Exercise: Listen & Choose' },
-  { value: 'homework', label: 'Homework' },
+const contentTypeGroups = [
+  {
+    label: '📄 Text',
+    items: [
+      { value: 'table_of_content', label: 'Table of Content' },
+      { value: 'read_listen', label: 'Read & Listen' },
+      { value: 'memorization', label: 'Memorization' },
+    ],
+  },
+  {
+    label: '🎧 Audio',
+    items: [
+      { value: 'exercise_listen_choose', label: 'Listen & Choose' },
+    ],
+  },
+  {
+    label: '✏️ Exercises',
+    items: [
+      { value: 'exercise_text_match', label: 'Text Match' },
+      { value: 'exercise_choose_correct', label: 'Choose Correct' },
+      { value: 'exercise_choose_multiple', label: 'Choose Multiple' },
+      { value: 'exercise_rearrange', label: 'Rearrange Words' },
+      { value: 'exercise_missing_text', label: 'Missing Text' },
+      { value: 'exercise_true_false', label: 'True / False' },
+    ],
+  },
+  {
+    label: '📚 Other',
+    items: [
+      { value: 'revision', label: 'Revision' },
+      { value: 'homework', label: 'Homework' },
+    ],
+  },
 ];
+
+const allContentTypes = contentTypeGroups.flatMap((g) => g.items);
 
 const CATEGORIES = [
   { value: 'quran', label: 'Quran', labelAr: 'القرآن الكريم' },
@@ -335,7 +357,7 @@ const CourseDetail = () => {
                                 <FileText className="h-3.5 w-3.5 text-muted-foreground" />
                                 <span className="font-medium text-sm">{isAr && content.title_ar ? content.title_ar : content.title}</span>
                                 <Badge variant="outline" className="text-xs">
-                                  {contentTypes.find(ct => ct.value === content.lesson_type)?.label || content.lesson_type}
+                                  {allContentTypes.find(ct => ct.value === content.lesson_type)?.label || content.lesson_type}
                                 </Badge>
                               </div>
                               {canEdit && (
@@ -365,7 +387,14 @@ const CourseDetail = () => {
                                     <Select value={contentForm.lesson_type} onValueChange={(v) => setContentForm({ ...contentForm, lesson_type: v })}>
                                       <SelectTrigger><SelectValue /></SelectTrigger>
                                       <SelectContent>
-                                        {contentTypes.map((ct) => <SelectItem key={ct.value} value={ct.value}>{ct.label}</SelectItem>)}
+                                        {contentTypeGroups.map((group) => (
+                                          <SelectGroup key={group.label}>
+                                            <SelectLabel className="text-xs font-semibold text-muted-foreground">{group.label}</SelectLabel>
+                                            {group.items.map((ct) => (
+                                              <SelectItem key={ct.value} value={ct.value}>{ct.label}</SelectItem>
+                                            ))}
+                                          </SelectGroup>
+                                        ))}
                                       </SelectContent>
                                     </Select>
                                   </div>
