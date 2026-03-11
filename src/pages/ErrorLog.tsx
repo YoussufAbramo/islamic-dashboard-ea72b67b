@@ -201,7 +201,7 @@ const ErrorLog = () => {
         <div className="space-y-1.5">
           {filtered.map(entry => (
             <Card key={entry.id} className="hover:shadow-sm transition-shadow cursor-pointer" onClick={() => setSelectedError(entry)}>
-              <CardContent className="p-3 flex items-start gap-3">
+              <CardContent className="p-3 flex items-start gap-3 overflow-hidden">
                 {levelIcon(entry.level)}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-mono truncate max-w-full">{entry.message}</p>
