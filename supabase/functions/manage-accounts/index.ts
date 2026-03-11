@@ -476,6 +476,47 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ success: true, deleted_users: deletedUsers }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
+    // ==================== ENCRYPTION HELPERS ====================
+    const ENCRYPTION_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    
+    async function deriveKey(secret: string): Promise<CryptoKey> {
+      const enc = new TextEncoder()
+      const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(secret), 'PBKDF2', false, ['deriveKey'])
+      return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: enc.encode('payment-gateway-salt'), iterations: 100000, hash: 'SHA-256' },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+      )
+    }
+
+    async function encryptPayload(plaintext: string): Promise<string> {
+      const key = await deriveKey(ENCRYPTION_KEY)
+      const iv = crypto.getRandomValues(new Uint8Array(12))
+      const enc = new TextEncoder()
+      const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(plaintext))
+      const combined = new Uint8Array(iv.length + new Uint8Array(ciphertext).length)
+      combined.set(iv)
+      combined.set(new Uint8Array(ciphertext), iv.length)
+      // Base64 encode
+      let binary = ''
+      for (const byte of combined) binary += String.fromCharCode(byte)
+      return btoa(binary)
+    }
+
+    async function decryptPayload(encoded: string): Promise<string> {
+      const key = await deriveKey(ENCRYPTION_KEY)
+      // Base64 decode
+      const binary = atob(encoded)
+      const combined = new Uint8Array(binary.length)
+      for (let i = 0; i < binary.length; i++) combined[i] = binary.charCodeAt(i)
+      const iv = combined.slice(0, 12)
+      const ciphertext = combined.slice(12)
+      const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext)
+      return new TextDecoder().decode(decrypted)
+    }
+
     // ==================== STORE PAYMENT KEYS ====================
     if (action === 'store_payment_keys') {
       const { gateway, keys } = body
@@ -483,12 +524,14 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: 'Missing gateway id' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
 
-      // Mask secret values for storage (store actual keys server-side only)
+      // Encrypt the keys JSON before storing
+      const encryptedValue = await encryptPayload(JSON.stringify(keys || {}))
+
       const { error } = await adminClient
         .from('payment_gateway_config')
         .upsert({
           gateway_id: gateway,
-          encrypted_keys: keys || {},
+          encrypted_keys: { cipher: encryptedValue },
           is_active: true,
           updated_at: new Date().toISOString(),
           updated_by: caller.id,
@@ -511,23 +554,39 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
 
-      // Return masked versions of the keys
-      const masked = (data || []).map(row => {
+      const masked = []
+      for (const row of (data || [])) {
         const maskedKeys: Record<string, string> = {}
-        for (const [key, value] of Object.entries(row.encrypted_keys as Record<string, string>)) {
-          if (typeof value === 'string' && value.length > 4) {
-            maskedKeys[key] = '•'.repeat(value.length - 4) + value.slice(-4)
-          } else if (typeof value === 'string') {
-            maskedKeys[key] = '••••'
+        try {
+          const rawKeys = row.encrypted_keys as Record<string, any>
+          let decryptedKeys: Record<string, string> = {}
+          
+          if (rawKeys?.cipher && typeof rawKeys.cipher === 'string') {
+            // New encrypted format
+            const decrypted = await decryptPayload(rawKeys.cipher)
+            decryptedKeys = JSON.parse(decrypted)
+          } else {
+            // Legacy plaintext format (backwards compat)
+            decryptedKeys = rawKeys as Record<string, string>
           }
+
+          for (const [key, value] of Object.entries(decryptedKeys)) {
+            if (typeof value === 'string' && value.length > 4) {
+              maskedKeys[key] = '•'.repeat(value.length - 4) + value.slice(-4)
+            } else if (typeof value === 'string') {
+              maskedKeys[key] = '••••'
+            }
+          }
+        } catch (_) {
+          // If decryption fails, show empty masked keys
         }
-        return {
+        masked.push({
           gateway_id: row.gateway_id,
           masked_keys: maskedKeys,
           is_active: row.is_active,
           updated_at: row.updated_at,
-        }
-      })
+        })
+      }
 
       return new Response(JSON.stringify({ success: true, gateways: masked }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
