@@ -22,10 +22,27 @@ interface PixelConfig {
   clarity_pixel: string;
 }
 
+interface PixelEnabledConfig {
+  google_analytics: boolean;
+  google_tag_manager: boolean;
+  meta_pixel: boolean;
+  google_search_console: boolean;
+  gosopro_pixel: boolean;
+  snapchat_pixel: boolean;
+  tiktok_pixel: boolean;
+  clarity_pixel: boolean;
+}
+
 const defaultPixels: PixelConfig = {
   google_analytics: '', google_tag_manager: '', meta_pixel: '',
   google_search_console: '', gosopro_pixel: '', snapchat_pixel: '',
   tiktok_pixel: '', clarity_pixel: '',
+};
+
+const defaultEnabled: PixelEnabledConfig = {
+  google_analytics: false, google_tag_manager: false, meta_pixel: false,
+  google_search_console: false, gosopro_pixel: false, snapchat_pixel: false,
+  tiktok_pixel: false, clarity_pixel: false,
 };
 
 // Brand logo components
