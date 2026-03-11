@@ -182,7 +182,7 @@ const WebsitePages = () => {
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE}><Trash2 className={ACTION_ICON} /></Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>

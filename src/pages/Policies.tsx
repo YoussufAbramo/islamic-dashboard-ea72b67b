@@ -105,8 +105,8 @@ const Policies = () => {
                     <ExternalLink className="h-3.5 w-3.5" />
                   </Button>
                 )}
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => togglePublish(policy)}>
-                  {policy.is_published ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => togglePublish(policy)}>
+                  {policy.is_published ? <Eye className={ACTION_ICON} /> : <EyeOff className={ACTION_ICON} />}
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => setEditPolicy({ ...policy })}>
                   {isAr ? 'تعديل' : 'Edit'}
