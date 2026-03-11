@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Search, ShieldCheck } from 'lucide-react';
 import { usePagination } from '@/hooks/use-pagination';
 import PaginationControls from '@/components/PaginationControls';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Admins = () => {
   const { language } = useLanguage();
