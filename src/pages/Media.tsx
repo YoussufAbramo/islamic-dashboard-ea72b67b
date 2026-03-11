@@ -171,7 +171,7 @@ const Media = () => {
     setSelectedFile(file);
     setPreviewUrl('');
     if (!file || !selectedBucket || !isImageFile(file.name)) return;
-    const bucket = BUCKETS.find(b => b.id === selectedBucket);
+    const bucket = buckets.find(b => b.id === selectedBucket);
     if (bucket?.public) {
       setPreviewUrl(getPublicUrl(file.name));
     } else {
