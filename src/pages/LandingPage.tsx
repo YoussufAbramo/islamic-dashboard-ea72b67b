@@ -288,7 +288,7 @@ const LandingPage = () => {
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button size="lg" onClick={() => navigate(user ? '/dashboard' : '/login')} className="text-base">
-                  {ct('hero', 'cta')} <ChevronRight className="h-5 w-5 ms-2" />
+                  {ct('hero', 'cta')} <ChevronRight className="h-5 w-5 ms-2 rtl:-scale-x-100" />
                 </Button>
                 <Button variant="outline" size="lg" onClick={() => scrollTo('features')} className="text-base">
                   {t('Learn More', 'اعرف المزيد')}
