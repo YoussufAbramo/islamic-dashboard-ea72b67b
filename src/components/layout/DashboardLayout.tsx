@@ -77,7 +77,7 @@ const FloatingButtons = () => {
 
   return (
     <>
-      <div className={`fixed bottom-5 z-50 flex items-center gap-2 ${isAr ? 'left-5' : 'right-5'}`}>
+      <div className={`fixed bottom-5 z-50 flex items-center gap-2 animate-fade-in ${isAr ? 'left-5' : 'right-5'}`} style={{ animationDelay: '0.5s', animationFillMode: 'backwards' }}>
         <TooltipProvider delayDuration={200}>
           <Tooltip>
             <TooltipTrigger asChild>
