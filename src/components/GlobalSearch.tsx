@@ -66,8 +66,6 @@ const GlobalSearch = ({ open, onOpenChange }: { open: boolean; onOpenChange: (op
   const { role } = useAuth();
   const isAr = language === 'ar';
 
-  const [students, setStudents] = useState<SearchResult[]>([]);
-  const [courses, setCourses] = useState<SearchResult[]>([]);
   const [invoices, setInvoices] = useState<SearchResult[]>([]);
   const [loaded, setLoaded] = useState(false);
 
