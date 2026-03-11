@@ -221,7 +221,7 @@ const Media = () => {
     } else {
       toast.success(isAr ? `تم حذف ${selectedNames.size} ملف` : `${selectedNames.size} file(s) deleted`);
       setFiles(prev => prev.filter(f => !selectedNames.has(f.name)));
-      if (selectedFile && selectedNames.has(selectedFile.name)) setSelectedFile(null);
+      if (selectedFile && selectedNames.has(selectedFile.name)) { setSelectedFile(null); setPreviewUrl(''); }
       setSelectedNames(new Set());
     }
   };
