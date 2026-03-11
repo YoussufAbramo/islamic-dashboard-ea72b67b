@@ -87,18 +87,18 @@ Deno.serve(async (req) => {
 
     // ==================== SEED ALL ====================
     if (action === 'seed_all') {
-      const categories: string[] = body.categories || ['users', 'courses', 'subscriptions', 'schedule', 'communications', 'support', 'certificates', 'invoices']
+      const categories: string[] = body.categories || ['users', 'courses', 'subscriptions', 'schedule', 'communications', 'support', 'certificates', 'invoices', 'website']
       const quantity: string = body.quantity || 'medium'
       
       // Quantity multipliers
       const qtyConfig = {
-        little: { students: 2, teachers: 1, courses: 1, sections: 2, lessonsPerSection: 1, lessonSections: 2, timetable: 3, announcements: 1, notifications: 2, chats: 1, tickets: 1, certs: 1, invoices: 2, tracks: 1, categories: 1, levels: 1 },
-        medium: { students: 5, teachers: 2, courses: 3, sections: 3, lessonsPerSection: 2, lessonSections: 2, timetable: 10, announcements: 3, notifications: 5, chats: 2, tickets: 3, certs: 2, invoices: 4, tracks: 2, categories: 3, levels: 3 },
-        many:   { students: 10, teachers: 4, courses: 6, sections: 4, lessonsPerSection: 3, lessonSections: 3, timetable: 20, announcements: 5, notifications: 10, chats: 4, tickets: 6, certs: 4, invoices: 8, tracks: 3, categories: 5, levels: 4 },
+        little: { students: 2, teachers: 1, courses: 1, sections: 2, lessonsPerSection: 1, lessonSections: 2, timetable: 3, announcements: 1, notifications: 2, chats: 1, tickets: 1, certs: 1, invoices: 2, tracks: 1, categories: 1, levels: 1, blogs: 2, pages: 1, packages: 1 },
+        medium: { students: 5, teachers: 2, courses: 3, sections: 3, lessonsPerSection: 2, lessonSections: 2, timetable: 10, announcements: 3, notifications: 5, chats: 2, tickets: 3, certs: 2, invoices: 4, tracks: 2, categories: 3, levels: 3, blogs: 4, pages: 3, packages: 3 },
+        many:   { students: 10, teachers: 4, courses: 6, sections: 4, lessonsPerSection: 3, lessonSections: 3, timetable: 20, announcements: 5, notifications: 10, chats: 4, tickets: 6, certs: 4, invoices: 8, tracks: 3, categories: 5, levels: 4, blogs: 6, pages: 5, packages: 4 },
       }
       const qty = qtyConfig[quantity as keyof typeof qtyConfig] || qtyConfig.medium
       
-      const counts: Record<string, number> = { students: 0, teachers: 0, courses: 0, sections: 0, lesson_sections: 0, lessons: 0, tracks: 0, categories: 0, levels: 0, subscriptions: 0, invoices: 0, timetable: 0, attendance: 0, announcements: 0, notifications: 0, chats: 0, messages: 0, tickets: 0, certificates: 0 }
+      const counts: Record<string, number> = { students: 0, teachers: 0, courses: 0, sections: 0, lesson_sections: 0, lessons: 0, tracks: 0, categories: 0, levels: 0, subscriptions: 0, invoices: 0, timetable: 0, attendance: 0, announcements: 0, notifications: 0, chats: 0, messages: 0, tickets: 0, certificates: 0, blogs: 0, pages: 0, packages: 0 }
 
       // Build student/teacher data based on quantity
       const allStudentEmails = [
