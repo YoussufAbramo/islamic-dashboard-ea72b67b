@@ -80,11 +80,11 @@ const FloatingButtons = () => {
         {/* Support Ticket */}
         <button
           onClick={() => setTicketOpen(true)}
-          className="group flex items-center gap-2 pe-2 ps-3 py-2.5 rounded-s-xl bg-primary text-primary-foreground shadow-md translate-x-[calc(100%-40px)] hover:translate-x-0 transition-transform duration-300 ease-out"
+          className="group flex items-center gap-2 pe-2 ps-3 py-2.5 rounded-s-xl rounded-e-none bg-primary text-primary-foreground shadow-md translate-x-[calc(100%-40px)] hover:translate-x-0 transition-transform duration-300 ease-out"
         >
-          <MessageSquarePlus className="h-4 w-4 shrink-0" />
+          <Bug className="h-4 w-4 shrink-0" />
           <span className="text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            {isAr ? 'تذكرة دعم' : 'Support'}
+            {isAr ? 'الإبلاغ عن خطأ' : 'Report a Bug'}
           </span>
         </button>
 
@@ -93,11 +93,11 @@ const FloatingButtons = () => {
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="group flex items-center gap-2 pe-2 ps-3 py-2.5 rounded-s-xl bg-[#25D366] text-white shadow-md translate-x-[calc(100%-40px)] hover:translate-x-0 transition-transform duration-300 ease-out"
+          className="group flex items-center gap-2 pe-2 ps-3 py-2.5 rounded-s-xl bg-[#128C7E] text-white shadow-md translate-x-[calc(100%-40px)] hover:translate-x-0 transition-transform duration-300 ease-out"
         >
           <WhatsAppIcon />
           <span className="text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            {isAr ? 'واتساب' : 'WhatsApp'}
+            {isAr ? 'تواصل مع المبيعات' : 'Contact Sales'}
           </span>
         </a>
       </div>
