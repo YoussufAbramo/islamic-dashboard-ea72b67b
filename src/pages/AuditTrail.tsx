@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search, Eye, RefreshCw, Filter, ArrowDown, ArrowUp } from 'lucide-react';
+import { Search, Eye, RefreshCw, Filter, ArrowDown, ArrowUp, ClipboardList } from 'lucide-react';
+import EmptyState from '@/components/EmptyState';
 import { usePagination } from '@/hooks/use-pagination';
 import PaginationControls from '@/components/PaginationControls';
 import { TableSkeleton } from '@/components/PageSkeleton';
