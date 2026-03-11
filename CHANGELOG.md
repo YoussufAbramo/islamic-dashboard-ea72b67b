@@ -2,6 +2,23 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.0.0] - 2026-03-11
+
+### Added
+- Fully functional auto-backup system: scheduled backups via pg_cron calling manage-backups edge function daily at 2:00 AM UTC
+- Auto-backup settings UI: enable/disable toggle, schedule (daily/weekly/monthly), retention count (3–30), format (JSON/SQL/CSV)
+- `auto_backup_config` database table with RLS restricted to admins
+- Automatic retention enforcement: old auto-backup files deleted beyond configured limit
+- Image picker (MediaPickerDialog) now supports private storage buckets with signed URLs
+- Avatars bucket added to media picker for profile avatar selection
+- Profile avatar upload replaced with reusable ImagePickerField component (same as app logo picker)
+
+### Changed
+- manage-backups edge function refactored: shared `createBackupFile` and `enforceRetention` helpers
+- MediaPickerDialog generates batch signed URLs for private bucket thumbnails
+- Profile page cartoon avatar selection now updates display immediately without requiring page reload
+- Version bumped to 4.0.0
+
 ## [3.9.0] - 2026-03-11
 
 ### Added
