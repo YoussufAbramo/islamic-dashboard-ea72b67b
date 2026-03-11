@@ -123,7 +123,7 @@ const Media = () => {
 
       <div className="flex gap-6">
         {/* Left: Folder list */}
-        <div className="w-56 shrink-0">
+        <div className="w-56 shrink-0 rounded-lg border border-border bg-muted/40 p-3">
           <nav className="space-y-1">
             <TooltipProvider delayDuration={300}>
             {BUCKETS.map(bucket => (
