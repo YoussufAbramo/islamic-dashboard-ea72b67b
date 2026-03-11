@@ -33,6 +33,7 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
   const [currentPath, setCurrentPath] = useState('');
   const [folders, setFolders] = useState<string[]>([]);
   const [files, setFiles] = useState<FileObj[]>([]);
+  const [fileUrls, setFileUrls] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState('');
