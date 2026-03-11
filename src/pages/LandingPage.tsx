@@ -224,7 +224,7 @@ const LandingPage = () => {
                 </div>
               ) : (
                 <Button size="sm" onClick={() => navigate('/login')} className="ms-1">
-                  {t('Get Started', 'ابدأ الآن')} <ChevronRight className="h-4 w-4 ms-1" />
+                  {t('Get Started', 'ابدأ الآن')} <ChevronRight className="h-4 w-4 ms-1 rtl:-scale-x-100" />
                 </Button>
               )}
             </div>
@@ -288,7 +288,7 @@ const LandingPage = () => {
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button size="lg" onClick={() => navigate(user ? '/dashboard' : '/login')} className="text-base">
-                  {ct('hero', 'cta')} <ChevronRight className="h-5 w-5 ms-2" />
+                  {ct('hero', 'cta')} <ChevronRight className="h-5 w-5 ms-2 rtl:-scale-x-100" />
                 </Button>
                 <Button variant="outline" size="lg" onClick={() => scrollTo('features')} className="text-base">
                   {t('Learn More', 'اعرف المزيد')}
@@ -444,7 +444,7 @@ const LandingPage = () => {
           <h2 className="text-3xl md:text-4xl font-bold font-amiri text-foreground">{ct('cta', 'title')}</h2>
           <p className="text-muted-foreground text-lg">{ct('cta', 'subtitle')}</p>
           <Button size="lg" onClick={() => navigate('/login')} className="text-base">
-            {t('Start Free Trial', 'ابدأ التجربة المجانية')} <ChevronRight className="h-5 w-5 ms-2" />
+            {t('Start Free Trial', 'ابدأ التجربة المجانية')} <ChevronRight className="h-5 w-5 ms-2 rtl:-scale-x-100" />
           </Button>
         </div>
       </section>
