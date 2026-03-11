@@ -404,9 +404,9 @@ const CourseDetail = () => {
                             <AccordionItem value={section.id} className="border rounded-md px-3 bg-muted/30">
                               <div className="flex items-center">
                                 {canEdit && (
-                                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: section.id, type: 'section' }); }}>
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </Button>
+                                   <Button variant="ghost" size="icon" className={`${ACTION_BTN_DESTRUCTIVE} shrink-0`} onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: section.id, type: 'section' }); }}>
+                                     <Trash2 className={ACTION_ICON} />
+                                   </Button>
                                 )}
                                 <AccordionTrigger className="hover:no-underline py-3 text-sm flex-1">
                                   <div className="flex items-center gap-2">
