@@ -4,12 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
-import { Shield, ShieldCheck, Lock, Plus, Trash2, Edit, Users, BookOpen, HeadphonesIcon, GraduationCap } from 'lucide-react';
+import { Shield, ShieldCheck, Lock, Plus, Trash2, Users, BookOpen, HeadphonesIcon, GraduationCap, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Role {
@@ -26,66 +24,11 @@ interface Role {
 }
 
 const defaultRoles: Role[] = [
-  {
-    id: 'admin',
-    name: 'Admin',
-    nameAr: 'مشرف',
-    description: 'Full system access with all permissions including user management and settings',
-    descriptionAr: 'وصول كامل للنظام مع جميع الصلاحيات بما في ذلك إدارة المستخدمين والإعدادات',
-    permissions: ['manage_users', 'manage_courses', 'manage_settings', 'manage_billing', 'manage_roles', 'view_reports', 'manage_support', 'manage_chats'],
-    isSystem: true,
-    isDeletable: false,
-    icon: ShieldCheck,
-    color: 'text-primary',
-  },
-  {
-    id: 'teacher',
-    name: 'Teacher',
-    nameAr: 'معلم',
-    description: 'Can manage courses, view assigned students, and communicate via chat',
-    descriptionAr: 'يمكنه إدارة الدورات وعرض الطلاب المعينين والتواصل عبر المحادثة',
-    permissions: ['manage_courses', 'view_students', 'manage_attendance', 'manage_chats', 'manage_certificates'],
-    isSystem: true,
-    isDeletable: false,
-    icon: Users,
-    color: 'text-blue-500',
-  },
-  {
-    id: 'student',
-    name: 'Student',
-    nameAr: 'طالب',
-    description: 'Can view enrolled courses, submit progress, and communicate with teachers',
-    descriptionAr: 'يمكنه عرض الدورات المسجلة وتقديم التقدم والتواصل مع المعلمين',
-    permissions: ['view_courses', 'submit_progress', 'view_certificates', 'manage_chats'],
-    isSystem: true,
-    isDeletable: false,
-    icon: GraduationCap,
-    color: 'text-emerald-500',
-  },
-  {
-    id: 'content_creator',
-    name: 'Education Content Creator',
-    nameAr: 'منشئ المحتوى التعليمي',
-    description: 'Can create and edit course content, sections, and lessons without admin access',
-    descriptionAr: 'يمكنه إنشاء وتعديل محتوى الدورات والأقسام والدروس بدون صلاحيات المشرف',
-    permissions: ['manage_courses', 'manage_lessons', 'view_students'],
-    isSystem: true,
-    isDeletable: true,
-    icon: BookOpen,
-    color: 'text-orange-500',
-  },
-  {
-    id: 'support_agent',
-    name: 'Customer Support',
-    nameAr: 'دعم العملاء',
-    description: 'Can manage support tickets, respond to inquiries, and view basic user information',
-    descriptionAr: 'يمكنه إدارة تذاكر الدعم والرد على الاستفسارات وعرض معلومات المستخدم الأساسية',
-    permissions: ['manage_support', 'view_students', 'view_courses'],
-    isSystem: true,
-    isDeletable: true,
-    icon: HeadphonesIcon,
-    color: 'text-purple-500',
-  },
+  { id: 'admin', name: 'Admin', nameAr: 'مشرف', description: 'Full system access with all permissions including user management and settings', descriptionAr: 'وصول كامل للنظام مع جميع الصلاحيات بما في ذلك إدارة المستخدمين والإعدادات', permissions: ['manage_users', 'manage_courses', 'manage_settings', 'manage_billing', 'manage_roles', 'view_reports', 'manage_support', 'manage_chats'], isSystem: true, isDeletable: false, icon: ShieldCheck, color: 'text-primary' },
+  { id: 'teacher', name: 'Teacher', nameAr: 'معلم', description: 'Can manage courses, view assigned students, and communicate via chat', descriptionAr: 'يمكنه إدارة الدورات وعرض الطلاب المعينين والتواصل عبر المحادثة', permissions: ['manage_courses', 'view_students', 'manage_attendance', 'manage_chats', 'manage_certificates'], isSystem: true, isDeletable: false, icon: Users, color: 'text-blue-500' },
+  { id: 'student', name: 'Student', nameAr: 'طالب', description: 'Can view enrolled courses, submit progress, and communicate with teachers', descriptionAr: 'يمكنه عرض الدورات المسجلة وتقديم التقدم والتواصل مع المعلمين', permissions: ['view_courses', 'submit_progress', 'view_certificates', 'manage_chats'], isSystem: true, isDeletable: false, icon: GraduationCap, color: 'text-emerald-500' },
+  { id: 'content_creator', name: 'Education Content Creator', nameAr: 'منشئ المحتوى التعليمي', description: 'Can create and edit course content, sections, and lessons without admin access', descriptionAr: 'يمكنه إنشاء وتعديل محتوى الدورات والأقسام والدروس بدون صلاحيات المشرف', permissions: ['manage_courses', 'manage_lessons', 'view_students'], isSystem: true, isDeletable: true, icon: BookOpen, color: 'text-orange-500' },
+  { id: 'support_agent', name: 'Customer Support', nameAr: 'دعم العملاء', description: 'Can manage support tickets, respond to inquiries, and view basic user information', descriptionAr: 'يمكنه إدارة تذاكر الدعم والرد على الاستفسارات وعرض معلومات المستخدم الأساسية', permissions: ['manage_support', 'view_students', 'view_courses'], isSystem: true, isDeletable: true, icon: HeadphonesIcon, color: 'text-purple-500' },
 ];
 
 const allPermissions = [
@@ -113,6 +56,7 @@ const RoleManagement = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [viewRole, setViewRole] = useState<Role | null>(null);
+  const [blurDismissed, setBlurDismissed] = useState(false);
 
   const handleDelete = (id: string) => {
     setRoles(roles.filter(r => r.id !== id));
@@ -123,15 +67,22 @@ const RoleManagement = () => {
   return (
     <div className="space-y-6 relative">
       {/* Coming Soon Overlay */}
-      <div className="absolute inset-0 z-20 bg-background/60 backdrop-blur-[1px] flex items-center justify-center rounded-lg pointer-events-auto">
-        <div className="text-center space-y-3">
-          <Shield className="h-16 w-16 text-muted-foreground/40 mx-auto" />
-          <div>
-            <p className="text-xl font-semibold">{isAr ? 'قريباً' : 'Coming Soon'}</p>
-            <p className="text-sm text-muted-foreground mt-1 max-w-sm">{isAr ? 'ستتمكن قريباً من إنشاء وتعديل أدوار مخصصة مع صلاحيات محددة' : 'Custom role creation and permission editing will be available soon'}</p>
+      {!blurDismissed && (
+        <div className="absolute inset-0 z-20 bg-background/60 backdrop-blur-[1px] flex items-center justify-center rounded-lg pointer-events-auto">
+          <div className="text-center space-y-3">
+            <Shield className="h-16 w-16 text-muted-foreground/40 mx-auto" />
+            <div>
+              <p className="text-xl font-semibold">{isAr ? 'قريباً' : 'Coming Soon'}</p>
+              <p className="text-sm text-muted-foreground mt-1 max-w-sm">{isAr ? 'ستتمكن قريباً من إنشاء وتعديل أدوار مخصصة مع صلاحيات محددة' : 'Custom role creation and permission editing will be available soon'}</p>
+            </div>
+            <Button variant="outline" size="sm" className="gap-1.5 mt-2" onClick={() => setBlurDismissed(true)}>
+              <Eye className="h-3.5 w-3.5" />
+              {isAr ? 'عرض فقط' : 'View Only'}
+            </Button>
           </div>
         </div>
-      </div>
+      )}
+
       <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -164,46 +115,27 @@ const RoleManagement = () => {
                       <CardTitle className="text-base">{isAr ? role.nameAr : role.name}</CardTitle>
                       <div className="flex items-center gap-1.5 mt-1">
                         {!role.isDeletable && (
-                          <Badge variant="outline" className="text-[10px] gap-1">
-                            <Lock className="h-2.5 w-2.5" />{isAr ? 'نظام' : 'System'}
-                          </Badge>
+                          <Badge variant="outline" className="text-[10px] gap-1"><Lock className="h-2.5 w-2.5" />{isAr ? 'نظام' : 'System'}</Badge>
                         )}
-                        <Badge variant="secondary" className="text-[10px]">
-                          {role.permissions.length} {isAr ? 'صلاحية' : 'permissions'}
-                        </Badge>
+                        <Badge variant="secondary" className="text-[10px]">{role.permissions.length} {isAr ? 'صلاحية' : 'permissions'}</Badge>
                       </div>
                     </div>
                   </div>
                   {role.isDeletable && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 rounded-full hover:bg-destructive/10 text-destructive hover:text-destructive"
-                      onClick={(e) => { e.stopPropagation(); setDeleteTarget(role.id); }}
-                    >
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-destructive/10 text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); setDeleteTarget(role.id); }}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   )}
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {isAr ? role.descriptionAr : role.description}
-                </p>
+                <p className="text-sm text-muted-foreground line-clamp-2">{isAr ? role.descriptionAr : role.description}</p>
                 <div className="flex flex-wrap gap-1 mt-3">
                   {role.permissions.slice(0, 4).map(p => {
                     const perm = allPermissions.find(ap => ap.key === p);
-                    return (
-                      <Badge key={p} variant="outline" className="text-[10px]">
-                        {perm ? (isAr ? perm.labelAr : perm.label) : p}
-                      </Badge>
-                    );
+                    return <Badge key={p} variant="outline" className="text-[10px]">{perm ? (isAr ? perm.labelAr : perm.label) : p}</Badge>;
                   })}
-                  {role.permissions.length > 4 && (
-                    <Badge variant="secondary" className="text-[10px]">
-                      +{role.permissions.length - 4}
-                    </Badge>
-                  )}
+                  {role.permissions.length > 4 && <Badge variant="secondary" className="text-[10px]">+{role.permissions.length - 4}</Badge>}
                 </div>
               </CardContent>
             </Card>
@@ -223,9 +155,7 @@ const RoleManagement = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="min-w-[180px]">{isAr ? 'الصلاحية' : 'Permission'}</TableHead>
-                  {roles.map(r => (
-                    <TableHead key={r.id} className="text-center min-w-[100px]">{isAr ? r.nameAr : r.name}</TableHead>
-                  ))}
+                  {roles.map(r => <TableHead key={r.id} className="text-center min-w-[100px]">{isAr ? r.nameAr : r.name}</TableHead>)}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -234,11 +164,9 @@ const RoleManagement = () => {
                     <TableCell className="font-medium text-sm">{isAr ? perm.labelAr : perm.label}</TableCell>
                     {roles.map(r => (
                       <TableCell key={r.id} className="text-center">
-                        {r.permissions.includes(perm.key) ? (
-                          <span className="inline-block h-5 w-5 rounded-full bg-primary/10 text-primary text-xs leading-5">✓</span>
-                        ) : (
-                          <span className="inline-block h-5 w-5 rounded-full bg-muted text-muted-foreground text-xs leading-5">—</span>
-                        )}
+                        {r.permissions.includes(perm.key)
+                          ? <span className="inline-block h-5 w-5 rounded-full bg-primary/10 text-primary text-xs leading-5">✓</span>
+                          : <span className="inline-block h-5 w-5 rounded-full bg-muted text-muted-foreground text-xs leading-5">—</span>}
                       </TableCell>
                     ))}
                   </TableRow>
@@ -262,9 +190,7 @@ const RoleManagement = () => {
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">{isAr ? viewRole.descriptionAr : viewRole.description}</p>
               <div className="flex items-center gap-2">
-                {!viewRole.isDeletable && (
-                  <Badge variant="outline" className="gap-1"><Lock className="h-3 w-3" />{isAr ? 'دور نظامي — لا يمكن حذفه' : 'System role — cannot be deleted'}</Badge>
-                )}
+                {!viewRole.isDeletable && <Badge variant="outline" className="gap-1"><Lock className="h-3 w-3" />{isAr ? 'دور نظامي — لا يمكن حذفه' : 'System role — cannot be deleted'}</Badge>}
               </div>
               <div>
                 <Label className="mb-2 block">{isAr ? 'الصلاحيات' : 'Permissions'}</Label>
@@ -289,27 +215,21 @@ const RoleManagement = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
-            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => deleteTarget && handleDelete(deleteTarget)}>
-              {isAr ? 'حذف' : 'Delete'}
-            </AlertDialogAction>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => deleteTarget && handleDelete(deleteTarget)}>{isAr ? 'حذف' : 'Delete'}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Create Role Dialog (Coming Soon) */}
+      {/* Create Role Dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{isAr ? 'إنشاء دور جديد' : 'Create New Role'}</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>{isAr ? 'إنشاء دور جديد' : 'Create New Role'}</DialogTitle></DialogHeader>
           <div className="text-center py-8">
             <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
             <p className="text-lg font-medium">{isAr ? 'قريباً' : 'Coming Soon'}</p>
             <p className="text-sm text-muted-foreground mt-1">{isAr ? 'ستتمكن من إنشاء أدوار مخصصة مع صلاحيات محددة' : 'You will be able to create custom roles with specific permissions'}</p>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>{isAr ? 'إغلاق' : 'Close'}</Button>
-          </DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setCreateOpen(false)}>{isAr ? 'إغلاق' : 'Close'}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

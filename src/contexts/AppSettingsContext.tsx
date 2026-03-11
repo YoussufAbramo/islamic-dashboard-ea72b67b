@@ -80,6 +80,57 @@ interface PendingSettings {
   defaultTimezone: string;
   sidebarMode: SidebarMode;
   timeFormat: TimeFormat;
+  developerMode: boolean;
+}
+
+interface AppSettingsContextType {
+  currency: Currency;
+  setCurrency: (c: Currency) => void;
+  currencies: Currency[];
+  colorTheme: ColorTheme;
+  setColorTheme: (t: ColorTheme) => void;
+  themes: typeof THEMES;
+  appName: string;
+  setAppName: (n: string) => void;
+  appDescription: string;
+  setAppDescription: (d: string) => void;
+  appLogo: string;
+  setAppLogo: (l: string) => void;
+  darkLogo: string;
+  setDarkLogo: (l: string) => void;
+  signatureImage: string;
+  setSignatureImage: (s: string) => void;
+  stampImage: string;
+  setStampImage: (s: string) => void;
+  signaturePosition: FooterPosition;
+  setSignaturePosition: (p: FooterPosition) => void;
+  stampPosition: FooterPosition;
+  setStampPosition: (p: FooterPosition) => void;
+  ltrFont: string;
+  setLtrFont: (f: string) => void;
+  rtlFont: string;
+  setRtlFont: (f: string) => void;
+  buttonShape: ButtonShape;
+  setButtonShape: (s: ButtonShape) => void;
+  currencyDecimals: number;
+  setCurrencyDecimals: (d: number) => void;
+  paymentGateway: string;
+  setPaymentGateway: (g: string) => void;
+  favicon: string;
+  setFavicon: (f: string) => void;
+  defaultTimezone: string;
+  setDefaultTimezone: (tz: string) => void;
+  sidebarMode: SidebarMode;
+  setSidebarMode: (m: SidebarMode) => void;
+  timeFormat: TimeFormat;
+  setTimeFormat: (f: TimeFormat) => void;
+  developerMode: boolean;
+  setDeveloperMode: (d: boolean) => void;
+  pending: PendingSettings;
+  updatePending: (partial: Partial<PendingSettings>) => void;
+  saveSettings: () => void;
+  hasPendingChanges: boolean;
+  discardChanges: () => void;
 }
 
 interface AppSettingsContextType {
@@ -168,6 +219,7 @@ function loadSaved(): PendingSettings {
     defaultTimezone: localStorage.getItem('app_default_timezone') || Intl.DateTimeFormat().resolvedOptions().timeZone,
     sidebarMode: (localStorage.getItem('app_sidebar_mode') as SidebarMode) || 'dark',
     timeFormat: (localStorage.getItem('app_time_format') as TimeFormat) || '12h',
+    developerMode: localStorage.getItem('app_developer_mode') === 'true',
   };
 }
 
@@ -235,6 +287,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     localStorage.setItem('app_default_timezone', pending.defaultTimezone);
     localStorage.setItem('app_sidebar_mode', pending.sidebarMode);
     localStorage.setItem('app_time_format', pending.timeFormat);
+    localStorage.setItem('app_developer_mode', String(pending.developerMode));
     setSaved({ ...pending });
   }, [pending]);
 
@@ -270,6 +323,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const setDefaultTimezone = useCallback((tz: string) => { setPending(p => ({ ...p, defaultTimezone: tz })); }, []);
   const setSidebarMode = useCallback((m: SidebarMode) => { setPending(p => ({ ...p, sidebarMode: m })); }, []);
   const setTimeFormat = useCallback((f: TimeFormat) => { setPending(p => ({ ...p, timeFormat: f })); }, []);
+  const setDeveloperMode = useCallback((d: boolean) => { setPending(p => ({ ...p, developerMode: d })); }, []);
 
   return (
     <AppSettingsContext.Provider value={{
@@ -292,6 +346,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       defaultTimezone: saved.defaultTimezone, setDefaultTimezone,
       sidebarMode: saved.sidebarMode, setSidebarMode,
       timeFormat: saved.timeFormat, setTimeFormat,
+      developerMode: saved.developerMode, setDeveloperMode,
       pending, updatePending, saveSettings, hasPendingChanges, discardChanges,
     }}>
       {children}

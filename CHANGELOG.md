@@ -2,6 +2,21 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [3.6.0] - 2026-03-11
+
+### Added
+- Developer category in main menu with Error Documentation and Webhook Log
+- Developer Mode toggle in Settings to show/hide Developer menu category
+- Webhook Log page showing incoming webhook requests
+- Media Manager redesigned: left folder navigation, right content panel with file detail sidebar
+- Manage Roles: "View Only" button to dismiss blur overlay while keeping Coming Soon badge
+
+### Changed
+- Moved Media from Messages to Website category
+- Moved Error Documentation from Messages to Developer category
+- Re-added Coming Soon badge on Manage Roles (kept navigation enabled)
+- Version bumped to 3.6.0
+
 ## [3.5.0] - 2026-03-11
 
 ### Added
