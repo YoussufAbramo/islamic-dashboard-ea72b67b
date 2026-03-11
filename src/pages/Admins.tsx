@@ -30,6 +30,7 @@ const Admins = () => {
         .select('*')
         .in('id', adminIds);
       setAdmins(profiles || []);
+      setLoading(false);
     };
     fetchAdmins();
   }, []);
