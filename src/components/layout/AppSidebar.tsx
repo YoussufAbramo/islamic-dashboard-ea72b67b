@@ -45,7 +45,7 @@ const AppSidebar = () => {
 
   useEffect(() => {
     if (profile?.avatar_url) {
-      getAvatarSignedUrl(profile.avatar_url).then(setResolvedAvatarUrl);
+      resolveAvatarUrl(profile.avatar_url).then(setResolvedAvatarUrl);
     }
   }, [profile?.avatar_url]);
 

@@ -135,8 +135,8 @@ const LandingPage = () => {
 
   useEffect(() => {
     if (profile?.avatar_url) {
-      import('@/lib/storage').then(({ getAvatarSignedUrl }) => {
-        getAvatarSignedUrl(profile.avatar_url).then(setAvatarUrl);
+      import('@/lib/storage').then(({ resolveAvatarUrl }) => {
+        resolveAvatarUrl(profile.avatar_url).then(setAvatarUrl);
       });
     }
   }, [profile?.avatar_url]);
