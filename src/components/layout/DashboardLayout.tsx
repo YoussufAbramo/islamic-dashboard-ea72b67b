@@ -52,7 +52,7 @@ const FloatingButtons = () => {
   const { user, profile } = useAuth();
   const isAr = language === 'ar';
   const [ticketOpen, setTicketOpen] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '', department: 'general', priority: 'medium' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '', department: 'general', priority: 'medium' });
   const [submitting, setSubmitting] = useState(false);
 
   const handleAutoFill = () => {
