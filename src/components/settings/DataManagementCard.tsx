@@ -325,25 +325,33 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
                   : 'Choose categories and quantity to generate sample data'}
               </p>
 
-              {/* Quantity selector */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-muted-foreground">{isAr ? 'الكمية' : 'Quantity'}</Label>
-                <div className="flex gap-2">
-                  {SEED_QUANTITIES.map(q => (
-                    <button
-                      key={q.key}
-                      onClick={() => setSeedQuantity(q.key)}
-                      className={`flex-1 p-2 rounded-lg border text-center transition-colors ${
-                        seedQuantity === q.key
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-border hover:border-primary/30'
-                      }`}
-                    >
-                      <span className="text-sm font-medium block">{isAr ? q.labelAr : q.label}</span>
-                      <span className="text-[10px] text-muted-foreground">{isAr ? q.descAr : q.desc}</span>
-                    </button>
-                  ))}
+              {/* Quantity slider */}
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-medium text-muted-foreground">{isAr ? 'الكمية' : 'Quantity'}</Label>
+                  <span className="text-xs font-bold text-primary tabular-nums">{seedQuantity}x</span>
                 </div>
+                <Slider
+                  value={[seedQuantity]}
+                  onValueChange={([v]) => setSeedQuantity(v)}
+                  min={1}
+                  max={10}
+                  step={1}
+                  className="w-full"
+                />
+                {(() => {
+                  const est = getEstimatedCounts(seedQuantity);
+                  return (
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
+                      <span>👨‍🎓 {est.students} {isAr ? 'طالب' : 'students'}</span>
+                      <span>👨‍🏫 {est.teachers} {isAr ? 'معلم' : 'teachers'}</span>
+                      <span>📚 {est.courses} {isAr ? 'دورات' : 'courses'}</span>
+                      <span>📅 {est.timetable} {isAr ? 'مواعيد' : 'entries'}</span>
+                      <span>🎫 {est.tickets} {isAr ? 'تذاكر' : 'tickets'}</span>
+                      <span>📝 {est.blogs} {isAr ? 'مقالات' : 'blogs'}</span>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Category checkboxes */}
