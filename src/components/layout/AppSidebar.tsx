@@ -211,7 +211,7 @@ const AppSidebar = () => {
                           )}
                         </SidebarMenuButton>
                         {visibleChildren.length > 0 && isParentActive && (
-                          <SidebarMenu className="ms-4 mt-0.5 border-s border-border ps-2 overflow-hidden">
+                          <SidebarMenu className="ms-4 mt-0.5 border-s border-border ps-2 overflow-hidden w-[90%]">
                             {visibleChildren.map((child) => (
                               <SidebarMenuItem key={child.key}>
                                 <SidebarMenuButton
