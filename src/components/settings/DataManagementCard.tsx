@@ -301,15 +301,71 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
           {/* Seed Data */}
           <div className="flex items-start gap-4 p-4 rounded-lg border border-border">
             <PackagePlus className="h-8 w-8 text-primary shrink-0 mt-0.5" />
-            <div className="flex-1 space-y-2">
+            <div className="flex-1 space-y-3">
               <h4 className="font-medium">{isAr ? 'إضافة بيانات تجريبية' : 'Add Sample Data'}</h4>
               <p className="text-sm text-muted-foreground">
                 {isAr
-                  ? 'إنشاء دورات ودروس وطلاب ومعلمين واشتراكات وحضور وإعلانات وإشعارات ومحادثات وتذاكر دعم وشهادات تجريبية'
-                  : 'Create sample courses, lessons, students, teachers, subscriptions, attendance, announcements, notifications, chats, support tickets, and certificates'}
+                  ? 'اختر الفئات والكمية لإنشاء بيانات تجريبية'
+                  : 'Choose categories and quantity to generate sample data'}
               </p>
+
+              {/* Quantity selector */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-muted-foreground">{isAr ? 'الكمية' : 'Quantity'}</Label>
+                <div className="flex gap-2">
+                  {SEED_QUANTITIES.map(q => (
+                    <button
+                      key={q.key}
+                      onClick={() => setSeedQuantity(q.key)}
+                      className={`flex-1 p-2 rounded-lg border text-center transition-colors ${
+                        seedQuantity === q.key
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border hover:border-primary/30'
+                      }`}
+                    >
+                      <span className="text-sm font-medium block">{isAr ? q.labelAr : q.label}</span>
+                      <span className="text-[10px] text-muted-foreground">{isAr ? q.descAr : q.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Category checkboxes */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-medium text-muted-foreground">{isAr ? 'الفئات' : 'Categories'}</Label>
+                  <button
+                    className="text-[10px] text-primary hover:underline"
+                    onClick={() => setSeedCategories(
+                      seedCategories.length === SEED_CATEGORIES.length ? [] : SEED_CATEGORIES.map(c => c.key)
+                    )}
+                  >
+                    {seedCategories.length === SEED_CATEGORIES.length ? (isAr ? 'إلغاء الكل' : 'Deselect all') : (isAr ? 'تحديد الكل' : 'Select all')}
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {SEED_CATEGORIES.map(cat => (
+                    <label
+                      key={cat.key}
+                      className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors ${
+                        seedCategories.includes(cat.key) ? 'border-primary/30 bg-primary/5' : 'border-border opacity-60'
+                      }`}
+                    >
+                      <Checkbox
+                        checked={seedCategories.includes(cat.key)}
+                        onCheckedChange={(checked) => {
+                          if (checked) setSeedCategories(prev => [...prev, cat.key]);
+                          else setSeedCategories(prev => prev.filter(c => c !== cat.key));
+                        }}
+                      />
+                      <span className="text-xs">{cat.icon} {isAr ? cat.labelAr : cat.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               <div className="flex gap-2 flex-wrap">
-                <Button onClick={handleSeedData} disabled={seedLoading} size="sm">
+                <Button onClick={handleSeedData} disabled={seedLoading || seedCategories.length === 0} size="sm">
                   {seedLoading && <Loader2 className="h-4 w-4 me-1 animate-spin" />}
                   {isAr ? 'إضافة بيانات تجريبية' : 'Seed Sample Data'}
                 </Button>
