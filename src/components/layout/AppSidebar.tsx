@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText, LogOut, Calculator, ShieldCheck, Shield, Sparkles, AlertCircle, HardDrive, Globe, ScrollText, PenLine, Activity, Code, Webhook } from 'lucide-react';
+import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText, LogOut, Calculator, ShieldCheck, Shield, Sparkles, AlertCircle, HardDrive, Globe, ScrollText, PenLine, Activity, Code, Webhook, Bug } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -139,6 +139,7 @@ const AppSidebar = () => {
         { key: 'error-docs', label: isAr ? 'توثيق الأخطاء' : 'Error Documentation', icon: AlertCircle, path: '/dashboard/error-docs', roles: ['admin'] },
         { key: 'webhook-log', label: isAr ? 'سجل الويب هوك' : 'Webhook Log', icon: Webhook, path: '/dashboard/webhook-log', roles: ['admin'] },
         { key: 'activity-log', label: isAr ? 'سجل النشاطات' : 'Activity Log', icon: Activity, path: '/dashboard/activity-log', roles: ['admin'], comingSoon: true },
+        { key: 'error-log', label: isAr ? 'سجل الأخطاء' : 'Error Log', icon: Bug, path: '/dashboard/error-log', roles: ['admin'] },
       ],
     },
   ];
