@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Download, Printer } from 'lucide-react';
 import { format } from 'date-fns';
 import { subscriptionStatusLabels, subscriptionTypeLabels, getLabel } from '@/lib/statusLabels';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Reports = () => {
   const { language } = useLanguage();

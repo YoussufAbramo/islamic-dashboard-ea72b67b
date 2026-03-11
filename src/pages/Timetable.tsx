@@ -14,6 +14,7 @@ import { usePagination } from '@/hooks/use-pagination';
 import PaginationControls from '@/components/PaginationControls';
 import { timetableStatusLabels, getLabel } from '@/lib/statusLabels';
 import { toast } from 'sonner';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 type SortOrder = 'newest' | 'oldest';
 
