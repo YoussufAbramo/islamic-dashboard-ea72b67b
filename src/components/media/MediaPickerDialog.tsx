@@ -108,7 +108,8 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
   };
 
   const handleSelect = async (fileName: string) => {
-    const url = await getUrl(fileName);
+    // Use pre-generated URL if available, otherwise generate one
+    const url = fileUrls[fileName] || await getUrl(fileName);
     onSelect(url);
     onOpenChange(false);
   };
