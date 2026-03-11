@@ -206,8 +206,8 @@ const Certificates = () => {
   const CertActionsMenu = ({ cert }: { cert: any }) => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-          <MoreHorizontal className="h-4 w-4" />
+        <Button variant="ghost" size="icon" className={ACTION_BTN}>
+          <MoreHorizontal className={ACTION_ICON} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
