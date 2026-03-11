@@ -195,19 +195,36 @@ const CourseDetail = () => {
 
   // CRUD: Content (lessons)
   const addContent = async () => {
-    if (!activeSectionId) return;
-    const currentContents = contents[activeSectionId] || [];
-    await supabase.from('lessons').insert([{
-      title: contentForm.title,
-      title_ar: contentForm.title_ar,
-      lesson_type: contentForm.lesson_type as any,
-      section_id: activeSectionId,
-      sort_order: currentContents.length,
-    }]);
+    if (editingContentId) {
+      await supabase.from('lessons').update({
+        title: contentForm.title,
+        title_ar: contentForm.title_ar,
+        lesson_type: contentForm.lesson_type as any,
+      }).eq('id', editingContentId);
+      setEditingContentId(null);
+      toast.success(isAr ? 'تم تحديث المحتوى' : 'Content updated');
+    } else {
+      if (!activeSectionId) return;
+      const currentContents = contents[activeSectionId] || [];
+      await supabase.from('lessons').insert([{
+        title: contentForm.title,
+        title_ar: contentForm.title_ar,
+        lesson_type: contentForm.lesson_type as any,
+        section_id: activeSectionId,
+        sort_order: currentContents.length,
+      }]);
+      toast.success(isAr ? 'تمت إضافة المحتوى' : 'Content added');
+    }
     setContentDialog(false);
     setContentForm({ title: '', title_ar: '', lesson_type: 'read_listen' });
     fetchHierarchy();
-    toast.success(isAr ? 'تمت إضافة المحتوى' : 'Content added');
+  };
+
+  const openEditContent = (content: any, sectionId: string) => {
+    setEditingContentId(content.id);
+    setActiveSectionId(sectionId);
+    setContentForm({ title: content.title, title_ar: content.title_ar || '', lesson_type: content.lesson_type });
+    setContentDialog(true);
   };
 
   const deleteContent = async (contentId: string) => {
