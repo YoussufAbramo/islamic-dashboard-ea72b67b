@@ -116,6 +116,8 @@ const LandingPage = () => {
       id: item.id,
     }));
   })();
+
+  const renderSection = (key: SectionKey) => {
     const s = content[key] || defaultSectionContent[key] || {};
     switch (key) {
       case 'hero': return <HeroSection key={key} content={s} isAr={isAr} user={user} statsContent={content.stats} />;
