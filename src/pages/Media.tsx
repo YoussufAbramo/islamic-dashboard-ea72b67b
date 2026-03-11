@@ -307,7 +307,11 @@ const Media = () => {
                           <p className="font-medium mt-0.5">{formatSize(selectedFile.metadata?.size)}</p>
                         </div>
                         <div>
-                          <span className="text-muted-foreground">{isAr ? 'النوع' : 'Type'}</span>
+                          <span className="text-muted-foreground">{isAr ? 'الصيغة' : 'Format'}</span>
+                          <p className="font-medium mt-0.5"><Badge variant="outline" className="text-[10px] font-mono">{getFileExt(selectedFile.name)}</Badge></p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">{isAr ? 'النوع' : 'MIME Type'}</span>
                           <p className="font-medium mt-0.5">{selectedFile.metadata?.mimetype || '—'}</p>
                         </div>
                         {selectedFile.created_at && (
