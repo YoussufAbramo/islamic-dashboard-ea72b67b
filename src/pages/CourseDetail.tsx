@@ -296,15 +296,22 @@ const CourseDetail = () => {
       <Accordion type="multiple" className="space-y-2">
         {lessons.map((lesson) => (
           <AccordionItem key={lesson.id} value={lesson.id} className="border rounded-lg px-4">
-            <AccordionTrigger className="hover:no-underline">
-              <div className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-primary" />
-                <span>{isAr && lesson.title_ar ? lesson.title_ar : lesson.title}</span>
-                <Badge variant="secondary" className="text-xs">
-                  {(sections[lesson.id] || []).length} {t('courses.sections')}
-                </Badge>
-              </div>
-            </AccordionTrigger>
+            <div className="flex items-center">
+              <AccordionTrigger className="hover:no-underline flex-1">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  <span>{isAr && lesson.title_ar ? lesson.title_ar : lesson.title}</span>
+                  <Badge variant="secondary" className="text-xs">
+                    {(sections[lesson.id] || []).length} {t('courses.sections')}
+                  </Badge>
+                </div>
+              </AccordionTrigger>
+              {canEdit && (
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={(e) => { e.stopPropagation(); deleteLesson(lesson.id); }}>
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
             <AccordionContent>
               <div className="space-y-3 pt-2">
                 {/* Level 2: Sections inside this Lesson */}
