@@ -83,7 +83,7 @@ const LandingContentSettings = () => {
   const [general, setGeneral] = useState<Record<string, any>>({ ...defaultGeneralContent });
   const [sectionsOrder, setSectionsOrder] = useState<SectionKey[]>([...DEFAULT_SECTION_ORDER]);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'sections' | 'seo'>('sections');
+  const [activeTab, setActiveTab] = useState<'sections' | 'header' | 'seo'>('sections');
   const [saving, setSaving] = useState(false);
 
   const sensors = useSensors(
