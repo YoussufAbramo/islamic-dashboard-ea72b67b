@@ -48,7 +48,6 @@ const TopBar = () => {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, []);
-  const isAdmin = role === 'admin';
 
   const fetchData = () => {
     if (!user) return;
