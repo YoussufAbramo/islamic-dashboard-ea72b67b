@@ -31,11 +31,8 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
       const { APP_VERSION } = await import('./lib/version');
-      const reg = await navigator.serviceWorker.register('/sw.js');
-      const sw = reg.active || reg.installing || reg.waiting;
-      if (sw) {
-        sw.postMessage({ type: 'SET_VERSION', version: APP_VERSION.replace(/\./g, '') });
-      }
+      const versionTag = APP_VERSION.replace(/\./g, '');
+      await navigator.serviceWorker.register('/sw.js?v=' + versionTag);
     } catch {
       // SW registration failed silently
     }

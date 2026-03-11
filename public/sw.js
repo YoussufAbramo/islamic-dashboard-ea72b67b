@@ -1,11 +1,6 @@
-// Cache name is set dynamically via message from main.tsx
-let CACHE_NAME = 'edudash-v0';
-
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SET_VERSION') {
-    CACHE_NAME = 'edudash-v' + event.data.version;
-  }
-});
+// Version is injected at registration via query string
+const VERSION = new URL(self.location).searchParams.get('v') || '0';
+const CACHE_NAME = 'edudash-v' + VERSION;
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
