@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -11,6 +11,13 @@ import { Download, Printer } from 'lucide-react';
 import { format } from 'date-fns';
 import { subscriptionStatusLabels, subscriptionTypeLabels, getLabel } from '@/lib/statusLabels';
 import { TableSkeleton } from '@/components/PageSkeleton';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend, LineChart, Line
+} from 'recharts';
+
+const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--destructive))'];
+const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' };
 
 const Reports = () => {
   const { language } = useLanguage();
@@ -84,6 +91,76 @@ const Reports = () => {
   const totalRevenue = subscriptions.reduce((s, sub) => s + (Number(sub.price) || 0), 0);
   const activeSubs = subscriptions.filter(s => s.status === 'active').length;
 
+  // === Subscription chart data ===
+  const subStatusPieData = useMemo(() => [
+    { name: isAr ? 'نشط' : 'Active', value: subStatusCounts.active },
+    { name: isAr ? 'منتهي' : 'Expired', value: subStatusCounts.expired },
+    { name: isAr ? 'ملغي' : 'Cancelled', value: subStatusCounts.cancelled },
+  ].filter(d => d.value > 0), [subscriptions, isAr]);
+
+  const subMonthlyData = useMemo(() => {
+    const map: Record<string, number> = {};
+    subscriptions.forEach(s => {
+      const month = format(new Date(s.created_at), 'yyyy-MM');
+      map[month] = (map[month] || 0) + 1;
+    });
+    return Object.entries(map)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-12)
+      .map(([month, count]) => ({ month: format(new Date(month + '-01'), 'MMM yyyy'), count }));
+  }, [subscriptions]);
+
+  // === Attendance chart data ===
+  const attStatusPieData = useMemo(() => {
+    const present = attendance.filter(a => a.status === 'present').length;
+    const absent = attendance.filter(a => a.status === 'absent').length;
+    const late = attendance.filter(a => a.status === 'late').length;
+    const excused = attendance.filter(a => a.status === 'excused').length;
+    return [
+      { name: isAr ? 'حاضر' : 'Present', value: present },
+      { name: isAr ? 'غائب' : 'Absent', value: absent },
+      { name: isAr ? 'متأخر' : 'Late', value: late },
+      { name: isAr ? 'معذور' : 'Excused', value: excused },
+    ].filter(d => d.value > 0);
+  }, [attendance, isAr]);
+
+  const attMonthlyData = useMemo(() => {
+    const map: Record<string, { present: number; absent: number; late: number }> = {};
+    attendance.forEach(a => {
+      const month = format(new Date(a.created_at), 'yyyy-MM');
+      if (!map[month]) map[month] = { present: 0, absent: 0, late: 0 };
+      if (a.status === 'present') map[month].present++;
+      else if (a.status === 'absent') map[month].absent++;
+      else map[month].late++;
+    });
+    return Object.entries(map)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-12)
+      .map(([month, data]) => ({ month: format(new Date(month + '-01'), 'MMM yyyy'), ...data }));
+  }, [attendance]);
+
+  // === Finance chart data ===
+  const revenueMonthlyData = useMemo(() => {
+    const map: Record<string, number> = {};
+    subscriptions.forEach(s => {
+      const month = format(new Date(s.created_at), 'yyyy-MM');
+      map[month] = (map[month] || 0) + (Number(s.price) || 0);
+    });
+    return Object.entries(map)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-12)
+      .map(([month, revenue]) => ({ month: format(new Date(month + '-01'), 'MMM yyyy'), revenue }));
+  }, [subscriptions]);
+
+  const revenueByTypePieData = useMemo(() => {
+    const map: Record<string, number> = {};
+    subscriptions.forEach(s => {
+      const type = getLabel(subscriptionTypeLabels, s.subscription_type, isAr);
+      map[type] = (map[type] || 0) + (Number(s.price) || 0);
+    });
+    return Object.entries(map).map(([name, value]) => ({ name, value })).filter(d => d.value > 0);
+  }, [subscriptions, isAr]);
+
   if (loading) return <TableSkeleton />;
 
   return (
@@ -102,6 +179,7 @@ const Reports = () => {
           <TabsTrigger value="finances">{isAr ? 'المالية' : 'Finances'}</TabsTrigger>
         </TabsList>
 
+        {/* ── Subscriptions Tab ── */}
         <TabsContent value="subscriptions" className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="grid grid-cols-2 gap-4">
@@ -117,7 +195,39 @@ const Reports = () => {
             </Button>
           </div>
 
-          {/* Status filter for subscriptions */}
+          {/* Charts row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader><CardTitle className="text-base">{isAr ? 'الاشتراكات الشهرية' : 'Monthly Subscriptions'}</CardTitle></CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={subMonthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="month" className="text-muted-foreground" tick={{ fontSize: 11 }} />
+                    <YAxis className="text-muted-foreground" allowDecimals={false} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Bar dataKey="count" name={isAr ? 'اشتراكات' : 'Subscriptions'} fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle className="text-base">{isAr ? 'حالة الاشتراكات' : 'Subscription Status'}</CardTitle></CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={280}>
+                  <PieChart>
+                    <Pie data={subStatusPieData} cx="50%" cy="50%" innerRadius={55} outerRadius={95} paddingAngle={4} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                      {subStatusPieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Status filter */}
           <Tabs value={subStatusFilter} onValueChange={setSubStatusFilter}>
             <TabsList>
               {Object.entries(subStatusCounts).map(([key, count]) => (
@@ -157,6 +267,7 @@ const Reports = () => {
           </Card>
         </TabsContent>
 
+        {/* ── Attendance Tab ── */}
         <TabsContent value="attendance" className="space-y-4">
           <div className="flex items-center justify-end">
             <Button variant="outline" size="sm" onClick={() => exportCSV(
@@ -167,6 +278,42 @@ const Reports = () => {
               <Download className="h-4 w-4 me-2" />CSV
             </Button>
           </div>
+
+          {/* Charts row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader><CardTitle className="text-base">{isAr ? 'الحضور الشهري' : 'Monthly Attendance'}</CardTitle></CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={attMonthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="month" className="text-muted-foreground" tick={{ fontSize: 11 }} />
+                    <YAxis className="text-muted-foreground" allowDecimals={false} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend />
+                    <Bar dataKey="present" name={isAr ? 'حاضر' : 'Present'} stackId="a" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="absent" name={isAr ? 'غائب' : 'Absent'} stackId="a" fill="hsl(var(--destructive))" />
+                    <Bar dataKey="late" name={isAr ? 'متأخر' : 'Late'} stackId="a" fill="hsl(var(--chart-3))" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle className="text-base">{isAr ? 'توزيع الحضور' : 'Attendance Distribution'}</CardTitle></CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={280}>
+                  <PieChart>
+                    <Pie data={attStatusPieData} cx="50%" cy="50%" innerRadius={55} outerRadius={95} paddingAngle={4} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                      {attStatusPieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
           <Card>
             <CardContent className="p-0">
               <Table>
@@ -193,12 +340,46 @@ const Reports = () => {
           </Card>
         </TabsContent>
 
+        {/* ── Finances Tab ── */}
         <TabsContent value="finances" className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold">{currency.symbol}{totalRevenue.toFixed(2)}</p><p className="text-sm text-muted-foreground">{isAr ? 'إجمالي الإيرادات' : 'Total Revenue'}</p></CardContent></Card>
             <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold text-primary">{currency.symbol}{(activeSubs > 0 ? totalRevenue / activeSubs : 0).toFixed(2)}</p><p className="text-sm text-muted-foreground">{isAr ? 'متوسط الاشتراك' : 'Avg Subscription'}</p></CardContent></Card>
             <Card><CardContent className="pt-4 text-center"><p className="text-2xl font-bold">{activeSubs}</p><p className="text-sm text-muted-foreground">{isAr ? 'اشتراكات نشطة' : 'Active Subscriptions'}</p></CardContent></Card>
           </div>
+
+          {/* Charts row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader><CardTitle className="text-base">{isAr ? 'الإيرادات الشهرية' : 'Monthly Revenue'}</CardTitle></CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={280}>
+                  <LineChart data={revenueMonthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="month" className="text-muted-foreground" tick={{ fontSize: 11 }} />
+                    <YAxis className="text-muted-foreground" tickFormatter={(v) => `${currency.symbol}${v}`} />
+                    <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => [`${currency.symbol}${value.toFixed(2)}`, isAr ? 'الإيراد' : 'Revenue']} />
+                    <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ fill: 'hsl(var(--primary))', r: 4 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle className="text-base">{isAr ? 'الإيرادات حسب النوع' : 'Revenue by Type'}</CardTitle></CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={280}>
+                  <PieChart>
+                    <Pie data={revenueByTypePieData} cx="50%" cy="50%" innerRadius={55} outerRadius={95} paddingAngle={4} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                      {revenueByTypePieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => [`${currency.symbol}${value.toFixed(2)}`, isAr ? 'الإيراد' : 'Revenue']} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
           <Button variant="outline" size="sm" onClick={() => exportCSV(
             ['Total Revenue', 'Active Subscriptions', 'Avg Subscription'],
             [[`${currency.symbol}${totalRevenue.toFixed(2)}`, String(activeSubs), `${currency.symbol}${(activeSubs > 0 ? totalRevenue / activeSubs : 0).toFixed(2)}`]],
