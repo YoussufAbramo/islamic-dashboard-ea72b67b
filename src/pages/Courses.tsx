@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { useNavigate } from 'react-router-dom';
 import { courseStatusLabels, getLabel } from '@/lib/statusLabels';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Courses = () => {
   const { t, language } = useLanguage();
