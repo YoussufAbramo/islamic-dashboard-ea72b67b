@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -37,7 +37,9 @@ const Media = () => {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dragCounter = useRef(0);
 
   const fetchFiles = async (bucketName: string) => {
     setLoading(true);
@@ -52,12 +54,12 @@ const Media = () => {
     setLoading(false);
   };
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!selectedBucket || !e.target.files?.length) return;
+  const uploadFiles = useCallback(async (fileList: File[]) => {
+    if (!selectedBucket || !fileList.length) return;
     setUploading(true);
     const uploadedCount = { success: 0, fail: 0 };
 
-    for (const file of Array.from(e.target.files)) {
+    for (const file of fileList) {
       const filePath = `${Date.now()}-${file.name}`;
       const { error } = await supabase.storage.from(selectedBucket).upload(filePath, file, {
         cacheControl: '3600',
@@ -78,11 +80,43 @@ const Media = () => {
       toast.error(isAr ? `فشل رفع ${uploadedCount.fail} ملف` : `${uploadedCount.fail} file(s) failed to upload`);
     }
 
-    // Reset input and refresh
     if (fileInputRef.current) fileInputRef.current.value = '';
     setUploading(false);
     fetchFiles(selectedBucket);
+  }, [selectedBucket, isAr]);
+
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.length) uploadFiles(Array.from(e.target.files));
   };
+
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current++;
+    if (e.dataTransfer.items?.length) setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current--;
+    if (dragCounter.current === 0) setIsDragging(false);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    dragCounter.current = 0;
+    if (e.dataTransfer.files?.length) {
+      uploadFiles(Array.from(e.dataTransfer.files));
+    }
+  }, [uploadFiles]);
 
   const handleDelete = async (fileName: string) => {
     if (!selectedBucket) return;
@@ -163,7 +197,19 @@ const Media = () => {
 
       {/* File Browser */}
       {selectedBucket && (
-        <Card>
+        <Card
+          className={`relative transition-colors ${isDragging ? 'ring-2 ring-primary border-primary bg-primary/5' : ''}`}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+        >
+          {isDragging && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg border-2 border-dashed border-primary">
+              <Upload className="h-10 w-10 text-primary mb-2 animate-bounce" />
+              <p className="text-sm font-medium text-primary">{isAr ? 'أفلت الملفات هنا للرفع' : 'Drop files here to upload'}</p>
+            </div>
+          )}
           <CardHeader>
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div>
