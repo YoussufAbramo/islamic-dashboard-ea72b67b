@@ -87,7 +87,7 @@ const Profile = () => {
     }
   };
 
-  const currentAvatarId = profile?.avatar_url;
+  const currentAvatarId = localAvatarId;
 
   return (
     <div className="max-w-lg mx-auto space-y-4">
