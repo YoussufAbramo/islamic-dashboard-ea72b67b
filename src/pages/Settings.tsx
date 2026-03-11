@@ -16,6 +16,7 @@ import BackupsSettings from '@/components/settings/BackupsSettings';
 import EducationSystemSettings from '@/components/settings/EducationSystemSettings';
 import PixelsIntegrationSettings from '@/components/settings/PixelsIntegrationSettings';
 import SeoSettings from '@/components/settings/SeoSettings';
+import SupabaseStatusSettings from '@/components/settings/SupabaseStatusSettings';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
