@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import DOMPurify from 'dompurify';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Bold, Italic, Underline, List, ListOrdered, Link, Heading1, Heading2, Code, Eye, FileText, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
