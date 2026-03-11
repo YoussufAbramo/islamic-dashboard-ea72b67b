@@ -219,7 +219,7 @@ function loadSaved(): PendingSettings {
     defaultTimezone: localStorage.getItem('app_default_timezone') || Intl.DateTimeFormat().resolvedOptions().timeZone,
     sidebarMode: (localStorage.getItem('app_sidebar_mode') as SidebarMode) || 'dark',
     timeFormat: (localStorage.getItem('app_time_format') as TimeFormat) || '12h',
-    developerMode: localStorage.getItem('app_developer_mode') === 'true',
+    developerMode: localStorage.getItem('app_developer_mode') !== 'false',
   };
 }
 
