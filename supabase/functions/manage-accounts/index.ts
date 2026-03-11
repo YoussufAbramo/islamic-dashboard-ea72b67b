@@ -87,18 +87,18 @@ Deno.serve(async (req) => {
 
     // ==================== SEED ALL ====================
     if (action === 'seed_all') {
-      const categories: string[] = body.categories || ['users', 'courses', 'subscriptions', 'schedule', 'communications', 'support', 'certificates', 'invoices']
+      const categories: string[] = body.categories || ['users', 'courses', 'subscriptions', 'schedule', 'communications', 'support', 'certificates', 'invoices', 'website']
       const quantity: string = body.quantity || 'medium'
       
       // Quantity multipliers
       const qtyConfig = {
-        little: { students: 2, teachers: 1, courses: 1, sections: 2, lessonsPerSection: 1, lessonSections: 2, timetable: 3, announcements: 1, notifications: 2, chats: 1, tickets: 1, certs: 1, invoices: 2, tracks: 1, categories: 1, levels: 1 },
-        medium: { students: 5, teachers: 2, courses: 3, sections: 3, lessonsPerSection: 2, lessonSections: 2, timetable: 10, announcements: 3, notifications: 5, chats: 2, tickets: 3, certs: 2, invoices: 4, tracks: 2, categories: 3, levels: 3 },
-        many:   { students: 10, teachers: 4, courses: 6, sections: 4, lessonsPerSection: 3, lessonSections: 3, timetable: 20, announcements: 5, notifications: 10, chats: 4, tickets: 6, certs: 4, invoices: 8, tracks: 3, categories: 5, levels: 4 },
+        little: { students: 2, teachers: 1, courses: 1, sections: 2, lessonsPerSection: 1, lessonSections: 2, timetable: 3, announcements: 1, notifications: 2, chats: 1, tickets: 1, certs: 1, invoices: 2, tracks: 1, categories: 1, levels: 1, blogs: 2, pages: 1, packages: 1 },
+        medium: { students: 5, teachers: 2, courses: 3, sections: 3, lessonsPerSection: 2, lessonSections: 2, timetable: 10, announcements: 3, notifications: 5, chats: 2, tickets: 3, certs: 2, invoices: 4, tracks: 2, categories: 3, levels: 3, blogs: 4, pages: 3, packages: 3 },
+        many:   { students: 10, teachers: 4, courses: 6, sections: 4, lessonsPerSection: 3, lessonSections: 3, timetable: 20, announcements: 5, notifications: 10, chats: 4, tickets: 6, certs: 4, invoices: 8, tracks: 3, categories: 5, levels: 4, blogs: 6, pages: 5, packages: 4 },
       }
       const qty = qtyConfig[quantity as keyof typeof qtyConfig] || qtyConfig.medium
       
-      const counts: Record<string, number> = { students: 0, teachers: 0, courses: 0, sections: 0, lesson_sections: 0, lessons: 0, tracks: 0, categories: 0, levels: 0, subscriptions: 0, invoices: 0, timetable: 0, attendance: 0, announcements: 0, notifications: 0, chats: 0, messages: 0, tickets: 0, certificates: 0 }
+      const counts: Record<string, number> = { students: 0, teachers: 0, courses: 0, sections: 0, lesson_sections: 0, lessons: 0, tracks: 0, categories: 0, levels: 0, subscriptions: 0, invoices: 0, timetable: 0, attendance: 0, announcements: 0, notifications: 0, chats: 0, messages: 0, tickets: 0, certificates: 0, blogs: 0, pages: 0, packages: 0 }
 
       // Build student/teacher data based on quantity
       const allStudentEmails = [
@@ -440,12 +440,50 @@ Deno.serve(async (req) => {
         }
       }
 
-      return new Response(JSON.stringify({ success: true, counts }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      // Create website content (blogs, pages, packages)
+      if (categories.includes('website')) {
+        // Blog posts
+        const allBlogs = [
+          { title: 'Welcome to Our Academy', title_ar: 'مرحباً بكم في أكاديميتنا', slug: 'welcome-to-our-academy', excerpt: 'Learn about our mission and vision for Islamic education.', excerpt_ar: 'تعرف على رسالتنا ورؤيتنا للتعليم الإسلامي.', content: '<h2>Welcome</h2><p>We are dedicated to providing high-quality Islamic education online. Our academy offers courses in Quran memorization, Arabic language, and Islamic studies.</p><p>Join us on this journey of knowledge and spiritual growth.</p>', content_ar: '<h2>مرحباً</h2><p>نحن ملتزمون بتقديم تعليم إسلامي عالي الجودة عبر الإنترنت. تقدم أكاديميتنا دورات في حفظ القرآن واللغة العربية والدراسات الإسلامية.</p>', status: 'published', published_at: new Date().toISOString(), created_by: caller.id },
+          { title: 'Tips for Effective Quran Memorization', title_ar: 'نصائح لحفظ القرآن بفعالية', slug: 'quran-memorization-tips', excerpt: 'Practical advice for memorizing the Quran efficiently.', excerpt_ar: 'نصائح عملية لحفظ القرآن بكفاءة.', content: '<h2>Memorization Tips</h2><p>Consistency is key. Set a daily schedule and stick to it. Review previously memorized portions regularly.</p><ul><li>Start with short surahs</li><li>Listen to recitations repeatedly</li><li>Recite in your prayers</li></ul>', content_ar: '<h2>نصائح للحفظ</h2><p>الاستمرارية هي المفتاح. حدد جدولاً يومياً والتزم به. راجع الأجزاء المحفوظة بانتظام.</p>', status: 'published', published_at: new Date().toISOString(), created_by: caller.id },
+          { title: 'The Importance of Learning Arabic', title_ar: 'أهمية تعلم اللغة العربية', slug: 'importance-of-arabic', excerpt: 'Why every Muslim should strive to learn the Arabic language.', excerpt_ar: 'لماذا يجب على كل مسلم السعي لتعلم اللغة العربية.', content: '<h2>Why Arabic?</h2><p>Arabic is the language of the Quran. Understanding it deepens your connection with the holy book and enriches your prayers.</p>', content_ar: '<h2>لماذا العربية؟</h2><p>العربية هي لغة القرآن. فهمها يعمق صلتك بالكتاب الكريم ويثري صلاتك.</p>', status: 'published', published_at: new Date().toISOString(), created_by: caller.id },
+          { title: 'Understanding Tajweed Rules', title_ar: 'فهم أحكام التجويد', slug: 'understanding-tajweed', excerpt: 'A beginner guide to Tajweed rules.', excerpt_ar: 'دليل المبتدئين لأحكام التجويد.', content: '<h2>Tajweed Basics</h2><p>Tajweed ensures proper pronunciation of Quran letters. It includes rules for elongation, nasalization, and proper stops.</p>', content_ar: '<h2>أساسيات التجويد</h2><p>التجويد يضمن النطق الصحيح لحروف القرآن. يشمل قواعد المد والغنة والوقف.</p>', status: 'published', published_at: new Date().toISOString(), created_by: caller.id },
+          { title: 'Student Success Stories', title_ar: 'قصص نجاح الطلاب', slug: 'student-success-stories', excerpt: 'Inspiring stories from our students.', excerpt_ar: 'قصص ملهمة من طلابنا.', content: '<h2>Success Stories</h2><p>Read about students who memorized the entire Quran through our program.</p>', content_ar: '<h2>قصص نجاح</h2><p>اقرأ عن الطلاب الذين حفظوا القرآن كاملاً من خلال برنامجنا.</p>', status: 'draft', created_by: caller.id },
+          { title: 'New Courses Coming Soon', title_ar: 'دورات جديدة قريباً', slug: 'new-courses-coming-soon', excerpt: 'Exciting new courses are on the way!', excerpt_ar: 'دورات جديدة مثيرة في الطريق!', content: '<h2>Coming Soon</h2><p>We are preparing new courses in Hadith sciences and Islamic history. Stay tuned!</p>', content_ar: '<h2>قريباً</h2><p>نحن نحضر دورات جديدة في علوم الحديث والتاريخ الإسلامي. ترقبوا!</p>', status: 'draft', created_by: caller.id },
+        ]
+        const blogsInsert = allBlogs.slice(0, qty.blogs)
+        const { data: createdBlogs } = await adminClient.from('blog_posts').insert(blogsInsert).select('id')
+        counts.blogs = createdBlogs?.length || 0
+
+        // Website pages
+        const allPages = [
+          { title: 'About Us', title_ar: 'من نحن', slug: 'about-us', content: '<h1>About Us</h1><p>We are an online Islamic education academy committed to providing accessible, high-quality learning experiences. Our team of qualified scholars and educators brings years of experience in Quran, Arabic, and Islamic studies.</p><h2>Our Mission</h2><p>To make Islamic education accessible to everyone, everywhere.</p><h2>Our Vision</h2><p>A world where every Muslim has access to authentic Islamic knowledge.</p>', content_ar: '<h1>من نحن</h1><p>نحن أكاديمية تعليم إسلامي عبر الإنترنت ملتزمة بتقديم تجارب تعليمية عالية الجودة. يتمتع فريقنا من العلماء والمعلمين المؤهلين بسنوات من الخبرة.</p>', status: 'published', created_by: caller.id },
+          { title: 'Contact Us', title_ar: 'اتصل بنا', slug: 'contact-us', content: '<h1>Contact Us</h1><p>We would love to hear from you! Reach out to us for any questions or feedback.</p><h2>Email</h2><p>info@academy.com</p><h2>Phone</h2><p>+1 234 567 890</p><h2>Address</h2><p>123 Education Street, Knowledge City</p>', content_ar: '<h1>اتصل بنا</h1><p>يسعدنا سماع رأيك! تواصل معنا لأي أسئلة أو ملاحظات.</p>', status: 'published', created_by: caller.id },
+          { title: 'FAQ', title_ar: 'الأسئلة الشائعة', slug: 'faq', content: '<h1>Frequently Asked Questions</h1><h3>How do I enroll?</h3><p>Simply create an account and browse our courses.</p><h3>What are the class timings?</h3><p>Classes are scheduled based on your availability.</p><h3>Do you offer certificates?</h3><p>Yes, certificates are issued upon course completion.</p>', content_ar: '<h1>الأسئلة الشائعة</h1><h3>كيف أسجل؟</h3><p>ببساطة أنشئ حساباً وتصفح دوراتنا.</p>', status: 'published', created_by: caller.id },
+          { title: 'Our Teachers', title_ar: 'معلمونا', slug: 'our-teachers', content: '<h1>Our Teachers</h1><p>Our teachers are certified scholars with ijazah in Quran recitation and years of teaching experience.</p>', content_ar: '<h1>معلمونا</h1><p>معلمونا علماء معتمدون حاصلون على إجازة في تلاوة القرآن وسنوات من الخبرة التدريسية.</p>', status: 'published', created_by: caller.id },
+          { title: 'Terms of Service', title_ar: 'شروط الخدمة', slug: 'terms-of-service', content: '<h1>Terms of Service</h1><p>By using our platform, you agree to our terms and conditions.</p>', content_ar: '<h1>شروط الخدمة</h1><p>باستخدام منصتنا، فإنك توافق على الشروط والأحكام الخاصة بنا.</p>', status: 'draft', created_by: caller.id },
+        ]
+        const pagesInsert = allPages.slice(0, qty.pages)
+        const { data: createdPages } = await adminClient.from('website_pages').insert(pagesInsert).select('id')
+        counts.pages = createdPages?.length || 0
+
+        // Pricing packages
+        const allPackages = [
+          { title: 'Basic', title_ar: 'أساسي', subtitle: 'Perfect for beginners', subtitle_ar: 'مثالي للمبتدئين', billing_cycle: 'monthly', regular_price: 29, sale_price: null, max_courses: 2, max_students: 5, max_teachers: 1, is_featured: false, is_active: true, sort_order: 0, features: JSON.stringify([{ text: '2 Courses', text_ar: '2 دورات' }, { text: 'Basic Support', text_ar: 'دعم أساسي' }, { text: 'Email Notifications', text_ar: 'إشعارات البريد' }]) },
+          { title: 'Standard', title_ar: 'قياسي', subtitle: 'Most popular choice', subtitle_ar: 'الخيار الأكثر شيوعاً', billing_cycle: 'monthly', regular_price: 59, sale_price: 49, max_courses: 5, max_students: 20, max_teachers: 3, is_featured: true, is_active: true, sort_order: 1, features: JSON.stringify([{ text: '5 Courses', text_ar: '5 دورات' }, { text: 'Priority Support', text_ar: 'دعم أولوية' }, { text: 'Certificates', text_ar: 'شهادات' }, { text: 'Chat Access', text_ar: 'وصول للمحادثات' }]) },
+          { title: 'Premium', title_ar: 'متميز', subtitle: 'For serious learners', subtitle_ar: 'للمتعلمين الجادين', billing_cycle: 'monthly', regular_price: 99, sale_price: null, max_courses: 15, max_students: 50, max_teachers: 5, is_featured: false, is_active: true, sort_order: 2, features: JSON.stringify([{ text: 'Unlimited Courses', text_ar: 'دورات غير محدودة' }, { text: '24/7 Support', text_ar: 'دعم على مدار الساعة' }, { text: 'All Features', text_ar: 'جميع الميزات' }, { text: 'Custom Reports', text_ar: 'تقارير مخصصة' }]) },
+          { title: 'Enterprise', title_ar: 'مؤسسات', subtitle: 'For organizations', subtitle_ar: 'للمؤسسات', billing_cycle: 'yearly', regular_price: 999, sale_price: 799, max_courses: 100, max_students: 500, max_teachers: 20, is_featured: false, is_active: true, sort_order: 3, features: JSON.stringify([{ text: 'Unlimited Everything', text_ar: 'كل شيء غير محدود' }, { text: 'Dedicated Support', text_ar: 'دعم مخصص' }, { text: 'White Label', text_ar: 'علامة بيضاء' }, { text: 'API Access', text_ar: 'وصول API' }]) },
+        ]
+        const pkgsInsert = allPackages.slice(0, qty.packages)
+        const { data: createdPkgs } = await adminClient.from('pricing_packages').insert(pkgsInsert).select('id')
+        counts.packages = createdPkgs?.length || 0
+      }
+
     }
 
     // ==================== EXPORT ALL ====================
     if (action === 'export_all') {
-      const tableNames = ['courses', 'course_sections', 'lesson_sections', 'lessons', 'course_tracks', 'course_categories', 'course_levels', 'students', 'teachers', 'profiles', 'user_roles', 'subscriptions', 'invoices', 'timetable_entries', 'attendance', 'announcements', 'notifications', 'chats', 'chat_messages', 'support_tickets', 'certificates', 'student_progress']
+      const tableNames = ['courses', 'course_sections', 'lesson_sections', 'lessons', 'course_tracks', 'course_categories', 'course_levels', 'students', 'teachers', 'profiles', 'user_roles', 'subscriptions', 'invoices', 'timetable_entries', 'attendance', 'announcements', 'notifications', 'chats', 'chat_messages', 'support_tickets', 'certificates', 'student_progress', 'blog_posts', 'website_pages', 'pricing_packages']
       const exportData: Record<string, any[]> = {}
       for (const table of tableNames) {
         const { data } = await adminClient.from(table).select('*')
@@ -497,6 +535,8 @@ Deno.serve(async (req) => {
       await countAndDelete('notifications', adminClient.from('notifications').delete().neq('id', matchAll))
       await countAndDelete('announcements', adminClient.from('announcements').delete().neq('id', matchAll))
       await countAndDelete('support_tickets', adminClient.from('support_tickets').delete().neq('id', matchAll))
+      await countAndDelete('blog_posts', adminClient.from('blog_posts').delete().neq('id', matchAll))
+      await countAndDelete('website_pages', adminClient.from('website_pages').delete().neq('id', matchAll))
       await countAndDelete('students', adminClient.from('students').delete().not('user_id', 'in', `(${adminIds.join(',')})`))
       await countAndDelete('teachers', adminClient.from('teachers').delete().not('user_id', 'in', `(${adminIds.join(',')})`))
       await countAndDelete('profiles', adminClient.from('profiles').delete().not('id', 'in', `(${adminIds.join(',')})`))
@@ -557,6 +597,8 @@ Deno.serve(async (req) => {
       await countAndDelete('notifications')
       await countAndDelete('announcements')
       await countAndDelete('support_tickets')
+      await countAndDelete('blog_posts')
+      await countAndDelete('website_pages')
       await countAndDelete('landing_content')
       await countAndDelete('pricing_packages')
 

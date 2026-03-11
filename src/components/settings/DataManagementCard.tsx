@@ -19,7 +19,7 @@ interface DataManagementCardProps {
 
 const SEED_LOG_KEY = 'app_seed_log_history';
 
-type SeedCategory = 'users' | 'courses' | 'subscriptions' | 'schedule' | 'communications' | 'support' | 'certificates' | 'invoices';
+type SeedCategory = 'users' | 'courses' | 'subscriptions' | 'schedule' | 'communications' | 'support' | 'certificates' | 'invoices' | 'website';
 type SeedQuantity = 'little' | 'medium' | 'many';
 
 const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon: string }[] = [
@@ -31,6 +31,7 @@ const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon
   { key: 'communications', label: 'Announcements, Notifications & Chats', labelAr: 'إعلانات وإشعارات ومحادثات', icon: '💬' },
   { key: 'support', label: 'Support Tickets', labelAr: 'تذاكر الدعم', icon: '🎫' },
   { key: 'certificates', label: 'Certificates', labelAr: 'شهادات', icon: '🏅' },
+  { key: 'website', label: 'Blogs, Pages & Packages', labelAr: 'مدونات وصفحات وباقات', icon: '🌐' },
 ];
 
 const SEED_QUANTITIES: { key: SeedQuantity; label: string; labelAr: string; desc: string; descAr: string }[] = [
@@ -61,7 +62,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const [understandCheck, setUnderstandCheck] = useState(false);
   const [deleteTablesOpen, setDeleteTablesOpen] = useState(false);
   const [deleteTablesLoading, setDeleteTablesLoading] = useState(false);
-  const [seedCategories, setSeedCategories] = useState<SeedCategory[]>(['users', 'courses', 'subscriptions', 'invoices', 'schedule', 'communications', 'support', 'certificates']);
+  const [seedCategories, setSeedCategories] = useState<SeedCategory[]>(['users', 'courses', 'subscriptions', 'invoices', 'schedule', 'communications', 'support', 'certificates', 'website']);
   const [seedQuantity, setSeedQuantity] = useState<SeedQuantity>('medium');
 
   const persistLog = (log: string[]) => {
@@ -108,6 +109,9 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       if (c.messages) addLog(isAr ? `✉️ تم إضافة ${c.messages} رسائل` : `✉️ Added ${c.messages} messages`);
       if (c.tickets) addLog(isAr ? `🎫 تم إضافة ${c.tickets} تذاكر دعم` : `🎫 Added ${c.tickets} support tickets`);
       if (c.certificates) addLog(isAr ? `🏅 تم إضافة ${c.certificates} شهادات` : `🏅 Added ${c.certificates} certificates`);
+      if (c.blogs) addLog(isAr ? `📝 تم إضافة ${c.blogs} مقالات` : `📝 Added ${c.blogs} blog posts`);
+      if (c.pages) addLog(isAr ? `📄 تم إضافة ${c.pages} صفحات` : `📄 Added ${c.pages} pages`);
+      if (c.packages) addLog(isAr ? `📦 تم إضافة ${c.packages} باقات` : `📦 Added ${c.packages} packages`);
 
       addLog(isAr ? '✅ تمت العملية بنجاح!' : '✅ Seed completed successfully!');
       setShowSeedLog(true);
