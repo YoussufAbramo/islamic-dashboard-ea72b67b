@@ -174,6 +174,7 @@ const AppSidebar = () => {
       <SidebarContent>
         {categories.map((cat) => {
           if (cat.requiresDeveloperMode && !developerMode) return null;
+          if (cat.requiresWebsiteMode && !websiteMode) return null;
           const visibleItems = cat.items.filter((item) => role && item.roles.includes(role));
           if (visibleItems.length === 0) return null;
           return (
