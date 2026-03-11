@@ -126,108 +126,53 @@ const AppearanceSettings = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* App Logo */}
-          <div className="space-y-2">
-            <Label>{isAr ? 'شعار التطبيق' : 'App Logo'}</Label>
+          <div className="space-y-1">
             <p className="text-xs text-muted-foreground">{isAr ? 'الشعار الرئيسي للوضع الفاتح' : 'Main logo for light mode'}</p>
-            <div className="flex items-center gap-4">
-              {appLogo ? (
-                <img src={appLogo} alt="Logo" className="h-14 max-w-[200px] rounded-lg object-contain border border-border" />
-              ) : (
-                <div className="h-14 w-14 rounded-lg border-2 border-dashed border-border flex items-center justify-center">
-                  <Upload className="h-5 w-5 text-muted-foreground" />
-                </div>
-              )}
-              <div className="flex gap-2">
-                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
-                <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>{isAr ? 'رفع شعار' : 'Upload Logo'}</Button>
-                {appLogo && <Button variant="ghost" size="sm" onClick={() => setAppLogo('')}>{isAr ? 'إزالة' : 'Remove'}</Button>}
-              </div>
-            </div>
+            <ImagePickerField
+              label={isAr ? 'شعار التطبيق' : 'App Logo'}
+              value={appLogo}
+              onChange={setAppLogo}
+            />
           </div>
 
           {/* Dark Mode Logo */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <Moon className="h-4 w-4" />
-              {isAr ? 'شعار الوضع الداكن (أبيض)' : 'Dark Mode Logo (White)'}
-            </Label>
-            <p className="text-xs text-muted-foreground">{isAr ? 'شعار بديل يظهر على الخلفيات الداكنة (القائمة الجانبية الداكنة والوضع المظلم)' : 'Alternative logo shown on dark backgrounds (dark sidebar and dark mode)'}</p>
-            <div className="flex items-center gap-4">
-              {darkLogo ? (
-                <div className="h-14 max-w-[200px] rounded-lg border border-border bg-sidebar p-2">
-                  <img src={darkLogo} alt="Dark Logo" className="h-full w-full object-contain" />
-                </div>
-              ) : (
-                <div className="h-14 w-14 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-sidebar">
-                  <Moon className="h-5 w-5 text-sidebar-foreground/40" />
-                </div>
-              )}
-              <div className="flex gap-2">
-                <input ref={darkLogoRef} type="file" accept="image/*" className="hidden" onChange={handleDarkLogoUpload} />
-                <Button variant="outline" size="sm" onClick={() => darkLogoRef.current?.click()}>{isAr ? 'رفع شعار داكن' : 'Upload Dark Logo'}</Button>
-                {darkLogo && <Button variant="ghost" size="sm" onClick={() => setDarkLogo('')}>{isAr ? 'إزالة' : 'Remove'}</Button>}
-              </div>
-            </div>
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground">{isAr ? 'شعار بديل يظهر على الخلفيات الداكنة' : 'Alternative logo shown on dark backgrounds'}</p>
+            <ImagePickerField
+              label={isAr ? 'شعار الوضع الداكن' : 'Dark Mode Logo'}
+              value={darkLogo}
+              onChange={setDarkLogo}
+            />
           </div>
 
           {/* Favicon */}
-          <div className="space-y-2">
-            <Label>{isAr ? 'أيقونة الموقع (Favicon)' : 'Favicon'}</Label>
+          <div className="space-y-1">
             <p className="text-xs text-muted-foreground">{isAr ? 'الأيقونة التي تظهر في تبويب المتصفح' : 'The icon shown in the browser tab'}</p>
-            <div className="flex items-center gap-4">
-              {favicon ? (
-                <img src={favicon} alt="Favicon" className="h-10 w-10 rounded object-contain border border-border bg-background p-0.5" />
-              ) : (
-                <div className="h-10 w-10 rounded border-2 border-dashed border-border flex items-center justify-center">
-                  <Image className="h-4 w-4 text-muted-foreground" />
-                </div>
-              )}
-              <div className="flex gap-2">
-                <input ref={faviconRef} type="file" accept="image/*" className="hidden" onChange={handleFaviconUpload} />
-                <Button variant="outline" size="sm" onClick={() => faviconRef.current?.click()}>{isAr ? 'رفع أيقونة' : 'Upload Favicon'}</Button>
-                {favicon && <Button variant="ghost" size="sm" onClick={() => setFavicon('')}>{isAr ? 'إزالة' : 'Remove'}</Button>}
-              </div>
-            </div>
+            <ImagePickerField
+              label={isAr ? 'أيقونة الموقع (Favicon)' : 'Favicon'}
+              value={favicon}
+              onChange={setFavicon}
+            />
           </div>
 
           {/* Signature Image */}
-          <div className="space-y-2">
-            <Label>{isAr ? 'صورة التوقيع' : 'Signature Image'}</Label>
+          <div className="space-y-1">
             <p className="text-xs text-muted-foreground">{isAr ? 'تظهر في تذييل الفواتير' : 'Displayed in invoice footer'}</p>
-            <div className="flex items-center gap-4">
-              {signatureImage ? (
-                <img src={signatureImage} alt="Signature" className="h-14 w-28 rounded-lg object-contain border border-border bg-background p-1" />
-              ) : (
-                <div className="h-14 w-28 rounded-lg border-2 border-dashed border-border flex items-center justify-center">
-                  <Upload className="h-5 w-5 text-muted-foreground" />
-                </div>
-              )}
-              <div className="flex gap-2">
-                <input ref={signatureRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, setSignatureImage, 'signature')} />
-                <Button variant="outline" size="sm" onClick={() => signatureRef.current?.click()}>{isAr ? 'رفع توقيع' : 'Upload Signature'}</Button>
-                {signatureImage && <Button variant="ghost" size="sm" onClick={() => setSignatureImage('')}>{isAr ? 'إزالة' : 'Remove'}</Button>}
-              </div>
-            </div>
+            <ImagePickerField
+              label={isAr ? 'صورة التوقيع' : 'Signature Image'}
+              value={signatureImage}
+              onChange={setSignatureImage}
+            />
           </div>
 
           {/* Stamp Image */}
-          <div className="space-y-2">
-            <Label>{isAr ? 'صورة الختم' : 'Stamp Image'}</Label>
+          <div className="space-y-1">
             <p className="text-xs text-muted-foreground">{isAr ? 'تظهر في تذييل الفواتير' : 'Displayed in invoice footer'}</p>
-            <div className="flex items-center gap-4">
-              {stampImage ? (
-                <img src={stampImage} alt="Stamp" className="h-14 w-14 rounded-lg object-contain border border-border bg-background p-1" />
-              ) : (
-                <div className="h-14 w-14 rounded-lg border-2 border-dashed border-border flex items-center justify-center">
-                  <Upload className="h-5 w-5 text-muted-foreground" />
-                </div>
-              )}
-              <div className="flex gap-2">
-                <input ref={stampRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, setStampImage, 'stamp')} />
-                <Button variant="outline" size="sm" onClick={() => stampRef.current?.click()}>{isAr ? 'رفع ختم' : 'Upload Stamp'}</Button>
-                {stampImage && <Button variant="ghost" size="sm" onClick={() => setStampImage('')}>{isAr ? 'إزالة' : 'Remove'}</Button>}
-              </div>
-            </div>
+            <ImagePickerField
+              label={isAr ? 'صورة الختم' : 'Stamp Image'}
+              value={stampImage}
+              onChange={setStampImage}
+            />
           </div>
 
           {/* Position Controls */}

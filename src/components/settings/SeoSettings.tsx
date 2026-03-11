@@ -86,11 +86,12 @@ const SeoSettings = () => {
           </div>
 
           {/* Default OG Image */}
-          <div className="space-y-1.5">
-            <Label className="flex items-center gap-1.5"><Image className="h-3.5 w-3.5" />{isAr ? 'صورة OG الافتراضية' : 'Default OG Image'}</Label>
-            <Input value={seo.default_og_image} onChange={e => setSeo(p => ({ ...p, default_og_image: e.target.value }))} placeholder="https://yourdomain.com/og-image.jpg" className="font-mono text-sm" />
-            <p className="text-xs text-muted-foreground">{isAr ? 'الصورة الافتراضية عند مشاركة الصفحات على وسائل التواصل' : 'Default image when pages are shared on social media'}</p>
-          </div>
+          <ImagePickerField
+            label={isAr ? 'صورة OG الافتراضية' : 'Default OG Image'}
+            value={seo.default_og_image}
+            onChange={(url) => setSeo(p => ({ ...p, default_og_image: url }))}
+          />
+          <p className="text-xs text-muted-foreground -mt-3">{isAr ? 'الصورة الافتراضية عند مشاركة الصفحات على وسائل التواصل' : 'Default image when pages are shared on social media'}</p>
 
           {/* Robots */}
           <div className="grid sm:grid-cols-2 gap-4 p-4 rounded-lg border border-border">
