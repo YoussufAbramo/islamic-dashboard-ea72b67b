@@ -224,7 +224,7 @@ const LandingPage = () => {
                 </div>
               ) : (
                 <Button size="sm" onClick={() => navigate('/login')} className="ms-1">
-                  {t('Get Started', 'ابدأ الآن')} <ChevronRight className="h-4 w-4 ms-1" />
+                  {t('Get Started', 'ابدأ الآن')} <ChevronRight className="h-4 w-4 ms-1 rtl:-scale-x-100" />
                 </Button>
               )}
             </div>
