@@ -413,9 +413,9 @@ const Media = () => {
               )}
 
               {/* File list + detail */}
-              <div className="flex gap-4 min-w-0 overflow-hidden">
+              <div className="flex gap-4 min-w-0 overflow-hidden max-w-full">
                 <Card
-                  className={`flex-1 min-w-0 relative transition-colors ${isDragging ? 'ring-2 ring-primary border-primary bg-primary/5' : ''}`}
+                  className={`flex-1 min-w-0 max-w-full overflow-hidden relative transition-colors ${isDragging ? 'ring-2 ring-primary border-primary bg-primary/5' : ''}`}
                   onDragEnter={handleDragEnter}
                   onDragLeave={handleDragLeave}
                   onDragOver={handleDragOver}
@@ -502,7 +502,7 @@ const Media = () => {
                                 {isImageFile(file.name) ? <Image className="h-3.5 w-3.5 text-primary" /> : <FileText className="h-3.5 w-3.5 text-muted-foreground" />}
                               </div>
                             )}
-                            <span className="text-sm flex-1 truncate">{file.name}</span>
+                            <span className="text-sm flex-1 truncate max-w-[200px]">{file.name}</span>
                             <Badge variant="outline" className="text-[10px] font-mono px-1.5 py-0 shrink-0">{getFileExt(file.name)}</Badge>
                             <span className="text-[11px] text-muted-foreground shrink-0">{formatSize(file.metadata?.size)}</span>
                           </div>
