@@ -2,6 +2,23 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.1.0] - 2026-03-11
+
+### Added
+- Course hierarchy restructured: Course → Lessons → Sections → Content (3-level nested structure)
+- New `lesson_sections` database table as middle tier between course_sections and lessons
+- RLS policies on `lesson_sections` for admin/teacher management and enrolled user viewing
+- New translation keys: `courses.content`, `courses.addContent`, `courses.contentType` (EN/AR)
+
+### Changed
+- `course_sections` now represent "Lessons" (top-level grouping under a course)
+- `lesson_sections` represent "Sections" (grouping inside each lesson)
+- `lessons` table repurposed as "Content" items (read & listen, exercises, homework, etc.)
+- `lessons.section_id` FK migrated from `course_sections` to `lesson_sections`
+- CourseDetail page fully rewritten with 3-level nested accordion UI
+- Existing data auto-migrated: default section created per lesson, content items re-linked
+- Version bumped to 4.1.0
+
 ## [4.0.0] - 2026-03-11
 
 ### Added

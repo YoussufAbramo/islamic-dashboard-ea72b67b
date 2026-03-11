@@ -707,6 +707,41 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_sections: {
+        Row: {
+          course_section_id: string
+          created_at: string
+          id: string
+          sort_order: number
+          title: string
+          title_ar: string | null
+        }
+        Insert: {
+          course_section_id: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          title: string
+          title_ar?: string | null
+        }
+        Update: {
+          course_section_id?: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          title?: string
+          title_ar?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_sections_course_section_id_fkey"
+            columns: ["course_section_id"]
+            isOneToOne: false
+            referencedRelation: "course_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lessons: {
         Row: {
           content: Json | null
@@ -746,7 +781,7 @@ export type Database = {
             foreignKeyName: "lessons_section_id_fkey"
             columns: ["section_id"]
             isOneToOne: false
-            referencedRelation: "course_sections"
+            referencedRelation: "lesson_sections"
             referencedColumns: ["id"]
           },
         ]
