@@ -7,9 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Save, Search, Globe, FileText, Image } from 'lucide-react';
+import { Save, Search, Globe, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
+import ImagePickerField from '@/components/media/ImagePickerField';
 
 interface SeoConfig {
   default_og_image: string;
