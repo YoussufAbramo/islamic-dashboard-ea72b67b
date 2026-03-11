@@ -2,6 +2,21 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [3.8.0] - 2026-03-11
+
+### Added
+- Error Log page: real-time runtime error, warning, and info capture with search, filter, and detail dialog
+- Reusable ComingSoonOverlay component with blur effect and "View Only" dismiss button
+- Visit policy button (external link) on published policies in the Policies page
+
+### Changed
+- "Report a Bug" floating button replaces "Support" with Bug icon and no right-side rounding
+- WhatsApp floating button darkened to #128C7E with "Contact Sales" label
+- Developer Mode now enabled by default for new users
+- ComingSoonOverlay applied to Activity Log and Role Management pages
+- Error Log layout fixed: constrained long messages within screen width (overflow-hidden, truncate)
+- Version bumped to 3.8.0
+
 ## [3.7.0] - 2026-03-11
 
 ### Added
