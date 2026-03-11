@@ -111,6 +111,7 @@ const Settings = () => {
           {activeTab === 'payment' && isAdmin && <PaymentGatewayCard isAr={isAr} />}
           {activeTab === 'data' && isAdmin && <DataManagementCard isAr={isAr} />}
           {activeTab === 'backups' && isAdmin && <BackupsSettings />}
+          {activeTab === 'pixels' && isAdmin && <PixelsIntegrationSettings />}
         </div>
       </div>
 

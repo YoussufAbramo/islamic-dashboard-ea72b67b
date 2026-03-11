@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText, LogOut, Calculator, ShieldCheck, Shield, Sparkles, AlertCircle, HardDrive } from 'lucide-react';
+import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText, LogOut, Calculator, ShieldCheck, Shield, Sparkles, AlertCircle, HardDrive, Globe, ScrollText, PenLine, Activity } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -49,7 +49,6 @@ const AppSidebar = () => {
   useEffect(() => {
     if (!user) return;
     const checkUnread = async () => {
-      // Simple: count chats with messages newer than last check
       const lastCheck = localStorage.getItem('chat_last_check') || new Date(0).toISOString();
       const { count } = await supabase
         .from('chat_messages')
@@ -68,7 +67,6 @@ const AppSidebar = () => {
     navigate('/login');
   };
 
-  // Determine which logo to show based on sidebar mode and dark mode
   const isDarkMode = document.documentElement.classList.contains('dark');
   const showDarkLogo = (sidebarMode === 'dark' || isDarkMode) && darkLogo;
   const displayLogo = showDarkLogo ? darkLogo : appLogo;
@@ -89,6 +87,16 @@ const AppSidebar = () => {
         { key: 'timetable', label: t('nav.timetable'), icon: Calendar, path: '/dashboard/timetable', roles: ['admin', 'teacher', 'student'] },
         { key: 'attendance', label: isAr ? 'الحضور' : 'Attendance', icon: ClipboardCheck, path: '/dashboard/attendance', roles: ['admin', 'teacher'] },
         { key: 'certificates', label: isAr ? 'الشهادات' : 'Certificates', icon: Award, path: '/dashboard/certificates', roles: ['admin', 'teacher', 'student'] },
+      ],
+    },
+    {
+      label: 'Website',
+      labelAr: 'الموقع',
+      items: [
+        { key: 'landing-page', label: isAr ? 'صفحة الهبوط' : 'Landing Page', icon: Globe, path: '/dashboard/landing-page', roles: ['admin'] },
+        { key: 'policies', label: isAr ? 'السياسات' : 'Policies', icon: ScrollText, path: '/dashboard/policies', roles: ['admin'] },
+        { key: 'website-pages', label: isAr ? 'صفحات الموقع' : 'Website Pages', icon: FileText, path: '/dashboard/website-pages', roles: ['admin'] },
+        { key: 'blog', label: isAr ? 'المدونة' : 'Blog', icon: PenLine, path: '/dashboard/blog', roles: ['admin'] },
       ],
     },
     {
@@ -123,9 +131,15 @@ const AppSidebar = () => {
         { key: 'reports', label: isAr ? 'التقارير' : 'Reports', icon: BarChart3, path: '/dashboard/reports', roles: ['admin'] },
       ],
     },
+    {
+      label: 'System',
+      labelAr: 'النظام',
+      items: [
+        { key: 'activity-log', label: isAr ? 'سجل النشاطات' : 'Activity Log', icon: Activity, path: '/dashboard/activity-log', roles: ['admin'], comingSoon: true },
+      ],
+    },
   ];
 
-  // Apply sidebar mode attribute to document for CSS targeting
   useEffect(() => {
     document.documentElement.setAttribute('data-sidebar-mode', sidebarMode);
   }, [sidebarMode]);
@@ -182,7 +196,6 @@ const AppSidebar = () => {
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border">
         <div className="p-3 space-y-2">
-          {/* Settings link */}
           <div
             className="flex items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent cursor-pointer transition-colors"
             onClick={() => navigate('/dashboard/settings')}
@@ -190,8 +203,6 @@ const AppSidebar = () => {
             <Settings className="h-5 w-5 text-sidebar-foreground/60" />
             <span className="text-sm text-sidebar-foreground/80">{isAr ? 'إعدادات التطبيق' : 'App Settings'}</span>
           </div>
-
-          {/* User profile with logout */}
           <div
             className="flex items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent cursor-pointer transition-colors"
             onClick={() => navigate('/dashboard/profile')}
