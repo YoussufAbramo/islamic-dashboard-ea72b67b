@@ -1,4 +1,4 @@
-import { Moon, Sun, Bell, Megaphone, Globe, Plus, CheckCheck, ExternalLink, Eye, Languages } from 'lucide-react';
+import { Moon, Sun, Bell, Megaphone, Globe, Plus, CheckCheck, ExternalLink, Eye, Languages, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
+import GlobalSearch from '@/components/GlobalSearch';
 
 const ArabicLetterIcon = () => (
   <span className="text-sm font-bold leading-none" style={{ fontFamily: "'Noto Kufi Arabic', sans-serif" }}>ع</span>
@@ -32,8 +33,21 @@ const TopBar = () => {
   const [announcementDetailOpen, setAnnouncementDetailOpen] = useState(false);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<any>(null);
   const [announcementForm, setAnnouncementForm] = useState({ title: '', title_ar: '', content: '', content_ar: '', target_audience: 'all', scheduled_at: '' });
+  const [searchOpen, setSearchOpen] = useState(false);
   const isAr = language === 'ar';
   const isAdmin = role === 'admin';
+
+  // Ctrl+K / Cmd+K shortcut
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   const fetchData = () => {
     if (!user) return;
@@ -93,6 +107,22 @@ const TopBar = () => {
     <>
       <header className="flex h-14 items-center gap-2 border-b bg-background px-4 sticky top-0 z-30">
         <SidebarTrigger className="rounded-full" />
+
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="sm" onClick={() => setSearchOpen(true)} className="gap-2 h-8 px-3 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg">
+                <Search className="h-3.5 w-3.5" />
+                <span className="text-xs hidden sm:inline">{isAr ? 'بحث...' : 'Search...'}</span>
+                <kbd className="hidden sm:inline-flex h-5 items-center gap-0.5 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+                  ⌘K
+                </kbd>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{isAr ? 'بحث سريع (Ctrl+K)' : 'Quick Search (Ctrl+K)'}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
         <div className="flex-1" />
 
         <TooltipProvider delayDuration={300}>
@@ -257,6 +287,8 @@ const TopBar = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
     </>
   );
 };
