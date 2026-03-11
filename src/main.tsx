@@ -26,11 +26,18 @@ removeBadge();
 const observer = new MutationObserver(removeBadge);
 observer.observe(document.body, { childList: true, subtree: true });
 
-// Register service worker for PWA
+// Register service worker for PWA with auto-versioned cache
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {
+  window.addEventListener('load', async () => {
+    try {
+      const { APP_VERSION } = await import('./lib/version');
+      const reg = await navigator.serviceWorker.register('/sw.js');
+      const sw = reg.active || reg.installing || reg.waiting;
+      if (sw) {
+        sw.postMessage({ type: 'SET_VERSION', version: APP_VERSION.replace(/\./g, '') });
+      }
+    } catch {
       // SW registration failed silently
-    });
+    }
   });
 }
