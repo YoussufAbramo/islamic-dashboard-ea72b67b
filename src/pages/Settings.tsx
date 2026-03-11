@@ -42,7 +42,7 @@ const DeveloperSettings = () => {
   );
 };
 
-type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing' | 'backups' | 'education' | 'pixels' | 'seo' | 'developer';
+type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing' | 'backups' | 'education' | 'pixels' | 'seo' | 'supabase' | 'developer';
 
 const Settings = () => {
   const { language } = useLanguage();
