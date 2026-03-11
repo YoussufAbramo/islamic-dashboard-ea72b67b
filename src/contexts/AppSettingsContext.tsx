@@ -60,6 +60,22 @@ export const RTL_FONTS = [
   { value: 'El Messiri', label: 'El Messiri' }, { value: 'Noto Sans Arabic', label: 'Noto Sans Arabic' },
 ];
 
+export interface SocialLinks {
+  facebook: string;
+  twitter: string;
+  instagram: string;
+  youtube: string;
+  linkedin: string;
+  tiktok: string;
+  telegram: string;
+  whatsapp: string;
+}
+
+const DEFAULT_SOCIAL_LINKS: SocialLinks = {
+  facebook: '', twitter: '', instagram: '', youtube: '',
+  linkedin: '', tiktok: '', telegram: '', whatsapp: '',
+};
+
 interface PendingSettings {
   currency: Currency;
   colorTheme: ColorTheme;
@@ -81,6 +97,7 @@ interface PendingSettings {
   sidebarMode: SidebarMode;
   timeFormat: TimeFormat;
   developerMode: boolean;
+  socialLinks: SocialLinks;
 }
 
 interface AppSettingsContextType {
