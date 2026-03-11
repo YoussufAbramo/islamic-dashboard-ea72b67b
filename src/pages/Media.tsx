@@ -261,6 +261,7 @@ const Media = () => {
                           <div
                             key={idx}
                             onClick={() => setSelectedFile(file)}
+                            onDoubleClick={() => handleDownload(file.name)}
                             className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors group ${
                               selectedFile?.name === file.name ? 'bg-primary/10 border border-primary/20' : 'hover:bg-muted/50'
                             }`}
@@ -275,7 +276,8 @@ const Media = () => {
                               </div>
                             )}
                             <span className="text-sm flex-1 truncate">{file.name}</span>
-                            <span className="text-[11px] text-muted-foreground">{formatSize(file.metadata?.size)}</span>
+                            <Badge variant="outline" className="text-[10px] font-mono px-1.5 py-0 shrink-0">{getFileExt(file.name)}</Badge>
+                            <span className="text-[11px] text-muted-foreground shrink-0">{formatSize(file.metadata?.size)}</span>
                           </div>
                         ))}
                       </div>
