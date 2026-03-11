@@ -204,7 +204,7 @@ const ErrorLog = () => {
               <CardContent className="p-3 flex items-start gap-3">
                 {levelIcon(entry.level)}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-mono truncate">{entry.message}</p>
+                  <p className="text-sm font-mono truncate max-w-full">{entry.message}</p>
                   <div className="flex items-center gap-2 mt-1">
                     {levelBadge(entry.level)}
                     {entry.source && <span className="text-[10px] text-muted-foreground font-mono truncate">{entry.source}</span>}
