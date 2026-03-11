@@ -241,13 +241,18 @@ const CourseDetail = () => {
                 {categoryLabel && (
                   <Badge variant="outline" className="gap-1 text-xs">
                     <FolderTree className="h-3 w-3" />
-                    {isAr ? categoryLabel.labelAr : categoryLabel.label}
+                    {isAr && categoryLabel.title_ar ? categoryLabel.title_ar : categoryLabel.title}
                   </Badge>
                 )}
                 {skillLabel && (
                   <Badge variant="outline" className="gap-1 text-xs">
                     <Signal className="h-3 w-3" />
-                    {isAr ? skillLabel.labelAr : skillLabel.label}
+                    {isAr && skillLabel.title_ar ? skillLabel.title_ar : skillLabel.title}
+                  </Badge>
+                )}
+                {trackLabel && (
+                  <Badge variant="outline" className="gap-1 text-xs">
+                    {isAr && trackLabel.title_ar ? trackLabel.title_ar : trackLabel.title}
                   </Badge>
                 )}
                 {course.duration_weeks && (
