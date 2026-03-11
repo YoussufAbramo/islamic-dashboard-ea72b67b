@@ -95,7 +95,7 @@ const BackupsSettings = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setBackups(data.backups || []);
-    } catch (err: any) { toast.error(err.message || 'Failed to load backups'); }
+    } catch (err: any) { notifyError({ error: 'DB_OPERATION_FAILED', isAr, rawMessage: err.message || 'Failed to load backups' }); }
     finally { setLoading(false); }
   }, []);
 
