@@ -218,10 +218,20 @@ const CourseDetail = () => {
     setContentDialog(true);
   };
 
-  const deleteContent = async (contentId: string) => {
-    await supabase.from('lessons').delete().eq('id', contentId);
+  // CRUD: Sections (lesson_sections)
+  const addSection = async () => {
+    if (!activeLessonId) return;
+    const currentSections = sections[activeLessonId] || [];
+    await supabase.from('lesson_sections' as any).insert([{
+      course_section_id: activeLessonId,
+      title: sectionForm.title,
+      title_ar: sectionForm.title_ar,
+      sort_order: currentSections.length,
+    }] as any);
+    setSectionDialog(false);
+    setSectionForm({ title: '', title_ar: '' });
     fetchHierarchy();
-    toast.success(isAr ? 'تم حذف المحتوى' : 'Content deleted');
+    toast.success(isAr ? 'تمت إضافة القسم' : 'Section added');
   };
 
   if (!course) return <div className="text-muted-foreground">{t('common.loading')}</div>;
