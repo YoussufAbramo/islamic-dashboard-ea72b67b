@@ -46,7 +46,8 @@ const DeveloperSettings = () => {
 
 const WebsiteModeSettings = () => {
   const { language } = useLanguage();
-  const { websiteMode, setWebsiteMode } = useAppSettings();
+  const { pending, setWebsiteMode } = useAppSettings();
+  const websiteMode = pending.websiteMode;
   const isAr = language === 'ar';
   return (
     <Card>
