@@ -30,10 +30,13 @@ const Announcements = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [selected, setSelected] = useState<any>(null);
   const [form, setForm] = useState({ title: '', title_ar: '', content: '', content_ar: '', target_audience: 'all', scheduled_at: '' });
+  const [loading, setLoading] = useState(true);
 
   const fetchAnnouncements = async () => {
+    setLoading(true);
     const { data } = await supabase.from('announcements').select('*').order('created_at', { ascending: false });
     setAnnouncements(data || []);
+    setLoading(false);
   };
 
   useEffect(() => { fetchAnnouncements(); }, []);
