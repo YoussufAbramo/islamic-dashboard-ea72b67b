@@ -122,37 +122,6 @@ const GlobalSearch = ({ open, onOpenChange }: { open: boolean; onOpenChange: (op
           ))}
         </CommandGroup>
 
-        {students.length > 0 && (
-          <>
-            <CommandSeparator />
-            <CommandGroup heading={categoryLabel('students')}>
-              {students.map(s => (
-                <CommandItem key={s.id} value={`${s.title} ${s.subtitle}`} onSelect={() => handleSelect(s.path)}>
-                  <s.icon className="me-2 h-4 w-4 text-muted-foreground shrink-0" />
-                  <div className="flex flex-col">
-                    <span>{s.title}</span>
-                    {s.subtitle && <span className="text-xs text-muted-foreground">{s.subtitle}</span>}
-                  </div>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </>
-        )}
-
-        {courses.length > 0 && (
-          <>
-            <CommandSeparator />
-            <CommandGroup heading={categoryLabel('courses')}>
-              {courses.map(c => (
-                <CommandItem key={c.id} value={`${c.title} ${c.subtitle}`} onSelect={() => handleSelect(c.path)}>
-                  <c.icon className="me-2 h-4 w-4 text-muted-foreground shrink-0" />
-                  <span>{c.title}</span>
-                  {c.subtitle && <span className="ms-2 text-xs text-muted-foreground">{c.subtitle}</span>}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </>
-        )}
 
         {invoices.length > 0 && (
           <>
