@@ -204,7 +204,11 @@ const AppSidebar = () => {
                       <SidebarMenuItem key={item.key}>
                         <SidebarMenuButton
                           isActive={location.pathname === item.path}
-                          onClick={() => navigate(item.path)}
+                          onClick={(e) => {
+                            // Don't navigate if the chevron toggle was clicked
+                            if ((e.target as HTMLElement).closest('[data-expand-toggle]')) return;
+                            navigate(item.path);
+                          }}
                           tooltip={item.label}
                         >
                           <item.icon className="h-4 w-4" />
@@ -218,6 +222,7 @@ const AppSidebar = () => {
                           {hasChildren && (
                             <span
                               role="button"
+                              data-expand-toggle
                               onClick={toggleExpand}
                               className="p-0.5 rounded hover:bg-sidebar-accent shrink-0 ms-auto"
                             >
