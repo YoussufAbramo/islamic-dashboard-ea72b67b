@@ -121,6 +121,8 @@ interface AppSettingsContextType {
   setDefaultTimezone: (tz: string) => void;
   sidebarMode: SidebarMode;
   setSidebarMode: (m: SidebarMode) => void;
+  timeFormat: TimeFormat;
+  setTimeFormat: (f: TimeFormat) => void;
   pending: PendingSettings;
   updatePending: (partial: Partial<PendingSettings>) => void;
   saveSettings: () => void;
