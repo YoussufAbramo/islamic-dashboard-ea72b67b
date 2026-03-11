@@ -13,7 +13,7 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import {
-  GraduationCap, BookOpen, FileText, Globe, ScrollText, PenLine,
+  GraduationCap, FileText, Globe, ScrollText, PenLine,
   LayoutDashboard, Users, CreditCard, HeadphonesIcon, Calendar,
   MessageSquare, ClipboardCheck, Award, BarChart3, Bell, Megaphone,
   Settings, Calculator, Shield, ShieldCheck, HardDrive, Webhook,
