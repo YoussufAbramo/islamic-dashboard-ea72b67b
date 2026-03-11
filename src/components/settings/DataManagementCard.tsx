@@ -170,7 +170,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       setBackupDownloaded(true);
       toast.success(isAr ? 'تم تحميل النسخة الاحتياطية' : 'Backup downloaded successfully');
     } catch (err: any) {
-      toast.error(err.message || 'Failed to export data');
+      notifyError({ error: 'STORAGE_EXPORT_FAILED', isAr, rawMessage: err.message || 'Failed to export data' });
     } finally {
       setBackupLoading(false);
     }
