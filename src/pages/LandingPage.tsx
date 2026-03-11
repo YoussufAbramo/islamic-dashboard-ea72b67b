@@ -87,9 +87,13 @@ const LandingPage = () => {
 
   const scrollTo = useCallback((id: string) => {
     setMobileMenuOpen(false);
+    if (id.startsWith('/')) {
+      navigate(id);
+      return;
+    }
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: 'smooth' });
-  }, []);
+  }, [navigate]);
 
   const t = (en: string, ar: string) => isAr ? ar : en;
 
