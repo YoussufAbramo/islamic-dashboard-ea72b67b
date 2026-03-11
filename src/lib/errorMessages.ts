@@ -340,6 +340,10 @@ export function getErrorByCode(code: string): ErrorDetail | undefined {
   return errorMap[code];
 }
 
+export function getAllErrors(): ErrorDetail[] {
+  return Object.values(errorMap);
+}
+
 export const categoryLabels: Record<string, { en: string; ar: string }> = {
   auth: { en: 'Authentication', ar: 'المصادقة' },
   validation: { en: 'Validation', ar: 'التحقق' },
