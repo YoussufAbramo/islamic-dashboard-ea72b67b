@@ -60,6 +60,22 @@ export const RTL_FONTS = [
   { value: 'El Messiri', label: 'El Messiri' }, { value: 'Noto Sans Arabic', label: 'Noto Sans Arabic' },
 ];
 
+export interface SocialLinks {
+  facebook: string;
+  twitter: string;
+  instagram: string;
+  youtube: string;
+  linkedin: string;
+  tiktok: string;
+  telegram: string;
+  whatsapp: string;
+}
+
+const DEFAULT_SOCIAL_LINKS: SocialLinks = {
+  facebook: '', twitter: '', instagram: '', youtube: '',
+  linkedin: '', tiktok: '', telegram: '', whatsapp: '',
+};
+
 interface PendingSettings {
   currency: Currency;
   colorTheme: ColorTheme;
@@ -81,6 +97,7 @@ interface PendingSettings {
   sidebarMode: SidebarMode;
   timeFormat: TimeFormat;
   developerMode: boolean;
+  socialLinks: SocialLinks;
 }
 
 interface AppSettingsContextType {
@@ -194,6 +211,7 @@ function loadSaved(): PendingSettings {
       'app_stamp_position', 'app_ltr_font', 'app_rtl_font', 'app_button_shape',
       'app_currency_decimals', 'app_payment_gateway', 'app_default_language',
       'app_default_timezone', 'app_favicon', 'app_active_gateways', 'app_sidebar_mode', 'app_time_format',
+      'app_social_links',
     ];
     keysToReset.forEach(k => localStorage.removeItem(k));
     localStorage.setItem('app_settings_version', SETTINGS_VERSION);
@@ -220,6 +238,7 @@ function loadSaved(): PendingSettings {
     sidebarMode: (localStorage.getItem('app_sidebar_mode') as SidebarMode) || 'dark',
     timeFormat: (localStorage.getItem('app_time_format') as TimeFormat) || '12h',
     developerMode: localStorage.getItem('app_developer_mode') !== 'false',
+    socialLinks: (() => { try { const s = localStorage.getItem('app_social_links'); return s ? { ...DEFAULT_SOCIAL_LINKS, ...JSON.parse(s) } : DEFAULT_SOCIAL_LINKS; } catch { return DEFAULT_SOCIAL_LINKS; } })(),
   };
 }
 
@@ -288,6 +307,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     localStorage.setItem('app_sidebar_mode', pending.sidebarMode);
     localStorage.setItem('app_time_format', pending.timeFormat);
     localStorage.setItem('app_developer_mode', String(pending.developerMode));
+    localStorage.setItem('app_social_links', JSON.stringify(pending.socialLinks));
     setSaved({ ...pending });
   }, [pending]);
 
