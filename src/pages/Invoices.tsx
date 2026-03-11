@@ -159,7 +159,7 @@ const Invoices = () => {
     }
     const { error } = await supabase.from('invoices').update(updateData).eq('id', editInvoice.id);
     if (error) {
-      toast.error(error.message);
+      notifyError({ error, isAr, rawMessage: error.message });
     } else {
       toast.success(isAr ? 'تم تحديث الفاتورة' : 'Invoice updated');
       setEditOpen(false);

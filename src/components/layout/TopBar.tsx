@@ -60,7 +60,7 @@ const TopBar = () => {
       created_by: user?.id,
       is_active: true,
     });
-    if (error) { toast.error(error.message); return; }
+    if (error) { notifyError({ error, isAr, rawMessage: error.message }); return; }
     toast.success(isAr ? 'تم إنشاء الإعلان' : 'Announcement created');
     setAddAnnouncementOpen(false);
     setAnnouncementForm({ title: '', title_ar: '', content: '', content_ar: '', target_audience: 'all', scheduled_at: '' });

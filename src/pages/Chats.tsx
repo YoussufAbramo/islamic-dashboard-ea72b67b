@@ -161,7 +161,7 @@ const Chats = () => {
 
     const { data: newChat, error } = await supabase.from('chats').insert(insertData).select().single();
     if (error) {
-      toast.error(error.message);
+      notifyError({ error, isAr, rawMessage: error.message });
       setCreateLoading(false);
       return;
     }

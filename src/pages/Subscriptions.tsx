@@ -168,7 +168,7 @@ const Subscriptions = () => {
     });
     setCreateLoading(false);
     if (error) {
-      toast.error(error.message);
+      notifyError({ error, isAr, rawMessage: error.message });
     } else {
       toast.success(isAr ? 'تم إنشاء الاشتراك' : 'Subscription created');
       setCreateOpen(false);

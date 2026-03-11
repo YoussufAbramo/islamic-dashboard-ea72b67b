@@ -101,7 +101,7 @@ const Calculator = () => {
       schedule_time: subForm.schedule_time || null,
     });
     setCreating(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) { notifyError({ error, isAr, rawMessage: error.message }); return; }
     toast.success(isAr ? 'تم إنشاء الاشتراك بنجاح' : 'Subscription created successfully');
     setCreateSubOpen(false);
     setSubForm({ student_id: '', course_id: '', teacher_id: '', schedule_days: [], schedule_time: '' });
