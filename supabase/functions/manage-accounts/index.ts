@@ -431,12 +431,12 @@ Deno.serve(async (req) => {
 
         // Support tickets
         const allTickets = [
-          { name: 'Ahmed Ali', email: 'ahmed@example.com', subject: 'Cannot access course materials', message: 'I enrolled in the Quran Memorization course but cannot see the lesson content.', department: 'technical', priority: 'high', status: 'open', user_id: caller.id },
-          { name: 'Fatima Hassan', email: 'fatima@example.com', subject: 'Payment not reflected', message: 'I made a payment yesterday but my subscription still shows as pending.', department: 'billing', priority: 'high', status: 'open', user_id: caller.id },
-          { name: 'Omar Khan', email: 'omar@example.com', subject: 'Request for schedule change', message: 'I would like to change my class timings from morning to evening.', department: 'general', priority: 'medium', status: 'in_progress', user_id: caller.id },
-          { name: 'Aisha Mahmoud', email: 'aisha@example.com', subject: 'Certificate not received', message: 'I completed the Arabic course last week but have not received my certificate.', department: 'general', priority: 'medium', status: 'resolved', resolution_notes: 'Certificate has been issued and sent via email.', user_id: caller.id },
-          { name: 'Yusuf Ibrahim', email: 'yusuf@example.com', subject: 'App crashes on mobile', message: 'The app keeps crashing when I try to open the chat section on my phone.', department: 'technical', priority: 'high', status: 'open', user_id: caller.id },
-          { name: 'Maryam Saleh', email: 'maryam@example.com', subject: 'Refund request', message: 'I would like to request a refund for the Premium package as I am unable to continue.', department: 'billing', priority: 'low', status: 'closed', resolution_notes: 'Refund processed successfully.', user_id: caller.id },
+          { name: 'Ahmed Ali', email: 'ahmed@example.com', subject: 'Cannot access course materials', message: 'I enrolled in the Quran Memorization course but cannot see the lesson content.', department: 'technical', priority: 'high', status: 'open', user_id: callerId },
+          { name: 'Fatima Hassan', email: 'fatima@example.com', subject: 'Payment not reflected', message: 'I made a payment yesterday but my subscription still shows as pending.', department: 'billing', priority: 'high', status: 'open', user_id: callerId },
+          { name: 'Omar Khan', email: 'omar@example.com', subject: 'Request for schedule change', message: 'I would like to change my class timings from morning to evening.', department: 'general', priority: 'medium', status: 'in_progress', user_id: callerId },
+          { name: 'Aisha Mahmoud', email: 'aisha@example.com', subject: 'Certificate not received', message: 'I completed the Arabic course last week but have not received my certificate.', department: 'general', priority: 'medium', status: 'resolved', resolution_notes: 'Certificate has been issued and sent via email.', user_id: callerId },
+          { name: 'Yusuf Ibrahim', email: 'yusuf@example.com', subject: 'App crashes on mobile', message: 'The app keeps crashing when I try to open the chat section on my phone.', department: 'technical', priority: 'high', status: 'open', user_id: callerId },
+          { name: 'Maryam Saleh', email: 'maryam@example.com', subject: 'Refund request', message: 'I would like to request a refund for the Premium package as I am unable to continue.', department: 'billing', priority: 'low', status: 'closed', resolution_notes: 'Refund processed successfully.', user_id: callerId },
         ]
         const ticketsInsert = allTickets.slice(0, qty.tickets)
         const { data: createdTickets } = await adminClient.from('support_tickets').insert(ticketsInsert).select('id')
