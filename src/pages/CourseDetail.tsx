@@ -316,6 +316,11 @@ const CourseDetail = () => {
         {lessons.map((lesson) => (
           <AccordionItem key={lesson.id} value={lesson.id} className="border rounded-lg px-4">
             <div className="flex items-center">
+              {canEdit && (
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: lesson.id, type: 'lesson' }); }}>
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              )}
               <AccordionTrigger className="hover:no-underline flex-1">
                 <div className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4 text-primary" />
@@ -325,11 +330,6 @@ const CourseDetail = () => {
                   </Badge>
                 </div>
               </AccordionTrigger>
-              {canEdit && (
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: lesson.id, type: 'lesson' }); }}>
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              )}
             </div>
             <AccordionContent>
               <div className="space-y-3 pt-2">
