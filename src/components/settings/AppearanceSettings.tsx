@@ -28,53 +28,6 @@ const AppearanceSettings = () => {
     return saved ? JSON.parse(saved) : { ltr: [], rtl: [] };
   });
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const ext = file.name.split('.').pop();
-    const path = `branding/logo-${Date.now()}.${ext}`;
-    const { uploadAndGetSignedUrl } = await import('@/lib/storage');
-    const { signedUrl, error: uploadErr } = await uploadAndGetSignedUrl(path, file);
-    if (uploadErr) { toast.error(uploadErr); return; }
-    setAppLogo(signedUrl);
-    toast.success(isAr ? 'تم رفع الشعار' : 'Logo uploaded');
-  };
-
-  const handleDarkLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const ext = file.name.split('.').pop();
-    const path = `branding/dark-logo-${Date.now()}.${ext}`;
-    const { uploadAndGetSignedUrl } = await import('@/lib/storage');
-    const { signedUrl, error: uploadErr } = await uploadAndGetSignedUrl(path, file);
-    if (uploadErr) { toast.error(uploadErr); return; }
-    setDarkLogo(signedUrl);
-    toast.success(isAr ? 'تم رفع شعار الوضع الداكن' : 'Dark mode logo uploaded');
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, setter: (url: string) => void, prefix: string) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const ext = file.name.split('.').pop();
-    const path = `branding/${prefix}-${Date.now()}.${ext}`;
-    const { uploadAndGetSignedUrl } = await import('@/lib/storage');
-    const { signedUrl, error: uploadErr } = await uploadAndGetSignedUrl(path, file);
-    if (uploadErr) { toast.error(uploadErr); return; }
-    setter(signedUrl);
-    toast.success(isAr ? 'تم الرفع بنجاح' : 'Uploaded successfully');
-  };
-
-  const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const ext = file.name.split('.').pop();
-    const path = `branding/favicon-${Date.now()}.${ext}`;
-    const { uploadAndGetSignedUrl } = await import('@/lib/storage');
-    const { signedUrl, error: uploadErr } = await uploadAndGetSignedUrl(path, file);
-    if (uploadErr) { toast.error(uploadErr); return; }
-    setFavicon(signedUrl);
-    toast.success(isAr ? 'تم رفع الأيقونة' : 'Favicon uploaded');
-  };
 
   const shapeOptions: { value: ButtonShape; label: string; labelAr: string; icon: any }[] = [
     { value: 'rounded', label: 'Rounded', labelAr: 'مستدير', icon: RectangleHorizontal },
