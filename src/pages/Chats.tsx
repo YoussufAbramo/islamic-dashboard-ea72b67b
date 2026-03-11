@@ -123,9 +123,14 @@ const Chats = () => {
   };
 
   const addGroupMember = async (userId: string, memberRole: string) => {
-    // Check if already a member
-    const existing = groupMembers.find(m => m.user_id === userId);
-    if (existing) {
+    // Check DB directly to avoid stale state issues
+    const { data: existingRows } = await supabase
+      .from('chat_members')
+      .select('id')
+      .eq('chat_id', selectedChat.id)
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (existingRows) {
       toast.error(isAr ? 'هذا العضو موجود بالفعل' : 'This member already exists');
       setAddMemberKey(prev => prev + 1);
       return;
