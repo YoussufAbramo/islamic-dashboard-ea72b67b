@@ -77,7 +77,7 @@ const FloatingButtons = () => {
 
   return (
     <>
-      <div className="fixed top-1/2 -translate-y-1/2 end-0 z-50 flex flex-col gap-1">
+      <div className={`fixed top-1/2 -translate-y-1/2 z-50 flex flex-col gap-1 ${isAr ? 'left-0' : 'right-0'}`}>
         {/* Support Ticket */}
         <button
           onClick={() => setTicketOpen(true)}
