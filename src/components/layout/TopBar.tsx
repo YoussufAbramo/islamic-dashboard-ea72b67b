@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
+import GlobalSearch from '@/components/GlobalSearch';
 
 const ArabicLetterIcon = () => (
   <span className="text-sm font-bold leading-none" style={{ fontFamily: "'Noto Kufi Arabic', sans-serif" }}>ع</span>
