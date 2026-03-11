@@ -9,310 +9,511 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Save, Plus, Trash2, Globe, Megaphone, Star, Sparkles, Settings2, Search } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import {
+  Save, Plus, Trash2, GripVertical, ChevronDown, ChevronUp, Pencil, X, Search, Globe,
+  Star, Sparkles, Shield, Megaphone, BookOpen, Users, BarChart3, HelpCircle, Mail, Layers, CreditCard, Quote, Handshake, Settings2, Eye, EyeOff,
+} from 'lucide-react';
 import ImagePickerField from '@/components/media/ImagePickerField';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { DEFAULT_SECTION_ORDER, defaultSectionContent, defaultGeneralContent, sectionMeta, type SectionKey } from '@/lib/landingDefaults';
 
-type ContentSection = 'general' | 'hero' | 'features' | 'whyus' | 'cta';
-
-interface SectionTab {
-  key: ContentSection;
-  label: string;
-  labelAr: string;
-  icon: any;
-}
-
-const sectionTabs: SectionTab[] = [
-  { key: 'general', label: 'General & SEO', labelAr: 'عام وSEO', icon: Settings2 },
-  { key: 'hero', label: 'Hero Section', labelAr: 'القسم الرئيسي', icon: Star },
-  { key: 'features', label: 'Features Section', labelAr: 'قسم الميزات', icon: Sparkles },
-  { key: 'whyus', label: 'Why Us Section', labelAr: 'قسم لماذا نحن', icon: Globe },
-  { key: 'cta', label: 'Call to Action', labelAr: 'دعوة للعمل', icon: Megaphone },
-];
-
-const defaultContent: Record<string, Record<string, any>> = {
-  general: {
-    meta_title: '',
-    meta_title_ar: '',
-    meta_description: '',
-    meta_description_ar: '',
-    meta_keywords: '',
-    og_title: '',
-    og_description: '',
-    og_image: '',
-    sections_visible: {
-      hero: true,
-      features: true,
-      whyus: true,
-      pricing: true,
-      cta: true,
-    },
-  },
-  hero: { title: 'Islamic Education Platform', title_ar: 'منصة التعليم الإسلامي', subtitle: 'Empower your institution with a comprehensive learning management system designed for Islamic education', subtitle_ar: 'مكّن مؤسستك بنظام إدارة تعليمي شامل مصمم للتعليم الإسلامي', cta: 'Get Started', cta_ar: 'ابدأ الآن' },
-  features: { title: 'Everything You Need', title_ar: 'كل ما تحتاجه', subtitle: 'A complete suite of tools for modern Islamic education', subtitle_ar: 'مجموعة كاملة من الأدوات للتعليم الإسلامي الحديث' },
-  whyus: {
-    title: 'Why Choose Us?', title_ar: 'لماذا تختارنا؟', subtitle: 'Built specifically for Islamic educational institutions', subtitle_ar: 'مصمم خصيصاً للمؤسسات التعليمية الإسلامية',
-    reasons: [
-      { title: 'Islamic-First Design', title_ar: 'تصميم إسلامي أولاً', desc: 'Every aspect designed with Islamic aesthetics and values in mind', desc_ar: 'كل جانب مصمم مع مراعاة الجماليات والقيم الإسلامية' },
-      { title: 'Bilingual Support', title_ar: 'دعم ثنائي اللغة', desc: 'Full Arabic and English support with RTL layout', desc_ar: 'دعم كامل للعربية والإنجليزية مع تخطيط من اليمين لليسار' },
-      { title: 'Comprehensive Tools', title_ar: 'أدوات شاملة', desc: 'From course management to financial reports, everything in one place', desc_ar: 'من إدارة الدورات إلى التقارير المالية، كل شيء في مكان واحد' },
-      { title: 'Secure & Reliable', title_ar: 'آمن وموثوق', desc: 'Enterprise-grade security with role-based access control', desc_ar: 'أمان على مستوى المؤسسات مع التحكم في الوصول القائم على الأدوار' },
-    ],
-  },
-  cta: { title: 'Ready to Transform Your Institution?', title_ar: 'هل أنت مستعد لتحويل مؤسستك؟', subtitle: 'Join hundreds of Islamic schools and academies already using our platform', subtitle_ar: 'انضم إلى مئات المدارس والأكاديميات الإسلامية التي تستخدم منصتنا بالفعل' },
+const iconMap: Record<string, any> = {
+  Star, Sparkles, Shield, Megaphone, BookOpen, Users, BarChart3, HelpCircle, Mail, Layers, CreditCard, Quote, Handshake,
 };
 
-const LandingContentSettings = () => {
-  const { language } = useLanguage();
-  const isAr = language === 'ar';
-  const [activeSection, setActiveSection] = useState<ContentSection>('general');
-  const [content, setContent] = useState<Record<string, Record<string, any>>>(defaultContent);
-  const [saving, setSaving] = useState(false);
+// ─── Sortable section card ───
+interface SortableCardProps {
+  sectionKey: SectionKey;
+  isAr: boolean;
+  visible: boolean;
+  expanded: boolean;
+  onToggleVisible: () => void;
+  onToggleExpand: () => void;
+  children?: React.ReactNode;
+}
 
-  useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase.from('landing_content').select('*');
-      if (data) {
-        const merged = { ...defaultContent };
-        data.forEach((item: any) => {
-          if (item.section_key === 'general') {
-            merged.general = { ...defaultContent.general, ...item.content };
-          } else {
-            merged[item.section_key] = { ...defaultContent[item.section_key], ...item.content };
-          }
-        });
-        setContent(merged);
-      }
-    };
-    fetch();
-  }, []);
+const SortableSectionCard = ({ sectionKey, isAr, visible, expanded, onToggleVisible, onToggleExpand, children }: SortableCardProps) => {
+  const meta = sectionMeta[sectionKey];
+  const Icon = iconMap[meta.iconName] || BookOpen;
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: sectionKey });
 
-  const updateField = (section: string, field: string, value: any) => {
-    setContent(prev => ({
-      ...prev,
-      [section]: { ...prev[section], [field]: value },
-    }));
-  };
-
-  const updateSectionVisibility = (sectionId: string, visible: boolean) => {
-    setContent(prev => ({
-      ...prev,
-      general: {
-        ...prev.general,
-        sections_visible: {
-          ...prev.general.sections_visible,
-          [sectionId]: visible,
-        },
-      },
-    }));
-  };
-
-  const handleSave = async (section: ContentSection) => {
-    setSaving(true);
-    const { error } = await supabase.from('landing_content').upsert({
-      section_key: section,
-      content: content[section],
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'section_key' });
-    setSaving(false);
-    if (error) {
-      notifyError({ error: 'GENERAL_SAVE_FAILED', isAr });
-    } else {
-      toast.success(isAr ? 'تم الحفظ' : 'Saved successfully');
-    }
-  };
-
-  const addReason = () => {
-    const reasons = [...(content.whyus?.reasons || []), { title: '', title_ar: '', desc: '', desc_ar: '' }];
-    updateField('whyus', 'reasons', reasons);
-  };
-
-  const removeReason = (index: number) => {
-    const reasons = [...(content.whyus?.reasons || [])];
-    reasons.splice(index, 1);
-    updateField('whyus', 'reasons', reasons);
-  };
-
-  const updateReason = (index: number, field: string, value: string) => {
-    const reasons = [...(content.whyus?.reasons || [])];
-    reasons[index] = { ...reasons[index], [field]: value };
-    updateField('whyus', 'reasons', reasons);
-  };
-
-  const sectionVisibility = content.general?.sections_visible || { hero: true, features: true, whyus: true, pricing: true, cta: true };
-
-  const renderSection = () => {
-    const s = content[activeSection];
-    switch (activeSection) {
-      case 'general':
-        return (
-          <div className="space-y-6">
-            {/* Section Visibility */}
-            <div>
-              <h3 className="font-medium mb-3">{isAr ? 'إظهار/إخفاء الأقسام' : 'Show/Hide Sections'}</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {[
-                  { id: 'hero', label: 'Hero', labelAr: 'الرئيسي' },
-                  { id: 'features', label: 'Features', labelAr: 'الميزات' },
-                  { id: 'whyus', label: 'Why Us', labelAr: 'لماذا نحن' },
-                  { id: 'pricing', label: 'Pricing', labelAr: 'الأسعار' },
-                  { id: 'cta', label: 'CTA', labelAr: 'دعوة للعمل' },
-                ].map(sec => (
-                  <div key={sec.id} className="flex items-center justify-between gap-2 p-3 rounded-lg border border-border">
-                    <span className="text-sm">{isAr ? sec.labelAr : sec.label}</span>
-                    <Switch
-                      checked={sectionVisibility[sec.id] !== false}
-                      onCheckedChange={(v) => updateSectionVisibility(sec.id, v)}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* SEO Meta Data */}
-            <div className="rounded-lg border border-border p-4 space-y-4">
-              <h3 className="font-medium flex items-center gap-2">
-                <Search className="h-4 w-4" />
-                {isAr ? 'بيانات SEO' : 'SEO Meta Data'}
-              </h3>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div><Label>Meta Title (EN)</Label><Input value={s.meta_title || ''} onChange={e => updateField('general', 'meta_title', e.target.value)} placeholder="Islamic Education Platform" /></div>
-                <div><Label>Meta Title (AR)</Label><Input dir="rtl" value={s.meta_title_ar || ''} onChange={e => updateField('general', 'meta_title_ar', e.target.value)} placeholder="منصة التعليم الإسلامي" /></div>
-              </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div><Label>Meta Description (EN)</Label><Textarea value={s.meta_description || ''} onChange={e => updateField('general', 'meta_description', e.target.value)} placeholder="Describe your platform..." rows={2} /></div>
-                <div><Label>Meta Description (AR)</Label><Textarea dir="rtl" value={s.meta_description_ar || ''} onChange={e => updateField('general', 'meta_description_ar', e.target.value)} placeholder="وصف المنصة..." rows={2} /></div>
-              </div>
-              <div>
-                <Label>{isAr ? 'الكلمات المفتاحية' : 'Keywords'}</Label>
-                <Input value={s.meta_keywords || ''} onChange={e => updateField('general', 'meta_keywords', e.target.value)} placeholder="islamic, education, quran, learning" />
-              </div>
-            </div>
-
-            {/* Open Graph - Separate box */}
-            <div className="rounded-lg border border-border p-4 space-y-4">
-              <h3 className="font-medium flex items-center gap-2">
-                <Globe className="h-4 w-4" />
-                {isAr ? 'بيانات المشاركة (Open Graph)' : 'Open Graph (OG) Data'}
-              </h3>
-              <div><Label>OG Title</Label><Input value={s.og_title || ''} onChange={e => updateField('general', 'og_title', e.target.value)} placeholder="Title for social sharing" /></div>
-              <div><Label>OG Description</Label><Textarea value={s.og_description || ''} onChange={e => updateField('general', 'og_description', e.target.value)} placeholder="Description for social sharing" rows={2} /></div>
-              
-              <ImagePickerField
-                label={isAr ? 'صورة OG' : 'OG Image'}
-                value={s.og_image || ''}
-                onChange={(url) => updateField('general', 'og_image', url)}
-              />
-            </div>
-          </div>
-        );
-      case 'hero':
-        return (
-          <div className="space-y-4">
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div><Label>{isAr ? 'العنوان (EN)' : 'Title (EN)'}</Label><Input value={s.title || ''} onChange={e => updateField('hero', 'title', e.target.value)} /></div>
-              <div><Label>{isAr ? 'العنوان (AR)' : 'Title (AR)'}</Label><Input dir="rtl" value={s.title_ar || ''} onChange={e => updateField('hero', 'title_ar', e.target.value)} /></div>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div><Label>{isAr ? 'العنوان الفرعي (EN)' : 'Subtitle (EN)'}</Label><Textarea value={s.subtitle || ''} onChange={e => updateField('hero', 'subtitle', e.target.value)} /></div>
-              <div><Label>{isAr ? 'العنوان الفرعي (AR)' : 'Subtitle (AR)'}</Label><Textarea dir="rtl" value={s.subtitle_ar || ''} onChange={e => updateField('hero', 'subtitle_ar', e.target.value)} /></div>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div><Label>{isAr ? 'زر CTA (EN)' : 'CTA Button (EN)'}</Label><Input value={s.cta || ''} onChange={e => updateField('hero', 'cta', e.target.value)} /></div>
-              <div><Label>{isAr ? 'زر CTA (AR)' : 'CTA Button (AR)'}</Label><Input dir="rtl" value={s.cta_ar || ''} onChange={e => updateField('hero', 'cta_ar', e.target.value)} /></div>
-            </div>
-          </div>
-        );
-      case 'features':
-      case 'cta':
-        return (
-          <div className="space-y-4">
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div><Label>{isAr ? 'العنوان (EN)' : 'Title (EN)'}</Label><Input value={s.title || ''} onChange={e => updateField(activeSection, 'title', e.target.value)} /></div>
-              <div><Label>{isAr ? 'العنوان (AR)' : 'Title (AR)'}</Label><Input dir="rtl" value={s.title_ar || ''} onChange={e => updateField(activeSection, 'title_ar', e.target.value)} /></div>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div><Label>{isAr ? 'العنوان الفرعي (EN)' : 'Subtitle (EN)'}</Label><Textarea value={s.subtitle || ''} onChange={e => updateField(activeSection, 'subtitle', e.target.value)} /></div>
-              <div><Label>{isAr ? 'العنوان الفرعي (AR)' : 'Subtitle (AR)'}</Label><Textarea dir="rtl" value={s.subtitle_ar || ''} onChange={e => updateField(activeSection, 'subtitle_ar', e.target.value)} /></div>
-            </div>
-          </div>
-        );
-      case 'whyus':
-        return (
-          <div className="space-y-6">
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div><Label>{isAr ? 'العنوان (EN)' : 'Title (EN)'}</Label><Input value={s.title || ''} onChange={e => updateField('whyus', 'title', e.target.value)} /></div>
-              <div><Label>{isAr ? 'العنوان (AR)' : 'Title (AR)'}</Label><Input dir="rtl" value={s.title_ar || ''} onChange={e => updateField('whyus', 'title_ar', e.target.value)} /></div>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div><Label>{isAr ? 'العنوان الفرعي (EN)' : 'Subtitle (EN)'}</Label><Textarea value={s.subtitle || ''} onChange={e => updateField('whyus', 'subtitle', e.target.value)} /></div>
-              <div><Label>{isAr ? 'العنوان الفرعي (AR)' : 'Subtitle (AR)'}</Label><Textarea dir="rtl" value={s.subtitle_ar || ''} onChange={e => updateField('whyus', 'subtitle_ar', e.target.value)} /></div>
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <Label className="text-base">{isAr ? 'الأسباب' : 'Reasons'}</Label>
-                <Button variant="outline" size="sm" onClick={addReason}><Plus className="h-4 w-4 me-1" />{isAr ? 'إضافة' : 'Add'}</Button>
-              </div>
-              <Accordion type="multiple" className="space-y-2">
-                {(s.reasons || []).map((r: any, i: number) => (
-                  <AccordionItem key={i} value={`reason-${i}`} className="border rounded-lg px-4">
-                    <AccordionTrigger className="text-sm">{r.title || `Reason ${i + 1}`}</AccordionTrigger>
-                    <AccordionContent className="space-y-3 pb-4">
-                      <div className="grid sm:grid-cols-2 gap-3">
-                        <div><Label>Title (EN)</Label><Input value={r.title} onChange={e => updateReason(i, 'title', e.target.value)} /></div>
-                        <div><Label>Title (AR)</Label><Input dir="rtl" value={r.title_ar} onChange={e => updateReason(i, 'title_ar', e.target.value)} /></div>
-                      </div>
-                      <div className="grid sm:grid-cols-2 gap-3">
-                        <div><Label>Description (EN)</Label><Textarea value={r.desc} onChange={e => updateReason(i, 'desc', e.target.value)} /></div>
-                        <div><Label>Description (AR)</Label><Textarea dir="rtl" value={r.desc_ar} onChange={e => updateReason(i, 'desc_ar', e.target.value)} /></div>
-                      </div>
-                      <Button variant="destructive" size="sm" onClick={() => removeReason(i)}><Trash2 className="h-4 w-4 me-1" />{isAr ? 'حذف' : 'Remove'}</Button>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </div>
-          </div>
-        );
-    }
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : 'auto' as any,
   };
 
   return (
+    <div ref={setNodeRef} style={style} className="rounded-lg border border-border bg-card overflow-hidden">
+      <div className="flex items-center gap-3 px-4 py-3">
+        <button {...attributes} {...listeners} className="cursor-grab text-muted-foreground hover:text-foreground touch-none">
+          <GripVertical className="h-5 w-5" />
+        </button>
+        <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+          <Icon className="h-4 w-4 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-medium text-sm text-foreground">{isAr ? meta.labelAr : meta.label}</div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={onToggleVisible} className="text-muted-foreground hover:text-foreground transition-colors" title={visible ? 'Hide' : 'Show'}>
+            {visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+          </button>
+          <button onClick={onToggleExpand} className="text-muted-foreground hover:text-foreground transition-colors">
+            {expanded ? <ChevronUp className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+          </button>
+        </div>
+      </div>
+      {!visible && <div className="px-4 pb-2"><Badge variant="secondary" className="text-xs">{isAr ? 'مخفي' : 'Hidden'}</Badge></div>}
+      {expanded && <div className="px-4 pb-4 border-t border-border pt-4">{children}</div>}
+    </div>
+  );
+};
+
+// ─── Main Component ───
+const LandingContentSettings = () => {
+  const { language } = useLanguage();
+  const isAr = language === 'ar';
+  const [content, setContent] = useState<Record<string, Record<string, any>>>({ ...defaultSectionContent });
+  const [general, setGeneral] = useState<Record<string, any>>({ ...defaultGeneralContent });
+  const [sectionsOrder, setSectionsOrder] = useState<SectionKey[]>([...DEFAULT_SECTION_ORDER]);
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'sections' | 'seo'>('sections');
+  const [saving, setSaving] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase.from('landing_content').select('*');
+      if (data) {
+        const merged = { ...defaultSectionContent };
+        let gen = { ...defaultGeneralContent };
+        data.forEach((item: any) => {
+          if (item.section_key === 'general') {
+            gen = { ...defaultGeneralContent, ...item.content };
+          } else {
+            merged[item.section_key] = { ...(defaultSectionContent[item.section_key] || {}), ...item.content };
+          }
+        });
+        setContent(merged);
+        setGeneral(gen);
+        if (gen.sections_order?.length) setSectionsOrder(gen.sections_order);
+      }
+    };
+    load();
+  }, []);
+
+  const sectionsVisible: Record<string, boolean> = general.sections_visible || {};
+
+  const updateField = (section: string, field: string, value: any) => {
+    setContent(prev => ({ ...prev, [section]: { ...prev[section], [field]: value } }));
+  };
+
+  const updateGeneralField = (field: string, value: any) => {
+    setGeneral(prev => ({ ...prev, [field]: value }));
+  };
+
+  const toggleSectionVisibility = (key: string) => {
+    const updated = { ...sectionsVisible, [key]: !(sectionsVisible[key] !== false) };
+    setGeneral(prev => ({ ...prev, sections_visible: updated }));
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = sectionsOrder.indexOf(active.id as SectionKey);
+      const newIndex = sectionsOrder.indexOf(over.id as SectionKey);
+      const newOrder = arrayMove(sectionsOrder, oldIndex, newIndex);
+      setSectionsOrder(newOrder);
+      setGeneral(prev => ({ ...prev, sections_order: newOrder }));
+    }
+  };
+
+  const handleSaveAll = async () => {
+    setSaving(true);
+    try {
+      // Save general with order & visibility
+      const generalPayload = { ...general, sections_order: sectionsOrder };
+      const upserts = [
+        { section_key: 'general', content: generalPayload, updated_at: new Date().toISOString() },
+        ...sectionsOrder.map(key => ({
+          section_key: key,
+          content: content[key] || defaultSectionContent[key] || {},
+          updated_at: new Date().toISOString(),
+        })),
+      ];
+      const { error } = await supabase.from('landing_content').upsert(upserts, { onConflict: 'section_key' });
+      if (error) throw error;
+      toast.success(isAr ? 'تم حفظ جميع الأقسام بنجاح' : 'All sections saved successfully');
+    } catch {
+      notifyError({ error: 'GENERAL_SAVE_FAILED', isAr });
+    }
+    setSaving(false);
+  };
+
+  // ─── Array item helpers ───
+  const addArrayItem = (section: string, field: string, template: Record<string, any>) => {
+    const items = [...(content[section]?.[field] || []), template];
+    updateField(section, field, items);
+  };
+
+  const removeArrayItem = (section: string, field: string, index: number) => {
+    const items = [...(content[section]?.[field] || [])];
+    items.splice(index, 1);
+    updateField(section, field, items);
+  };
+
+  const updateArrayItem = (section: string, field: string, index: number, key: string, value: string) => {
+    const items = [...(content[section]?.[field] || [])];
+    items[index] = { ...items[index], [key]: value };
+    updateField(section, field, items);
+  };
+
+  // ─── Section editors ───
+  const renderEditor = (key: SectionKey) => {
+    const s = content[key] || {};
+
+    const TitleSubtitleFields = ({ sectionKey }: { sectionKey: string }) => (
+      <div className="space-y-4">
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div><Label>Title (EN)</Label><Input value={s.title || ''} onChange={e => updateField(sectionKey, 'title', e.target.value)} /></div>
+          <div><Label>Title (AR)</Label><Input dir="rtl" value={s.title_ar || ''} onChange={e => updateField(sectionKey, 'title_ar', e.target.value)} /></div>
+        </div>
+        {s.subtitle !== undefined && (
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div><Label>Subtitle (EN)</Label><Textarea value={s.subtitle || ''} onChange={e => updateField(sectionKey, 'subtitle', e.target.value)} rows={2} /></div>
+            <div><Label>Subtitle (AR)</Label><Textarea dir="rtl" value={s.subtitle_ar || ''} onChange={e => updateField(sectionKey, 'subtitle_ar', e.target.value)} rows={2} /></div>
+          </div>
+        )}
+      </div>
+    );
+
+    switch (key) {
+      case 'hero':
+        return (
+          <div className="space-y-4">
+            <TitleSubtitleFields sectionKey="hero" />
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div><Label>CTA Button (EN)</Label><Input value={s.cta || ''} onChange={e => updateField('hero', 'cta', e.target.value)} /></div>
+              <div><Label>CTA Button (AR)</Label><Input dir="rtl" value={s.cta_ar || ''} onChange={e => updateField('hero', 'cta_ar', e.target.value)} /></div>
+            </div>
+          </div>
+        );
+
+      case 'partners':
+        return (
+          <div className="space-y-4">
+            <TitleSubtitleFields sectionKey="partners" />
+            <div className="flex items-center justify-between">
+              <Label className="text-base">{isAr ? 'الشركاء' : 'Partners'}</Label>
+              <Button variant="outline" size="sm" onClick={() => addArrayItem('partners', 'items', { name: '', name_ar: '', logo_url: '' })}>
+                <Plus className="h-4 w-4 me-1" />{isAr ? 'إضافة' : 'Add'}
+              </Button>
+            </div>
+            {(s.items || []).map((item: any, i: number) => (
+              <div key={i} className="rounded-lg border border-border p-3 space-y-3">
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div><Label>Name (EN)</Label><Input value={item.name || ''} onChange={e => updateArrayItem('partners', 'items', i, 'name', e.target.value)} /></div>
+                  <div><Label>Name (AR)</Label><Input dir="rtl" value={item.name_ar || ''} onChange={e => updateArrayItem('partners', 'items', i, 'name_ar', e.target.value)} /></div>
+                </div>
+                <ImagePickerField label={isAr ? 'شعار' : 'Logo'} value={item.logo_url || ''} onChange={(url) => updateArrayItem('partners', 'items', i, 'logo_url', url)} />
+                <Button variant="destructive" size="sm" onClick={() => removeArrayItem('partners', 'items', i)}><Trash2 className="h-4 w-4 me-1" />{isAr ? 'حذف' : 'Remove'}</Button>
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'features':
+        return (
+          <div className="space-y-4">
+            <TitleSubtitleFields sectionKey="features" />
+            <div className="flex items-center justify-between">
+              <Label className="text-base">{isAr ? 'الميزات' : 'Features'}</Label>
+              <Button variant="outline" size="sm" onClick={() => addArrayItem('features', 'items', { title: '', title_ar: '', desc: '', desc_ar: '', icon: 'Star' })}>
+                <Plus className="h-4 w-4 me-1" />{isAr ? 'إضافة' : 'Add'}
+              </Button>
+            </div>
+            {(s.items || []).map((item: any, i: number) => (
+              <div key={i} className="rounded-lg border border-border p-3 space-y-3">
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div><Label>Title (EN)</Label><Input value={item.title || ''} onChange={e => updateArrayItem('features', 'items', i, 'title', e.target.value)} /></div>
+                  <div><Label>Title (AR)</Label><Input dir="rtl" value={item.title_ar || ''} onChange={e => updateArrayItem('features', 'items', i, 'title_ar', e.target.value)} /></div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div><Label>Description (EN)</Label><Textarea value={item.desc || ''} onChange={e => updateArrayItem('features', 'items', i, 'desc', e.target.value)} rows={2} /></div>
+                  <div><Label>Description (AR)</Label><Textarea dir="rtl" value={item.desc_ar || ''} onChange={e => updateArrayItem('features', 'items', i, 'desc_ar', e.target.value)} rows={2} /></div>
+                </div>
+                <div>
+                  <Label>Icon</Label>
+                  <Input value={item.icon || ''} onChange={e => updateArrayItem('features', 'items', i, 'icon', e.target.value)} placeholder="BookOpen, Users, Shield..." />
+                </div>
+                <Button variant="destructive" size="sm" onClick={() => removeArrayItem('features', 'items', i)}><Trash2 className="h-4 w-4 me-1" />{isAr ? 'حذف' : 'Remove'}</Button>
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'stats':
+        return (
+          <div className="space-y-4">
+            <TitleSubtitleFields sectionKey="stats" />
+            <div className="flex items-center justify-between">
+              <Label className="text-base">{isAr ? 'الأرقام' : 'Statistics'}</Label>
+              <Button variant="outline" size="sm" onClick={() => addArrayItem('stats', 'items', { value: '', label: '', label_ar: '' })}>
+                <Plus className="h-4 w-4 me-1" />{isAr ? 'إضافة' : 'Add'}
+              </Button>
+            </div>
+            {(s.items || []).map((item: any, i: number) => (
+              <div key={i} className="rounded-lg border border-border p-3 space-y-3">
+                <div className="grid grid-cols-3 gap-3">
+                  <div><Label>Value</Label><Input value={item.value || ''} onChange={e => updateArrayItem('stats', 'items', i, 'value', e.target.value)} placeholder="500+" /></div>
+                  <div><Label>Label (EN)</Label><Input value={item.label || ''} onChange={e => updateArrayItem('stats', 'items', i, 'label', e.target.value)} /></div>
+                  <div><Label>Label (AR)</Label><Input dir="rtl" value={item.label_ar || ''} onChange={e => updateArrayItem('stats', 'items', i, 'label_ar', e.target.value)} /></div>
+                </div>
+                <Button variant="destructive" size="sm" onClick={() => removeArrayItem('stats', 'items', i)}><Trash2 className="h-4 w-4 me-1" />{isAr ? 'حذف' : 'Remove'}</Button>
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'courses':
+      case 'instructors':
+        return (
+          <div className="space-y-4">
+            <TitleSubtitleFields sectionKey={key} />
+            <div>
+              <Label>{isAr ? 'الحد الأقصى للعرض' : 'Max Display'}</Label>
+              <Input type="number" min={1} max={12} value={s.max_display || (key === 'courses' ? 6 : 4)} onChange={e => updateField(key, 'max_display', parseInt(e.target.value) || 4)} className="w-24" />
+            </div>
+            <p className="text-xs text-muted-foreground">{isAr ? 'يتم سحب البيانات تلقائياً من قاعدة البيانات' : 'Data is automatically pulled from the database'}</p>
+          </div>
+        );
+
+      case 'whyus':
+        return (
+          <div className="space-y-4">
+            <TitleSubtitleFields sectionKey="whyus" />
+            <div className="flex items-center justify-between">
+              <Label className="text-base">{isAr ? 'الأسباب' : 'Reasons'}</Label>
+              <Button variant="outline" size="sm" onClick={() => addArrayItem('whyus', 'reasons', { title: '', title_ar: '', desc: '', desc_ar: '' })}>
+                <Plus className="h-4 w-4 me-1" />{isAr ? 'إضافة' : 'Add'}
+              </Button>
+            </div>
+            {(s.reasons || []).map((r: any, i: number) => (
+              <div key={i} className="rounded-lg border border-border p-3 space-y-3">
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div><Label>Title (EN)</Label><Input value={r.title || ''} onChange={e => updateArrayItem('whyus', 'reasons', i, 'title', e.target.value)} /></div>
+                  <div><Label>Title (AR)</Label><Input dir="rtl" value={r.title_ar || ''} onChange={e => updateArrayItem('whyus', 'reasons', i, 'title_ar', e.target.value)} /></div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div><Label>Description (EN)</Label><Textarea value={r.desc || ''} onChange={e => updateArrayItem('whyus', 'reasons', i, 'desc', e.target.value)} rows={2} /></div>
+                  <div><Label>Description (AR)</Label><Textarea dir="rtl" value={r.desc_ar || ''} onChange={e => updateArrayItem('whyus', 'reasons', i, 'desc_ar', e.target.value)} rows={2} /></div>
+                </div>
+                <Button variant="destructive" size="sm" onClick={() => removeArrayItem('whyus', 'reasons', i)}><Trash2 className="h-4 w-4 me-1" />{isAr ? 'حذف' : 'Remove'}</Button>
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'howitworks':
+        return (
+          <div className="space-y-4">
+            <TitleSubtitleFields sectionKey="howitworks" />
+            <div className="flex items-center justify-between">
+              <Label className="text-base">{isAr ? 'الخطوات' : 'Steps'}</Label>
+              <Button variant="outline" size="sm" onClick={() => addArrayItem('howitworks', 'steps', { title: '', title_ar: '', desc: '', desc_ar: '' })}>
+                <Plus className="h-4 w-4 me-1" />{isAr ? 'إضافة' : 'Add'}
+              </Button>
+            </div>
+            {(s.steps || []).map((step: any, i: number) => (
+              <div key={i} className="rounded-lg border border-border p-3 space-y-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">{i + 1}</div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div><Label>Title (EN)</Label><Input value={step.title || ''} onChange={e => updateArrayItem('howitworks', 'steps', i, 'title', e.target.value)} /></div>
+                  <div><Label>Title (AR)</Label><Input dir="rtl" value={step.title_ar || ''} onChange={e => updateArrayItem('howitworks', 'steps', i, 'title_ar', e.target.value)} /></div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div><Label>Description (EN)</Label><Textarea value={step.desc || ''} onChange={e => updateArrayItem('howitworks', 'steps', i, 'desc', e.target.value)} rows={2} /></div>
+                  <div><Label>Description (AR)</Label><Textarea dir="rtl" value={step.desc_ar || ''} onChange={e => updateArrayItem('howitworks', 'steps', i, 'desc_ar', e.target.value)} rows={2} /></div>
+                </div>
+                <Button variant="destructive" size="sm" onClick={() => removeArrayItem('howitworks', 'steps', i)}><Trash2 className="h-4 w-4 me-1" />{isAr ? 'حذف' : 'Remove'}</Button>
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'testimonials':
+        return (
+          <div className="space-y-4">
+            <TitleSubtitleFields sectionKey="testimonials" />
+            <div className="flex items-center justify-between">
+              <Label className="text-base">{isAr ? 'الآراء' : 'Testimonials'}</Label>
+              <Button variant="outline" size="sm" onClick={() => addArrayItem('testimonials', 'items', { name: '', name_ar: '', role: '', role_ar: '', photo_url: '', text: '', text_ar: '', rating: 5 })}>
+                <Plus className="h-4 w-4 me-1" />{isAr ? 'إضافة' : 'Add'}
+              </Button>
+            </div>
+            {(s.items || []).map((item: any, i: number) => (
+              <div key={i} className="rounded-lg border border-border p-3 space-y-3">
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div><Label>Name (EN)</Label><Input value={item.name || ''} onChange={e => updateArrayItem('testimonials', 'items', i, 'name', e.target.value)} /></div>
+                  <div><Label>Name (AR)</Label><Input dir="rtl" value={item.name_ar || ''} onChange={e => updateArrayItem('testimonials', 'items', i, 'name_ar', e.target.value)} /></div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div><Label>Role (EN)</Label><Input value={item.role || ''} onChange={e => updateArrayItem('testimonials', 'items', i, 'role', e.target.value)} /></div>
+                  <div><Label>Role (AR)</Label><Input dir="rtl" value={item.role_ar || ''} onChange={e => updateArrayItem('testimonials', 'items', i, 'role_ar', e.target.value)} /></div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div><Label>Text (EN)</Label><Textarea value={item.text || ''} onChange={e => updateArrayItem('testimonials', 'items', i, 'text', e.target.value)} rows={2} /></div>
+                  <div><Label>Text (AR)</Label><Textarea dir="rtl" value={item.text_ar || ''} onChange={e => updateArrayItem('testimonials', 'items', i, 'text_ar', e.target.value)} rows={2} /></div>
+                </div>
+                <ImagePickerField label={isAr ? 'الصورة' : 'Photo'} value={item.photo_url || ''} onChange={(url) => updateArrayItem('testimonials', 'items', i, 'photo_url', url)} />
+                <div className="w-24">
+                  <Label>{isAr ? 'التقييم' : 'Rating'}</Label>
+                  <Input type="number" min={1} max={5} value={item.rating || 5} onChange={e => updateArrayItem('testimonials', 'items', i, 'rating', e.target.value)} />
+                </div>
+                <Button variant="destructive" size="sm" onClick={() => removeArrayItem('testimonials', 'items', i)}><Trash2 className="h-4 w-4 me-1" />{isAr ? 'حذف' : 'Remove'}</Button>
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'faq':
+        return (
+          <div className="space-y-4">
+            <TitleSubtitleFields sectionKey="faq" />
+            <div className="flex items-center justify-between">
+              <Label className="text-base">{isAr ? 'الأسئلة' : 'Questions'}</Label>
+              <Button variant="outline" size="sm" onClick={() => addArrayItem('faq', 'items', { question: '', question_ar: '', answer: '', answer_ar: '' })}>
+                <Plus className="h-4 w-4 me-1" />{isAr ? 'إضافة' : 'Add'}
+              </Button>
+            </div>
+            {(s.items || []).map((item: any, i: number) => (
+              <div key={i} className="rounded-lg border border-border p-3 space-y-3">
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div><Label>Question (EN)</Label><Input value={item.question || ''} onChange={e => updateArrayItem('faq', 'items', i, 'question', e.target.value)} /></div>
+                  <div><Label>Question (AR)</Label><Input dir="rtl" value={item.question_ar || ''} onChange={e => updateArrayItem('faq', 'items', i, 'question_ar', e.target.value)} /></div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div><Label>Answer (EN)</Label><Textarea value={item.answer || ''} onChange={e => updateArrayItem('faq', 'items', i, 'answer', e.target.value)} rows={2} /></div>
+                  <div><Label>Answer (AR)</Label><Textarea dir="rtl" value={item.answer_ar || ''} onChange={e => updateArrayItem('faq', 'items', i, 'answer_ar', e.target.value)} rows={2} /></div>
+                </div>
+                <Button variant="destructive" size="sm" onClick={() => removeArrayItem('faq', 'items', i)}><Trash2 className="h-4 w-4 me-1" />{isAr ? 'حذف' : 'Remove'}</Button>
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'newsletter':
+        return (
+          <div className="space-y-4">
+            <TitleSubtitleFields sectionKey="newsletter" />
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div><Label>Button Text (EN)</Label><Input value={s.button_text || ''} onChange={e => updateField('newsletter', 'button_text', e.target.value)} /></div>
+              <div><Label>Button Text (AR)</Label><Input dir="rtl" value={s.button_text_ar || ''} onChange={e => updateField('newsletter', 'button_text_ar', e.target.value)} /></div>
+            </div>
+          </div>
+        );
+
+      case 'pricing':
+      case 'cta':
+        return <TitleSubtitleFields sectionKey={key} />;
+
+      default:
+        return <TitleSubtitleFields sectionKey={key} />;
+    }
+  };
+
+  // ─── SEO / General settings ───
+  const renderSEO = () => (
     <div className="space-y-6">
-      {/* Sub-navigation */}
-      <div className="flex flex-wrap gap-1 p-1 rounded-lg bg-muted">
-        {sectionTabs.map(tab => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => setActiveSection(tab.key)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${
-                activeSection === tab.key ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Icon className="h-4 w-4" />
-              {isAr ? tab.labelAr : tab.label}
-            </button>
-          );
-        })}
+      <div className="rounded-lg border border-border p-4 space-y-4">
+        <h3 className="font-medium flex items-center gap-2"><Search className="h-4 w-4" />{isAr ? 'بيانات SEO' : 'SEO Meta Data'}</h3>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div><Label>Meta Title (EN)</Label><Input value={general.meta_title || ''} onChange={e => updateGeneralField('meta_title', e.target.value)} placeholder="Islamic Education Platform" /></div>
+          <div><Label>Meta Title (AR)</Label><Input dir="rtl" value={general.meta_title_ar || ''} onChange={e => updateGeneralField('meta_title_ar', e.target.value)} placeholder="منصة التعليم الإسلامي" /></div>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div><Label>Meta Description (EN)</Label><Textarea value={general.meta_description || ''} onChange={e => updateGeneralField('meta_description', e.target.value)} rows={2} /></div>
+          <div><Label>Meta Description (AR)</Label><Textarea dir="rtl" value={general.meta_description_ar || ''} onChange={e => updateGeneralField('meta_description_ar', e.target.value)} rows={2} /></div>
+        </div>
+        <div><Label>{isAr ? 'الكلمات المفتاحية' : 'Keywords'}</Label><Input value={general.meta_keywords || ''} onChange={e => updateGeneralField('meta_keywords', e.target.value)} placeholder="islamic, education, quran" /></div>
+      </div>
+      <div className="rounded-lg border border-border p-4 space-y-4">
+        <h3 className="font-medium flex items-center gap-2"><Globe className="h-4 w-4" />{isAr ? 'بيانات المشاركة' : 'Open Graph'}</h3>
+        <div><Label>OG Title</Label><Input value={general.og_title || ''} onChange={e => updateGeneralField('og_title', e.target.value)} /></div>
+        <div><Label>OG Description</Label><Textarea value={general.og_description || ''} onChange={e => updateGeneralField('og_description', e.target.value)} rows={2} /></div>
+        <ImagePickerField label={isAr ? 'صورة OG' : 'OG Image'} value={general.og_image || ''} onChange={(url) => updateGeneralField('og_image', url)} />
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* Tab navigation */}
+      <div className="flex items-center gap-1 p-1 rounded-lg bg-muted w-fit">
+        <button onClick={() => setActiveTab('sections')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'sections' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+          <Layers className="h-4 w-4" />
+          {isAr ? 'الأقسام' : 'Sections'}
+        </button>
+        <button onClick={() => setActiveTab('seo')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'seo' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+          <Settings2 className="h-4 w-4" />
+          {isAr ? 'SEO والعامة' : 'SEO & General'}
+        </button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{isAr ? sectionTabs.find(t => t.key === activeSection)?.labelAr : sectionTabs.find(t => t.key === activeSection)?.label}</CardTitle>
-          <CardDescription>{isAr ? 'تعديل محتوى وإعدادات صفحة الهبوط' : 'Edit landing page content and settings'}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {renderSection()}
-          <div className="flex justify-end mt-6">
-            <Button onClick={() => handleSave(activeSection)} disabled={saving}>
-              <Save className="h-4 w-4 me-1" />
-              {saving ? (isAr ? 'جارٍ الحفظ...' : 'Saving...') : (isAr ? 'حفظ القسم' : 'Save Section')}
-            </Button>
+      {activeTab === 'seo' ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>{isAr ? 'SEO والإعدادات العامة' : 'SEO & General Settings'}</CardTitle>
+            <CardDescription>{isAr ? 'إعدادات محركات البحث والمشاركة' : 'Search engine and social sharing settings'}</CardDescription>
+          </CardHeader>
+          <CardContent>{renderSEO()}</CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">{isAr ? 'اسحب لإعادة الترتيب • اضغط على العين للإظهار/الإخفاء • اضغط القلم للتحرير' : 'Drag to reorder • Click eye to show/hide • Click pencil to edit'}</p>
+            <Badge variant="outline">{sectionsOrder.length} {isAr ? 'أقسام' : 'sections'}</Badge>
           </div>
-        </CardContent>
-      </Card>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={sectionsOrder} strategy={verticalListSortingStrategy}>
+              <div className="space-y-2">
+                {sectionsOrder.map(key => (
+                  <SortableSectionCard
+                    key={key}
+                    sectionKey={key}
+                    isAr={isAr}
+                    visible={sectionsVisible[key] !== false}
+                    expanded={expandedSection === key}
+                    onToggleVisible={() => toggleSectionVisibility(key)}
+                    onToggleExpand={() => setExpandedSection(expandedSection === key ? null : key)}
+                  >
+                    {renderEditor(key)}
+                  </SortableSectionCard>
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        </div>
+      )}
+
+      {/* Save all button */}
+      <div className="flex justify-end sticky bottom-4 z-10">
+        <Button onClick={handleSaveAll} disabled={saving} size="lg" className="shadow-lg">
+          <Save className="h-4 w-4 me-2" />
+          {saving ? (isAr ? 'جارٍ الحفظ...' : 'Saving...') : (isAr ? 'حفظ جميع التغييرات' : 'Save All Changes')}
+        </Button>
+      </div>
     </div>
   );
 };
