@@ -2,6 +2,22 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [3.2.0] - 2026-03-11
+
+### Added
+- Comprehensive error notification system: centralized bilingual error mapping with user-friendly messages and "View Details" action
+- Error Details page (`/dashboard/error/:code`): full error context with category icon, description, suggestion, technical message, and timestamp
+- Error Documentation page (`/dashboard/error-docs`): searchable reference of all system error codes grouped by category (Auth, Validation, Database, Network, Storage, General)
+- Error Documentation link added to Messages sidebar category (admin-only)
+- `notifyError()` helper replacing all raw `toast.error()` calls across ~19 files
+- `errorMessages.ts` mapping Supabase error codes to bilingual (EN/AR) user-friendly messages with suggested fixes
+- Error context stored in `sessionStorage` for rich detail page rendering
+- Enhanced NotFound page with bilingual UI and navigation options
+
+### Changed
+- All `toast.error()` calls across auth, dashboard, and settings pages replaced with centralized `notifyError()` system
+- Version bumped to 3.2.0
+
 ## [3.1.0] - 2026-03-10
 
 ### Added
