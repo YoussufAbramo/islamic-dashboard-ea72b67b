@@ -326,7 +326,7 @@ const AppearanceSettings = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {themes.map((t) => (
               <button key={t.value} onClick={() => updatePending({ colorTheme: t.value })} className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${pending.colorTheme === t.value ? 'border-primary shadow-md scale-[1.02]' : 'border-border hover:border-muted-foreground/30'}`}>
-                <div className="w-10 h-10 rounded-full" style={{ background: t.color }} />
+                <div className="w-10 h-10 rounded-lg" style={{ background: t.color }} />
                 <span className="text-xs font-medium">{isAr ? t.labelAr : t.label}</span>
                 {pending.colorTheme === t.value && <Check className="absolute top-2 end-2 h-4 w-4 text-primary" />}
               </button>
