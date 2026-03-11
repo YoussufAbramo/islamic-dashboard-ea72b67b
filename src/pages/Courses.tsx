@@ -141,13 +141,11 @@ const Courses = () => {
                     <div><Label>{t('courses.description')} (EN)</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
                     <div><Label>{t('courses.description')} (AR)</Label><Textarea value={form.description_ar} onChange={(e) => setForm({ ...form, description_ar: e.target.value })} dir="rtl" className="text-right" /></div>
                   </div>
-                  <div>
-                    <Label>{isAr ? 'صورة الدورة' : 'Course Image'}</Label>
-                    {(form.image_url || imageFile) && (
-                      <img src={imageFile ? URL.createObjectURL(imageFile) : form.image_url} alt="Preview" className="h-24 w-full object-cover rounded-lg mt-1 mb-2" />
-                    )}
-                    <Input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
-                  </div>
+                  <ImagePickerField
+                    label={isAr ? 'صورة الدورة' : 'Course Image'}
+                    value={form.image_url}
+                    onChange={(url) => setForm({ ...form, image_url: url })}
+                  />
                   <div>
                     <Label>{t('courses.status')}</Label>
                     <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
