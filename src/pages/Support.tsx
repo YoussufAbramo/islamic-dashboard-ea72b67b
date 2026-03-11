@@ -47,6 +47,7 @@ const Support = () => {
   const [resolutionNotes, setResolutionNotes] = useState('');
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '', department: 'general', priority: 'medium' });
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const fetchTickets = async () => {
     const { data } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
