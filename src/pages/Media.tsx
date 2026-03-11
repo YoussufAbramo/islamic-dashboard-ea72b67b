@@ -524,14 +524,14 @@ const Media = () => {
                   <CardContent className="space-y-3">
                     {selectedFile ? (
                       <>
-                        {isImageFile(selectedFile.name) && currentBucket?.public && (
+                        {isImageFile(selectedFile.name) && previewUrl && (
                           <button
                             type="button"
                             onClick={() => setLightboxOpen(true)}
                             className="relative w-full rounded-lg overflow-hidden border border-border bg-muted group cursor-zoom-in"
                           >
                             <img
-                              src={getPublicUrl(selectedFile.name)}
+                              src={previewUrl}
                               alt={selectedFile.name}
                               className="w-full h-auto max-h-72 object-contain"
                             />
