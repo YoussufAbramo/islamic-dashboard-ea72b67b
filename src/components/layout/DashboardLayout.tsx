@@ -60,6 +60,7 @@ const FloatingButtons = () => {
       ...prev,
       name: profile?.full_name || prev.name,
       email: profile?.email || user?.email || prev.email,
+      phone: profile?.phone || prev.phone,
     }));
   };
 
