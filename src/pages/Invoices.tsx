@@ -261,6 +261,12 @@ const Invoices = () => {
             />
           </div>
           {role === 'admin' && (
+            <Button variant="outline" size="sm" onClick={handleAutoInvoice} disabled={autoInvoiceLoading} className="gap-1 h-9">
+              <RefreshCw className={`h-3.5 w-3.5 ${autoInvoiceLoading ? 'animate-spin' : ''}`} />
+              {isAr ? 'تجديد تلقائي' : 'Auto-Renew'}
+            </Button>
+          )}
+          {role === 'admin' && (
             <Button onClick={() => { setCreateOpen(true); fetchFormData(); }}>
               <Plus className="h-4 w-4 me-2" />
               {isAr ? 'فاتورة جديدة' : 'New Invoice'}
