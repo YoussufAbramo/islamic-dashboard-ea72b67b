@@ -395,9 +395,14 @@ const CourseDetail = () => {
                                 </Badge>
                               </div>
                               {canEdit && (
-                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => deleteContent(content.id)}>
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
+                                <div className="flex items-center gap-1">
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditContent(content, section.id)}>
+                                    <Pencil className="h-3 w-3" />
+                                  </Button>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteContent(content.id)}>
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
                               )}
                             </div>
                           ))}
