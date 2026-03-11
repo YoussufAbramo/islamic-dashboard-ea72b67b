@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
 
     // ==================== SEED ALL ====================
     if (action === 'seed_all') {
-      const categories: string[] = body.categories || ['students', 'teachers', 'courses', 'billing', 'schedule', 'communications', 'support', 'certificates', 'website']
+      const categories: string[] = body.categories || ['students', 'teachers', 'courses', 'billing', 'schedule', 'communications', 'support', 'certificates', 'website', 'packages']
       const quantity: string = body.quantity || 'medium'
       
       // Quantity multipliers
