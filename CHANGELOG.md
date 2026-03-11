@@ -2,6 +2,23 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.4.0] - 2026-03-11
+
+### Added
+- **Landing Page Header Styles System** — 3 selectable header styles for the landing page:
+  - **Classic Navigation**: Logo left, navigation links and action buttons right (default)
+  - **Centered Navigation**: Logo centered with nav links split symmetrically on both sides
+  - **CTA Focused**: Modern layout with stronger visual hierarchy, separate Sign In/Start Free buttons
+- Header Style Picker in Dashboard → Landing Page → SEO & General tab with visual mini-previews
+- `header_style` field in `defaultGeneralContent` persisted to `landing_content` table
+- Modular `LandingHeaders.tsx` component with shared utilities (LogoBlock, DarkToggle, LangToggle, UserActions, MobileMenu) for consistent behavior across all styles
+- All header styles share responsive mobile menu, dark mode toggle, language switcher, and auth state handling
+- Architecture supports adding future header styles with minimal code changes
+
+### Changed
+- Refactored LandingPage.tsx to use dynamic header component resolution via `getHeaderComponent()`
+- Version bumped to 4.4.0
+
 ## [4.3.6] - 2026-03-11
 
 ### Added
