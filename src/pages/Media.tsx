@@ -503,15 +503,26 @@ const Media = () => {
 
                 {/* File detail panel */}
                 {selectedFile && (
-                  <Card className="w-64 shrink-0">
+                  <Card className="w-80 shrink-0">
                     <CardHeader className="pb-3">
                       <CardTitle className="text-sm">{isAr ? 'تفاصيل الملف' : 'File Details'}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       {isImageFile(selectedFile.name) && currentBucket?.public && (
-                        <div className="rounded-lg overflow-hidden border border-border bg-muted aspect-square">
-                          <img src={getPublicUrl(selectedFile.name)} alt={selectedFile.name} className="h-full w-full object-contain" />
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setLightboxOpen(true)}
+                          className="relative w-full rounded-lg overflow-hidden border border-border bg-muted group cursor-zoom-in"
+                        >
+                          <img
+                            src={getPublicUrl(selectedFile.name)}
+                            alt={selectedFile.name}
+                            className="w-full h-auto max-h-72 object-contain"
+                          />
+                          <div className="absolute inset-0 bg-background/0 group-hover:bg-background/40 transition-colors flex items-center justify-center">
+                            <Maximize2 className="h-6 w-6 text-foreground opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
+                          </div>
+                        </button>
                       )}
                       <div className="space-y-2 text-xs">
                         <div>
