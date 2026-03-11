@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Search, Plus, FileText, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
+import { Search, Plus, FileText, ArrowUp, ArrowDown, Trash2, RefreshCw } from 'lucide-react';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
@@ -51,6 +51,25 @@ const Invoices = () => {
   });
   const [createLoading, setCreateLoading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [autoInvoiceLoading, setAutoInvoiceLoading] = useState(false);
+
+  const handleAutoInvoice = async () => {
+    setAutoInvoiceLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('auto-invoice', { method: 'POST' });
+      if (error) throw error;
+      const generated = data?.generated || 0;
+      if (generated > 0) {
+        toast.success(isAr ? `تم إنشاء ${generated} فاتورة تلقائياً` : `Generated ${generated} auto-invoice(s)`);
+        fetchInvoices();
+      } else {
+        toast.info(isAr ? 'لا توجد اشتراكات مستحقة للتجديد' : 'No subscriptions due for renewal');
+      }
+    } catch (err: any) {
+      notifyError({ error: err, isAr, rawMessage: err?.message || 'Auto-invoice failed' });
+    }
+    setAutoInvoiceLoading(false);
+  };
 
   const formatPrice = (amount: number) => `${currency.symbol}${amount.toFixed(currencyDecimals)}`;
 
@@ -241,6 +260,12 @@ const Invoices = () => {
               className="ps-9 w-48 sm:w-64"
             />
           </div>
+          {role === 'admin' && (
+            <Button variant="outline" size="sm" onClick={handleAutoInvoice} disabled={autoInvoiceLoading} className="gap-1 h-9">
+              <RefreshCw className={`h-3.5 w-3.5 ${autoInvoiceLoading ? 'animate-spin' : ''}`} />
+              {isAr ? 'تجديد تلقائي' : 'Auto-Renew'}
+            </Button>
+          )}
           {role === 'admin' && (
             <Button onClick={() => { setCreateOpen(true); fetchFormData(); }}>
               <Plus className="h-4 w-4 me-2" />
