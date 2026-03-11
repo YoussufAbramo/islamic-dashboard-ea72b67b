@@ -196,7 +196,14 @@ const DashboardLayout = () => {
             <Outlet />
           </main>
           <footer className="p-3 border-t border-border flex items-center justify-between gap-3">
-            <img src="/codecom-logo.png" alt="CodeCom.dev" className="h-5 w-auto object-contain opacity-60" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <a href="https://codecom.dev" target="_blank" rel="noopener noreferrer">
+                  <img src="/codecom-logo.png" alt="CodeCom.dev" className="h-5 w-auto object-contain opacity-60 hover:opacity-100 transition-opacity" />
+                </a>
+              </TooltipTrigger>
+              <TooltipContent>{isAr ? 'المطور الأصلي للنظام' : 'Original system developer'}</TooltipContent>
+            </Tooltip>
             <CopyrightText
               className="text-[11px] text-muted-foreground/60"
               linkClassName="hover:text-foreground transition-colors no-underline"
