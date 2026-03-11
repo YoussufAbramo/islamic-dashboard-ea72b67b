@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
-import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree, Layers, FileText } from 'lucide-react';
+import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree, Layers, FileText, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 
 const contentTypeGroups = [
@@ -75,6 +75,7 @@ const CourseDetail = () => {
   const [lessonDialog, setLessonDialog] = useState(false);
   const [sectionDialog, setSectionDialog] = useState(false);
   const [contentDialog, setContentDialog] = useState(false);
+  const [editingContentId, setEditingContentId] = useState<string | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
 
@@ -194,19 +195,36 @@ const CourseDetail = () => {
 
   // CRUD: Content (lessons)
   const addContent = async () => {
-    if (!activeSectionId) return;
-    const currentContents = contents[activeSectionId] || [];
-    await supabase.from('lessons').insert([{
-      title: contentForm.title,
-      title_ar: contentForm.title_ar,
-      lesson_type: contentForm.lesson_type as any,
-      section_id: activeSectionId,
-      sort_order: currentContents.length,
-    }]);
+    if (editingContentId) {
+      await supabase.from('lessons').update({
+        title: contentForm.title,
+        title_ar: contentForm.title_ar,
+        lesson_type: contentForm.lesson_type as any,
+      }).eq('id', editingContentId);
+      setEditingContentId(null);
+      toast.success(isAr ? 'تم تحديث المحتوى' : 'Content updated');
+    } else {
+      if (!activeSectionId) return;
+      const currentContents = contents[activeSectionId] || [];
+      await supabase.from('lessons').insert([{
+        title: contentForm.title,
+        title_ar: contentForm.title_ar,
+        lesson_type: contentForm.lesson_type as any,
+        section_id: activeSectionId,
+        sort_order: currentContents.length,
+      }]);
+      toast.success(isAr ? 'تمت إضافة المحتوى' : 'Content added');
+    }
     setContentDialog(false);
     setContentForm({ title: '', title_ar: '', lesson_type: 'read_listen' });
     fetchHierarchy();
-    toast.success(isAr ? 'تمت إضافة المحتوى' : 'Content added');
+  };
+
+  const openEditContent = (content: any, sectionId: string) => {
+    setEditingContentId(content.id);
+    setActiveSectionId(sectionId);
+    setContentForm({ title: content.title, title_ar: content.title_ar || '', lesson_type: content.lesson_type });
+    setContentDialog(true);
   };
 
   const deleteContent = async (contentId: string) => {
@@ -377,22 +395,27 @@ const CourseDetail = () => {
                                 </Badge>
                               </div>
                               {canEdit && (
-                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => deleteContent(content.id)}>
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
+                                <div className="flex items-center gap-1">
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditContent(content, section.id)}>
+                                    <Pencil className="h-3 w-3" />
+                                  </Button>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteContent(content.id)}>
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
                               )}
                             </div>
                           ))}
 
                           {canEdit && (
-                            <Dialog open={contentDialog && activeSectionId === section.id} onOpenChange={(o) => { setContentDialog(o); if (o) setActiveSectionId(section.id); }}>
+                            <Dialog open={contentDialog && activeSectionId === section.id} onOpenChange={(o) => { setContentDialog(o); if (o) { setActiveSectionId(section.id); } if (!o) { setEditingContentId(null); setContentForm({ title: '', title_ar: '', lesson_type: 'read_listen' }); } }}>
                               <DialogTrigger asChild>
-                                <Button variant="outline" size="sm" className="w-full" onClick={() => setActiveSectionId(section.id)}>
+                                <Button variant="outline" size="sm" className="w-full" onClick={() => { setActiveSectionId(section.id); setEditingContentId(null); setContentForm({ title: '', title_ar: '', lesson_type: 'read_listen' }); }}>
                                   <Plus className="h-3 w-3 me-1" />{t('courses.addContent')}
                                 </Button>
                               </DialogTrigger>
                               <DialogContent>
-                                <DialogHeader><DialogTitle>{t('courses.addContent')}</DialogTitle></DialogHeader>
+                                <DialogHeader><DialogTitle>{editingContentId ? (isAr ? 'تعديل المحتوى' : 'Edit Content') : t('courses.addContent')}</DialogTitle></DialogHeader>
                                 <div className="space-y-3">
                                   <div className="grid grid-cols-2 gap-3">
                                     <div><Label>Title (EN)</Label><Input value={contentForm.title} onChange={(e) => setContentForm({ ...contentForm, title: e.target.value })} /></div>
