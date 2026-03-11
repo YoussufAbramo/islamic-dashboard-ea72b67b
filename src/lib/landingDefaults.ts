@@ -161,6 +161,36 @@ export const defaultNavItems: NavItem[] = [
   { label: 'FAQ', label_ar: 'الأسئلة', id: 'faq' },
 ];
 
+export interface FooterColumn {
+  title: string;
+  title_ar: string;
+  items: { label: string; label_ar: string; url: string }[];
+}
+
+export const defaultFooterContent: Record<string, any> = {
+  logo: '',
+  title: '',
+  title_ar: '',
+  description: '',
+  description_ar: '',
+  columns_count: 3,
+  columns: [
+    { title: 'Quick Links', title_ar: 'روابط سريعة', items: [
+      { label: 'Home', label_ar: 'الرئيسية', url: '#top' },
+      { label: 'Features', label_ar: 'المميزات', url: '#features' },
+      { label: 'Pricing', label_ar: 'الأسعار', url: '#pricing' },
+    ]},
+    { title: 'Resources', title_ar: 'الموارد', items: [
+      { label: 'Blog', label_ar: 'المدونة', url: '/blog' },
+      { label: 'FAQ', label_ar: 'الأسئلة الشائعة', url: '#faq' },
+    ]},
+    { title: 'Legal', title_ar: 'قانوني', items: [
+      { label: 'Privacy Policy', label_ar: 'سياسة الخصوصية', url: '/policy/privacy-policy' },
+      { label: 'Terms of Service', label_ar: 'شروط الخدمة', url: '/policy/terms-of-service' },
+    ]},
+  ] as FooterColumn[],
+};
+
 export const defaultGeneralContent: Record<string, any> = {
   meta_title: '',
   meta_title_ar: '',
@@ -174,6 +204,7 @@ export const defaultGeneralContent: Record<string, any> = {
   nav_items: defaultNavItems,
   nav_items_left: null,
   nav_items_right: null,
+  footer: defaultFooterContent,
   sections_order: DEFAULT_SECTION_ORDER,
   sections_visible: Object.fromEntries(DEFAULT_SECTION_ORDER.map(k => [k, true])),
 };
