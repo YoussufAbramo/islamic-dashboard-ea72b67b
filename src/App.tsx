@@ -51,6 +51,7 @@ import WebhookLog from "./pages/WebhookLog";
 import ErrorLog from "./pages/ErrorLog";
 import AuditTrail from "./pages/AuditTrail";
 import PublicBlogPost from "./pages/PublicBlogPost";
+import PublicBlogArchive from "./pages/PublicBlogArchive";
 import PublicPage from "./pages/PublicPage";
 import PublicRouteGuard from "./components/PublicRouteGuard";
 import WebsiteModeGuard from "./components/WebsiteModeGuard";
