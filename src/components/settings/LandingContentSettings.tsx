@@ -468,7 +468,7 @@ const LandingContentSettings = () => {
     updateGeneralField(listKey, items);
   };
 
-  const NavItemEditor = ({ listKey, items, title }: { listKey: string; items: NavItem[]; title: string }) => (
+  const renderNavItems = (listKey: string, items: NavItem[], title: string) => (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <Label className="text-sm font-medium">{title}</Label>
