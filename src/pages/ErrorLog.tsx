@@ -137,8 +137,8 @@ const ErrorLog = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
+    <div className="space-y-6 overflow-hidden">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Bug className="h-6 w-6 text-primary" />
