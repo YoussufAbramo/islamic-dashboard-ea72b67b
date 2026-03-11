@@ -35,18 +35,26 @@ const Profile = () => {
   const [avatarUrl, setAvatarUrl] = useState('');
   const isAr = language === 'ar';
 
+  // Track the local avatar_url separately so it updates immediately on change
+  const [localAvatarId, setLocalAvatarId] = useState(profile?.avatar_url || '');
+
   useEffect(() => {
     if (profile?.avatar_url) {
-      const cartoon = CARTOON_AVATARS.find(a => profile.avatar_url === a.id);
-      if (cartoon) {
-        setAvatarUrl(cartoon.src);
-      } else if (profile.avatar_url.startsWith('http')) {
-        setAvatarUrl(profile.avatar_url);
-      } else {
-        getAvatarSignedUrl(profile.avatar_url).then(setAvatarUrl);
-      }
+      setLocalAvatarId(profile.avatar_url);
     }
   }, [profile?.avatar_url]);
+
+  useEffect(() => {
+    if (!localAvatarId) return;
+    const cartoon = CARTOON_AVATARS.find(a => localAvatarId === a.id);
+    if (cartoon) {
+      setAvatarUrl(cartoon.src);
+    } else if (localAvatarId.startsWith('http')) {
+      setAvatarUrl(localAvatarId);
+    } else {
+      getAvatarSignedUrl(localAvatarId).then(setAvatarUrl);
+    }
+  }, [localAvatarId]);
 
   const [passwords, setPasswords] = useState({ newPassword: '', confirmPassword: '' });
   const [changingPassword, setChangingPassword] = useState(false);
@@ -62,6 +70,7 @@ const Profile = () => {
   const handleAvatarChange = async (url: string) => {
     if (!user) return;
     await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id);
+    setLocalAvatarId(url);
     setAvatarUrl(url);
     toast.success(isAr ? 'تم تحديث الصورة' : 'Avatar updated');
   };
@@ -69,8 +78,7 @@ const Profile = () => {
   const handleSelectCartoonAvatar = async (avatarId: string) => {
     if (!user) return;
     await supabase.from('profiles').update({ avatar_url: avatarId }).eq('id', user.id);
-    const cartoon = CARTOON_AVATARS.find(a => a.id === avatarId);
-    if (cartoon) setAvatarUrl(cartoon.src);
+    setLocalAvatarId(avatarId);
     toast.success(isAr ? 'تم تحديث الصورة' : 'Avatar updated');
   };
 
