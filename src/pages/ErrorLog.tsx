@@ -205,7 +205,7 @@ const ErrorLog = () => {
           description={isAr ? 'لم يتم تسجيل أي أخطاء حتى الآن' : 'No errors have been recorded yet'}
         />
       ) : (
-        <div className="space-y-1.5 w-full max-w-[800px] overflow-hidden">
+        <div className="space-y-1.5 w-full overflow-hidden">
           {filtered.slice(0, visibleCount).map(entry => (
             <Card key={entry.id} className="hover:shadow-sm transition-shadow cursor-pointer overflow-hidden" onClick={() => setSelectedError(entry)}>
               <CardContent className="p-3 flex items-start gap-3 min-w-0">
