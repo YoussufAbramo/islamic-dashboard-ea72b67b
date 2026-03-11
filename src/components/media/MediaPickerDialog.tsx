@@ -32,6 +32,7 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
   const { language } = useLanguage();
   const isAr = language === 'ar';
   const [bucket, setBucket] = useState<string | null>(defaultBucket || null);
+  const [availableBuckets, setAvailableBuckets] = useState<BucketItem[]>([]);
   const [currentPath, setCurrentPath] = useState('');
   const [folders, setFolders] = useState<string[]>([]);
   const [files, setFiles] = useState<FileObj[]>([]);
@@ -40,6 +41,15 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch available buckets
+  useEffect(() => {
+    const loadBuckets = async () => {
+      const { data } = await supabase.storage.listBuckets();
+      if (data) setAvailableBuckets(data.map(b => ({ id: b.id, name: b.name, public: b.public })));
+    };
+    loadBuckets();
+  }, []);
 
   const isImage = (name: string) => IMAGE_EXTS.includes(name.split('.').pop()?.toLowerCase() || '');
 
