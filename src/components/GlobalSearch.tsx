@@ -102,8 +102,6 @@ const GlobalSearch = ({ open, onOpenChange }: { open: boolean; onOpenChange: (op
   const categoryLabel = (cat: string) => {
     const labels: Record<string, { en: string; ar: string }> = {
       pages: { en: 'Pages', ar: 'الصفحات' },
-      students: { en: 'Students', ar: 'الطلاب' },
-      courses: { en: 'Courses', ar: 'الدورات' },
       invoices: { en: 'Invoices', ar: 'الفواتير' },
     };
     return isAr ? labels[cat]?.ar : labels[cat]?.en;
