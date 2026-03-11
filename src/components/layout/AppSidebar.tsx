@@ -190,6 +190,16 @@ const AppSidebar = () => {
                     const hasChildren = item.children && item.children.length > 0;
                     const isParentActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
                     const visibleChildren = hasChildren ? item.children!.filter(c => role && c.roles.includes(role)) : [];
+                    const isExpanded = expandedMenus.has(item.key) || isParentActive;
+                    const toggleExpand = (e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      setExpandedMenus(prev => {
+                        const next = new Set(prev);
+                        if (next.has(item.key)) next.delete(item.key);
+                        else next.add(item.key);
+                        return next;
+                      });
+                    };
                     return (
                       <SidebarMenuItem key={item.key}>
                         <SidebarMenuButton
@@ -206,7 +216,13 @@ const AppSidebar = () => {
                             </Badge>
                           )}
                           {hasChildren && (
-                            <ChevronDown className={`h-3.5 w-3.5 shrink-0 ms-auto text-sidebar-foreground transition-transform duration-200 ${isParentActive ? 'rotate-180' : ''}`} />
+                            <span
+                              role="button"
+                              onClick={toggleExpand}
+                              className="p-0.5 rounded hover:bg-sidebar-accent shrink-0 ms-auto"
+                            >
+                              <ChevronDown className={`h-3.5 w-3.5 text-sidebar-foreground transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                            </span>
                           )}
                           {item.badgeKey === 'chats' && unreadChats > 0 && (
                             <Badge variant="destructive" className="text-[9px] px-1.5 py-0 h-4 min-w-[18px] shrink-0 ms-auto">
@@ -214,7 +230,7 @@ const AppSidebar = () => {
                             </Badge>
                           )}
                         </SidebarMenuButton>
-                        {visibleChildren.length > 0 && isParentActive && (
+                        {visibleChildren.length > 0 && isExpanded && (
                           <SidebarMenu className="ms-4 mt-0.5 border-s border-border ps-2 overflow-hidden w-[90%]">
                             {visibleChildren.map((child) => (
                               <SidebarMenuItem key={child.key}>
