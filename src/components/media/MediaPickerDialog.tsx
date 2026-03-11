@@ -183,7 +183,7 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
 
         {!bucket ? (
           <div className="grid grid-cols-2 gap-3">
-            {BUCKETS.map(b => (
+            {availableBuckets.map(b => (
               <button
                 key={b.id}
                 onClick={() => fetchFiles(b.id, '')}
