@@ -2,6 +2,21 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [3.3.0] - 2026-03-11
+
+### Added
+- Media Manager page: browse Supabase storage buckets and files from the dashboard (admin-only, under Messages category)
+- Time Format setting: toggle between 12-hour (AM/PM) and 24-hour display, placed beside Timezone in General Settings
+- Skeleton loading animations on all data pages: Students, Teachers, Courses, Announcements, Notifications, Support, Admins, Timetable, Attendance, Reports, Invoices, Certificates, Subscriptions
+- Manage Roles page now opens normally with a "Coming Soon" overlay instead of being blocked from navigation
+
+### Changed
+- Dashboard topbar is now sticky (stays visible when scrolling)
+- Sidebar light mode text colors fixed for proper contrast across all themes
+- Group chat member adding fixed: Select components now reset after adding a member, and already-added members are filtered from the dropdown
+- Settings version bumped to v5 (adds timeFormat default)
+- Version bumped to 3.3.0
+
 ## [3.2.0] - 2026-03-11
 
 ### Added

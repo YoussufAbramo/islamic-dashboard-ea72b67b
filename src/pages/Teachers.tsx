@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Search, Eye, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Teachers = () => {
   const { t, language } = useLanguage();
@@ -27,14 +28,17 @@ const Teachers = () => {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ bio: '', specialization: '', full_name: '', phone: '', email: '' });
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const [addOpen, setAddOpen] = useState(false);
   const [addForm, setAddForm] = useState({ full_name: '', email: '', password: '', phone: '', specialization: '', bio: '' });
   const [addLoading, setAddLoading] = useState(false);
 
   const fetchTeachers = async () => {
+    setLoading(true);
     const { data } = await supabase.from('teachers').select('*, profiles:teachers_user_id_profiles_fkey(full_name, phone, email)');
     setTeachers(data || []);
+    setLoading(false);
   };
 
   useEffect(() => { fetchTeachers(); }, []);
@@ -87,6 +91,8 @@ const Teachers = () => {
   });
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+
+  if (loading) return <TableSkeleton />;
 
   return (
     <div className="space-y-4">

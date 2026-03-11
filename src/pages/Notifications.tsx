@@ -12,6 +12,7 @@ import { Bell, CheckCheck, ExternalLink, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Notifications = () => {
   const { language } = useLanguage();
@@ -21,15 +22,18 @@ const Notifications = () => {
 
   const [notifications, setNotifications] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const fetchNotifications = async () => {
     if (!user) return;
+    setLoading(true);
     const { data } = await supabase
       .from('notifications')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
     setNotifications(data || []);
+    setLoading(false);
   };
 
   useEffect(() => { fetchNotifications(); }, [user]);
@@ -60,6 +64,8 @@ const Notifications = () => {
   });
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filteredNotifications);
+
+  if (loading) return <TableSkeleton />;
 
   return (
     <div className="space-y-6">

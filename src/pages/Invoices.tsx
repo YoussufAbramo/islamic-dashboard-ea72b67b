@@ -21,6 +21,7 @@ import InvoiceStatsCards from '@/components/invoices/InvoiceStatsCards';
 import InvoiceTable from '@/components/invoices/InvoiceTable';
 import InvoicePreviewDialog from '@/components/invoices/InvoicePreviewDialog';
 import InvoiceEmptyState from '@/components/invoices/InvoiceEmptyState';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Invoices = () => {
   const { language } = useLanguage();
@@ -218,6 +219,8 @@ const Invoices = () => {
   ];
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+
+  if (loading) return <TableSkeleton />;
 
   return (
     <div className="space-y-6">

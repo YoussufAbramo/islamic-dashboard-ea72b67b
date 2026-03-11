@@ -674,22 +674,12 @@
     --sidebar-primary-foreground: var(--primary-foreground);
     --sidebar-ring: var(--ring);
   }
-  /* Ensure light sidebar text colors are properly applied */
-  [data-sidebar-mode="light"] [data-sidebar="sidebar"] [data-sidebar="group-label"],
-  [data-sidebar-mode="light"] [data-sidebar="sidebar"] .text-sidebar-foreground,
-  [data-sidebar-mode="light"] [data-sidebar="sidebar"] .text-sidebar-foreground\/60,
-  [data-sidebar-mode="light"] [data-sidebar="sidebar"] .text-sidebar-foreground\/80,
-  [data-sidebar-mode="light"] [data-sidebar="sidebar"] .text-sidebar-foreground\/50 {
-    color: hsl(var(--sidebar-light-foreground));
+  /* Force light sidebar text colors via CSS variables — no class overrides needed */
+  [data-sidebar-mode="light"] [data-sidebar="sidebar"] * {
+    --tw-text-opacity: 1;
   }
-  [data-sidebar-mode="light"] [data-sidebar="sidebar"] .text-sidebar-foreground\/60 {
+  [data-sidebar-mode="light"] [data-sidebar="sidebar"] [data-sidebar="group-label"] {
     color: hsl(var(--sidebar-light-foreground) / 0.6);
-  }
-  [data-sidebar-mode="light"] [data-sidebar="sidebar"] .text-sidebar-foreground\/80 {
-    color: hsl(var(--sidebar-light-foreground) / 0.8);
-  }
-  [data-sidebar-mode="light"] [data-sidebar="sidebar"] .text-sidebar-foreground\/50 {
-    color: hsl(var(--sidebar-light-foreground) / 0.5);
   }
 
   /* Fix RTL switch positioning */

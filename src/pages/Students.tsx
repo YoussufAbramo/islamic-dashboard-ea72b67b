@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Search, Eye, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Students = () => {
   const { t, language } = useLanguage();
@@ -28,14 +29,17 @@ const Students = () => {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const [addOpen, setAddOpen] = useState(false);
   const [addForm, setAddForm] = useState({ full_name: '', email: '', password: '', phone: '' });
   const [addLoading, setAddLoading] = useState(false);
 
   const fetchStudents = async () => {
+    setLoading(true);
     const { data } = await supabase.from('students').select('*, profiles:students_user_id_profiles_fkey(full_name, phone, email)');
     setStudents(data || []);
+    setLoading(false);
   };
 
   useEffect(() => { fetchStudents(); }, []);
@@ -91,6 +95,8 @@ const Students = () => {
   });
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+
+  if (loading) return <TableSkeleton />;
 
   return (
     <div className="space-y-4">

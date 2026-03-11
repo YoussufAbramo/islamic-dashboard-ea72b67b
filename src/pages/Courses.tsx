@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { useNavigate } from 'react-router-dom';
 import { courseStatusLabels, getLabel } from '@/lib/statusLabels';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Courses = () => {
   const { t, language } = useLanguage();
@@ -35,12 +36,15 @@ const Courses = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const canEdit = role === 'admin' || role === 'teacher';
 
   const fetchCourses = async () => {
+    setLoading(true);
     const { data } = await supabase.from('courses').select('*').order('created_at', { ascending: false });
     setCourses(data || []);
+    setLoading(false);
   };
 
   useEffect(() => { fetchCourses(); }, []);
@@ -108,6 +112,8 @@ const Courses = () => {
   const statusColor: Record<string, string> = { draft: 'secondary', published: 'default', archived: 'outline' };
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+
+  if (loading) return <TableSkeleton />;
 
   return (
     <div className="space-y-4">

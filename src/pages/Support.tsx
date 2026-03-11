@@ -19,6 +19,7 @@ import { Plus, Search, Eye, MessageSquare, Mail, Phone, ArrowDown, ArrowUp, Tras
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ticketStatusLabels, ticketPriorityLabels, getLabel } from '@/lib/statusLabels';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 type SortOrder = 'newest' | 'oldest';
 
@@ -46,10 +47,13 @@ const Support = () => {
   const [resolutionNotes, setResolutionNotes] = useState('');
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '', department: 'general', priority: 'medium' });
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const fetchTickets = async () => {
+    setLoading(true);
     const { data } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
     setTickets(data || []);
+    setLoading(false);
   };
 
   useEffect(() => { fetchTickets(); }, []);
@@ -122,6 +126,8 @@ const Support = () => {
   }, [tickets, search, sortOrder, statusFilter]);
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+
+  if (loading) return <TableSkeleton />;
 
   return (
     <div className="space-y-4">

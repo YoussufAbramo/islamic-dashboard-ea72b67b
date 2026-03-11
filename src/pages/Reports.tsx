@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Download, Printer } from 'lucide-react';
 import { format } from 'date-fns';
 import { subscriptionStatusLabels, subscriptionTypeLabels, getLabel } from '@/lib/statusLabels';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Reports = () => {
   const { language } = useLanguage();
@@ -22,6 +23,7 @@ const Reports = () => {
   const [students, setStudents] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [subStatusFilter, setSubStatusFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -39,6 +41,7 @@ const Reports = () => {
       const pm: Record<string, string> = {};
       (profRes.data || []).forEach((p: any) => { pm[p.id] = p.full_name; });
       setProfiles(pm);
+      setLoading(false);
     };
     fetchAll();
   }, []);
@@ -80,6 +83,8 @@ const Reports = () => {
 
   const totalRevenue = subscriptions.reduce((s, sub) => s + (Number(sub.price) || 0), 0);
   const activeSubs = subscriptions.filter(s => s.status === 'active').length;
+
+  if (loading) return <TableSkeleton />;
 
   return (
     <div className="space-y-6">

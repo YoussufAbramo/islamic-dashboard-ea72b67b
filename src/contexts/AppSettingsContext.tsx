@@ -31,6 +31,7 @@ export type ColorTheme = 'emerald' | 'ocean' | 'purple' | 'desert' | 'midnight' 
 export type ButtonShape = 'rounded' | 'circular' | 'square';
 export type FooterPosition = 'left' | 'center' | 'right';
 export type SidebarMode = 'dark' | 'light';
+export type TimeFormat = '12h' | '24h';
 
 const THEMES: { value: ColorTheme; label: string; labelAr: string; color: string }[] = [
   { value: 'emerald', label: 'Emerald Gold', labelAr: 'الزمرد الذهبي', color: 'hsl(160 45% 28%)' },
@@ -78,6 +79,7 @@ interface PendingSettings {
   defaultLanguage: 'en' | 'ar';
   defaultTimezone: string;
   sidebarMode: SidebarMode;
+  timeFormat: TimeFormat;
 }
 
 interface AppSettingsContextType {
@@ -119,6 +121,8 @@ interface AppSettingsContextType {
   setDefaultTimezone: (tz: string) => void;
   sidebarMode: SidebarMode;
   setSidebarMode: (m: SidebarMode) => void;
+  timeFormat: TimeFormat;
+  setTimeFormat: (f: TimeFormat) => void;
   pending: PendingSettings;
   updatePending: (partial: Partial<PendingSettings>) => void;
   saveSettings: () => void;
@@ -128,7 +132,7 @@ interface AppSettingsContextType {
 
 const AppSettingsContext = createContext<AppSettingsContextType | null>(null);
 
-const SETTINGS_VERSION = '4';
+const SETTINGS_VERSION = '5';
 
 function loadSaved(): PendingSettings {
   const storedVersion = localStorage.getItem('app_settings_version');
@@ -138,7 +142,7 @@ function loadSaved(): PendingSettings {
       'app_logo', 'app_dark_logo', 'app_signature_image', 'app_stamp_image', 'app_signature_position',
       'app_stamp_position', 'app_ltr_font', 'app_rtl_font', 'app_button_shape',
       'app_currency_decimals', 'app_payment_gateway', 'app_default_language',
-      'app_default_timezone', 'app_favicon', 'app_active_gateways', 'app_sidebar_mode',
+      'app_default_timezone', 'app_favicon', 'app_active_gateways', 'app_sidebar_mode', 'app_time_format',
     ];
     keysToReset.forEach(k => localStorage.removeItem(k));
     localStorage.setItem('app_settings_version', SETTINGS_VERSION);
@@ -163,6 +167,7 @@ function loadSaved(): PendingSettings {
     defaultLanguage: (localStorage.getItem('app_default_language') as 'en' | 'ar') || 'en',
     defaultTimezone: localStorage.getItem('app_default_timezone') || Intl.DateTimeFormat().resolvedOptions().timeZone,
     sidebarMode: (localStorage.getItem('app_sidebar_mode') as SidebarMode) || 'dark',
+    timeFormat: (localStorage.getItem('app_time_format') as TimeFormat) || '12h',
   };
 }
 
@@ -229,6 +234,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     localStorage.setItem('app_default_language', pending.defaultLanguage);
     localStorage.setItem('app_default_timezone', pending.defaultTimezone);
     localStorage.setItem('app_sidebar_mode', pending.sidebarMode);
+    localStorage.setItem('app_time_format', pending.timeFormat);
     setSaved({ ...pending });
   }, [pending]);
 
@@ -263,6 +269,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const setPaymentGateway = useCallback((g: string) => { setPending(p => ({ ...p, paymentGateway: g })); }, []);
   const setDefaultTimezone = useCallback((tz: string) => { setPending(p => ({ ...p, defaultTimezone: tz })); }, []);
   const setSidebarMode = useCallback((m: SidebarMode) => { setPending(p => ({ ...p, sidebarMode: m })); }, []);
+  const setTimeFormat = useCallback((f: TimeFormat) => { setPending(p => ({ ...p, timeFormat: f })); }, []);
 
   return (
     <AppSettingsContext.Provider value={{
@@ -284,6 +291,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       favicon, setFavicon,
       defaultTimezone: saved.defaultTimezone, setDefaultTimezone,
       sidebarMode: saved.sidebarMode, setSidebarMode,
+      timeFormat: saved.timeFormat, setTimeFormat,
       pending, updatePending, saveSettings, hasPendingChanges, discardChanges,
     }}>
       {children}

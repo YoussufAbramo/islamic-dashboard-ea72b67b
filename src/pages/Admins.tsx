@@ -8,12 +8,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Search, ShieldCheck } from 'lucide-react';
 import { usePagination } from '@/hooks/use-pagination';
 import PaginationControls from '@/components/PaginationControls';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Admins = () => {
   const { language } = useLanguage();
   const isAr = language === 'ar';
   const [admins, setAdmins] = useState<any[]>([]);
   const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAdmins = async () => {
@@ -28,6 +30,7 @@ const Admins = () => {
         .select('*')
         .in('id', adminIds);
       setAdmins(profiles || []);
+      setLoading(false);
     };
     fetchAdmins();
   }, []);
@@ -38,6 +41,8 @@ const Admins = () => {
   );
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+
+  if (loading) return <TableSkeleton />;
 
   return (
     <div className="space-y-4">

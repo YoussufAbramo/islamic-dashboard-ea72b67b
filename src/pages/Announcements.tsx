@@ -16,6 +16,7 @@ import { Plus, Megaphone, Trash2, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { format } from 'date-fns';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Announcements = () => {
   const { language } = useLanguage();
@@ -29,10 +30,13 @@ const Announcements = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [selected, setSelected] = useState<any>(null);
   const [form, setForm] = useState({ title: '', title_ar: '', content: '', content_ar: '', target_audience: 'all', scheduled_at: '' });
+  const [loading, setLoading] = useState(true);
 
   const fetchAnnouncements = async () => {
+    setLoading(true);
     const { data } = await supabase.from('announcements').select('*').order('created_at', { ascending: false });
     setAnnouncements(data || []);
+    setLoading(false);
   };
 
   useEffect(() => { fetchAnnouncements(); }, []);
@@ -65,6 +69,8 @@ const Announcements = () => {
   );
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+
+  if (loading) return <TableSkeleton />;
 
   return (
     <div className="space-y-6">

@@ -88,40 +88,53 @@ const GeneralSettings = () => {
         </CardContent>
       </Card>
 
-      {/* Default Timezone */}
+      {/* Default Timezone & Time Format */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5 text-primary" />{isAr ? 'المنطقة الزمنية' : 'Default Timezone'}</CardTitle>
-          <CardDescription>{isAr ? 'اختر المنطقة الزمنية الافتراضية للتطبيق' : 'Choose the default timezone for the app'}</CardDescription>
+          <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5 text-primary" />{isAr ? 'المنطقة الزمنية وتنسيق الوقت' : 'Timezone & Time Format'}</CardTitle>
+          <CardDescription>{isAr ? 'اختر المنطقة الزمنية وتنسيق عرض الوقت' : 'Choose timezone and time display format'}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <Label>{isAr ? 'المنطقة الزمنية' : 'Timezone'}</Label>
-            <Popover open={tzOpen} onOpenChange={setTzOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
-                  {pending.defaultTimezone || 'UTC'}
-                  <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                <Command>
-                  <CommandInput placeholder={isAr ? 'ابحث عن منطقة زمنية...' : 'Search timezone...'} />
-                  <CommandList>
-                    <CommandEmpty>{isAr ? 'لا توجد نتائج' : 'No results'}</CommandEmpty>
-                    <CommandGroup>
-                      {timezones.map((tz) => (
-                        <CommandItem key={tz} value={tz} onSelect={() => { updatePending({ defaultTimezone: tz }); setTzOpen(false); }}>
-                          <Check className={cn("me-2 h-4 w-4", pending.defaultTimezone === tz ? "opacity-100" : "opacity-0")} />
-                          {tz}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-            <p className="text-xs text-muted-foreground">{isAr ? 'المنطقة الزمنية المستخدمة في أسماء النسخ الاحتياطية والتقارير' : 'Timezone used for backup names and reports'}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label>{isAr ? 'المنطقة الزمنية' : 'Timezone'}</Label>
+              <Popover open={tzOpen} onOpenChange={setTzOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                    {pending.defaultTimezone || 'UTC'}
+                    <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder={isAr ? 'ابحث عن منطقة زمنية...' : 'Search timezone...'} />
+                    <CommandList>
+                      <CommandEmpty>{isAr ? 'لا توجد نتائج' : 'No results'}</CommandEmpty>
+                      <CommandGroup>
+                        {timezones.map((tz) => (
+                          <CommandItem key={tz} value={tz} onSelect={() => { updatePending({ defaultTimezone: tz }); setTzOpen(false); }}>
+                            <Check className={cn("me-2 h-4 w-4", pending.defaultTimezone === tz ? "opacity-100" : "opacity-0")} />
+                            {tz}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              <p className="text-xs text-muted-foreground">{isAr ? 'المنطقة الزمنية المستخدمة في أسماء النسخ الاحتياطية والتقارير' : 'Timezone used for backup names and reports'}</p>
+            </div>
+            <div className="space-y-2">
+              <Label>{isAr ? 'تنسيق الوقت' : 'Time Format'}</Label>
+              <Select value={pending.timeFormat} onValueChange={(v) => updatePending({ timeFormat: v as '12h' | '24h' })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="12h">{isAr ? '12 ساعة (AM/PM)' : '12-hour (AM/PM)'} — 2:30 PM</SelectItem>
+                  <SelectItem value="24h">{isAr ? '24 ساعة' : '24-hour'} — 14:30</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">{isAr ? 'تنسيق عرض الوقت في التطبيق' : 'How time is displayed across the app'}</p>
+            </div>
           </div>
         </CardContent>
       </Card>

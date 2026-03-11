@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText, LogOut, Calculator, ShieldCheck, Shield, Sparkles, AlertCircle } from 'lucide-react';
+import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText, LogOut, Calculator, ShieldCheck, Shield, Sparkles, AlertCircle, HardDrive } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -100,6 +100,7 @@ const AppSidebar = () => {
         { key: 'announcements', label: isAr ? 'الإعلانات' : 'Announcements', icon: Megaphone, path: '/dashboard/announcements', roles: ['admin', 'teacher', 'student'] },
         { key: 'notifications', label: isAr ? 'الإشعارات' : 'Notifications', icon: Bell, path: '/dashboard/notifications', roles: ['admin', 'teacher', 'student'] },
         { key: 'error-docs', label: isAr ? 'توثيق الأخطاء' : 'Error Documentation', icon: AlertCircle, path: '/dashboard/error-docs', roles: ['admin'] },
+        { key: 'media', label: isAr ? 'الوسائط' : 'Media', icon: HardDrive, path: '/dashboard/media', roles: ['admin'] },
       ],
     },
     {
@@ -109,7 +110,7 @@ const AppSidebar = () => {
         { key: 'admins', label: isAr ? 'المشرفون' : 'Admins', icon: ShieldCheck, path: '/dashboard/admins', roles: ['admin'] },
         { key: 'teachers', label: t('nav.teachers'), icon: Users, path: '/dashboard/teachers', roles: ['admin'] },
         { key: 'students', label: t('nav.students'), icon: GraduationCap, path: '/dashboard/students', roles: ['admin', 'teacher'] },
-        { key: 'roles', label: isAr ? 'إدارة الأدوار' : 'Manage Roles', icon: Shield, path: '/dashboard/roles', roles: ['admin'], comingSoon: true },
+        { key: 'roles', label: isAr ? 'إدارة الأدوار' : 'Manage Roles', icon: Shield, path: '/dashboard/roles', roles: ['admin'] },
       ],
     },
     {

@@ -14,6 +14,7 @@ import { usePagination } from '@/hooks/use-pagination';
 import PaginationControls from '@/components/PaginationControls';
 import { timetableStatusLabels, getLabel } from '@/lib/statusLabels';
 import { toast } from 'sonner';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 type SortOrder = 'newest' | 'oldest';
 
@@ -30,13 +31,16 @@ const Timetable = () => {
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const [statusFilter, setStatusFilter] = useState('all');
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const fetchEntries = async () => {
+    setLoading(true);
     const { data } = await supabase
       .from('timetable_entries')
       .select('*, courses:course_id(title), students:student_id(user_id, profiles:students_user_id_profiles_fkey(full_name)), teachers_rel:teacher_id(user_id, profiles:teachers_user_id_profiles_fkey(full_name))')
       .order('scheduled_at', { ascending: true });
     setEntries(data || []);
+    setLoading(false);
   };
 
   useEffect(() => { fetchEntries(); }, []);
@@ -163,6 +167,8 @@ const Timetable = () => {
     : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   const getLessonCountForDay = (date: Date) => entries.filter(e => isSameDay(new Date(e.scheduled_at), date)).length;
+
+  if (loading) return <TableSkeleton />;
 
   return (
     <div className="space-y-4">

@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { TableSkeleton } from '@/components/PageSkeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -123,6 +124,8 @@ const Attendance = () => {
       </div>
     );
   }
+
+  if (loading) return <TableSkeleton />;
 
   return (
     <div className="space-y-6">
