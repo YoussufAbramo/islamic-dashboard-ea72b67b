@@ -276,7 +276,7 @@ const Media = () => {
         </p>
       </div>
 
-      <div className="flex gap-6 min-w-0 overflow-hidden">
+      <div className="flex gap-6 min-w-0 overflow-hidden w-full">
         {/* Left: Folder list */}
         <div className="w-56 shrink-0 rounded-lg border border-border bg-muted/40 p-3">
           <nav className="space-y-1">
