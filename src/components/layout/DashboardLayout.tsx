@@ -6,7 +6,7 @@ import CopyrightText from '@/components/CopyrightText';
 import AppSidebar from './AppSidebar';
 import TopBar from './TopBar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Bug } from 'lucide-react';
+import { Bug, UserCheck } from 'lucide-react';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
@@ -49,11 +49,19 @@ const WhatsAppIcon = () =>
 
 const FloatingButtons = () => {
   const { language } = useLanguage();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const isAr = language === 'ar';
   const [ticketOpen, setTicketOpen] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '', department: 'general', priority: 'medium' });
   const [submitting, setSubmitting] = useState(false);
+
+  const handleAutoFill = () => {
+    setForm(prev => ({
+      ...prev,
+      name: profile?.full_name || prev.name,
+      email: profile?.email || user?.email || prev.email,
+    }));
+  };
 
   const whatsappUrl = `https://wa.me/201558612808?text=${encodeURIComponent("Hello Dear, I'm texting you regarding Quran.CodeCom.dev, are you available to talk?")}`;
 
@@ -120,6 +128,12 @@ const FloatingButtons = () => {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Button type="button" variant="outline" size="sm" onClick={handleAutoFill} className="gap-1.5 text-xs">
+                <UserCheck className="h-3.5 w-3.5" />
+                {isAr ? 'ملء تلقائي' : 'Auto Fill'}
+              </Button>
+            </div>
             <div className="grid sm:grid-cols-2 gap-3">
               <div><Label>{isAr ? 'الاسم' : 'Name'}</Label><Input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} /></div>
               <div><Label>{isAr ? 'البريد' : 'Email'}</Label><Input type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} /></div>
