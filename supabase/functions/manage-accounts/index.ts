@@ -483,7 +483,7 @@ Deno.serve(async (req) => {
 
     // ==================== EXPORT ALL ====================
     if (action === 'export_all') {
-      const tableNames = ['courses', 'course_sections', 'lesson_sections', 'lessons', 'course_tracks', 'course_categories', 'course_levels', 'students', 'teachers', 'profiles', 'user_roles', 'subscriptions', 'invoices', 'timetable_entries', 'attendance', 'announcements', 'notifications', 'chats', 'chat_messages', 'support_tickets', 'certificates', 'student_progress']
+      const tableNames = ['courses', 'course_sections', 'lesson_sections', 'lessons', 'course_tracks', 'course_categories', 'course_levels', 'students', 'teachers', 'profiles', 'user_roles', 'subscriptions', 'invoices', 'timetable_entries', 'attendance', 'announcements', 'notifications', 'chats', 'chat_messages', 'support_tickets', 'certificates', 'student_progress', 'blog_posts', 'website_pages', 'pricing_packages']
       const exportData: Record<string, any[]> = {}
       for (const table of tableNames) {
         const { data } = await adminClient.from(table).select('*')
