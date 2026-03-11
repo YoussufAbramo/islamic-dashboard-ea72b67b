@@ -12,6 +12,7 @@ import { Bell, CheckCheck, ExternalLink, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Notifications = () => {
   const { language } = useLanguage();
