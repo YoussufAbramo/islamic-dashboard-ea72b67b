@@ -30,10 +30,16 @@ interface FileObject {
 
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
 
+const KNOWN_BUCKETS: BucketInfo[] = [
+  { id: 'avatars', name: 'avatars', public: false, description: 'User profile pictures', descriptionAr: 'صور المستخدمين الشخصية' },
+  { id: 'course-images', name: 'course-images', public: true, description: 'Course thumbnails and images', descriptionAr: 'صور الدورات والمحتوى التعليمي' },
+  { id: 'backups', name: 'backups', public: false, description: 'System backups', descriptionAr: 'النسخ الاحتياطية للنظام' },
+];
+
 const Media = () => {
   const { language } = useLanguage();
   const isAr = language === 'ar';
-  const [buckets, setBuckets] = useState<BucketInfo[]>([]);
+  const [buckets] = useState<BucketInfo[]>(KNOWN_BUCKETS);
   const [selectedBucket, setSelectedBucket] = useState<string | null>(null);
   const [currentPath, setCurrentPath] = useState('');
   const [folders, setFolders] = useState<string[]>([]);
@@ -52,23 +58,6 @@ const Media = () => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
-
-  // Dynamically fetch storage buckets
-  useEffect(() => {
-    const fetchBuckets = async () => {
-      const { data, error } = await supabase.storage.listBuckets();
-      if (!error && data) {
-        setBuckets(data.map(b => ({
-          id: b.id,
-          name: b.name,
-          public: b.public,
-          description: `Storage bucket: ${b.name}`,
-          descriptionAr: `مجلد التخزين: ${b.name}`,
-        })));
-      }
-    };
-    fetchBuckets();
-  }, []);
 
   const fetchFiles = async (bucketName: string, path = '') => {
     setLoading(true);
