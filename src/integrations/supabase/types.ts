@@ -384,6 +384,83 @@ export type Database = {
           },
         ]
       }
+      course_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          description_ar: string | null
+          id: string
+          parent_id: string | null
+          sort_order: number
+          title: string
+          title_ar: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          description_ar?: string | null
+          id?: string
+          parent_id?: string | null
+          sort_order?: number
+          title: string
+          title_ar?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          description_ar?: string | null
+          id?: string
+          parent_id?: string | null
+          sort_order?: number
+          title?: string
+          title_ar?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "course_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_levels: {
+        Row: {
+          created_at: string
+          description: string | null
+          description_ar: string | null
+          id: string
+          sort_order: number
+          title: string
+          title_ar: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          description_ar?: string | null
+          id?: string
+          sort_order?: number
+          title: string
+          title_ar?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          description_ar?: string | null
+          id?: string
+          sort_order?: number
+          title?: string
+          title_ar?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       course_sections: {
         Row: {
           course_id: string
@@ -418,6 +495,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      course_tracks: {
+        Row: {
+          created_at: string
+          description: string | null
+          description_ar: string | null
+          id: string
+          sort_order: number
+          title: string
+          title_ar: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          description_ar?: string | null
+          id?: string
+          sort_order?: number
+          title: string
+          title_ar?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          description_ar?: string | null
+          id?: string
+          sort_order?: number
+          title?: string
+          title_ar?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       courses: {
         Row: {
