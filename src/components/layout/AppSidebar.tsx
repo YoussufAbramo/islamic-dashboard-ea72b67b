@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText, LogOut, Calculator, ShieldCheck, Shield, Sparkles, AlertCircle, HardDrive, Globe, ScrollText, PenLine, Activity, Code, Webhook } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -235,16 +236,22 @@ const AppSidebar = () => {
               </p>
               <p className="text-[11px] text-sidebar-foreground/60 truncate">{role || ''}</p>
             </div>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleLogout();
-              }}
-              className="p-1.5 rounded-md hover:bg-destructive/10 text-sidebar-foreground/50 hover:text-destructive transition-colors"
-              title={isAr ? 'تسجيل الخروج' : 'Logout'}
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
+            <TooltipProvider delayDuration={300}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleLogout();
+                    }}
+                    className="p-1.5 rounded-md hover:bg-destructive/10 text-sidebar-foreground/50 hover:text-destructive transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side={isAr ? 'right' : 'left'}>{isAr ? 'تسجيل الخروج' : 'Logout'}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
       </SidebarFooter>
