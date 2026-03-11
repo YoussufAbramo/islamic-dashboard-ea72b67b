@@ -97,6 +97,7 @@ interface PendingSettings {
   sidebarMode: SidebarMode;
   timeFormat: TimeFormat;
   developerMode: boolean;
+  websiteMode: boolean;
   socialLinks: SocialLinks;
 }
 
