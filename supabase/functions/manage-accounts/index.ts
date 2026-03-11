@@ -595,6 +595,8 @@ Deno.serve(async (req) => {
       await countAndDelete('notifications')
       await countAndDelete('announcements')
       await countAndDelete('support_tickets')
+      await countAndDelete('blog_posts')
+      await countAndDelete('website_pages')
       await countAndDelete('landing_content')
       await countAndDelete('pricing_packages')
 
