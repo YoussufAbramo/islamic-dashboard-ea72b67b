@@ -473,10 +473,31 @@ const LandingContentSettings = () => {
           <div className="grid grid-cols-3 gap-2 flex-1">
             <div><Label className="text-xs">Label (EN)</Label><Input value={item.label || ''} onChange={e => updateNavItem(listKey, i, 'label', e.target.value)} className="h-8 text-sm" /></div>
             <div><Label className="text-xs">Label (AR)</Label><Input dir="rtl" value={item.label_ar || ''} onChange={e => updateNavItem(listKey, i, 'label_ar', e.target.value)} className="h-8 text-sm" /></div>
-            <div><Label className="text-xs">{isAr ? 'معرّف القسم' : 'Section ID'}</Label><Input value={item.id || ''} onChange={e => updateNavItem(listKey, i, 'id', e.target.value)} className="h-8 text-sm" placeholder="e.g. features" /></div>
+            <div>
+              <Label className="text-xs">{isAr ? 'الوجهة' : 'Target'}</Label>
+              <Select value={item.id || ''} onValueChange={val => updateNavItem(listKey, i, 'id', val)}>
+                <SelectTrigger className="h-8 text-sm">
+                  <SelectValue placeholder={isAr ? 'اختر...' : 'Select...'} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__group_sections" disabled className="text-xs font-semibold text-muted-foreground">{isAr ? '── أقسام الصفحة ──' : '── Page Sections ──'}</SelectItem>
+                  <SelectItem value="top">{isAr ? 'الرئيسية (أعلى)' : 'Home (Top)'}</SelectItem>
+                  {DEFAULT_SECTION_ORDER.map(sk => (
+                    <SelectItem key={sk} value={sk}>{isAr ? sectionMeta[sk].labelAr : sectionMeta[sk].label}</SelectItem>
+                  ))}
+                  <SelectItem value="__group_pages" disabled className="text-xs font-semibold text-muted-foreground">{isAr ? '── صفحات التنقل ──' : '── Navigation Pages ──'}</SelectItem>
+                  <SelectItem value="/login">{isAr ? 'تسجيل الدخول' : 'Login'}</SelectItem>
+                  <SelectItem value="/signup">{isAr ? 'إنشاء حساب' : 'Sign Up'}</SelectItem>
+                  <SelectItem value="/dashboard">{isAr ? 'لوحة التحكم' : 'Dashboard'}</SelectItem>
+                  <SelectItem value="/blog">{isAr ? 'المدونة' : 'Blog'}</SelectItem>
+                  <SelectItem value="/support">{isAr ? 'الدعم' : 'Support'}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <Button variant="ghost" size="icon" className="h-8 w-8 mt-5 text-muted-foreground hover:text-destructive shrink-0" onClick={() => removeNavItem(listKey, i)}>
             <Trash2 className="h-3.5 w-3.5" />
+          </Button>
           </Button>
         </div>
       ))}
