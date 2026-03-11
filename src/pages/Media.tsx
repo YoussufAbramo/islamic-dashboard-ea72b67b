@@ -501,93 +501,101 @@ const Media = () => {
                   </CardContent>
                 </Card>
 
-                {/* File detail panel */}
-                {selectedFile && (
-                  <Card className="w-80 shrink-0">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm">{isAr ? 'تفاصيل الملف' : 'File Details'}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {isImageFile(selectedFile.name) && currentBucket?.public && (
-                        <button
-                          type="button"
-                          onClick={() => setLightboxOpen(true)}
-                          className="relative w-full rounded-lg overflow-hidden border border-border bg-muted group cursor-zoom-in"
-                        >
-                          <img
-                            src={getPublicUrl(selectedFile.name)}
-                            alt={selectedFile.name}
-                            className="w-full h-auto max-h-72 object-contain"
-                          />
-                          <div className="absolute inset-0 bg-background/0 group-hover:bg-background/40 transition-colors flex items-center justify-center">
-                            <Maximize2 className="h-6 w-6 text-foreground opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
-                          </div>
-                        </button>
-                      )}
-                      <div className="space-y-2 text-xs">
-                        <div>
-                          <span className="text-muted-foreground">{isAr ? 'الاسم' : 'Name'}</span>
-                          <p className="font-medium break-all mt-0.5">{selectedFile.name}</p>
-                        </div>
-                        {currentPath && (
-                          <div>
-                            <span className="text-muted-foreground">{isAr ? 'المسار' : 'Path'}</span>
-                            <p className="font-medium break-all mt-0.5 font-mono text-[10px]">{currentPath}/</p>
-                          </div>
+                {/* File detail panel - always visible */}
+                <Card className="w-80 shrink-0">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm">{isAr ? 'تفاصيل الملف' : 'File Details'}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {selectedFile ? (
+                      <>
+                        {isImageFile(selectedFile.name) && currentBucket?.public && (
+                          <button
+                            type="button"
+                            onClick={() => setLightboxOpen(true)}
+                            className="relative w-full rounded-lg overflow-hidden border border-border bg-muted group cursor-zoom-in"
+                          >
+                            <img
+                              src={getPublicUrl(selectedFile.name)}
+                              alt={selectedFile.name}
+                              className="w-full h-auto max-h-72 object-contain"
+                            />
+                            <div className="absolute inset-0 bg-background/0 group-hover:bg-background/40 transition-colors flex items-center justify-center">
+                              <Maximize2 className="h-6 w-6 text-foreground opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
+                            </div>
+                          </button>
                         )}
-                        <div>
-                          <span className="text-muted-foreground">{isAr ? 'الحجم' : 'Size'}</span>
-                          <p className="font-medium mt-0.5">{formatSize(selectedFile.metadata?.size)}</p>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">{isAr ? 'الصيغة' : 'Format'}</span>
-                          <p className="font-medium mt-0.5"><Badge variant="outline" className="text-[10px] font-mono">{getFileExt(selectedFile.name)}</Badge></p>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">{isAr ? 'النوع' : 'MIME Type'}</span>
-                          <p className="font-medium mt-0.5">{selectedFile.metadata?.mimetype || '—'}</p>
-                        </div>
-                        {selectedFile.created_at && (
+                        <div className="space-y-2 text-xs">
                           <div>
-                            <span className="text-muted-foreground">{isAr ? 'تاريخ الإنشاء' : 'Created'}</span>
-                            <p className="font-medium mt-0.5">{new Date(selectedFile.created_at).toLocaleDateString()}</p>
+                            <span className="text-muted-foreground">{isAr ? 'الاسم' : 'Name'}</span>
+                            <p className="font-medium break-all mt-0.5">{selectedFile.name}</p>
                           </div>
-                        )}
-                      </div>
-                      <div className="flex flex-col gap-1.5 pt-2">
-                        <Button variant="default" size="sm" className="w-full gap-1.5 text-xs" onClick={() => handleDownload(selectedFile.name)}>
-                          <Download className="h-3 w-3" />{isAr ? 'تحميل' : 'Download'}
-                        </Button>
-                        {currentBucket?.public && (
-                          <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs" onClick={() => window.open(getPublicUrl(selectedFile.name), '_blank')}>
-                            <ExternalLink className="h-3 w-3" />{isAr ? 'فتح' : 'Open'}
+                          {currentPath && (
+                            <div>
+                              <span className="text-muted-foreground">{isAr ? 'المسار' : 'Path'}</span>
+                              <p className="font-medium break-all mt-0.5 font-mono text-[10px]">{currentPath}/</p>
+                            </div>
+                          )}
+                          <div>
+                            <span className="text-muted-foreground">{isAr ? 'الحجم' : 'Size'}</span>
+                            <p className="font-medium mt-0.5">{formatSize(selectedFile.metadata?.size)}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">{isAr ? 'الصيغة' : 'Format'}</span>
+                            <p className="font-medium mt-0.5"><Badge variant="outline" className="text-[10px] font-mono">{getFileExt(selectedFile.name)}</Badge></p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">{isAr ? 'النوع' : 'MIME Type'}</span>
+                            <p className="font-medium mt-0.5">{selectedFile.metadata?.mimetype || '—'}</p>
+                          </div>
+                          {selectedFile.created_at && (
+                            <div>
+                              <span className="text-muted-foreground">{isAr ? 'تاريخ الإنشاء' : 'Created'}</span>
+                              <p className="font-medium mt-0.5">{new Date(selectedFile.created_at).toLocaleDateString()}</p>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-1.5 pt-2">
+                          <Button variant="default" size="sm" className="w-full gap-1.5 text-xs" onClick={() => handleDownload(selectedFile.name)}>
+                            <Download className="h-3 w-3" />{isAr ? 'تحميل' : 'Download'}
                           </Button>
-                        )}
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs text-destructive hover:text-destructive">
-                              <Trash2 className="h-3 w-3" />{isAr ? 'حذف' : 'Delete'}
+                          {currentBucket?.public && (
+                            <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs" onClick={() => window.open(getPublicUrl(selectedFile.name), '_blank')}>
+                              <ExternalLink className="h-3 w-3" />{isAr ? 'فتح' : 'Open'}
                             </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>{isAr ? 'حذف الملف' : 'Delete File'}</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                {isAr ? `هل أنت متأكد من حذف "${selectedFile.name}"؟` : `Are you sure you want to delete "${selectedFile.name}"?`}
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(selectedFile.name)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                {isAr ? 'حذف' : 'Delete'}
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                          )}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs text-destructive hover:text-destructive">
+                                <Trash2 className="h-3 w-3" />{isAr ? 'حذف' : 'Delete'}
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>{isAr ? 'حذف الملف' : 'Delete File'}</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  {isAr ? `هل أنت متأكد من حذف "${selectedFile.name}"؟` : `Are you sure you want to delete "${selectedFile.name}"?`}
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(selectedFile.name)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                  {isAr ? 'حذف' : 'Delete'}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                        <Image className="h-10 w-10 mb-3 opacity-20" />
+                        <p className="text-sm">{isAr ? 'لم يتم تحديد ملف' : 'No file selected'}</p>
+                        <p className="text-xs mt-1 opacity-60">{isAr ? 'اضغط على ملف لعرض التفاصيل' : 'Click a file to view details'}</p>
                       </div>
-                    </CardContent>
-                  </Card>
-                )}
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             </div>
           )}
