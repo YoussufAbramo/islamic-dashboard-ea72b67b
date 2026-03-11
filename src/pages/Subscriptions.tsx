@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { ACTION_BTN, ACTION_BTN_DESTRUCTIVE, ACTION_ICON } from '@/lib/actionBtnClass';
 import { usePagination } from '@/hooks/use-pagination';
 import PaginationControls from '@/components/PaginationControls';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -224,7 +225,7 @@ const Subscriptions = () => {
   const getCourseName = (id: string) => courses.find(c => c.id === id)?.title || '';
   const getTeacherName = (id: string) => teachers.find(t => t.id === id)?.profiles?.full_name || '';
 
-  const actionBtnClass = "rounded-full h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted";
+  // Action button classes imported from shared module
 
   if (loading) {
     return (
@@ -294,8 +295,8 @@ const Subscriptions = () => {
                 <TableCell><Badge variant={statusColors[sub.status] as any}>{getLabel(subscriptionStatusLabels, sub.status, isAr)}</Badge></TableCell>
                 <TableCell>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className={actionBtnClass} onClick={() => viewDetails(sub)}><Eye className="h-4 w-4" /></Button>
-                    {isAdmin && <Button variant="ghost" size="icon" className={`${actionBtnClass} hover:text-destructive hover:bg-destructive/10`} onClick={() => setDeleteTarget(sub.id)}><Trash2 className="h-4 w-4" /></Button>}
+                    <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => viewDetails(sub)}><Eye className={ACTION_ICON} /></Button>
+                    {isAdmin && <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteTarget(sub.id)}><Trash2 className={ACTION_ICON} /></Button>}
                   </div>
                 </TableCell>
               </TableRow>

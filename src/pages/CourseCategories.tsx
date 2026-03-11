@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { ACTION_BTN, ACTION_BTN_DESTRUCTIVE, ACTION_ICON } from '@/lib/actionBtnClass';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -149,9 +150,9 @@ const CourseCategories = () => {
                       {getDesc(parent) && <p className="text-sm text-muted-foreground mt-1">{getDesc(parent)}</p>}
                     </div>
                     <div className="flex gap-1 shrink-0">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openNew(parent.id)} title={isAr ? 'إضافة فرعي' : 'Add Sub-category'}><Plus className="h-3.5 w-3.5" /></Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(parent)}><Pencil className="h-3.5 w-3.5" /></Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteId(parent.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => openNew(parent.id)} title={isAr ? 'إضافة فرعي' : 'Add Sub-category'}><Plus className={ACTION_ICON} /></Button>
+                      <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => openEdit(parent)}><Pencil className={ACTION_ICON} /></Button>
+                      <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteId(parent.id)}><Trash2 className={ACTION_ICON} /></Button>
                     </div>
                   </div>
                   {children.length > 0 && (
@@ -166,8 +167,8 @@ const CourseCategories = () => {
                             </div>
                           </div>
                           <div className="flex gap-1 shrink-0">
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEdit(child)}><Pencil className="h-3 w-3" /></Button>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => setDeleteId(child.id)}><Trash2 className="h-3 w-3" /></Button>
+                            <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => openEdit(child)}><Pencil className={ACTION_ICON} /></Button>
+                            <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteId(child.id)}><Trash2 className={ACTION_ICON} /></Button>
                           </div>
                         </div>
                       ))}

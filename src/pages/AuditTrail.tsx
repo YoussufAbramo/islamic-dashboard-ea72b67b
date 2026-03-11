@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { ACTION_BTN, ACTION_ICON } from '@/lib/actionBtnClass';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
@@ -295,8 +296,8 @@ const AuditTrail = () => {
                     </TableCell>
                     <TableCell>{renderChangeSummary(log)}</TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); setDetailLog(log); }}>
-                        <Eye className="h-3.5 w-3.5" />
+                      <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={(e) => { e.stopPropagation(); setDetailLog(log); }}>
+                        <Eye className={ACTION_ICON} />
                       </Button>
                     </TableCell>
                   </TableRow>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ACTION_BTN, ACTION_BTN_DESTRUCTIVE, ACTION_ICON } from '@/lib/actionBtnClass';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -121,8 +122,8 @@ const CourseTracks = () => {
                 <div className="flex items-start justify-between gap-2">
                   <h3 className="font-semibold">{isAr ? (t.title_ar || t.title) : t.title}</h3>
                   <div className="flex gap-1 shrink-0">
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(t)}><Pencil className="h-3.5 w-3.5" /></Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteId(t.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => openEdit(t)}><Pencil className={ACTION_ICON} /></Button>
+                    <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteId(t.id)}><Trash2 className={ACTION_ICON} /></Button>
                   </div>
                 </div>
                 {(isAr ? (t.description_ar || t.description) : t.description) && (

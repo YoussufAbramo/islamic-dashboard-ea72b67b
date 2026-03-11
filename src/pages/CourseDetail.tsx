@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { ACTION_BTN, ACTION_BTN_DESTRUCTIVE, ACTION_ICON } from '@/lib/actionBtnClass';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -351,8 +352,8 @@ const CourseDetail = () => {
               <AccordionItem value={lesson.id} className="border rounded-lg px-4">
                 <div className="flex items-center">
                   {canEdit && (
-                    <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: lesson.id, type: 'lesson' }); }}>
-                      <Trash2 className="h-3.5 w-3.5" />
+                    <Button variant="ghost" size="icon" className={`${ACTION_BTN_DESTRUCTIVE} shrink-0`} onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: lesson.id, type: 'lesson' }); }}>
+                      <Trash2 className={ACTION_ICON} />
                     </Button>
                   )}
                   <AccordionTrigger className="hover:no-underline flex-1">
@@ -404,9 +405,9 @@ const CourseDetail = () => {
                             <AccordionItem value={section.id} className="border rounded-md px-3 bg-muted/30">
                               <div className="flex items-center">
                                 {canEdit && (
-                                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: section.id, type: 'section' }); }}>
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </Button>
+                                   <Button variant="ghost" size="icon" className={`${ACTION_BTN_DESTRUCTIVE} shrink-0`} onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: section.id, type: 'section' }); }}>
+                                     <Trash2 className={ACTION_ICON} />
+                                   </Button>
                                 )}
                                 <AccordionTrigger className="hover:no-underline py-3 text-sm flex-1">
                                   <div className="flex items-center gap-2">
@@ -434,11 +435,11 @@ const CourseDetail = () => {
                                             </div>
                                             {canEdit && (
                                               <div className="flex items-center gap-1">
-                                                <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted" onClick={() => openEditContent(content, section.id)}>
-                                                  <Pencil className="h-3.5 w-3.5" />
+                                                <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => openEditContent(content, section.id)}>
+                                                  <Pencil className={ACTION_ICON} />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => setDeleteTarget({ id: content.id, type: 'content' })}>
-                                                  <Trash2 className="h-3.5 w-3.5" />
+                                                <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteTarget({ id: content.id, type: 'content' })}>
+                                                  <Trash2 className={ACTION_ICON} />
                                                 </Button>
                                               </div>
                                             )}

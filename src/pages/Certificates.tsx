@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { ACTION_BTN, ACTION_ICON } from '@/lib/actionBtnClass';
 import { usePagination } from '@/hooks/use-pagination';
 import PaginationControls from '@/components/PaginationControls';
 import { useAuth } from '@/contexts/AuthContext';
@@ -206,8 +207,8 @@ const Certificates = () => {
   const CertActionsMenu = ({ cert }: { cert: any }) => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-          <MoreHorizontal className="h-4 w-4" />
+        <Button variant="ghost" size="icon" className={ACTION_BTN}>
+          <MoreHorizontal className={ACTION_ICON} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
@@ -459,8 +460,8 @@ const Certificates = () => {
                     <TableCell>{format(new Date(cert.issued_at), 'PP')}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setPreviewCert(cert)}>
-                          <Eye className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => setPreviewCert(cert)}>
+                          <Eye className={ACTION_ICON} />
                         </Button>
                         <CertActionsMenu cert={cert} />
                       </div>

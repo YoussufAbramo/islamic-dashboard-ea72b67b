@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { ACTION_BTN_DESTRUCTIVE, ACTION_ICON } from '@/lib/actionBtnClass';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -125,8 +126,8 @@ const Timetable = () => {
               <TableCell><Badge variant={statusColors[entry.status] as any}>{getLabel(timetableStatusLabels, entry.status, isAr)}</Badge></TableCell>
               {isAdmin && (
                 <TableCell>
-                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-destructive/10 text-destructive hover:text-destructive h-8 w-8" onClick={() => setDeleteTarget(entry.id)}>
-                    <Trash2 className="h-3.5 w-3.5" />
+                  <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteTarget(entry.id)}>
+                    <Trash2 className={ACTION_ICON} />
                   </Button>
                 </TableCell>
               )}

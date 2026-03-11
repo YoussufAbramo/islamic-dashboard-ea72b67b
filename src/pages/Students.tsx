@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { ACTION_BTN, ACTION_BTN_DESTRUCTIVE, ACTION_ICON } from '@/lib/actionBtnClass';
 import { usePagination } from '@/hooks/use-pagination';
 import PaginationControls from '@/components/PaginationControls';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -134,8 +135,8 @@ const Students = () => {
                 <TableCell>{student.profiles?.email}</TableCell>
                 <TableCell>{student.lesson_duration} {t('common.minutes')}</TableCell>
                 <TableCell className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted h-8 w-8" onClick={() => viewDetails(student)}><Eye className="h-3.5 w-3.5" /></Button>
-                  {role === 'admin' && <Button variant="ghost" size="icon" className="rounded-full hover:bg-destructive/10 text-destructive hover:text-destructive h-8 w-8" onClick={() => setDeleteTarget(student.id)}><Trash2 className="h-3.5 w-3.5" /></Button>}
+                  <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => viewDetails(student)}><Eye className={ACTION_ICON} /></Button>
+                  {role === 'admin' && <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteTarget(student.id)}><Trash2 className={ACTION_ICON} /></Button>}
                 </TableCell>
               </TableRow>
             ))}
