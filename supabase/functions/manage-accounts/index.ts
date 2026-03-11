@@ -373,11 +373,11 @@ Deno.serve(async (req) => {
       // Create communications (announcements & notifications only)
       if (categories.includes('communications')) {
         const allAnnouncements = [
-          { title: 'Welcome to the New Semester', title_ar: 'مرحباً بالفصل الدراسي الجديد', content: 'We are excited to start a new semester. Please check your schedules.', content_ar: 'نحن متحمسون لبدء فصل دراسي جديد. يرجى مراجعة جداولكم.', target_audience: 'all', created_by: caller.id, is_active: true },
-          { title: 'Exam Schedule Released', title_ar: 'تم نشر جدول الامتحانات', content: 'Final exam schedule has been published. Check the timetable section.', content_ar: 'تم نشر جدول الامتحانات النهائية. راجع قسم الجدول.', target_audience: 'students', created_by: caller.id, is_active: true },
-          { title: 'Teacher Meeting This Friday', title_ar: 'اجتماع المعلمين يوم الجمعة', content: 'All teachers are required to attend the monthly meeting.', content_ar: 'جميع المعلمين مطالبون بحضور الاجتماع الشهري.', target_audience: 'teachers', created_by: caller.id, is_active: true },
-          { title: 'Holiday Schedule', title_ar: 'جدول الإجازات', content: 'Please note the upcoming holiday dates.', content_ar: 'يرجى ملاحظة مواعيد الإجازات القادمة.', target_audience: 'all', created_by: caller.id, is_active: true },
-          { title: 'New Course Available', title_ar: 'دورة جديدة متاحة', content: 'A new course has been added to the curriculum.', content_ar: 'تمت إضافة دورة جديدة إلى المنهج.', target_audience: 'all', created_by: caller.id, is_active: true },
+          { title: 'Welcome to the New Semester', title_ar: 'مرحباً بالفصل الدراسي الجديد', content: 'We are excited to start a new semester. Please check your schedules.', content_ar: 'نحن متحمسون لبدء فصل دراسي جديد. يرجى مراجعة جداولكم.', target_audience: 'all', created_by: callerId, is_active: true },
+          { title: 'Exam Schedule Released', title_ar: 'تم نشر جدول الامتحانات', content: 'Final exam schedule has been published. Check the timetable section.', content_ar: 'تم نشر جدول الامتحانات النهائية. راجع قسم الجدول.', target_audience: 'students', created_by: callerId, is_active: true },
+          { title: 'Teacher Meeting This Friday', title_ar: 'اجتماع المعلمين يوم الجمعة', content: 'All teachers are required to attend the monthly meeting.', content_ar: 'جميع المعلمين مطالبون بحضور الاجتماع الشهري.', target_audience: 'teachers', created_by: callerId, is_active: true },
+          { title: 'Holiday Schedule', title_ar: 'جدول الإجازات', content: 'Please note the upcoming holiday dates.', content_ar: 'يرجى ملاحظة مواعيد الإجازات القادمة.', target_audience: 'all', created_by: callerId, is_active: true },
+          { title: 'New Course Available', title_ar: 'دورة جديدة متاحة', content: 'A new course has been added to the curriculum.', content_ar: 'تمت إضافة دورة جديدة إلى المنهج.', target_audience: 'all', created_by: callerId, is_active: true },
         ]
         const annInsert = allAnnouncements.slice(0, qty.announcements)
         await adminClient.from('announcements').insert(annInsert)
