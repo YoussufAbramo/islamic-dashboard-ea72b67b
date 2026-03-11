@@ -208,7 +208,7 @@ const AppSidebar = () => {
                           tooltip={item.label}
                         >
                           <item.icon className="h-4 w-4" />
-                          <span className="flex-1">{item.label}</span>
+                          <span className="flex-1 text-start">{item.label}</span>
                           {item.comingSoon && (
                             <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 shrink-0 ms-auto">
                               <Sparkles className="h-2 w-2 me-0.5" />
