@@ -1,4 +1,4 @@
-const CACHE_NAME = 'edudash-v1';
+const CACHE_NAME = 'edudash-v42';
 const STATIC_ASSETS = ['/'];
 
 self.addEventListener('install', (event) => {
