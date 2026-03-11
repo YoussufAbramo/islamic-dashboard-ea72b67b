@@ -287,6 +287,8 @@ const TopBar = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
     </>
   );
 };
