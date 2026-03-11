@@ -1,4 +1,4 @@
-import { Moon, Sun, Bell, Megaphone, Globe, Plus, CheckCheck, ExternalLink, Home } from 'lucide-react';
+import { Moon, Sun, Bell, Megaphone, Globe, Plus, CheckCheck, ExternalLink, Home, Languages } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -108,7 +108,7 @@ const TopBar = () => {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" className={iconBtnClass} onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}>
-                <ArabicLetterIcon />
+                <Languages className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>{isAr ? 'تغيير اللغة' : 'Switch Language'}</TooltipContent>
