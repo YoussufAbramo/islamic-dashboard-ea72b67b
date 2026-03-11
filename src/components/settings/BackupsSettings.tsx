@@ -130,7 +130,7 @@ const BackupsSettings = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       window.open(data.url, '_blank');
-    } catch (err: any) { toast.error(err.message || 'Failed to download backup'); }
+    } catch (err: any) { notifyError({ error: 'DB_OPERATION_FAILED', isAr, rawMessage: err.message || 'Failed to download backup' }); }
     finally { setDownloading(null); }
   };
 
