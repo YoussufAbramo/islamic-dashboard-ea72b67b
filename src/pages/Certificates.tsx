@@ -108,7 +108,7 @@ const Certificates = () => {
         isAr,
       });
     } catch {
-      toast.error(isAr ? 'فشل التصدير' : 'Export failed');
+      notifyError({ error: 'STORAGE_EXPORT_FAILED', isAr });
     }
   };
 

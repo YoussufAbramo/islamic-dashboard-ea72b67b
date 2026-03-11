@@ -64,7 +64,7 @@ const Teachers = () => {
 
   const handleAddTeacher = async () => {
     if (!addForm.email || !addForm.password || !addForm.full_name) {
-      toast.error(isAr ? 'يرجى ملء جميع الحقول المطلوبة' : 'Please fill all required fields');
+      notifyError({ error: 'VAL_REQUIRED_FIELDS', isAr });
       return;
     }
     setAddLoading(true);
@@ -72,7 +72,7 @@ const Teachers = () => {
       body: { action: 'create', role: 'teacher', email: addForm.email, password: addForm.password, full_name: addForm.full_name, phone: addForm.phone, specialization: addForm.specialization, bio: addForm.bio },
     });
     setAddLoading(false);
-    if (error) { toast.error(error.message); } else {
+    if (error) { notifyError({ error, isAr, rawMessage: error.message }); } else {
       toast.success(isAr ? 'تم إضافة المعلم' : 'Teacher added successfully');
       setAddOpen(false);
       setAddForm({ full_name: '', email: '', password: '', phone: '', specialization: '', bio: '' });
