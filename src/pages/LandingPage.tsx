@@ -10,8 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import CopyrightText from '@/components/CopyrightText';
-import islamicPatternHero from '@/assets/islamic-pattern-hero.jpg';
-import dashboardMockup from '@/assets/dashboard-mockup.png';
+import islamicPatternHero from '@/assets/other/islamic-pattern-hero.jpg';
+import dashboardMockup from '@/assets/other/dashboard-mockup.png';
 
 interface PricingPackage {
   id: string;
