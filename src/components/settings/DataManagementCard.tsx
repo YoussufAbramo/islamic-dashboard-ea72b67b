@@ -210,7 +210,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       resetClearState();
     } catch (err: any) {
       addLog(`❌ ${err.message || 'Failed to erase data'}`);
-      toast.error(err.message || 'Failed to erase data');
+      notifyError({ error: 'DB_OPERATION_FAILED', isAr, rawMessage: err.message || 'Failed to erase data' });
     } finally {
       setClearLoading(false);
     }
