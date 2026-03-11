@@ -161,7 +161,7 @@ Deno.serve(async (req) => {
 
       if (sIds.length === 0 || tIds.length === 0) {
         // If only seeding non-user categories, we still need users to exist
-        if (categories.some(c => ['courses', 'billing', 'schedule', 'communications', 'chats', 'certificates'].includes(c))) {
+        if (categories.some(c => ['courses', 'billing', 'schedule', 'communications', 'support', 'certificates'].includes(c))) {
           return new Response(JSON.stringify({ error: 'Need at least 1 student and 1 teacher to seed data. Add "students" and "teachers" categories first.' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
         }
       }
