@@ -135,6 +135,7 @@ const Settings = () => {
           {activeTab === 'backups' && isAdmin && <BackupsSettings />}
           {activeTab === 'pixels' && isAdmin && <PixelsIntegrationSettings />}
           {activeTab === 'seo' && isAdmin && <SeoSettings />}
+          {activeTab === 'supabase' && isAdmin && <SupabaseStatusSettings />}
           {activeTab === 'developer' && isAdmin && <DeveloperSettings />}
         </div>
       </div>
