@@ -179,7 +179,14 @@ const AppSidebar = () => {
               <SidebarGroupLabel>
                 {isAr ? cat.labelAr : cat.label}
                 {cat.requiresDeveloperMode && (
-                  <Badge className="text-[8px] px-1 py-0 h-3.5 ms-1.5 border-none bg-primary/15 text-primary">
+                  <Badge
+                    className="text-[8px] px-1.5 py-0 h-3.5 ms-1.5 border border-border bg-muted text-muted-foreground cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
+                    onClick={(e) => { e.stopPropagation(); navigate('/dashboard/settings?tab=developer'); }}
+                  >
+                    <span className="relative flex h-1.5 w-1.5 me-1">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+                    </span>
                     <Code className="h-2 w-2 me-0.5" />
                     DEV
                   </Badge>
