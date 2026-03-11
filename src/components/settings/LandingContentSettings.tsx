@@ -96,7 +96,13 @@ const LandingContentSettings = () => {
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.from('landing_content').select('*');
+      const [{ data }, { data: pagesData }, { data: policiesData }] = await Promise.all([
+        supabase.from('landing_content').select('*'),
+        supabase.from('website_pages').select('slug, title, title_ar, status').eq('status', 'published'),
+        supabase.from('policies').select('slug, title, title_ar, is_published').eq('is_published', true),
+      ]);
+      if (pagesData) setWebsitePages(pagesData as any);
+      if (policiesData) setPolicies(policiesData as any);
       if (data) {
         const merged = { ...defaultSectionContent };
         let gen = { ...defaultGeneralContent };
