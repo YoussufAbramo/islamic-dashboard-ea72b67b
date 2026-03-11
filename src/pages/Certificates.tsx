@@ -64,13 +64,13 @@ const Certificates = () => {
   useEffect(() => { fetchData(); }, []);
 
   const handleCreate = async () => {
-    if (!form.recipient_id || !form.title) { toast.error(isAr ? 'يرجى ملء الحقول المطلوبة' : 'Please fill required fields'); return; }
+    if (!form.recipient_id || !form.title) { notifyError({ error: 'VAL_REQUIRED_FIELDS', isAr }); return; }
     const { error } = await supabase.from('certificates').insert({
       ...form,
       course_id: form.course_id || null,
       issued_by: user?.id,
     });
-    if (error) { toast.error(error.message); return; }
+    if (error) { notifyError({ error, isAr, rawMessage: error.message }); return; }
     toast.success(isAr ? 'تم إنشاء الشهادة' : 'Certificate created');
     setDialogOpen(false);
     setForm({ recipient_id: '', recipient_type: 'student', title: '', title_ar: '', description: '', course_id: '', design: 'classic' });
