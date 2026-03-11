@@ -76,14 +76,19 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
     }
   });
 
-  const getUrl = (fileName: string) => {
+  const getUrl = async (fileName: string): Promise<string> => {
     if (!bucket) return '';
     const fullPath = currentPath ? `${currentPath}/${fileName}` : fileName;
+    const bucketInfo = BUCKETS.find(b => b.id === bucket);
+    if (bucketInfo && !bucketInfo.public) {
+      const { data } = await supabase.storage.from(bucket).createSignedUrl(fullPath, 3600);
+      return data?.signedUrl || '';
+    }
     return supabase.storage.from(bucket).getPublicUrl(fullPath).data.publicUrl;
   };
 
-  const handleSelect = (fileName: string) => {
-    const url = getUrl(fileName);
+  const handleSelect = async (fileName: string) => {
+    const url = await getUrl(fileName);
     onSelect(url);
     onOpenChange(false);
   };
