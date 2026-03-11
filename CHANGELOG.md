@@ -2,6 +2,19 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.3.1] - 2026-03-11
+
+### Fixed
+- Website Mode & Developer Mode switch toggles now update visually immediately (were reading saved state instead of pending state)
+
+### Changed
+- Website Mode route guards: dashboard routes (Landing Page, Policies, Main Pages, Blogs) now redirect to `/dashboard` when website mode is disabled, preventing direct URL access
+- Public routes (landing page, blog posts, public pages, policies) already blocked via PublicRouteGuard
+- Media separated from Website category: Media now appears in its own standalone sidebar category, always accessible regardless of website mode
+- Sidebar label renamed from "Blog" to "Blogs"
+- Removed "Delete Database Tables Data" and "Erase All Data" functionality from Data Management settings and backend edge function
+- Version bumped to 4.3.1
+
 ## [4.2.0] - 2026-03-11
 
 ### Added
