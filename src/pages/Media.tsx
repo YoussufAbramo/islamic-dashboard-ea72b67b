@@ -259,7 +259,7 @@ const Media = () => {
 
   const filteredFiles = files.filter(f => f.name.toLowerCase().includes(search.toLowerCase()));
   const filteredFolders = folders.filter(f => f.toLowerCase().includes(search.toLowerCase()));
-  const currentBucket = BUCKETS.find(b => b.id === selectedBucket);
+  const currentBucket = buckets.find(b => b.id === selectedBucket);
   const hasSelection = selectedNames.size > 0;
   const allSelected = filteredFiles.length > 0 && selectedNames.size === filteredFiles.length;
   const breadcrumbs = currentPath ? currentPath.split('/') : [];
