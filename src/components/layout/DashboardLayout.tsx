@@ -204,7 +204,7 @@ const DashboardLayout = () => {
                     <img src="/codecom-logo.png" alt="CodeCom.dev" className="h-5 w-auto object-contain opacity-60 hover:opacity-100 transition-opacity" />
                   </a>
                 </TooltipTrigger>
-                <TooltipContent>{dir === 'rtl' ? 'المطور الأصلي للنظام' : 'Original system developer'}</TooltipContent>
+                <TooltipContent>{dir === 'rtl' ? 'تم تطوير هذا النظام بواسطة CodeCom.dev' : 'This Software is Developed By CodeCom.dev'}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
             <CopyrightText
