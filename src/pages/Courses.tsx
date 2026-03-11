@@ -48,21 +48,8 @@ const Courses = () => {
 
   useEffect(() => { fetchCourses(); }, []);
 
-  const handleImageUpload = async (): Promise<string> => {
-    if (!imageFile) return form.image_url;
-    setUploading(true);
-    const ext = imageFile.name.split('.').pop();
-    const fileName = `${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from('course-images').upload(fileName, imageFile);
-    setUploading(false);
-    if (error) { notifyError({ error, isAr, rawMessage: error.message }); return form.image_url; }
-    const { data: urlData } = supabase.storage.from('course-images').getPublicUrl(fileName);
-    return urlData.publicUrl;
-  };
-
   const handleSave = async () => {
-    const imageUrl = await handleImageUpload();
-    const saveData = { ...form, image_url: imageUrl };
+    const saveData = { ...form };
     if (editCourse) {
       await supabase.from('courses').update(saveData).eq('id', editCourse.id);
       toast.success(isAr ? 'تم تحديث الدورة' : 'Course updated');
@@ -73,7 +60,6 @@ const Courses = () => {
     setDialogOpen(false);
     setEditCourse(null);
     setForm({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft', image_url: '' });
-    setImageFile(null);
     fetchCourses();
   };
 
