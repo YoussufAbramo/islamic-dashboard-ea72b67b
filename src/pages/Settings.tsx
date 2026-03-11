@@ -11,7 +11,6 @@ import PaymentGatewayCard from '@/components/settings/PaymentGatewayCard';
 import DataManagementCard from '@/components/settings/DataManagementCard';
 import AuthenticationSettings from '@/components/settings/AuthenticationSettings';
 import GeneralSettings from '@/components/settings/GeneralSettings';
-import LandingContentSettings from '@/components/settings/LandingContentSettings';
 import SaaSPricingSettings from '@/components/settings/SaaSPricingSettings';
 import BackupsSettings from '@/components/settings/BackupsSettings';
 import EducationSystemSettings from '@/components/settings/EducationSystemSettings';
@@ -21,6 +20,7 @@ import SupabaseStatusSettings from '@/components/settings/SupabaseStatusSettings
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 const DeveloperSettings = () => {
   const { language } = useLanguage();
@@ -43,7 +43,62 @@ const DeveloperSettings = () => {
   );
 };
 
-type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing' | 'backups' | 'education' | 'pixels' | 'seo' | 'supabase' | 'developer';
+const WebsiteModeSettings = () => {
+  const { language } = useLanguage();
+  const { websiteMode, setWebsiteMode } = useAppSettings();
+  const isAr = language === 'ar';
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Globe className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              {isAr ? 'وضع الموقع' : 'Website Mode'}
+              <Badge variant={websiteMode ? 'default' : 'secondary'} className="text-[10px]">
+                {websiteMode ? (isAr ? 'مفعّل' : 'Active') : (isAr ? 'معطّل' : 'Inactive')}
+              </Badge>
+            </CardTitle>
+            <CardDescription>{isAr ? 'التحكم في ظهور الموقع العام' : 'Control public website visibility'}</CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/30">
+          <div className="space-y-1">
+            <Label htmlFor="website-mode" className="text-sm font-medium">{isAr ? 'تفعيل الموقع العام' : 'Enable Public Website'}</Label>
+            <p className="text-xs text-muted-foreground max-w-md">
+              {isAr
+                ? 'عند التفعيل، سيتم عرض صفحة الهبوط والمدونة والسياسات وجميع الصفحات العامة. عند التعطيل، سيتم إعادة توجيه الزوار إلى صفحة إشعار.'
+                : 'When enabled, the landing page, blog, policies, and all public pages will be visible. When disabled, visitors will be redirected to a notice page.'}
+            </p>
+          </div>
+          <Switch id="website-mode" checked={websiteMode} onCheckedChange={setWebsiteMode} />
+        </div>
+        <div className="rounded-lg border border-border p-4 space-y-2">
+          <p className="text-sm font-medium text-foreground">{isAr ? 'عند التفعيل:' : 'When enabled:'}</p>
+          <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+            <li>{isAr ? 'أقسام الموقع (صفحة الهبوط، السياسات، الصفحات، المدونة) ستظهر في القائمة الرئيسية' : 'Website sections (Landing Page, Policies, Pages, Blog) appear in the main menu'}</li>
+            <li>{isAr ? 'الصفحات العامة متاحة للزوار' : 'Public pages are accessible to visitors'}</li>
+            <li>{isAr ? 'يمكن للمشرفين إدارة المحتوى من لوحة التحكم' : 'Administrators can manage content from the dashboard'}</li>
+          </ul>
+        </div>
+        <div className="rounded-lg border border-border p-4 space-y-2">
+          <p className="text-sm font-medium text-foreground">{isAr ? 'عند التعطيل:' : 'When disabled:'}</p>
+          <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+            <li>{isAr ? 'أقسام الموقع ستكون مخفية من القائمة الرئيسية' : 'Website sections are hidden from the main menu'}</li>
+            <li>{isAr ? 'الزوار سيرون رسالة إعلام بدلاً من المحتوى' : 'Visitors see a notice page instead of content'}</li>
+            <li>{isAr ? 'صفحة تسجيل الدخول تبقى متاحة' : 'Login page remains accessible'}</li>
+          </ul>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'pricing' | 'backups' | 'education' | 'pixels' | 'seo' | 'supabase' | 'developer' | 'website';
 
 const Settings = () => {
   const { language } = useLanguage();
@@ -54,7 +109,7 @@ const Settings = () => {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<SettingsTab>(() => {
     const tab = searchParams.get('tab');
-    return tab && ['general','appearance','auth','payment','data','landing','pricing','backups','education','pixels','seo','supabase','developer'].includes(tab) ? tab as SettingsTab : 'general';
+    return tab && ['general','appearance','auth','payment','data','pricing','backups','education','pixels','seo','supabase','developer','website'].includes(tab) ? tab as SettingsTab : 'general';
   });
 
   // Auto-discard pending changes when leaving settings - use ref to avoid re-running on discardChanges change
@@ -75,7 +130,7 @@ const Settings = () => {
     { value: 'general', label: 'General', labelAr: 'عام', icon: Settings2 },
     { value: 'appearance', label: 'Appearance', labelAr: 'المظهر', icon: Palette },
     { value: 'education', label: 'Education System', labelAr: 'النظام التعليمي', icon: GraduationCap },
-    { value: 'landing', label: 'Landing Page', labelAr: 'صفحة الهبوط', icon: Globe, adminOnly: true },
+    { value: 'website', label: 'Website Mode', labelAr: 'وضع الموقع', icon: Globe, adminOnly: true },
     { value: 'pricing', label: 'Pricing Packages', labelAr: 'باقات الأسعار', icon: DollarSign, adminOnly: true },
     { value: 'pixels', label: 'Pixels & Tracking', labelAr: 'البيكسل والتتبع', icon: BarChart3, adminOnly: true },
     { value: 'seo', label: 'Advanced SEO', labelAr: 'تحسين محركات البحث', icon: SearchIcon, adminOnly: true },
@@ -132,7 +187,7 @@ const Settings = () => {
           {activeTab === 'general' && <GeneralSettings />}
           {activeTab === 'appearance' && <AppearanceSettings />}
           {activeTab === 'education' && <EducationSystemSettings />}
-          {activeTab === 'landing' && isAdmin && <LandingContentSettings />}
+          {activeTab === 'website' && isAdmin && <WebsiteModeSettings />}
           {activeTab === 'pricing' && isAdmin && <SaaSPricingSettings />}
           {activeTab === 'auth' && isAdmin && <AuthenticationSettings />}
           {activeTab === 'payment' && isAdmin && <PaymentGatewayCard isAr={isAr} />}

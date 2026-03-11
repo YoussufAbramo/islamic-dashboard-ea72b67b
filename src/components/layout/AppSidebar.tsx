@@ -30,12 +30,13 @@ interface MenuCategory {
   labelAr: string;
   items: MenuItem[];
   requiresDeveloperMode?: boolean;
+  requiresWebsiteMode?: boolean;
 }
 
 const AppSidebar = () => {
   const { role, profile, signOut, user } = useAuth();
   const { t, language } = useLanguage();
-  const { appLogo, appName, sidebarMode, darkLogo, developerMode } = useAppSettings();
+  const { appLogo, appName, sidebarMode, darkLogo, developerMode, websiteMode } = useAppSettings();
   const navigate = useNavigate();
   const isAr = language === 'ar';
   const location = useLocation();
@@ -102,6 +103,7 @@ const AppSidebar = () => {
     {
       label: 'Website',
       labelAr: 'الموقع',
+      requiresWebsiteMode: true,
       items: [
         { key: 'landing-page', label: isAr ? 'صفحة الهبوط' : 'Landing Page', icon: Globe, path: '/dashboard/landing-page', roles: ['admin'] },
         { key: 'policies', label: isAr ? 'السياسات' : 'Policies', icon: ScrollText, path: '/dashboard/policies', roles: ['admin'] },
@@ -172,6 +174,7 @@ const AppSidebar = () => {
       <SidebarContent>
         {categories.map((cat) => {
           if (cat.requiresDeveloperMode && !developerMode) return null;
+          if (cat.requiresWebsiteMode && !websiteMode) return null;
           const visibleItems = cat.items.filter((item) => role && item.roles.includes(role));
           if (visibleItems.length === 0) return null;
           return (

@@ -97,6 +97,7 @@ interface PendingSettings {
   sidebarMode: SidebarMode;
   timeFormat: TimeFormat;
   developerMode: boolean;
+  websiteMode: boolean;
   socialLinks: SocialLinks;
 }
 
@@ -143,6 +144,8 @@ interface AppSettingsContextType {
   setTimeFormat: (f: TimeFormat) => void;
   developerMode: boolean;
   setDeveloperMode: (d: boolean) => void;
+  websiteMode: boolean;
+  setWebsiteMode: (w: boolean) => void;
   pending: PendingSettings;
   updatePending: (partial: Partial<PendingSettings>) => void;
   saveSettings: () => void;
@@ -150,53 +153,7 @@ interface AppSettingsContextType {
   discardChanges: () => void;
 }
 
-interface AppSettingsContextType {
-  currency: Currency;
-  setCurrency: (c: Currency) => void;
-  currencies: Currency[];
-  colorTheme: ColorTheme;
-  setColorTheme: (t: ColorTheme) => void;
-  themes: typeof THEMES;
-  appName: string;
-  setAppName: (n: string) => void;
-  appDescription: string;
-  setAppDescription: (d: string) => void;
-  appLogo: string;
-  setAppLogo: (l: string) => void;
-  darkLogo: string;
-  setDarkLogo: (l: string) => void;
-  signatureImage: string;
-  setSignatureImage: (s: string) => void;
-  stampImage: string;
-  setStampImage: (s: string) => void;
-  signaturePosition: FooterPosition;
-  setSignaturePosition: (p: FooterPosition) => void;
-  stampPosition: FooterPosition;
-  setStampPosition: (p: FooterPosition) => void;
-  ltrFont: string;
-  setLtrFont: (f: string) => void;
-  rtlFont: string;
-  setRtlFont: (f: string) => void;
-  buttonShape: ButtonShape;
-  setButtonShape: (s: ButtonShape) => void;
-  currencyDecimals: number;
-  setCurrencyDecimals: (d: number) => void;
-  paymentGateway: string;
-  setPaymentGateway: (g: string) => void;
-  favicon: string;
-  setFavicon: (f: string) => void;
-  defaultTimezone: string;
-  setDefaultTimezone: (tz: string) => void;
-  sidebarMode: SidebarMode;
-  setSidebarMode: (m: SidebarMode) => void;
-  timeFormat: TimeFormat;
-  setTimeFormat: (f: TimeFormat) => void;
-  pending: PendingSettings;
-  updatePending: (partial: Partial<PendingSettings>) => void;
-  saveSettings: () => void;
-  hasPendingChanges: boolean;
-  discardChanges: () => void;
-}
+
 
 const AppSettingsContext = createContext<AppSettingsContextType | null>(null);
 
@@ -238,6 +195,7 @@ function loadSaved(): PendingSettings {
     sidebarMode: (localStorage.getItem('app_sidebar_mode') as SidebarMode) || 'dark',
     timeFormat: (localStorage.getItem('app_time_format') as TimeFormat) || '12h',
     developerMode: localStorage.getItem('app_developer_mode') !== 'false',
+    websiteMode: localStorage.getItem('app_website_mode') !== 'false',
     socialLinks: (() => { try { const s = localStorage.getItem('app_social_links'); return s ? { ...DEFAULT_SOCIAL_LINKS, ...JSON.parse(s) } : DEFAULT_SOCIAL_LINKS; } catch { return DEFAULT_SOCIAL_LINKS; } })(),
   };
 }
@@ -307,6 +265,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     localStorage.setItem('app_sidebar_mode', pending.sidebarMode);
     localStorage.setItem('app_time_format', pending.timeFormat);
     localStorage.setItem('app_developer_mode', String(pending.developerMode));
+    localStorage.setItem('app_website_mode', String(pending.websiteMode));
     localStorage.setItem('app_social_links', JSON.stringify(pending.socialLinks));
     setSaved({ ...pending });
   }, [pending]);
@@ -344,6 +303,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const setSidebarMode = useCallback((m: SidebarMode) => { setPending(p => ({ ...p, sidebarMode: m })); }, []);
   const setTimeFormat = useCallback((f: TimeFormat) => { setPending(p => ({ ...p, timeFormat: f })); }, []);
   const setDeveloperMode = useCallback((d: boolean) => { setPending(p => ({ ...p, developerMode: d })); }, []);
+  const setWebsiteMode = useCallback((w: boolean) => { setPending(p => ({ ...p, websiteMode: w })); }, []);
 
   return (
     <AppSettingsContext.Provider value={{
@@ -367,6 +327,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       sidebarMode: saved.sidebarMode, setSidebarMode,
       timeFormat: saved.timeFormat, setTimeFormat,
       developerMode: saved.developerMode, setDeveloperMode,
+      websiteMode: saved.websiteMode, setWebsiteMode,
       pending, updatePending, saveSettings, hasPendingChanges, discardChanges,
     }}>
       {children}

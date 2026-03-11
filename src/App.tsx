@@ -52,6 +52,7 @@ import ErrorLog from "./pages/ErrorLog";
 import AuditTrail from "./pages/AuditTrail";
 import PublicBlogPost from "./pages/PublicBlogPost";
 import PublicPage from "./pages/PublicPage";
+import PublicRouteGuard from "./components/PublicRouteGuard";
 
 const queryClient = new QueryClient();
 
@@ -67,7 +68,7 @@ const App = () => (
                 <Sonner />
                 <BrowserRouter>
                   <Routes>
-                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/" element={<PublicRouteGuard><LandingPage /></PublicRouteGuard>} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
                     <Route path="/reset-password" element={<Navigate to="/forgot-password" replace />}/>
@@ -109,12 +110,12 @@ const App = () => (
                       <Route path="profile" element={<Profile />} />
                     </Route>
                     <Route path="/invoice/:id" element={<InvoiceView />} />
-                    <Route path="/blog/:slug" element={<PublicBlogPost />} />
-                    <Route path="/blogs/:slug" element={<PublicBlogPost />} />
-                    <Route path="/pages/:slug" element={<PublicPage />} />
-                    <Route path="/page/:slug" element={<PublicPage />} />
-                    <Route path="/policies/:slug" element={<PublicPage />} />
-                    <Route path="/policy/:slug" element={<PublicPage />} />
+                    <Route path="/blog/:slug" element={<PublicRouteGuard><PublicBlogPost /></PublicRouteGuard>} />
+                    <Route path="/blogs/:slug" element={<PublicRouteGuard><PublicBlogPost /></PublicRouteGuard>} />
+                    <Route path="/pages/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
+                    <Route path="/page/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
+                    <Route path="/policies/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
+                    <Route path="/policy/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </BrowserRouter>
