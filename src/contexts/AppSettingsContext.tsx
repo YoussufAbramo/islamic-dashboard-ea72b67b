@@ -80,6 +80,57 @@ interface PendingSettings {
   defaultTimezone: string;
   sidebarMode: SidebarMode;
   timeFormat: TimeFormat;
+  developerMode: boolean;
+}
+
+interface AppSettingsContextType {
+  currency: Currency;
+  setCurrency: (c: Currency) => void;
+  currencies: Currency[];
+  colorTheme: ColorTheme;
+  setColorTheme: (t: ColorTheme) => void;
+  themes: typeof THEMES;
+  appName: string;
+  setAppName: (n: string) => void;
+  appDescription: string;
+  setAppDescription: (d: string) => void;
+  appLogo: string;
+  setAppLogo: (l: string) => void;
+  darkLogo: string;
+  setDarkLogo: (l: string) => void;
+  signatureImage: string;
+  setSignatureImage: (s: string) => void;
+  stampImage: string;
+  setStampImage: (s: string) => void;
+  signaturePosition: FooterPosition;
+  setSignaturePosition: (p: FooterPosition) => void;
+  stampPosition: FooterPosition;
+  setStampPosition: (p: FooterPosition) => void;
+  ltrFont: string;
+  setLtrFont: (f: string) => void;
+  rtlFont: string;
+  setRtlFont: (f: string) => void;
+  buttonShape: ButtonShape;
+  setButtonShape: (s: ButtonShape) => void;
+  currencyDecimals: number;
+  setCurrencyDecimals: (d: number) => void;
+  paymentGateway: string;
+  setPaymentGateway: (g: string) => void;
+  favicon: string;
+  setFavicon: (f: string) => void;
+  defaultTimezone: string;
+  setDefaultTimezone: (tz: string) => void;
+  sidebarMode: SidebarMode;
+  setSidebarMode: (m: SidebarMode) => void;
+  timeFormat: TimeFormat;
+  setTimeFormat: (f: TimeFormat) => void;
+  developerMode: boolean;
+  setDeveloperMode: (d: boolean) => void;
+  pending: PendingSettings;
+  updatePending: (partial: Partial<PendingSettings>) => void;
+  saveSettings: () => void;
+  hasPendingChanges: boolean;
+  discardChanges: () => void;
 }
 
 interface AppSettingsContextType {
