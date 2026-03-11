@@ -33,7 +33,21 @@ const TopBar = () => {
   const [announcementDetailOpen, setAnnouncementDetailOpen] = useState(false);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<any>(null);
   const [announcementForm, setAnnouncementForm] = useState({ title: '', title_ar: '', content: '', content_ar: '', target_audience: 'all', scheduled_at: '' });
+  const [searchOpen, setSearchOpen] = useState(false);
   const isAr = language === 'ar';
+  const isAdmin = role === 'admin';
+
+  // Ctrl+K / Cmd+K shortcut
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
   const isAdmin = role === 'admin';
 
   const fetchData = () => {
