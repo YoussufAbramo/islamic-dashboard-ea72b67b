@@ -81,6 +81,7 @@ const App = () => (
                       <Route path="notifications" element={<Notifications />} />
                       <Route path="error/:code" element={<ErrorDetails />} />
                       <Route path="error-docs" element={<RoleGuard allowed={['admin']}><ErrorDocs /></RoleGuard>} />
+                      <Route path="media" element={<RoleGuard allowed={['admin']}><Media /></RoleGuard>} />
                       <Route path="profile" element={<Profile />} />
                     </Route>
                     <Route path="/invoice/:id" element={<InvoiceView />} />
