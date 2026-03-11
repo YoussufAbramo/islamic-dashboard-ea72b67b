@@ -144,7 +144,7 @@ const ErrorLog = () => {
   };
 
   return (
-    <div className="space-y-6 w-full min-w-0 overflow-x-hidden">
+    <div className="space-y-6 w-full max-w-[800px] min-w-0 overflow-x-hidden">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
