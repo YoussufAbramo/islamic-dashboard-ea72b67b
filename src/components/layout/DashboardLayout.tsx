@@ -49,10 +49,19 @@ const WhatsAppIcon = () =>
 
 const FloatingButtons = () => {
   const { language } = useLanguage();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const isAr = language === 'ar';
   const [ticketOpen, setTicketOpen] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '', department: 'general', priority: 'medium' });
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleAutoFill = () => {
+    setForm(prev => ({
+      ...prev,
+      name: profile?.full_name || prev.name,
+      email: profile?.email || user?.email || prev.email,
+    }));
+  };
   const [submitting, setSubmitting] = useState(false);
 
   const whatsappUrl = `https://wa.me/201558612808?text=${encodeURIComponent("Hello Dear, I'm texting you regarding Quran.CodeCom.dev, are you available to talk?")}`;
