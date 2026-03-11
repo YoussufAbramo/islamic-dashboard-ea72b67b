@@ -176,6 +176,42 @@ Deno.serve(async (req) => {
 
       // Create courses
       if (categories.includes('courses')) {
+        // Seed course tracks
+        const allTracks = [
+          { title: 'Quran Track', title_ar: 'مسار القرآن', description: 'Quran memorization and recitation track', description_ar: 'مسار حفظ وتلاوة القرآن', sort_order: 0 },
+          { title: 'Arabic Track', title_ar: 'مسار اللغة العربية', description: 'Arabic language learning track', description_ar: 'مسار تعلم اللغة العربية', sort_order: 1 },
+          { title: 'Islamic Studies Track', title_ar: 'مسار الدراسات الإسلامية', description: 'Comprehensive Islamic studies', description_ar: 'دراسات إسلامية شاملة', sort_order: 2 },
+        ]
+        const tracksInsert = allTracks.slice(0, qty.tracks)
+        const { data: createdTracks } = await adminClient.from('course_tracks').insert(tracksInsert).select('id')
+        const trackIds = (createdTracks || []).map(t => t.id)
+        counts.tracks = trackIds.length
+
+        // Seed course categories
+        const allCategories = [
+          { title: 'Memorization', title_ar: 'حفظ', description: 'Quran memorization courses', description_ar: 'دورات حفظ القرآن', sort_order: 0 },
+          { title: 'Language', title_ar: 'لغة', description: 'Arabic language courses', description_ar: 'دورات اللغة العربية', sort_order: 1 },
+          { title: 'Fiqh & Aqeedah', title_ar: 'فقه وعقيدة', description: 'Islamic jurisprudence and creed', description_ar: 'الفقه الإسلامي والعقيدة', sort_order: 2 },
+          { title: 'Tajweed', title_ar: 'تجويد', description: 'Quran recitation rules', description_ar: 'أحكام تلاوة القرآن', sort_order: 3 },
+          { title: 'History & Seerah', title_ar: 'تاريخ وسيرة', description: 'Islamic history and biography', description_ar: 'التاريخ الإسلامي والسيرة النبوية', sort_order: 4 },
+        ]
+        const catsInsert = allCategories.slice(0, qty.categories)
+        const { data: createdCats } = await adminClient.from('course_categories').insert(catsInsert).select('id')
+        const catIds = (createdCats || []).map(c => c.id)
+        counts.categories = catIds.length
+
+        // Seed course levels
+        const allLevels = [
+          { title: 'Beginner', title_ar: 'مبتدئ', description: 'For new learners', description_ar: 'للمتعلمين الجدد', sort_order: 0 },
+          { title: 'Intermediate', title_ar: 'متوسط', description: 'For learners with basic knowledge', description_ar: 'للمتعلمين ذوي المعرفة الأساسية', sort_order: 1 },
+          { title: 'Advanced', title_ar: 'متقدم', description: 'For experienced learners', description_ar: 'للمتعلمين ذوي الخبرة', sort_order: 2 },
+          { title: 'Expert', title_ar: 'خبير', description: 'For mastery-level learners', description_ar: 'لمستوى الإتقان', sort_order: 3 },
+        ]
+        const levelsInsert = allLevels.slice(0, qty.levels)
+        const { data: createdLevels } = await adminClient.from('course_levels').insert(levelsInsert).select('id')
+        const levelIds = (createdLevels || []).map(l => l.id)
+        counts.levels = levelIds.length
+
         const allCourses = [
           { title: 'Quran Memorization - Juz Amma', title_ar: 'حفظ القرآن - جزء عم', description: 'Complete memorization course for Juz Amma with tajweed rules', description_ar: 'دورة حفظ كاملة لجزء عم مع أحكام التجويد', status: 'active', created_by: caller.id },
           { title: 'Arabic Language Fundamentals', title_ar: 'أساسيات اللغة العربية', description: 'Learn Arabic grammar, reading, and writing from basics', description_ar: 'تعلم قواعد اللغة العربية والقراءة والكتابة من الأساسيات', status: 'active', created_by: caller.id },
@@ -184,12 +220,17 @@ Deno.serve(async (req) => {
           { title: 'Hadith Sciences', title_ar: 'علوم الحديث', description: 'Introduction to Hadith authentication and sciences', description_ar: 'مقدمة في تخريج الأحاديث وعلومها', status: 'active', created_by: caller.id },
           { title: 'Islamic History', title_ar: 'التاريخ الإسلامي', description: 'Comprehensive overview of Islamic civilization history', description_ar: 'نظرة شاملة على تاريخ الحضارة الإسلامية', status: 'active', created_by: caller.id },
         ]
-        const coursesInsert = allCourses.slice(0, qty.courses)
+        const coursesInsert = allCourses.slice(0, qty.courses).map((c, i) => ({
+          ...c,
+          category_id: catIds.length > 0 ? catIds[i % catIds.length] : null,
+          level_id: levelIds.length > 0 ? levelIds[i % levelIds.length] : null,
+          track_id: trackIds.length > 0 ? trackIds[i % trackIds.length] : null,
+        }))
         const { data: createdCourses } = await adminClient.from('courses').insert(coursesInsert).select('id')
         cIds = (createdCourses || []).map(c => c.id)
         counts.courses = cIds.length
 
-        // Create sections
+        // Create course sections (lessons in the 3-level hierarchy)
         const sectionTitles = [
           { title: 'Introduction & Basics', title_ar: 'المقدمة والأساسيات' },
           { title: 'Core Content', title_ar: 'المحتوى الأساسي' },
@@ -205,9 +246,24 @@ Deno.serve(async (req) => {
         const secIds = (createdSections || []).map(s => s.id)
         counts.sections = secIds.length
 
-        // Create lessons
+        // Create lesson_sections (middle level)
+        const lessonSectionTitles = [
+          { title: 'Part 1', title_ar: 'الجزء الأول' },
+          { title: 'Part 2', title_ar: 'الجزء الثاني' },
+          { title: 'Part 3', title_ar: 'الجزء الثالث' },
+        ]
+        const lSecInsert = secIds.flatMap(sid =>
+          lessonSectionTitles.slice(0, qty.lessonSections).map((ls, i) => ({
+            course_section_id: sid, title: ls.title, title_ar: ls.title_ar, sort_order: i
+          }))
+        )
+        const { data: createdLSections } = await adminClient.from('lesson_sections').insert(lSecInsert).select('id')
+        const lSecIds = (createdLSections || []).map(s => s.id)
+        counts.lesson_sections = lSecIds.length
+
+        // Create lessons (content level - linked to lesson_sections)
         const lessonTypes = ['read_listen', 'memorization', 'revision', 'exercise_choose_correct', 'exercise_true_false', 'homework']
-        const lessonsInsert = secIds.flatMap((sid, si) =>
+        const lessonsInsert = lSecIds.flatMap((sid, si) =>
           Array.from({ length: qty.lessonsPerSection }, (_, li) => ({
             section_id: sid, title: `Lesson ${si * qty.lessonsPerSection + li + 1}`, title_ar: `الدرس ${si * qty.lessonsPerSection + li + 1}`,
             sort_order: li, lesson_type: lessonTypes[(si * qty.lessonsPerSection + li) % lessonTypes.length],
