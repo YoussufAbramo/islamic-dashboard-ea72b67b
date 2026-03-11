@@ -115,8 +115,13 @@ Deno.serve(async (req) => {
     const body = await req.json()
     const { action } = body
 
-    // ==================== RUN AUTO BACKUP (called by cron — no auth needed) ====================
+    // ==================== RUN AUTO BACKUP (called by cron — requires shared secret) ====================
     if (action === 'run_auto_backup') {
+      const cronSecret = Deno.env.get('BACKUP_CRON_SECRET')
+      const providedSecret = req.headers.get('x-backup-secret')
+      if (!cronSecret || providedSecret !== cronSecret) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
       const adminClient = createClient(supabaseUrl, serviceRoleKey)
 
       // Check if auto backup is enabled
