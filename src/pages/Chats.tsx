@@ -350,13 +350,13 @@ const Chats = () => {
                               <p className="text-xs font-medium text-muted-foreground flex items-center gap-1"><UserPlus className="h-3 w-3" />{isAr ? 'إضافة أعضاء' : 'Add Members'}</p>
                               <div className="space-y-1">
                                 <Label className="text-xs">{isAr ? 'إضافة معلم' : 'Add Teacher'}</Label>
-                                <Select onValueChange={async (v) => {
+                                <Select key={`teacher-add-${addMemberKey}`} onValueChange={async (v) => {
                                   const teacher = teachersList.find(t => t.id === v);
                                   if (teacher) await addGroupMember(teacher.user_id, 'teacher');
                                 }}>
                                   <SelectTrigger className="h-8 text-xs"><SelectValue placeholder={isAr ? 'اختر معلم...' : 'Select teacher...'} /></SelectTrigger>
                                   <SelectContent>
-                                    {teachersList.map(t => (
+                                    {teachersList.filter(t => !groupMembers.some(m => m.user_id === t.user_id)).map(t => (
                                       <SelectItem key={t.id} value={t.id}>{t.profiles?.full_name || t.id}</SelectItem>
                                     ))}
                                   </SelectContent>
@@ -364,13 +364,13 @@ const Chats = () => {
                               </div>
                               <div className="space-y-1">
                                 <Label className="text-xs">{isAr ? 'إضافة طالب' : 'Add Student'}</Label>
-                                <Select onValueChange={async (v) => {
+                                <Select key={`student-add-${addMemberKey}`} onValueChange={async (v) => {
                                   const student = studentsList.find(s => s.id === v);
                                   if (student) await addGroupMember(student.user_id, 'student');
                                 }}>
                                   <SelectTrigger className="h-8 text-xs"><SelectValue placeholder={isAr ? 'اختر طالب...' : 'Select student...'} /></SelectTrigger>
                                   <SelectContent>
-                                    {studentsList.map(s => (
+                                    {studentsList.filter(s => !groupMembers.some(m => m.user_id === s.user_id)).map(s => (
                                       <SelectItem key={s.id} value={s.id}>{s.profiles?.full_name || s.id}</SelectItem>
                                     ))}
                                   </SelectContent>
