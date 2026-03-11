@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { FolderOpen, Image, FileText, Upload, Search, HardDrive, Lock, Globe, RefreshCw } from 'lucide-react';
-import { TableSkeleton } from '@/components/PageSkeleton';
+import { FolderOpen, Image, FileText, Upload, Search, HardDrive, Lock, Globe, RefreshCw, Trash2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 interface BucketInfo {
   id: string;
@@ -35,7 +35,9 @@ const Media = () => {
   const [selectedBucket, setSelectedBucket] = useState<string | null>(null);
   const [files, setFiles] = useState<FileObject[]>([]);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchFiles = async (bucketName: string) => {
     setLoading(true);
@@ -48,6 +50,55 @@ const Media = () => {
       setFiles(data || []);
     }
     setLoading(false);
+  };
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!selectedBucket || !e.target.files?.length) return;
+    setUploading(true);
+    const uploadedCount = { success: 0, fail: 0 };
+
+    for (const file of Array.from(e.target.files)) {
+      const filePath = `${Date.now()}-${file.name}`;
+      const { error } = await supabase.storage.from(selectedBucket).upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+      });
+      if (error) {
+        console.error('Upload error:', error);
+        uploadedCount.fail++;
+      } else {
+        uploadedCount.success++;
+      }
+    }
+
+    if (uploadedCount.success > 0) {
+      toast.success(isAr ? `تم رفع ${uploadedCount.success} ملف بنجاح` : `${uploadedCount.success} file(s) uploaded successfully`);
+    }
+    if (uploadedCount.fail > 0) {
+      toast.error(isAr ? `فشل رفع ${uploadedCount.fail} ملف` : `${uploadedCount.fail} file(s) failed to upload`);
+    }
+
+    // Reset input and refresh
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    setUploading(false);
+    fetchFiles(selectedBucket);
+  };
+
+  const handleDelete = async (fileName: string) => {
+    if (!selectedBucket) return;
+    const { error } = await supabase.storage.from(selectedBucket).remove([fileName]);
+    if (error) {
+      toast.error(isAr ? 'خطأ في حذف الملف' : 'Error deleting file');
+    } else {
+      toast.success(isAr ? 'تم حذف الملف' : 'File deleted');
+      setFiles(prev => prev.filter(f => f.name !== fileName));
+    }
+  };
+
+  const getPublicUrl = (fileName: string) => {
+    if (!selectedBucket) return '';
+    const { data } = supabase.storage.from(selectedBucket).getPublicUrl(fileName);
+    return data.publicUrl;
   };
 
   const getFileIcon = (name: string) => {
@@ -66,6 +117,8 @@ const Media = () => {
   const filteredFiles = files.filter(f =>
     f.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const currentBucket = buckets.find(b => b.id === selectedBucket);
 
   return (
     <div className="space-y-6">
@@ -112,7 +165,7 @@ const Media = () => {
       {selectedBucket && (
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-3">
               <div>
                 <CardTitle className="text-base flex items-center gap-2">
                   <FolderOpen className="h-4 w-4 text-primary" />
@@ -130,6 +183,24 @@ const Media = () => {
                     className="ps-9 w-48 h-9"
                   />
                 </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={handleUpload}
+                />
+                <Button
+                  size="sm"
+                  className="h-9 gap-1.5"
+                  disabled={uploading}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="h-3.5 w-3.5" />
+                  {uploading
+                    ? (isAr ? 'جاري الرفع...' : 'Uploading...')
+                    : (isAr ? 'رفع ملف' : 'Upload')}
+                </Button>
                 <Button variant="outline" size="sm" className="h-9" onClick={() => fetchFiles(selectedBucket)}>
                   <RefreshCw className="h-3.5 w-3.5" />
                 </Button>
@@ -147,15 +218,52 @@ const Media = () => {
               <div className="text-center py-12 text-muted-foreground">
                 <FolderOpen className="h-12 w-12 mx-auto mb-3 opacity-30" />
                 <p>{isAr ? 'لا توجد ملفات' : 'No files found'}</p>
+                <p className="text-xs mt-1">{isAr ? 'اضغط على "رفع ملف" لإضافة ملفات' : 'Click "Upload" to add files'}</p>
               </div>
             ) : (
               <div className="space-y-1">
                 {filteredFiles.map((file, idx) => (
-                  <div key={idx} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                  <div key={idx} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors group">
                     {getFileIcon(file.name)}
                     <span className="text-sm flex-1 truncate">{file.name}</span>
                     <span className="text-xs text-muted-foreground">{formatSize(file.metadata?.size)}</span>
                     <Badge variant="outline" className="text-[10px]">{file.metadata?.mimetype || '—'}</Badge>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {currentBucket?.public && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => {
+                            const url = getPublicUrl(file.name);
+                            window.open(url, '_blank');
+                          }}
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>{isAr ? 'حذف الملف' : 'Delete File'}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {isAr ? `هل أنت متأكد من حذف "${file.name}"؟` : `Are you sure you want to delete "${file.name}"?`}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDelete(file.name)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              {isAr ? 'حذف' : 'Delete'}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
                 ))}
               </div>
