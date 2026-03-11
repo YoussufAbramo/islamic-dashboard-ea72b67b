@@ -2,7 +2,17 @@
 
 All notable changes to EduDash will be documented in this file.
 
-## [3.3.0] - 2026-03-11
+## [3.5.0] - 2026-03-11
+
+### Added
+- Media Manager: file upload (button + drag-and-drop), delete with confirmation, and open public file actions
+- Media Manager: image thumbnail previews for files in public buckets
+- Drag-and-drop overlay with visual feedback (animated bounce icon, dashed border)
+
+### Changed
+- Version bumped to 3.5.0
+
+## [3.4.0] - 2026-03-11
 
 ### Added
 - Media Manager page: browse Supabase storage buckets and files from the dashboard (admin-only, under Messages category)
