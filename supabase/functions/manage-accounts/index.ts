@@ -384,16 +384,16 @@ Deno.serve(async (req) => {
         counts.announcements = annInsert.length
 
         const allNotifs = [
-          { user_id: caller.id, title: 'New Student Enrolled', message: 'Ahmed Ali has enrolled in Quran Memorization', link: '/dashboard/students' },
-          { user_id: caller.id, title: 'Subscription Payment', message: 'New subscription payment of $100 received', link: '/dashboard/subscriptions' },
-          { user_id: caller.id, title: 'Support Ticket', message: 'New support ticket requires attention', link: '/dashboard/support' },
-          { user_id: caller.id, title: 'Attendance Alert', message: 'A student was absent from today\'s lesson', link: '/dashboard/attendance' },
-          { user_id: caller.id, title: 'Course Update', message: 'Arabic Language Fundamentals has been updated', link: '/dashboard/courses' },
-          { user_id: caller.id, title: 'New Certificate Issued', message: 'A new certificate has been issued', link: '/dashboard/certificates' },
-          { user_id: caller.id, title: 'Schedule Change', message: 'A lesson has been rescheduled', link: '/dashboard/timetable' },
-          { user_id: caller.id, title: 'New Message', message: 'You have a new message from a teacher', link: '/dashboard/chats' },
-          { user_id: caller.id, title: 'Backup Complete', message: 'System backup completed successfully', link: '/dashboard/settings' },
-          { user_id: caller.id, title: 'System Update', message: 'The system has been updated to the latest version', link: '/dashboard/settings' },
+          { user_id: callerId, title: 'New Student Enrolled', message: 'Ahmed Ali has enrolled in Quran Memorization', link: '/dashboard/students' },
+          { user_id: callerId, title: 'Subscription Payment', message: 'New subscription payment of $100 received', link: '/dashboard/subscriptions' },
+          { user_id: callerId, title: 'Support Ticket', message: 'New support ticket requires attention', link: '/dashboard/support' },
+          { user_id: callerId, title: 'Attendance Alert', message: 'A student was absent from today\'s lesson', link: '/dashboard/attendance' },
+          { user_id: callerId, title: 'Course Update', message: 'Arabic Language Fundamentals has been updated', link: '/dashboard/courses' },
+          { user_id: callerId, title: 'New Certificate Issued', message: 'A new certificate has been issued', link: '/dashboard/certificates' },
+          { user_id: callerId, title: 'Schedule Change', message: 'A lesson has been rescheduled', link: '/dashboard/timetable' },
+          { user_id: callerId, title: 'New Message', message: 'You have a new message from a teacher', link: '/dashboard/chats' },
+          { user_id: callerId, title: 'Backup Complete', message: 'System backup completed successfully', link: '/dashboard/settings' },
+          { user_id: callerId, title: 'System Update', message: 'The system has been updated to the latest version', link: '/dashboard/settings' },
         ]
         const notifInsert = allNotifs.slice(0, qty.notifications)
         await adminClient.from('notifications').insert(notifInsert)
