@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Bug } from 'lucide-react';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -196,7 +197,16 @@ const DashboardLayout = () => {
             <Outlet />
           </main>
           <footer className="p-3 border-t border-border flex items-center justify-between gap-3">
-            <img src="/codecom-logo.png" alt="CodeCom.dev" className="h-5 w-auto object-contain opacity-60" />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <a href="https://codecom.dev" target="_blank" rel="noopener noreferrer">
+                    <img src="/codecom-logo.png" alt="CodeCom.dev" className="h-5 w-auto object-contain opacity-60 hover:opacity-100 transition-opacity" />
+                  </a>
+                </TooltipTrigger>
+                <TooltipContent>{dir === 'rtl' ? 'المطور الأصلي للنظام' : 'Original system developer'}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <CopyrightText
               className="text-[11px] text-muted-foreground/60"
               linkClassName="hover:text-foreground transition-colors no-underline"
