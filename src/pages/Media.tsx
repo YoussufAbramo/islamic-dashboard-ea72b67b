@@ -502,7 +502,7 @@ const Media = () => {
                                 {isImageFile(file.name) ? <Image className="h-3.5 w-3.5 text-primary" /> : <FileText className="h-3.5 w-3.5 text-muted-foreground" />}
                               </div>
                             )}
-                            <span className="text-sm flex-1 truncate max-w-[200px]">{file.name}</span>
+                            <span className="text-sm truncate min-w-0 flex-1">{file.name}</span>
                             <Badge variant="outline" className="text-[10px] font-mono px-1.5 py-0 shrink-0">{getFileExt(file.name)}</Badge>
                             <span className="text-[11px] text-muted-foreground shrink-0">{formatSize(file.metadata?.size)}</span>
                           </div>
