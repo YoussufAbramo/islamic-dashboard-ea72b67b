@@ -48,8 +48,9 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
     setFileUrls({});
     const { data } = await supabase.storage.from(bucketId).list(path, { limit: 200, sortBy: { column: 'created_at', order: 'desc' } });
     const items = data || [];
-    const folderItems = items.filter(f => f.id === null || (f.metadata && Object.keys(f.metadata).length === 0 && !f.name.includes('.')));
-    const fileItems = items.filter(f => f.id !== null && f.name.includes('.') && isImage(f.name));
+    // Supabase returns folders as items with id=null and no metadata, or with empty metadata
+    const folderItems = items.filter(f => f.id === null && f.name !== '.emptyFolderPlaceholder');
+    const fileItems = items.filter(f => f.id !== null && isImage(f.name));
     setFolders(folderItems.map(f => f.name));
     setFiles(fileItems);
 
