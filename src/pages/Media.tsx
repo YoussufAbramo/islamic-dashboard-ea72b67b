@@ -491,8 +491,11 @@ const Media = () => {
                               className="shrink-0"
                             />
                             {isImageFile(file.name) && currentBucket?.public ? (
-                              <div className="h-8 w-8 rounded overflow-hidden border border-border flex-shrink-0 bg-muted">
-                                <img src={getPublicUrl(file.name)} alt={file.name} className="h-full w-full object-cover" loading="lazy" />
+                              <div className="h-8 w-8 rounded overflow-hidden border border-border flex-shrink-0 bg-muted relative">
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                                </div>
+                                <img src={getPublicUrl(file.name)} alt={file.name} className="h-full w-full object-cover relative z-10" loading="lazy" onLoad={(e) => { (e.target as HTMLElement).previousElementSibling?.classList.add('hidden'); }} />
                               </div>
                             ) : (
                               <div className="h-8 w-8 rounded flex items-center justify-center bg-muted/50 flex-shrink-0">
