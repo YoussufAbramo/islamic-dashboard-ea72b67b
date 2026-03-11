@@ -297,11 +297,6 @@ const BlogPosts = () => {
         </DialogContent>
       </Dialog>
 
-      <MediaPickerDialog
-        open={mediaPickerOpen}
-        onOpenChange={setMediaPickerOpen}
-        onSelect={(url) => editPost && setEditPost({ ...editPost, featured_image: url })}
-      />
     </div>
   );
 };
