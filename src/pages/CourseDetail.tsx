@@ -302,6 +302,7 @@ const CourseDetail = () => {
                 )}
                 {trackLabel && (
                   <Badge variant="outline" className="gap-1 text-xs">
+                    <Route className="h-3 w-3" />
                     {isAr && trackLabel.title_ar ? trackLabel.title_ar : trackLabel.title}
                   </Badge>
                 )}
