@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Megaphone, Trash2, Search } from 'lucide-react';
+import EmptyState from '@/components/EmptyState';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { format } from 'date-fns';
@@ -90,7 +91,11 @@ const Announcements = () => {
       </div>
 
       {filtered.length === 0 ? (
-        <Card><CardContent className="pt-6 text-center text-muted-foreground">{isAr ? 'لا توجد إعلانات' : 'No announcements'}</CardContent></Card>
+        <EmptyState
+          icon={Megaphone}
+          title={isAr ? 'لا توجد إعلانات' : 'No announcements'}
+          description={isAr ? 'أنشئ إعلاناً جديداً للتواصل مع المستخدمين' : 'Create an announcement to communicate with users'}
+        />
       ) : (
         <>
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2">

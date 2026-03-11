@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Bug, Search, Trash2, AlertTriangle, AlertCircle, Info, RefreshCw, Clock, Filter } from 'lucide-react';
+import EmptyState from '@/components/EmptyState';
 import { format } from 'date-fns';
 
 interface ErrorEntry {
@@ -198,11 +199,11 @@ const ErrorLog = () => {
 
       {/* Log list */}
       {filtered.length === 0 ? (
-        <Card><CardContent className="py-16 text-center text-muted-foreground">
-          <Bug className="h-12 w-12 mx-auto mb-3 opacity-30" />
-          <p className="text-lg font-medium">{isAr ? 'لا توجد سجلات' : 'No log entries'}</p>
-          <p className="text-sm mt-1">{isAr ? 'لم يتم تسجيل أي أخطاء حتى الآن' : 'No errors have been recorded yet'}</p>
-        </CardContent></Card>
+        <EmptyState
+          icon={Bug}
+          title={isAr ? 'لا توجد سجلات' : 'No log entries'}
+          description={isAr ? 'لم يتم تسجيل أي أخطاء حتى الآن' : 'No errors have been recorded yet'}
+        />
       ) : (
         <div className="space-y-1.5 w-full max-w-[800px] overflow-hidden">
           {filtered.slice(0, visibleCount).map(entry => (

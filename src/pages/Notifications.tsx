@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Bell, CheckCheck, ExternalLink, Search } from 'lucide-react';
+import EmptyState from '@/components/EmptyState';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -89,9 +90,11 @@ const Notifications = () => {
       </div>
 
       {filteredNotifications.length === 0 ? (
-        <Card><CardContent className="pt-6 text-center text-muted-foreground">
-          {searchQuery ? (isAr ? 'لا توجد نتائج مطابقة' : 'No matching results') : (isAr ? 'لا توجد إشعارات' : 'No notifications')}
-        </CardContent></Card>
+        <EmptyState
+          icon={Bell}
+          title={searchQuery ? (isAr ? 'لا توجد نتائج مطابقة' : 'No matching results') : (isAr ? 'لا توجد إشعارات' : 'No notifications')}
+          description={searchQuery ? undefined : (isAr ? 'ستظهر الإشعارات هنا عند وصولها' : 'Notifications will appear here when they arrive')}
+        />
       ) : (
         <>
           <div className="space-y-2">

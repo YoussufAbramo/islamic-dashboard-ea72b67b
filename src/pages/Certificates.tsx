@@ -20,6 +20,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { Award, Plus, Check, Search, ArrowUp, ArrowDown, Trash2, Download, ChevronsUpDown, Printer, LayoutGrid, List, MoreHorizontal, Eye } from 'lucide-react';
+import EmptyState from '@/components/EmptyState';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { format } from 'date-fns';
@@ -421,9 +422,11 @@ const Certificates = () => {
       </Tabs>
 
       {filteredCerts.length === 0 ? (
-        <Card><CardContent className="pt-6 text-center text-muted-foreground">
-          {searchQuery ? (isAr ? 'لا توجد نتائج مطابقة' : 'No matching results') : (isAr ? 'لا توجد شهادات' : 'No certificates')}
-        </CardContent></Card>
+        <EmptyState
+          icon={Award}
+          title={searchQuery ? (isAr ? 'لا توجد نتائج مطابقة' : 'No matching results') : (isAr ? 'لا توجد شهادات' : 'No certificates')}
+          description={searchQuery ? undefined : (isAr ? 'أنشئ شهادة جديدة للطلاب أو المعلمين' : 'Create a new certificate for students or teachers')}
+        />
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {paginatedItems.map(cert => (

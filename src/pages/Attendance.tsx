@@ -8,7 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { CheckCircle, XCircle, Clock, UserCheck } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, UserCheck, ClipboardCheck } from 'lucide-react';
+import EmptyState from '@/components/EmptyState';
 
 interface AttendanceRecord {
   id: string;
@@ -150,7 +151,11 @@ const Attendance = () => {
 
         <TabsContent value="students" className="space-y-6">
           {studentStats.length === 0 ? (
-            <Card><CardContent className="pt-6 text-center text-muted-foreground">{isAr ? 'لا توجد بيانات حضور للطلاب' : 'No student attendance data available'}</CardContent></Card>
+            <EmptyState
+              icon={ClipboardCheck}
+              title={isAr ? 'لا توجد بيانات حضور للطلاب' : 'No student attendance data available'}
+              description={isAr ? 'ستظهر البيانات عند تسجيل حضور الطلاب' : 'Data will appear when student attendance is recorded'}
+            />
           ) : (
             <>
               <Card>
@@ -191,7 +196,11 @@ const Attendance = () => {
 
         <TabsContent value="teachers" className="space-y-6">
           {teacherStats.length === 0 ? (
-            <Card><CardContent className="pt-6 text-center text-muted-foreground">{isAr ? 'لا توجد بيانات حضور للمعلمين' : 'No teacher attendance data available'}</CardContent></Card>
+            <EmptyState
+              icon={ClipboardCheck}
+              title={isAr ? 'لا توجد بيانات حضور للمعلمين' : 'No teacher attendance data available'}
+              description={isAr ? 'ستظهر البيانات عند تسجيل حضور المعلمين' : 'Data will appear when teacher attendance is recorded'}
+            />
           ) : (
             <>
               <Card>

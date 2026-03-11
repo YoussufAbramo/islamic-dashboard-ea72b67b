@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search, Eye, RefreshCw, Filter, ArrowDown, ArrowUp } from 'lucide-react';
+import { Search, Eye, RefreshCw, Filter, ArrowDown, ArrowUp, ClipboardList } from 'lucide-react';
+import EmptyState from '@/components/EmptyState';
 import { usePagination } from '@/hooks/use-pagination';
 import PaginationControls from '@/components/PaginationControls';
 import { TableSkeleton } from '@/components/PageSkeleton';
@@ -255,10 +256,11 @@ const AuditTrail = () => {
 
       {/* Table */}
       {logs.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <p className="text-lg font-medium">{isAr ? 'لا توجد سجلات تدقيق بعد' : 'No audit logs yet'}</p>
-          <p className="text-sm mt-1">{isAr ? 'ستظهر السجلات تلقائياً عند إجراء أي تغييرات' : 'Logs will appear automatically when changes are made'}</p>
-        </div>
+        <EmptyState
+          icon={ClipboardList}
+          title={isAr ? 'لا توجد سجلات تدقيق بعد' : 'No audit logs yet'}
+          description={isAr ? 'ستظهر السجلات تلقائياً عند إجراء أي تغييرات' : 'Logs will appear automatically when changes are made'}
+        />
       ) : (
         <>
           <div className="rounded-lg border border-border overflow-hidden">

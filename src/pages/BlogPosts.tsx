@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { PenLine, Plus, Save, Trash2, Search, ExternalLink, ChevronDown } from 'lucide-react';
+import EmptyState from '@/components/EmptyState';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
@@ -162,11 +163,13 @@ const BlogPosts = () => {
       </div>
 
       {filtered.length === 0 ? (
-        <Card><CardContent className="py-12 text-center text-muted-foreground">
-          <PenLine className="h-12 w-12 mx-auto mb-3 opacity-30" />
-          <p>{isAr ? 'لا توجد مقالات' : 'No blog posts yet'}</p>
-          <Button variant="outline" size="sm" className="mt-3" onClick={handleNew}>{isAr ? 'كتابة مقال' : 'Write Post'}</Button>
-        </CardContent></Card>
+        <EmptyState
+          icon={PenLine}
+          title={isAr ? 'لا توجد مقالات' : 'No blog posts yet'}
+          description={isAr ? 'ابدأ بكتابة أول مقال لمدونتك' : 'Start writing your first blog post'}
+          actionLabel={isAr ? 'كتابة مقال' : 'Write Post'}
+          onAction={handleNew}
+        />
       ) : (
         <div className="grid gap-3">
           {filtered.map(post => (
