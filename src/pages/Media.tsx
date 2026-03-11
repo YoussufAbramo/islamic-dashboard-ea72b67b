@@ -28,17 +28,12 @@ interface FileObject {
   metadata?: { size?: number; mimetype?: string } | null;
 }
 
-const BUCKETS: BucketInfo[] = [
-  { id: 'avatars', name: 'avatars', public: false, description: 'User profile pictures and avatar images', descriptionAr: 'صور الملفات الشخصية والأفاتار' },
-  { id: 'course-images', name: 'course-images', public: true, description: 'Course thumbnails and educational media', descriptionAr: 'صور الدورات والوسائط التعليمية' },
-  { id: 'backups', name: 'backups', public: false, description: 'System backup files and exports', descriptionAr: 'ملفات النسخ الاحتياطي والتصدير' },
-];
-
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
 
 const Media = () => {
   const { language } = useLanguage();
   const isAr = language === 'ar';
+  const [buckets, setBuckets] = useState<BucketInfo[]>([]);
   const [selectedBucket, setSelectedBucket] = useState<string | null>(null);
   const [currentPath, setCurrentPath] = useState('');
   const [folders, setFolders] = useState<string[]>([]);
