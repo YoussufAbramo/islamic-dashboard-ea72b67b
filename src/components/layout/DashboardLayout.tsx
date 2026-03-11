@@ -6,7 +6,7 @@ import CopyrightText from '@/components/CopyrightText';
 import AppSidebar from './AppSidebar';
 import TopBar from './TopBar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Bug } from 'lucide-react';
+import { Bug, UserCheck } from 'lucide-react';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
