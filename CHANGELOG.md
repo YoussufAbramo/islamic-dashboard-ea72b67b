@@ -2,6 +2,16 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.6.0] - 2026-03-11
+
+### Added
+- **Footer Editor** in Landing Page settings — new "Footer" tab with:
+  - App branding section (logo, title EN/AR, description EN/AR)
+  - Column layout selector (1–4 columns)
+  - Per-column title and link items editor with bilingual labels and URLs
+  - Dynamic footer rendering on the landing page with responsive grid
+- Reordered tabs: Header → Sections → Footer → SEO
+
 ## [4.5.0] - 2026-03-11
 
 ### Added
