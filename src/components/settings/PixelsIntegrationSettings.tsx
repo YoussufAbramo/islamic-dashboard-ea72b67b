@@ -67,15 +67,34 @@ const GoSoProLogo = () => (
   </div>
 );
 
-const pixelFields = [
-  { key: 'google_analytics' as const, label: 'Google Analytics', labelAr: 'Google Analytics', logo: GoogleLogo, placeholder: 'G-XXXXXXXXXX', description: 'Measurement ID from Google Analytics 4' },
-  { key: 'google_tag_manager' as const, label: 'Google Tag Manager', labelAr: 'Google Tag Manager', logo: GoogleLogo, placeholder: 'GTM-XXXXXXX', description: 'Container ID from Google Tag Manager' },
-  { key: 'meta_pixel' as const, label: 'Meta Pixel', labelAr: 'Meta Pixel', logo: MetaLogo, placeholder: 'XXXXXXXXXXXXXXXX', description: 'Pixel ID from Meta Business Suite' },
-  { key: 'google_search_console' as const, label: 'Google Search Console', labelAr: 'Google Search Console', logo: GoogleLogo, placeholder: 'HTML tag verification content', description: 'Meta tag content for verification' },
-  { key: 'gosopro_pixel' as const, label: 'GoSoPro.app Pixel', labelAr: 'GoSoPro.app Pixel', logo: GoSoProLogo, placeholder: 'GSP-XXXXXXXXXX', description: 'Pixel ID from GoSoPro.app' },
-  { key: 'snapchat_pixel' as const, label: 'Snapchat Pixel', labelAr: 'Snapchat Pixel', logo: SnapchatLogo, placeholder: 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX', description: 'Pixel ID from Snapchat Ads Manager' },
-  { key: 'tiktok_pixel' as const, label: 'TikTok Pixel', labelAr: 'TikTok Pixel', logo: TikTokLogo, placeholder: 'XXXXXXXXXXXXXXXXXXXXX', description: 'Pixel ID from TikTok Ads Manager' },
-  { key: 'clarity_pixel' as const, label: 'Microsoft Clarity', labelAr: 'Microsoft Clarity', logo: ClarityLogo, placeholder: 'XXXXXXXXXX', description: 'Project ID from Microsoft Clarity' },
+const pixelGroups = [
+  {
+    groupLabel: 'Google',
+    groupLabelAr: 'جوجل',
+    logo: GoogleLogo,
+    fields: [
+      { key: 'google_analytics' as const, label: 'Google Analytics', placeholder: 'G-XXXXXXXXXX', description: 'Measurement ID from Google Analytics 4' },
+      { key: 'google_tag_manager' as const, label: 'Google Tag Manager', placeholder: 'GTM-XXXXXXX', description: 'Container ID from Google Tag Manager' },
+      { key: 'google_search_console' as const, label: 'Google Search Console', placeholder: 'HTML tag verification content', description: 'Meta tag content for verification' },
+    ],
+  },
+  {
+    groupLabel: 'Social & Ads',
+    groupLabelAr: 'التواصل والإعلانات',
+    fields: [
+      { key: 'meta_pixel' as const, label: 'Meta Pixel', logo: MetaLogo, placeholder: 'XXXXXXXXXXXXXXXX', description: 'Pixel ID from Meta Business Suite' },
+      { key: 'snapchat_pixel' as const, label: 'Snapchat Pixel', logo: SnapchatLogo, placeholder: 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX', description: 'Pixel ID from Snapchat Ads Manager' },
+      { key: 'tiktok_pixel' as const, label: 'TikTok Pixel', logo: TikTokLogo, placeholder: 'XXXXXXXXXXXXXXXXXXXXX', description: 'Pixel ID from TikTok Ads Manager' },
+    ],
+  },
+  {
+    groupLabel: 'Analytics & Other',
+    groupLabelAr: 'التحليلات وأخرى',
+    fields: [
+      { key: 'gosopro_pixel' as const, label: 'GoSoPro.app Pixel', logo: GoSoProLogo, placeholder: 'GSP-XXXXXXXXXX', description: 'Pixel ID from GoSoPro.app' },
+      { key: 'clarity_pixel' as const, label: 'Microsoft Clarity', logo: ClarityLogo, placeholder: 'XXXXXXXXXX', description: 'Project ID from Microsoft Clarity' },
+    ],
+  },
 ];
 
 const PixelsIntegrationSettings = () => {
