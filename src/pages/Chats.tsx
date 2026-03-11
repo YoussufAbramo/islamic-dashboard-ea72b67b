@@ -145,7 +145,7 @@ const Chats = () => {
       }
     } else {
       if (!createForm.name) {
-        toast.error(isAr ? 'يرجى إدخال اسم المجموعة' : 'Please enter group name');
+        notifyError({ error: 'VAL_GROUP_NAME', isAr });
         return;
       }
     }
