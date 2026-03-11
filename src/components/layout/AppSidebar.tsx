@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText, LogOut, Calculator, ShieldCheck, Shield, Sparkles, AlertCircle, HardDrive, Globe, ScrollText, PenLine, Activity } from 'lucide-react';
+import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText, LogOut, Calculator, ShieldCheck, Shield, Sparkles, AlertCircle, HardDrive, Globe, ScrollText, PenLine, Activity, Code, Webhook } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -27,12 +27,13 @@ interface MenuCategory {
   label: string;
   labelAr: string;
   items: MenuItem[];
+  requiresDeveloperMode?: boolean;
 }
 
 const AppSidebar = () => {
   const { role, profile, signOut, user } = useAuth();
   const { t, language } = useLanguage();
-  const { appLogo, appName, sidebarMode, darkLogo } = useAppSettings();
+  const { appLogo, appName, sidebarMode, darkLogo, developerMode } = useAppSettings();
   const navigate = useNavigate();
   const isAr = language === 'ar';
   const location = useLocation();
@@ -45,7 +46,6 @@ const AppSidebar = () => {
     }
   }, [profile?.avatar_url]);
 
-  // Check for unread chat messages
   useEffect(() => {
     if (!user) return;
     const checkUnread = async () => {
@@ -97,6 +97,7 @@ const AppSidebar = () => {
         { key: 'policies', label: isAr ? 'السياسات' : 'Policies', icon: ScrollText, path: '/dashboard/policies', roles: ['admin'] },
         { key: 'website-pages', label: isAr ? 'صفحات الموقع' : 'Website Pages', icon: FileText, path: '/dashboard/website-pages', roles: ['admin'] },
         { key: 'blog', label: isAr ? 'المدونة' : 'Blog', icon: PenLine, path: '/dashboard/blog', roles: ['admin'] },
+        { key: 'media', label: isAr ? 'الوسائط' : 'Media', icon: HardDrive, path: '/dashboard/media', roles: ['admin'] },
       ],
     },
     {
@@ -107,8 +108,6 @@ const AppSidebar = () => {
         { key: 'chats', label: t('nav.chats'), icon: MessageSquare, path: '/dashboard/chats', roles: ['admin', 'teacher', 'student'], badgeKey: 'chats' },
         { key: 'announcements', label: isAr ? 'الإعلانات' : 'Announcements', icon: Megaphone, path: '/dashboard/announcements', roles: ['admin', 'teacher', 'student'] },
         { key: 'notifications', label: isAr ? 'الإشعارات' : 'Notifications', icon: Bell, path: '/dashboard/notifications', roles: ['admin', 'teacher', 'student'] },
-        { key: 'error-docs', label: isAr ? 'توثيق الأخطاء' : 'Error Documentation', icon: AlertCircle, path: '/dashboard/error-docs', roles: ['admin'] },
-        { key: 'media', label: isAr ? 'الوسائط' : 'Media', icon: HardDrive, path: '/dashboard/media', roles: ['admin'] },
       ],
     },
     {
@@ -118,7 +117,7 @@ const AppSidebar = () => {
         { key: 'admins', label: isAr ? 'المشرفون' : 'Admins', icon: ShieldCheck, path: '/dashboard/admins', roles: ['admin'] },
         { key: 'teachers', label: t('nav.teachers'), icon: Users, path: '/dashboard/teachers', roles: ['admin'] },
         { key: 'students', label: t('nav.students'), icon: GraduationCap, path: '/dashboard/students', roles: ['admin', 'teacher'] },
-        { key: 'roles', label: isAr ? 'إدارة الأدوار' : 'Manage Roles', icon: Shield, path: '/dashboard/roles', roles: ['admin'] },
+        { key: 'roles', label: isAr ? 'إدارة الأدوار' : 'Manage Roles', icon: Shield, path: '/dashboard/roles', roles: ['admin'], comingSoon: true },
       ],
     },
     {
@@ -136,6 +135,15 @@ const AppSidebar = () => {
       labelAr: 'النظام',
       items: [
         { key: 'activity-log', label: isAr ? 'سجل النشاطات' : 'Activity Log', icon: Activity, path: '/dashboard/activity-log', roles: ['admin'], comingSoon: true },
+      ],
+    },
+    {
+      label: 'Developer',
+      labelAr: 'المطور',
+      requiresDeveloperMode: true,
+      items: [
+        { key: 'error-docs', label: isAr ? 'توثيق الأخطاء' : 'Error Documentation', icon: AlertCircle, path: '/dashboard/error-docs', roles: ['admin'] },
+        { key: 'webhook-log', label: isAr ? 'سجل الويب هوك' : 'Webhook Log', icon: Webhook, path: '/dashboard/webhook-log', roles: ['admin'] },
       ],
     },
   ];
@@ -157,20 +165,28 @@ const AppSidebar = () => {
       </SidebarHeader>
       <SidebarContent>
         {categories.map((cat) => {
+          if (cat.requiresDeveloperMode && !developerMode) return null;
           const visibleItems = cat.items.filter((item) => role && item.roles.includes(role));
           if (visibleItems.length === 0) return null;
           return (
             <SidebarGroup key={cat.label}>
-              <SidebarGroupLabel>{isAr ? cat.labelAr : cat.label}</SidebarGroupLabel>
+              <SidebarGroupLabel>
+                {isAr ? cat.labelAr : cat.label}
+                {cat.requiresDeveloperMode && (
+                  <Badge variant="outline" className="text-[8px] px-1 py-0 h-3.5 ms-1.5">
+                    <Code className="h-2 w-2 me-0.5" />
+                    DEV
+                  </Badge>
+                )}
+              </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {visibleItems.map((item) => (
                     <SidebarMenuItem key={item.key}>
                       <SidebarMenuButton
                         isActive={location.pathname === item.path}
-                        onClick={() => !item.comingSoon && navigate(item.path)}
+                        onClick={() => navigate(item.path)}
                         tooltip={item.label}
-                        className={item.comingSoon ? 'opacity-60 cursor-default' : ''}
                       >
                         <item.icon className="h-4 w-4" />
                         <span className="flex-1">{item.label}</span>
