@@ -12,11 +12,16 @@ const removeLoader = () => {
 };
 
 createRoot(document.getElementById("root")!).render(<App />);
-requestAnimationFrame(() => {
-  setTimeout(removeLoader, 100);
+requestAnimationFrame(() => setTimeout(removeLoader, 100));
+
+// Remove #lovable-badge whenever it appears
+const removeBadge = () => {
   const badge = document.getElementById('lovable-badge');
   if (badge) badge.remove();
-});
+};
+removeBadge();
+const observer = new MutationObserver(removeBadge);
+observer.observe(document.body, { childList: true, subtree: true });
 
 // Register service worker for PWA
 if ('serviceWorker' in navigator) {
