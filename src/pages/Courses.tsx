@@ -36,6 +36,7 @@ const Courses = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const canEdit = role === 'admin' || role === 'teacher';
 
