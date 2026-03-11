@@ -387,7 +387,14 @@ const CourseDetail = () => {
                                     <Select value={contentForm.lesson_type} onValueChange={(v) => setContentForm({ ...contentForm, lesson_type: v })}>
                                       <SelectTrigger><SelectValue /></SelectTrigger>
                                       <SelectContent>
-                                        {contentTypes.map((ct) => <SelectItem key={ct.value} value={ct.value}>{ct.label}</SelectItem>)}
+                                        {contentTypeGroups.map((group) => (
+                                          <SelectGroup key={group.label}>
+                                            <SelectLabel className="text-xs font-semibold text-muted-foreground">{group.label}</SelectLabel>
+                                            {group.items.map((ct) => (
+                                              <SelectItem key={ct.value} value={ct.value}>{ct.label}</SelectItem>
+                                            ))}
+                                          </SelectGroup>
+                                        ))}
                                       </SelectContent>
                                     </Select>
                                   </div>
