@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -23,6 +23,7 @@ interface FileObj {
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
 const BUCKETS = [
   { id: 'course-images', name: 'course-images', public: true },
+  { id: 'avatars', name: 'avatars', public: false },
 ];
 
 const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket }: MediaPickerDialogProps) => {
@@ -32,6 +33,7 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
   const [currentPath, setCurrentPath] = useState('');
   const [folders, setFolders] = useState<string[]>([]);
   const [files, setFiles] = useState<FileObj[]>([]);
+  const [fileUrls, setFileUrls] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState('');
@@ -43,13 +45,32 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
     setBucket(bucketId);
     setCurrentPath(path);
     setLoading(true);
+    setFileUrls({});
     const { data } = await supabase.storage.from(bucketId).list(path, { limit: 200, sortBy: { column: 'created_at', order: 'desc' } });
     const items = data || [];
-    // Folders have null id and no metadata
     const folderItems = items.filter(f => f.id === null || (f.metadata && Object.keys(f.metadata).length === 0 && !f.name.includes('.')));
     const fileItems = items.filter(f => f.id !== null && f.name.includes('.') && isImage(f.name));
     setFolders(folderItems.map(f => f.name));
     setFiles(fileItems);
+
+    // Generate URLs (signed for private buckets, public for public ones)
+    const bucketInfo = BUCKETS.find(b => b.id === bucketId);
+    const urls: Record<string, string> = {};
+    if (bucketInfo && !bucketInfo.public && fileItems.length > 0) {
+      const paths = fileItems.map(f => path ? `${path}/${f.name}` : f.name);
+      const { data: signedData } = await supabase.storage.from(bucketId).createSignedUrls(paths, 3600);
+      if (signedData) {
+        signedData.forEach((item, i) => {
+          if (item.signedUrl) urls[fileItems[i].name] = item.signedUrl;
+        });
+      }
+    } else {
+      fileItems.forEach(f => {
+        const fullPath = path ? `${path}/${f.name}` : f.name;
+        urls[f.name] = supabase.storage.from(bucketId).getPublicUrl(fullPath).data.publicUrl;
+      });
+    }
+    setFileUrls(urls);
     setLoading(false);
   }, []);
 
@@ -75,14 +96,20 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
     }
   });
 
-  const getUrl = (fileName: string) => {
+  const getUrl = async (fileName: string): Promise<string> => {
     if (!bucket) return '';
     const fullPath = currentPath ? `${currentPath}/${fileName}` : fileName;
+    const bucketInfo = BUCKETS.find(b => b.id === bucket);
+    if (bucketInfo && !bucketInfo.public) {
+      const { data } = await supabase.storage.from(bucket).createSignedUrl(fullPath, 3600);
+      return data?.signedUrl || '';
+    }
     return supabase.storage.from(bucket).getPublicUrl(fullPath).data.publicUrl;
   };
 
-  const handleSelect = (fileName: string) => {
-    const url = getUrl(fileName);
+  const handleSelect = async (fileName: string) => {
+    // Use pre-generated URL if available, otherwise generate one
+    const url = fileUrls[fileName] || await getUrl(fileName);
     onSelect(url);
     onOpenChange(false);
   };
@@ -143,7 +170,7 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
 
         {!bucket ? (
           <div className="grid grid-cols-2 gap-3">
-            {BUCKETS.filter(b => b.public).map(b => (
+            {BUCKETS.map(b => (
               <button
                 key={b.id}
                 onClick={() => fetchFiles(b.id, '')}
@@ -240,7 +267,7 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
                         onClick={() => handleSelect(file.name)}
                         className="group relative aspect-square rounded-lg overflow-hidden border border-border hover:border-primary transition-colors"
                       >
-                        <img src={getUrl(file.name)} alt={file.name} className="h-full w-full object-cover" loading="lazy" />
+                        <img src={fileUrls[file.name] || ''} alt={file.name} className="h-full w-full object-cover" loading="lazy" />
                         <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/20 transition-colors flex items-center justify-center">
                           <Check className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
                         </div>
