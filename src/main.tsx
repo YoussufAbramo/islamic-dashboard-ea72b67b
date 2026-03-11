@@ -12,7 +12,11 @@ const removeLoader = () => {
 };
 
 createRoot(document.getElementById("root")!).render(<App />);
-requestAnimationFrame(() => setTimeout(removeLoader, 100));
+requestAnimationFrame(() => {
+  setTimeout(removeLoader, 100);
+  const badge = document.getElementById('lovable-badge');
+  if (badge) badge.remove();
+});
 
 // Register service worker for PWA
 if ('serviceWorker' in navigator) {
