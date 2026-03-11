@@ -453,8 +453,10 @@ Deno.serve(async (req) => {
         const pagesInsert = allPages.slice(0, qty.pages)
         const { data: createdPages } = await adminClient.from('website_pages').insert(pagesInsert).select('id')
         counts.pages = createdPages?.length || 0
+      }
 
-        // Pricing packages
+      // Create pricing packages (separate category)
+      if (categories.includes('packages')) {
         const allPackages = [
           { title: 'Basic', title_ar: 'أساسي', subtitle: 'Perfect for beginners', subtitle_ar: 'مثالي للمبتدئين', billing_cycle: 'monthly', regular_price: 29, sale_price: null, max_courses: 2, max_students: 5, max_teachers: 1, is_featured: false, is_active: true, sort_order: 0, features: JSON.stringify([{ text: '2 Courses', text_ar: '2 دورات' }, { text: 'Basic Support', text_ar: 'دعم أساسي' }, { text: 'Email Notifications', text_ar: 'إشعارات البريد' }]) },
           { title: 'Standard', title_ar: 'قياسي', subtitle: 'Most popular choice', subtitle_ar: 'الخيار الأكثر شيوعاً', billing_cycle: 'monthly', regular_price: 59, sale_price: 49, max_courses: 5, max_students: 20, max_teachers: 3, is_featured: true, is_active: true, sort_order: 1, features: JSON.stringify([{ text: '5 Courses', text_ar: '5 دورات' }, { text: 'Priority Support', text_ar: 'دعم أولوية' }, { text: 'Certificates', text_ar: 'شهادات' }, { text: 'Chat Access', text_ar: 'وصول للمحادثات' }]) },
