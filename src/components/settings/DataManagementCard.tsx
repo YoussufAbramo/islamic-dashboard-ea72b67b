@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Database, Trash2, Download, AlertTriangle, Loader2, PackagePlus, ShieldAlert, CheckCircle2, ScrollText } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
-import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import { notifyError } from '@/lib/notifyError';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
