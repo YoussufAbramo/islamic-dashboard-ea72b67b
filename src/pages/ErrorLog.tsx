@@ -137,8 +137,8 @@ const ErrorLog = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
+    <div className="space-y-6 overflow-hidden">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Bug className="h-6 w-6 text-primary" />
@@ -201,10 +201,10 @@ const ErrorLog = () => {
         <div className="space-y-1.5">
           {filtered.map(entry => (
             <Card key={entry.id} className="hover:shadow-sm transition-shadow cursor-pointer" onClick={() => setSelectedError(entry)}>
-              <CardContent className="p-3 flex items-start gap-3">
+              <CardContent className="p-3 flex items-start gap-3 overflow-hidden">
                 {levelIcon(entry.level)}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-mono truncate">{entry.message}</p>
+                  <p className="text-sm font-mono truncate max-w-full">{entry.message}</p>
                   <div className="flex items-center gap-2 mt-1">
                     {levelBadge(entry.level)}
                     {entry.source && <span className="text-[10px] text-muted-foreground font-mono truncate">{entry.source}</span>}
