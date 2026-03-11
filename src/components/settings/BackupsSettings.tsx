@@ -119,7 +119,7 @@ const BackupsSettings = () => {
       setBackupName('');
       setBackupComment('');
       fetchBackups();
-    } catch (err: any) { toast.error(err.message || 'Failed to create backup'); }
+    } catch (err: any) { notifyError({ error: 'DB_OPERATION_FAILED', isAr, rawMessage: err.message || 'Failed to create backup' }); }
     finally { setCreating(false); }
   };
 
