@@ -116,7 +116,7 @@ const LandingContentSettings = () => {
     }, { onConflict: 'section_key' });
     setSaving(false);
     if (error) {
-      toast.error(isAr ? 'فشل الحفظ' : 'Failed to save');
+      notifyError({ error: 'GENERAL_SAVE_FAILED', isAr });
     } else {
       toast.success(isAr ? 'تم الحفظ' : 'Saved successfully');
     }
