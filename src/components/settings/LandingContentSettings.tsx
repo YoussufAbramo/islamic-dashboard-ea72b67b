@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -9,7 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Save, Plus, Trash2, Globe, Megaphone, Star, Sparkles, Settings2, Search, Upload, Image, Link } from 'lucide-react';
+import { Save, Plus, Trash2, Globe, Megaphone, Star, Sparkles, Settings2, Search } from 'lucide-react';
+import ImagePickerField from '@/components/media/ImagePickerField';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 type ContentSection = 'general' | 'hero' | 'features' | 'whyus' | 'cta';
@@ -67,8 +68,6 @@ const LandingContentSettings = () => {
   const [activeSection, setActiveSection] = useState<ContentSection>('general');
   const [content, setContent] = useState<Record<string, Record<string, any>>>(defaultContent);
   const [saving, setSaving] = useState(false);
-  const [ogImageMode, setOgImageMode] = useState<'url' | 'upload'>('url');
-  const ogImageRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetch = async () => {
@@ -199,71 +198,11 @@ const LandingContentSettings = () => {
               <div><Label>OG Title</Label><Input value={s.og_title || ''} onChange={e => updateField('general', 'og_title', e.target.value)} placeholder="Title for social sharing" /></div>
               <div><Label>OG Description</Label><Textarea value={s.og_description || ''} onChange={e => updateField('general', 'og_description', e.target.value)} placeholder="Description for social sharing" rows={2} /></div>
               
-              {/* OG Image with upload or URL */}
-              <div className="space-y-3">
-                <Label>{isAr ? 'صورة OG' : 'OG Image'}</Label>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant={ogImageMode === 'url' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setOgImageMode('url')}
-                  >
-                    <Link className="h-3.5 w-3.5 me-1" />
-                    URL
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={ogImageMode === 'upload' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setOgImageMode('upload')}
-                  >
-                    <Upload className="h-3.5 w-3.5 me-1" />
-                    {isAr ? 'رفع' : 'Upload'}
-                  </Button>
-                </div>
-
-                {ogImageMode === 'url' ? (
-                  <Input
-                    value={s.og_image || ''}
-                    onChange={e => updateField('general', 'og_image', e.target.value)}
-                    placeholder="https://example.com/og-image.jpg"
-                  />
-                ) : (
-                  <div className="flex items-center gap-3">
-                    <input
-                      ref={ogImageRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        const ext = file.name.split('.').pop();
-                        const path = `branding/og-image-${Date.now()}.${ext}`;
-                        const { uploadAndGetSignedUrl } = await import('@/lib/storage');
-                        const { signedUrl, error: uploadErr } = await uploadAndGetSignedUrl(path, file);
-                        if (uploadErr) { notifyError({ error: 'STORAGE_UPLOAD_FAILED', isAr, rawMessage: uploadErr }); return; }
-                        updateField('general', 'og_image', signedUrl);
-                        toast.success(isAr ? 'تم رفع الصورة' : 'Image uploaded');
-                      }}
-                    />
-                    <Button variant="outline" size="sm" onClick={() => ogImageRef.current?.click()}>
-                      <Upload className="h-4 w-4 me-1" />
-                      {isAr ? 'اختر صورة' : 'Choose Image'}
-                    </Button>
-                  </div>
-                )}
-
-                {s.og_image && (
-                  <div className="space-y-2">
-                    <img src={s.og_image} alt="OG Preview" className="max-h-32 rounded-lg border border-border object-contain" />
-                    <Button variant="ghost" size="sm" onClick={() => updateField('general', 'og_image', '')}>
-                      {isAr ? 'إزالة' : 'Remove'}
-                    </Button>
-                  </div>
-                )}
-              </div>
+              <ImagePickerField
+                label={isAr ? 'صورة OG' : 'OG Image'}
+                value={s.og_image || ''}
+                onChange={(url) => updateField('general', 'og_image', url)}
+              />
             </div>
           </div>
         );
