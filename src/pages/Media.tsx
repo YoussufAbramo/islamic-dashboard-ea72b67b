@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { FolderOpen, Image, FileText, Upload, Search, HardDrive, Lock, Globe, RefreshCw, Trash2, ExternalLink, Info, Download, CheckSquare, X, ChevronRight, FolderPlus } from 'lucide-react';
+import { FolderOpen, Image, FileText, Upload, Search, HardDrive, Lock, Globe, RefreshCw, Trash2, ExternalLink, Info, Download, CheckSquare, X, ChevronRight, FolderPlus, Maximize2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -53,6 +53,7 @@ const Media = () => {
   const [bulkDownloading, setBulkDownloading] = useState(false);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
 
@@ -502,15 +503,26 @@ const Media = () => {
 
                 {/* File detail panel */}
                 {selectedFile && (
-                  <Card className="w-64 shrink-0">
+                  <Card className="w-80 shrink-0">
                     <CardHeader className="pb-3">
                       <CardTitle className="text-sm">{isAr ? 'تفاصيل الملف' : 'File Details'}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       {isImageFile(selectedFile.name) && currentBucket?.public && (
-                        <div className="rounded-lg overflow-hidden border border-border bg-muted aspect-square">
-                          <img src={getPublicUrl(selectedFile.name)} alt={selectedFile.name} className="h-full w-full object-contain" />
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setLightboxOpen(true)}
+                          className="relative w-full rounded-lg overflow-hidden border border-border bg-muted group cursor-zoom-in"
+                        >
+                          <img
+                            src={getPublicUrl(selectedFile.name)}
+                            alt={selectedFile.name}
+                            className="w-full h-auto max-h-72 object-contain"
+                          />
+                          <div className="absolute inset-0 bg-background/0 group-hover:bg-background/40 transition-colors flex items-center justify-center">
+                            <Maximize2 className="h-6 w-6 text-foreground opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
+                          </div>
+                        </button>
                       )}
                       <div className="space-y-2 text-xs">
                         <div>
@@ -581,6 +593,32 @@ const Media = () => {
           )}
         </div>
       </div>
+
+      {/* Lightbox Dialog */}
+      {selectedFile && isImageFile(selectedFile.name) && currentBucket?.public && (
+        <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
+          <DialogContent className="max-w-[90vw] max-h-[90vh] p-2 bg-background/95 backdrop-blur-sm">
+            <div className="flex items-center justify-center w-full h-full min-h-[60vh]">
+              <img
+                src={getPublicUrl(selectedFile.name)}
+                alt={selectedFile.name}
+                className="max-w-full max-h-[80vh] object-contain rounded-lg"
+              />
+            </div>
+            <div className="flex items-center justify-between px-2 pb-1">
+              <span className="text-sm text-muted-foreground truncate max-w-[60%]">{selectedFile.name}</span>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => handleDownload(selectedFile.name)}>
+                  <Download className="h-3 w-3" />{isAr ? 'تحميل' : 'Download'}
+                </Button>
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => window.open(getPublicUrl(selectedFile.name), '_blank')}>
+                  <ExternalLink className="h-3 w-3" />{isAr ? 'فتح' : 'Open'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* New Folder Dialog */}
       <Dialog open={newFolderOpen} onOpenChange={setNewFolderOpen}>
