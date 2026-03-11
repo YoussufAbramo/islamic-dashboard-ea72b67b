@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
-import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree, Layers, FileText } from 'lucide-react';
+import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree, Layers, FileText, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 
 const contentTypeGroups = [
