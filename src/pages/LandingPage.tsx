@@ -139,6 +139,8 @@ const LandingPage = () => {
         appName={appName}
         appLogo={appLogo}
         navSections={navSections}
+        navSectionsLeft={navSectionsLeft}
+        navSectionsRight={navSectionsRight}
         scrollTo={scrollTo}
         user={user}
         profile={profile}
