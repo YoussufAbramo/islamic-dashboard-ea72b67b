@@ -132,7 +132,7 @@ interface AppSettingsContextType {
 
 const AppSettingsContext = createContext<AppSettingsContextType | null>(null);
 
-const SETTINGS_VERSION = '4';
+const SETTINGS_VERSION = '5';
 
 function loadSaved(): PendingSettings {
   const storedVersion = localStorage.getItem('app_settings_version');
