@@ -66,45 +66,15 @@ const GlobalSearch = ({ open, onOpenChange }: { open: boolean; onOpenChange: (op
   const { role } = useAuth();
   const isAr = language === 'ar';
 
-  const [students, setStudents] = useState<SearchResult[]>([]);
-  const [courses, setCourses] = useState<SearchResult[]>([]);
   const [invoices, setInvoices] = useState<SearchResult[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   const loadData = useCallback(async () => {
     if (loaded) return;
 
-    const [studentsRes, coursesRes, invoicesRes] = await Promise.all([
-      role === 'admin' || role === 'teacher'
-        ? supabase.from('students').select('id, user_id, profiles:students_user_id_profiles_fkey(full_name, email)').limit(200)
-        : Promise.resolve({ data: [] }),
-      supabase.from('courses').select('id, title, title_ar, status').limit(200),
-      role === 'admin'
-        ? supabase.from('invoices').select('id, invoice_number, amount, status, students:invoices_student_id_fkey(user_id, profiles:students_user_id_profiles_fkey(full_name))').limit(200)
-        : Promise.resolve({ data: [] }),
-    ]);
-
-    setStudents(
-      (studentsRes.data || []).map((s: any) => ({
-        id: `s-${s.id}`,
-        title: s.profiles?.full_name || 'Student',
-        subtitle: s.profiles?.email || '',
-        icon: GraduationCap,
-        path: '/dashboard/students',
-        category: 'students',
-      }))
-    );
-
-    setCourses(
-      (coursesRes.data || []).map((c: any) => ({
-        id: `c-${c.id}`,
-        title: isAr && c.title_ar ? c.title_ar : c.title,
-        subtitle: c.status,
-        icon: BookOpen,
-        path: `/dashboard/courses/${c.id}`,
-        category: 'courses',
-      }))
-    );
+    const invoicesRes = role === 'admin'
+      ? await supabase.from('invoices').select('id, invoice_number, amount, status, students:invoices_student_id_fkey(user_id, profiles:students_user_id_profiles_fkey(full_name))').limit(200)
+      : { data: [] };
 
     setInvoices(
       (invoicesRes.data || []).map((inv: any) => ({
@@ -132,8 +102,6 @@ const GlobalSearch = ({ open, onOpenChange }: { open: boolean; onOpenChange: (op
   const categoryLabel = (cat: string) => {
     const labels: Record<string, { en: string; ar: string }> = {
       pages: { en: 'Pages', ar: 'الصفحات' },
-      students: { en: 'Students', ar: 'الطلاب' },
-      courses: { en: 'Courses', ar: 'الدورات' },
       invoices: { en: 'Invoices', ar: 'الفواتير' },
     };
     return isAr ? labels[cat]?.ar : labels[cat]?.en;
@@ -141,7 +109,7 @@ const GlobalSearch = ({ open, onOpenChange }: { open: boolean; onOpenChange: (op
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <CommandInput placeholder={isAr ? 'ابحث عن صفحات، طلاب، دورات...' : 'Search pages, students, courses...'} />
+      <CommandInput placeholder={isAr ? 'ابحث عن صفحات، فواتير...' : 'Search pages, invoices...'} />
       <CommandList>
         <CommandEmpty>{isAr ? 'لا توجد نتائج' : 'No results found.'}</CommandEmpty>
 
@@ -154,37 +122,6 @@ const GlobalSearch = ({ open, onOpenChange }: { open: boolean; onOpenChange: (op
           ))}
         </CommandGroup>
 
-        {students.length > 0 && (
-          <>
-            <CommandSeparator />
-            <CommandGroup heading={categoryLabel('students')}>
-              {students.map(s => (
-                <CommandItem key={s.id} value={`${s.title} ${s.subtitle}`} onSelect={() => handleSelect(s.path)}>
-                  <s.icon className="me-2 h-4 w-4 text-muted-foreground shrink-0" />
-                  <div className="flex flex-col">
-                    <span>{s.title}</span>
-                    {s.subtitle && <span className="text-xs text-muted-foreground">{s.subtitle}</span>}
-                  </div>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </>
-        )}
-
-        {courses.length > 0 && (
-          <>
-            <CommandSeparator />
-            <CommandGroup heading={categoryLabel('courses')}>
-              {courses.map(c => (
-                <CommandItem key={c.id} value={`${c.title} ${c.subtitle}`} onSelect={() => handleSelect(c.path)}>
-                  <c.icon className="me-2 h-4 w-4 text-muted-foreground shrink-0" />
-                  <span>{c.title}</span>
-                  {c.subtitle && <span className="ms-2 text-xs text-muted-foreground">{c.subtitle}</span>}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </>
-        )}
 
         {invoices.length > 0 && (
           <>
