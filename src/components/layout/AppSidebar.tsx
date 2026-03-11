@@ -96,7 +96,7 @@ const AppSidebar = () => {
       items: [
         { key: 'landing-page', label: isAr ? 'صفحة الهبوط' : 'Landing Page', icon: Globe, path: '/dashboard/landing-page', roles: ['admin'] },
         { key: 'policies', label: isAr ? 'السياسات' : 'Policies', icon: ScrollText, path: '/dashboard/policies', roles: ['admin'] },
-        { key: 'website-pages', label: isAr ? 'صفحات الموقع' : 'Website Pages', icon: FileText, path: '/dashboard/website-pages', roles: ['admin'] },
+        { key: 'website-pages', label: isAr ? 'الصفحات الرئيسية' : 'Main Pages', icon: FileText, path: '/dashboard/website-pages', roles: ['admin'] },
         { key: 'blog', label: isAr ? 'المدونة' : 'Blog', icon: PenLine, path: '/dashboard/blog', roles: ['admin'] },
         { key: 'media', label: isAr ? 'الوسائط' : 'Media', icon: HardDrive, path: '/dashboard/media', roles: ['admin'] },
       ],
@@ -132,19 +132,13 @@ const AppSidebar = () => {
       ],
     },
     {
-      label: 'System',
-      labelAr: 'النظام',
-      items: [
-        { key: 'activity-log', label: isAr ? 'سجل النشاطات' : 'Activity Log', icon: Activity, path: '/dashboard/activity-log', roles: ['admin'], comingSoon: true },
-      ],
-    },
-    {
       label: 'Developer',
       labelAr: 'المطور',
       requiresDeveloperMode: true,
       items: [
         { key: 'error-docs', label: isAr ? 'توثيق الأخطاء' : 'Error Documentation', icon: AlertCircle, path: '/dashboard/error-docs', roles: ['admin'] },
         { key: 'webhook-log', label: isAr ? 'سجل الويب هوك' : 'Webhook Log', icon: Webhook, path: '/dashboard/webhook-log', roles: ['admin'] },
+        { key: 'activity-log', label: isAr ? 'سجل النشاطات' : 'Activity Log', icon: Activity, path: '/dashboard/activity-log', roles: ['admin'], comingSoon: true },
       ],
     },
   ];

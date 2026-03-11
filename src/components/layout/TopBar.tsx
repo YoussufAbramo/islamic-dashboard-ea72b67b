@@ -17,6 +17,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 
+const ArabicLetterIcon = () => (
+  <span className="text-sm font-bold leading-none" style={{ fontFamily: "'Noto Kufi Arabic', sans-serif" }}>ع</span>
+);
+
 const TopBar = () => {
   const { user, role } = useAuth();
   const { t, language, setLanguage } = useLanguage();
@@ -92,7 +96,6 @@ const TopBar = () => {
         <div className="flex-1" />
 
         <TooltipProvider delayDuration={300}>
-          {/* Go to Landing Page */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" className={iconBtnClass} onClick={() => window.open('/', '_blank')}>
@@ -102,17 +105,15 @@ const TopBar = () => {
             <TooltipContent>{isAr ? 'الصفحة الرئيسية' : 'Landing Page'}</TooltipContent>
           </Tooltip>
 
-          {/* Language toggle */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" className={iconBtnClass} onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}>
-                <Globe className="h-4 w-4" />
+                <ArabicLetterIcon />
               </Button>
             </TooltipTrigger>
             <TooltipContent>{isAr ? 'تغيير اللغة' : 'Switch Language'}</TooltipContent>
           </Tooltip>
 
-          {/* Dark mode toggle */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" className={iconBtnClass} onClick={toggleDark}>
@@ -122,7 +123,6 @@ const TopBar = () => {
             <TooltipContent>{darkMode ? (isAr ? 'الوضع الفاتح' : 'Light Mode') : (isAr ? 'الوضع الداكن' : 'Dark Mode')}</TooltipContent>
           </Tooltip>
 
-          {/* Announcements */}
           <DropdownMenu>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -167,7 +167,6 @@ const TopBar = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Notifications */}
           <DropdownMenu>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -210,7 +209,6 @@ const TopBar = () => {
         </TooltipProvider>
       </header>
 
-      {/* Announcement Detail Dialog */}
       <Dialog open={announcementDetailOpen} onOpenChange={setAnnouncementDetailOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -232,7 +230,6 @@ const TopBar = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Add Announcement Dialog */}
       <Dialog open={addAnnouncementOpen} onOpenChange={setAddAnnouncementOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{isAr ? 'إعلان جديد' : 'New Announcement'}</DialogTitle></DialogHeader>

@@ -7,11 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { FileText, Plus, Save, Trash2, Search, Eye, EyeOff } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { FileText, Plus, Save, Trash2, Search, ExternalLink, ChevronDown, Image } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
@@ -29,6 +30,16 @@ interface WebPage {
   updated_at: string;
 }
 
+interface SeoData {
+  meta_title: string;
+  meta_description: string;
+  og_title: string;
+  og_description: string;
+  og_image: string;
+}
+
+const emptySeo: SeoData = { meta_title: '', meta_description: '', og_title: '', og_description: '', og_image: '' };
+
 const WebsitePages = () => {
   const { language } = useLanguage();
   const { user } = useAuth();
@@ -39,6 +50,8 @@ const WebsitePages = () => {
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
+  const [seo, setSeo] = useState<SeoData>(emptySeo);
+  const [seoOpen, setSeoOpen] = useState(false);
 
   const fetchPages = async () => {
     setLoading(true);
@@ -50,9 +63,24 @@ const WebsitePages = () => {
 
   useEffect(() => { fetchPages(); }, []);
 
+  const loadSeo = async (pageId: string) => {
+    const { data } = await supabase.from('landing_content').select('content').eq('section_key', `seo_page_${pageId}`).maybeSingle();
+    if (data?.content) setSeo({ ...emptySeo, ...(data.content as any) });
+    else setSeo(emptySeo);
+  };
+
   const handleNew = () => {
     setIsNew(true);
+    setSeo(emptySeo);
+    setSeoOpen(false);
     setEditPage({ id: '', slug: '', title: '', title_ar: '', content: '', content_ar: '', status: 'draft', created_at: '', updated_at: '' });
+  };
+
+  const handleEdit = async (page: WebPage) => {
+    setIsNew(false);
+    setEditPage({ ...page });
+    setSeoOpen(false);
+    await loadSeo(page.id);
   };
 
   const generateSlug = (title: string) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -62,41 +90,36 @@ const WebsitePages = () => {
     if (!editPage.title.trim()) { toast.error(isAr ? 'العنوان مطلوب' : 'Title is required'); return; }
     if (!editPage.slug.trim()) { toast.error(isAr ? 'الرابط مطلوب' : 'Slug is required'); return; }
     setSaving(true);
+    let pageId = editPage.id;
     if (isNew) {
-      const { error } = await supabase.from('website_pages').insert({
-        slug: editPage.slug,
-        title: editPage.title,
-        title_ar: editPage.title_ar,
-        content: editPage.content,
-        content_ar: editPage.content_ar,
-        status: editPage.status,
-        created_by: user?.id,
-      });
+      const { data, error } = await supabase.from('website_pages').insert({
+        slug: editPage.slug, title: editPage.title, title_ar: editPage.title_ar,
+        content: editPage.content, content_ar: editPage.content_ar, status: editPage.status, created_by: user?.id,
+      }).select('id').single();
       if (error) { notifyError({ error, isAr, rawMessage: error.message }); setSaving(false); return; }
+      pageId = data.id;
     } else {
       const { error } = await supabase.from('website_pages').update({
-        title: editPage.title,
-        title_ar: editPage.title_ar,
-        slug: editPage.slug,
-        content: editPage.content,
-        content_ar: editPage.content_ar,
-        status: editPage.status,
-        updated_at: new Date().toISOString(),
+        title: editPage.title, title_ar: editPage.title_ar, slug: editPage.slug,
+        content: editPage.content, content_ar: editPage.content_ar, status: editPage.status, updated_at: new Date().toISOString(),
       }).eq('id', editPage.id);
       if (error) { notifyError({ error, isAr, rawMessage: error.message }); setSaving(false); return; }
     }
+    // Save SEO data
+    if (seo.meta_title || seo.meta_description || seo.og_title || seo.og_description || seo.og_image) {
+      await supabase.from('landing_content').upsert({
+        section_key: `seo_page_${pageId}`, content: seo as any, updated_at: new Date().toISOString(),
+      }, { onConflict: 'section_key' });
+    }
     setSaving(false);
     toast.success(isAr ? 'تم الحفظ' : 'Saved successfully');
-    setEditPage(null);
-    setIsNew(false);
-    fetchPages();
+    setEditPage(null); setIsNew(false); fetchPages();
   };
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('website_pages').delete().eq('id', id);
     if (error) { notifyError({ error, isAr, rawMessage: error.message }); return; }
-    toast.success(isAr ? 'تم الحذف' : 'Deleted');
-    fetchPages();
+    toast.success(isAr ? 'تم الحذف' : 'Deleted'); fetchPages();
   };
 
   const filtered = pages.filter(p => p.title.toLowerCase().includes(search.toLowerCase()) || p.slug.toLowerCase().includes(search.toLowerCase()));
@@ -109,9 +132,9 @@ const WebsitePages = () => {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <FileText className="h-6 w-6 text-primary" />
-            {isAr ? 'صفحات الموقع' : 'Website Pages'}
+            {isAr ? 'الصفحات الرئيسية' : 'Main Pages'}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">{isAr ? 'إنشاء وإدارة صفحات الموقع' : 'Create and manage website pages'}</p>
+          <p className="text-sm text-muted-foreground mt-1">{isAr ? 'إنشاء وإدارة صفحات الموقع' : 'Create and manage main pages'}</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
@@ -148,7 +171,12 @@ const WebsitePages = () => {
                   <Badge variant={page.status === 'published' ? 'default' : 'secondary'} className="text-xs">
                     {page.status === 'published' ? (isAr ? 'منشور' : 'Published') : (isAr ? 'مسودة' : 'Draft')}
                   </Badge>
-                  <Button variant="outline" size="sm" onClick={() => { setIsNew(false); setEditPage({ ...page }); }}>
+                  {page.status === 'published' && (
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => window.open(`/pages/${page.slug}`, '_blank')}>
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                  <Button variant="outline" size="sm" onClick={() => handleEdit(page)}>
                     {isAr ? 'تعديل' : 'Edit'}
                   </Button>
                   <AlertDialog>
@@ -173,7 +201,6 @@ const WebsitePages = () => {
         </div>
       )}
 
-      {/* Edit/Create Dialog */}
       <Dialog open={!!editPage} onOpenChange={(open) => { if (!open) { setEditPage(null); setIsNew(false); } }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -206,6 +233,31 @@ const WebsitePages = () => {
                 <Label className="mb-2 block">Content (AR)</Label>
                 <ContentEditor value={editPage.content_ar} onChange={v => setEditPage({ ...editPage, content_ar: v })} />
               </div>
+
+              {/* SEO Section */}
+              <Collapsible open={seoOpen} onOpenChange={setSeoOpen}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="outline" className="w-full justify-between">
+                    <span className="flex items-center gap-2"><Search className="h-4 w-4" />{isAr ? 'إعدادات SEO' : 'SEO Settings'}</span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${seoOpen ? 'rotate-180' : ''}`} />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-3 pt-3">
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div><Label>Meta Title</Label><Input value={seo.meta_title} onChange={e => setSeo(p => ({ ...p, meta_title: e.target.value }))} placeholder="Page title for search engines" /></div>
+                    <div><Label>OG Title</Label><Input value={seo.og_title} onChange={e => setSeo(p => ({ ...p, og_title: e.target.value }))} placeholder="Title for social sharing" /></div>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div><Label>Meta Description</Label><Textarea value={seo.meta_description} onChange={e => setSeo(p => ({ ...p, meta_description: e.target.value }))} rows={2} placeholder="Brief description for search results" /></div>
+                    <div><Label>OG Description</Label><Textarea value={seo.og_description} onChange={e => setSeo(p => ({ ...p, og_description: e.target.value }))} rows={2} placeholder="Description for social sharing" /></div>
+                  </div>
+                  <div>
+                    <Label className="flex items-center gap-1.5"><Image className="h-3.5 w-3.5" />OG Image URL</Label>
+                    <Input value={seo.og_image} onChange={e => setSeo(p => ({ ...p, og_image: e.target.value }))} placeholder="https://..." className="font-mono text-sm" />
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => { setEditPage(null); setIsNew(false); }}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
                 <Button onClick={handleSave} disabled={saving}>
