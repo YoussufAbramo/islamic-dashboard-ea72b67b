@@ -19,7 +19,7 @@ interface DataManagementCardProps {
 
 const SEED_LOG_KEY = 'app_seed_log_history';
 
-type SeedCategory = 'students' | 'teachers' | 'courses' | 'billing' | 'schedule' | 'communications' | 'chats' | 'support' | 'certificates' | 'website';
+type SeedCategory = 'students' | 'teachers' | 'courses' | 'billing' | 'schedule' | 'communications' | 'support' | 'certificates' | 'website';
 type SeedQuantity = 'little' | 'medium' | 'many';
 
 const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon: string }[] = [
@@ -29,8 +29,7 @@ const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon
   { key: 'billing', label: 'Subscriptions & Invoices', labelAr: 'اشتراكات وفواتير', icon: '💳' },
   { key: 'schedule', label: 'Timetable & Attendance', labelAr: 'جدول وحضور', icon: '📅' },
   { key: 'communications', label: 'Announcements & Notifications', labelAr: 'إعلانات وإشعارات', icon: '📢' },
-  { key: 'chats', label: 'Chats & Messages', labelAr: 'محادثات ورسائل', icon: '💬' },
-  { key: 'support', label: 'Support Tickets', labelAr: 'تذاكر الدعم', icon: '🎫' },
+  { key: 'support', label: 'Chats, Messages & Support Tickets', labelAr: 'محادثات ورسائل وتذاكر دعم', icon: '💬' },
   { key: 'certificates', label: 'Certificates', labelAr: 'شهادات', icon: '🏅' },
   { key: 'website', label: 'Blogs, Pages & Packages', labelAr: 'مدونات وصفحات وباقات', icon: '🌐' },
 ];
