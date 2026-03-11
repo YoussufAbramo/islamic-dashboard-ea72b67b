@@ -112,6 +112,8 @@ const App = () => (
                       <Route path="profile" element={<Profile />} />
                     </Route>
                     <Route path="/invoice/:id" element={<InvoiceView />} />
+                    <Route path="/blogs" element={<PublicRouteGuard><PublicBlogArchive /></PublicRouteGuard>} />
+                    <Route path="/blog" element={<PublicRouteGuard><PublicBlogArchive /></PublicRouteGuard>} />
                     <Route path="/blog/:slug" element={<PublicRouteGuard><PublicBlogPost /></PublicRouteGuard>} />
                     <Route path="/blogs/:slug" element={<PublicRouteGuard><PublicBlogPost /></PublicRouteGuard>} />
                     <Route path="/pages/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
