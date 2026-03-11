@@ -44,6 +44,7 @@ const Chats = () => {
 
   // Group members state
   const [groupMembers, setGroupMembers] = useState<any[]>([]);
+  const [addMemberKey, setAddMemberKey] = useState(0);
 
   const fetchChats = async () => {
     setLoading(true);
