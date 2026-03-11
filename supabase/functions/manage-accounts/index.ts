@@ -535,6 +535,8 @@ Deno.serve(async (req) => {
       await countAndDelete('notifications', adminClient.from('notifications').delete().neq('id', matchAll))
       await countAndDelete('announcements', adminClient.from('announcements').delete().neq('id', matchAll))
       await countAndDelete('support_tickets', adminClient.from('support_tickets').delete().neq('id', matchAll))
+      await countAndDelete('blog_posts', adminClient.from('blog_posts').delete().neq('id', matchAll))
+      await countAndDelete('website_pages', adminClient.from('website_pages').delete().neq('id', matchAll))
       await countAndDelete('students', adminClient.from('students').delete().not('user_id', 'in', `(${adminIds.join(',')})`))
       await countAndDelete('teachers', adminClient.from('teachers').delete().not('user_id', 'in', `(${adminIds.join(',')})`))
       await countAndDelete('profiles', adminClient.from('profiles').delete().not('id', 'in', `(${adminIds.join(',')})`))

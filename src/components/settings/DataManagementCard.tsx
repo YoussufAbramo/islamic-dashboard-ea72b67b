@@ -109,6 +109,9 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       if (c.messages) addLog(isAr ? `✉️ تم إضافة ${c.messages} رسائل` : `✉️ Added ${c.messages} messages`);
       if (c.tickets) addLog(isAr ? `🎫 تم إضافة ${c.tickets} تذاكر دعم` : `🎫 Added ${c.tickets} support tickets`);
       if (c.certificates) addLog(isAr ? `🏅 تم إضافة ${c.certificates} شهادات` : `🏅 Added ${c.certificates} certificates`);
+      if (c.blogs) addLog(isAr ? `📝 تم إضافة ${c.blogs} مقالات` : `📝 Added ${c.blogs} blog posts`);
+      if (c.pages) addLog(isAr ? `📄 تم إضافة ${c.pages} صفحات` : `📄 Added ${c.pages} pages`);
+      if (c.packages) addLog(isAr ? `📦 تم إضافة ${c.packages} باقات` : `📦 Added ${c.packages} packages`);
 
       addLog(isAr ? '✅ تمت العملية بنجاح!' : '✅ Seed completed successfully!');
       setShowSeedLog(true);
