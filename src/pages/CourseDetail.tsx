@@ -79,6 +79,7 @@ const CourseDetail = () => {
   const [editingContentId, setEditingContentId] = useState<string | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: 'lesson' | 'section' | 'content' } | null>(null);
 
   // Forms
   const [lessonForm, setLessonForm] = useState({ title: '', title_ar: '' });
