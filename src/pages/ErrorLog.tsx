@@ -18,6 +18,8 @@ interface ErrorEntry {
   stack?: string;
 }
 
+const PAGE_SIZE = 10;
+
 const ErrorLog = () => {
   const { language } = useLanguage();
   const isAr = language === 'ar';
@@ -25,6 +27,7 @@ const ErrorLog = () => {
   const [search, setSearch] = useState('');
   const [levelFilter, setLevelFilter] = useState<string>('all');
   const [selectedError, setSelectedError] = useState<ErrorEntry | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   // Capture runtime errors
   useEffect(() => {
