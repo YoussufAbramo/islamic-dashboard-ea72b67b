@@ -19,7 +19,7 @@ import ImagePickerField from '@/components/media/ImagePickerField';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { DEFAULT_SECTION_ORDER, defaultSectionContent, defaultGeneralContent, sectionMeta, type SectionKey } from '@/lib/landingDefaults';
+import { DEFAULT_SECTION_ORDER, defaultSectionContent, defaultGeneralContent, defaultNavItems, sectionMeta, type SectionKey, type NavItem } from '@/lib/landingDefaults';
 
 const iconMap: Record<string, any> = {
   Star, Sparkles, Shield, Megaphone, BookOpen, Users, BarChart3, HelpCircle, Mail, Layers, CreditCard, Quote, Handshake,
