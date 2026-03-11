@@ -86,7 +86,7 @@ const Invoices = () => {
 
   const handleCreate = async () => {
     if (!createForm.subscription_id) {
-      toast.error(isAr ? 'يرجى اختيار اشتراك' : 'Please select a subscription');
+      notifyError({ error: 'VAL_SELECT_SUBSCRIPTION', isAr });
       return;
     }
     setCreateLoading(true);
