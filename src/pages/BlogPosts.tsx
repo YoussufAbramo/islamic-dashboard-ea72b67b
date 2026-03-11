@@ -278,10 +278,11 @@ const BlogPosts = () => {
                     <div><Label>Meta Description</Label><Textarea value={seo.meta_description} onChange={e => setSeo(p => ({ ...p, meta_description: e.target.value }))} rows={2} placeholder="Brief description for search results" /></div>
                     <div><Label>OG Description</Label><Textarea value={seo.og_description} onChange={e => setSeo(p => ({ ...p, og_description: e.target.value }))} rows={2} placeholder="Description for social sharing" /></div>
                   </div>
-                  <div>
-                    <Label className="flex items-center gap-1.5"><ImageIcon className="h-3.5 w-3.5" />OG Image URL</Label>
-                    <Input value={seo.og_image} onChange={e => setSeo(p => ({ ...p, og_image: e.target.value }))} placeholder="https://..." className="font-mono text-sm" />
-                  </div>
+                  <ImagePickerField
+                    label="OG Image"
+                    value={seo.og_image}
+                    onChange={(url) => setSeo(p => ({ ...p, og_image: url }))}
+                  />
                 </CollapsibleContent>
               </Collapsible>
 
