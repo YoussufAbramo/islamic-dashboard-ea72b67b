@@ -121,7 +121,17 @@ const RoleManagement = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Coming Soon Overlay */}
+      <div className="absolute inset-0 z-20 bg-background/60 backdrop-blur-[1px] flex items-center justify-center rounded-lg pointer-events-auto">
+        <div className="text-center space-y-3">
+          <Shield className="h-16 w-16 text-muted-foreground/40 mx-auto" />
+          <div>
+            <p className="text-xl font-semibold">{isAr ? 'قريباً' : 'Coming Soon'}</p>
+            <p className="text-sm text-muted-foreground mt-1 max-w-sm">{isAr ? 'ستتمكن قريباً من إنشاء وتعديل أدوار مخصصة مع صلاحيات محددة' : 'Custom role creation and permission editing will be available soon'}</p>
+          </div>
+        </div>
+      </div>
       <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">

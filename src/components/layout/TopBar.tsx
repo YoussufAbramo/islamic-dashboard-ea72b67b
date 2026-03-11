@@ -86,7 +86,7 @@ const TopBar = () => {
 
   return (
     <>
-      <header className="flex h-14 items-center gap-2 border-b bg-background px-4">
+      <header className="flex h-14 items-center gap-2 border-b bg-background px-4 sticky top-0 z-30">
         <SidebarTrigger className="rounded-full" />
         <div className="flex-1" />
 
