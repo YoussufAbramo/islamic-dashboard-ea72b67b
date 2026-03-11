@@ -15,6 +15,7 @@ const Admins = () => {
   const isAr = language === 'ar';
   const [admins, setAdmins] = useState<any[]>([]);
   const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAdmins = async () => {
