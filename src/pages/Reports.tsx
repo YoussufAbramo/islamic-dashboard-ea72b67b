@@ -41,6 +41,7 @@ const Reports = () => {
       const pm: Record<string, string> = {};
       (profRes.data || []).forEach((p: any) => { pm[p.id] = p.full_name; });
       setProfiles(pm);
+      setLoading(false);
     };
     fetchAll();
   }, []);
