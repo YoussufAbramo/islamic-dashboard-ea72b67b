@@ -59,13 +59,13 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedRole) {
-      toast.error(language === 'ar' ? 'يرجى اختيار نوع الحساب' : 'Please select your account type');
+      notifyError({ error: 'AUTH_NO_ROLE', isAr: language === 'ar' });
       return;
     }
     setLoading(true);
     const { error } = await signIn(email, password);
     if (error) {
-      toast.error(error.message);
+      notifyError({ error, isAr: language === 'ar', rawMessage: error.message });
       setLoading(false);
       return;
     }

@@ -52,7 +52,7 @@ const Profile = () => {
     setUploading(true);
     const { signedUrl, error: uploadErr } = await uploadAndGetSignedUrl(filePath, file);
     if (uploadErr) {
-      toast.error(uploadErr);
+      notifyError({ error: 'STORAGE_UPLOAD_FAILED', isAr: language === 'ar', rawMessage: uploadErr });
       setUploading(false);
       return;
     }
@@ -66,18 +66,18 @@ const Profile = () => {
 
   const handlePasswordChange = async () => {
     if (passwords.newPassword.length < 6) {
-      toast.error(language === 'ar' ? 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' : 'Password must be at least 6 characters');
+      notifyError({ error: 'AUTH_WEAK_PASSWORD', isAr: language === 'ar' });
       return;
     }
     if (passwords.newPassword !== passwords.confirmPassword) {
-      toast.error(language === 'ar' ? 'كلمات المرور غير متطابقة' : 'Passwords do not match');
+      notifyError({ error: 'AUTH_PASSWORD_MISMATCH', isAr: language === 'ar' });
       return;
     }
     setChangingPassword(true);
     const { error } = await supabase.auth.updateUser({ password: passwords.newPassword });
     setChangingPassword(false);
     if (error) {
-      toast.error(error.message);
+      notifyError({ error, isAr: language === 'ar', rawMessage: error.message });
     } else {
       toast.success(language === 'ar' ? 'تم تغيير كلمة المرور' : 'Password changed successfully');
       setPasswords({ newPassword: '', confirmPassword: '' });

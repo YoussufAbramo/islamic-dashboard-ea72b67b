@@ -29,18 +29,18 @@ const Signup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      toast.error(language === 'ar' ? 'كلمات المرور غير متطابقة' : 'Passwords do not match');
+      notifyError({ error: 'AUTH_PASSWORD_MISMATCH', isAr: language === 'ar' });
       return;
     }
     if (password.length < 6) {
-      toast.error(language === 'ar' ? 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' : 'Password must be at least 6 characters');
+      notifyError({ error: 'AUTH_WEAK_PASSWORD', isAr: language === 'ar' });
       return;
     }
     setLoading(true);
     const { error } = await signUp(email, password, fullName, phone, role);
     setLoading(false);
     if (error) {
-      toast.error(error.message);
+      notifyError({ error, isAr: language === 'ar', rawMessage: error.message });
     } else {
       toast.success(language === 'ar' ? 'تم إنشاء الحساب! يرجى التحقق من بريدك الإلكتروني' : 'Account created! Please check your email to verify.');
       navigate('/login');

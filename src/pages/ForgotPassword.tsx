@@ -52,13 +52,13 @@ const ForgotPassword = () => {
 
   const handleSendReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) { toast.error(isAr ? 'يرجى إدخال بريدك الإلكتروني' : 'Please enter your email'); return; }
+    if (!email) { notifyError({ error: 'AUTH_RESET_MISSING_EMAIL', isAr }); return; }
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/forgot-password`,
     });
     setLoading(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) { notifyError({ error, isAr, rawMessage: error.message }); return; }
     setSent(true);
     toast.success(isAr ? 'تم إرسال رابط إعادة تعيين كلمة المرور' : 'Password reset link sent to your email');
   };
@@ -66,18 +66,18 @@ const ForgotPassword = () => {
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      toast.error(isAr ? 'كلمات المرور غير متطابقة' : 'Passwords do not match');
+      notifyError({ error: 'AUTH_PASSWORD_MISMATCH', isAr });
       return;
     }
     if (password.length < 6) {
-      toast.error(isAr ? 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' : 'Password must be at least 6 characters');
+      notifyError({ error: 'AUTH_WEAK_PASSWORD', isAr });
       return;
     }
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) {
-      toast.error(error.message);
+      notifyError({ error, isAr, rawMessage: error.message });
     } else {
       toast.success(isAr ? 'تم تحديث كلمة المرور بنجاح' : 'Password updated successfully');
       navigate('/login');
