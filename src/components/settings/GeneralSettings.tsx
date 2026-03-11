@@ -129,7 +129,7 @@ const GeneralSettings = () => {
               <Select value={pending.timeFormat} onValueChange={(v) => updatePending({ timeFormat: v as '12h' | '24h' })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="12h">{isAr ? '12 ساعة (AM/PM)' : '12-hour (AM/PM)'} — 2:30 PM</SelectItem>
+                  <SelectItem value="12h">{isAr ? '12 ساعة' : '12-hour'} — 2:30 PM</SelectItem>
                   <SelectItem value="24h">{isAr ? '24 ساعة' : '24-hour'} — 14:30</SelectItem>
                 </SelectContent>
               </Select>
