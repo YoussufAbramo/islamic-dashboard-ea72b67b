@@ -75,6 +75,7 @@ const CourseDetail = () => {
   const [lessonDialog, setLessonDialog] = useState(false);
   const [sectionDialog, setSectionDialog] = useState(false);
   const [contentDialog, setContentDialog] = useState(false);
+  const [editingContentId, setEditingContentId] = useState<string | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
 
