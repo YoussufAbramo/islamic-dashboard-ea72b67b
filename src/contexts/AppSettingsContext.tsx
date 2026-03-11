@@ -346,6 +346,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       defaultTimezone: saved.defaultTimezone, setDefaultTimezone,
       sidebarMode: saved.sidebarMode, setSidebarMode,
       timeFormat: saved.timeFormat, setTimeFormat,
+      developerMode: saved.developerMode, setDeveloperMode,
       pending, updatePending, saveSettings, hasPendingChanges, discardChanges,
     }}>
       {children}
