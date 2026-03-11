@@ -88,8 +88,16 @@ const CourseDetail = () => {
   }, [contents]);
 
   const fetchCourse = async () => {
-    const { data } = await supabase.from('courses').select('*').eq('id', id).single();
-    setCourse(data);
+    const [courseRes, catRes, lvlRes, trkRes] = await Promise.all([
+      supabase.from('courses').select('*').eq('id', id).single(),
+      supabase.from('course_categories').select('*').order('sort_order'),
+      supabase.from('course_levels').select('*').order('sort_order'),
+      supabase.from('course_tracks').select('*').order('sort_order'),
+    ]);
+    setCourse(courseRes.data);
+    setCategories(catRes.data || []);
+    setLevels(lvlRes.data || []);
+    setTracks(trkRes.data || []);
   };
 
   const fetchHierarchy = async () => {
