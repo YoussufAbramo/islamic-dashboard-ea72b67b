@@ -9,6 +9,8 @@ export interface LandingHeaderProps {
   appName: string;
   appLogo?: string;
   navSections: { label: string; id: string }[];
+  navSectionsLeft?: { label: string; id: string }[];
+  navSectionsRight?: { label: string; id: string }[];
   scrollTo: (id: string) => void;
   user: any;
   profile: any;
@@ -142,11 +144,11 @@ export const HeaderClassic = (props: LandingHeaderProps) => {
 // ═══════════════════════════════════════════
 export const HeaderCentered = (props: LandingHeaderProps) => {
   const navigate = useNavigate();
-  const { appName, appLogo, navSections, scrollTo, darkMode, toggleDark, language, setLanguage, user, profile, avatarUrl, isAr, mobileMenuOpen, setMobileMenuOpen, signOut } = props;
+  const { appName, appLogo, navSections, navSectionsLeft, navSectionsRight, scrollTo, darkMode, toggleDark, language, setLanguage, user, profile, avatarUrl, isAr, mobileMenuOpen, setMobileMenuOpen, signOut } = props;
 
   const mid = Math.ceil(navSections.length / 2);
-  const leftNav = navSections.slice(0, mid);
-  const rightNav = navSections.slice(mid);
+  const leftNav = navSectionsLeft || navSections.slice(0, mid);
+  const rightNav = navSectionsRight || navSections.slice(mid);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-b border-border/40">

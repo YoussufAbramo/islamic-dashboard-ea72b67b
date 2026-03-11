@@ -147,6 +147,20 @@ export const defaultSectionContent: Record<string, Record<string, any>> = {
   },
 };
 
+export interface NavItem {
+  label: string;
+  label_ar: string;
+  id: string;
+}
+
+export const defaultNavItems: NavItem[] = [
+  { label: 'Home', label_ar: 'الرئيسية', id: 'top' },
+  { label: 'Features', label_ar: 'المميزات', id: 'features' },
+  { label: 'Courses', label_ar: 'الدورات', id: 'courses' },
+  { label: 'Pricing', label_ar: 'الأسعار', id: 'pricing' },
+  { label: 'FAQ', label_ar: 'الأسئلة', id: 'faq' },
+];
+
 export const defaultGeneralContent: Record<string, any> = {
   meta_title: '',
   meta_title_ar: '',
@@ -157,6 +171,9 @@ export const defaultGeneralContent: Record<string, any> = {
   og_description: '',
   og_image: '',
   header_style: 'classic',
+  nav_items: defaultNavItems,
+  nav_items_left: null,
+  nav_items_right: null,
   sections_order: DEFAULT_SECTION_ORDER,
   sections_visible: Object.fromEntries(DEFAULT_SECTION_ORDER.map(k => [k, true])),
 };

@@ -2,6 +2,15 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.5.0] - 2026-03-11
+
+### Added
+- **Header Style tab** in Landing Page settings — moved from SEO & General to its own dedicated tab
+- **Editable navigation menu items** — add, remove, and reorder header nav links with bilingual labels (EN/AR) and section IDs
+- **Split menu editor for Centered style** — edit left and right menu items independently when using the centered header layout
+- Auto-initialization of split menus when switching to centered style
+- `nav_items`, `nav_items_left`, `nav_items_right` fields in landing content general settings
+
 ## [4.4.0] - 2026-03-11
 
 ### Added

@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import {
-  Save, Plus, Trash2, GripVertical, ChevronDown, ChevronUp, Pencil, X, Search, Globe,
+  Save, Plus, Trash2, GripVertical, ChevronDown, ChevronUp, Pencil, X, Search, Globe, Menu,
   Star, Sparkles, Shield, Megaphone, BookOpen, Users, BarChart3, HelpCircle, Mail, Layers, CreditCard, Quote, Handshake, Settings2, Eye, EyeOff, LayoutTemplate, Check,
 } from 'lucide-react';
 import { HEADER_STYLES, type HeaderStyleKey } from '@/components/landing/LandingHeaders';
@@ -19,7 +19,7 @@ import ImagePickerField from '@/components/media/ImagePickerField';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { DEFAULT_SECTION_ORDER, defaultSectionContent, defaultGeneralContent, sectionMeta, type SectionKey } from '@/lib/landingDefaults';
+import { DEFAULT_SECTION_ORDER, defaultSectionContent, defaultGeneralContent, defaultNavItems, sectionMeta, type SectionKey, type NavItem } from '@/lib/landingDefaults';
 
 const iconMap: Record<string, any> = {
   Star, Sparkles, Shield, Megaphone, BookOpen, Users, BarChart3, HelpCircle, Mail, Layers, CreditCard, Quote, Handshake,
@@ -83,7 +83,7 @@ const LandingContentSettings = () => {
   const [general, setGeneral] = useState<Record<string, any>>({ ...defaultGeneralContent });
   const [sectionsOrder, setSectionsOrder] = useState<SectionKey[]>([...DEFAULT_SECTION_ORDER]);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'sections' | 'seo'>('sections');
+  const [activeTab, setActiveTab] = useState<'sections' | 'header' | 'seo'>('sections');
   const [saving, setSaving] = useState(false);
 
   const sensors = useSensors(
@@ -434,8 +434,57 @@ const LandingContentSettings = () => {
     }
   };
 
-  // ─── SEO / General settings ───
-  const renderSEO = () => (
+  // ─── Nav menu item helpers ───
+  const navItems: NavItem[] = general.nav_items || defaultNavItems;
+  const navItemsLeft: NavItem[] | null = general.nav_items_left;
+  const navItemsRight: NavItem[] | null = general.nav_items_right;
+  const headerStyle: HeaderStyleKey = general.header_style || 'classic';
+  const isCentered = headerStyle === 'centered';
+
+  const updateNavItem = (listKey: string, index: number, field: string, value: string) => {
+    const items = [...(general[listKey] || defaultNavItems)];
+    items[index] = { ...items[index], [field]: value };
+    updateGeneralField(listKey, items);
+  };
+
+  const addNavItem = (listKey: string) => {
+    const items = [...(general[listKey] || (listKey === 'nav_items' ? defaultNavItems : []))];
+    items.push({ label: '', label_ar: '', id: '' });
+    updateGeneralField(listKey, items);
+  };
+
+  const removeNavItem = (listKey: string, index: number) => {
+    const items = [...(general[listKey] || [])];
+    items.splice(index, 1);
+    updateGeneralField(listKey, items);
+  };
+
+  const NavItemEditor = ({ listKey, items, title }: { listKey: string; items: NavItem[]; title: string }) => (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <Label className="text-sm font-medium">{title}</Label>
+        <Button variant="outline" size="sm" onClick={() => addNavItem(listKey)}>
+          <Plus className="h-4 w-4 me-1" />{isAr ? 'إضافة' : 'Add'}
+        </Button>
+      </div>
+      {items.map((item, i) => (
+        <div key={i} className="flex items-start gap-2 rounded-lg border border-border p-3">
+          <div className="grid grid-cols-3 gap-2 flex-1">
+            <div><Label className="text-xs">Label (EN)</Label><Input value={item.label || ''} onChange={e => updateNavItem(listKey, i, 'label', e.target.value)} className="h-8 text-sm" /></div>
+            <div><Label className="text-xs">Label (AR)</Label><Input dir="rtl" value={item.label_ar || ''} onChange={e => updateNavItem(listKey, i, 'label_ar', e.target.value)} className="h-8 text-sm" /></div>
+            <div><Label className="text-xs">{isAr ? 'معرّف القسم' : 'Section ID'}</Label><Input value={item.id || ''} onChange={e => updateNavItem(listKey, i, 'id', e.target.value)} className="h-8 text-sm" placeholder="e.g. features" /></div>
+          </div>
+          <Button variant="ghost" size="icon" className="h-8 w-8 mt-5 text-muted-foreground hover:text-destructive shrink-0" onClick={() => removeNavItem(listKey, i)}>
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      ))}
+      {items.length === 0 && <p className="text-xs text-muted-foreground text-center py-3 border border-dashed border-border rounded-lg">{isAr ? 'لا توجد عناصر' : 'No items'}</p>}
+    </div>
+  );
+
+  // ─── Header Style tab ───
+  const renderHeaderTab = () => (
     <div className="space-y-6">
       {/* Header Style Picker */}
       <div className="rounded-lg border border-border p-4 space-y-4">
@@ -447,7 +496,16 @@ const LandingContentSettings = () => {
             return (
               <button
                 key={key}
-                onClick={() => updateGeneralField('header_style', key)}
+                onClick={() => {
+                  updateGeneralField('header_style', key);
+                  // Initialize split menus when switching to centered
+                  if (key === 'centered' && !general.nav_items_left) {
+                    const allItems = general.nav_items || defaultNavItems;
+                    const mid = Math.ceil(allItems.length / 2);
+                    updateGeneralField('nav_items_left', allItems.slice(0, mid));
+                    updateGeneralField('nav_items_right', allItems.slice(mid));
+                  }
+                }}
                 className={`relative flex flex-col items-start gap-2 p-4 rounded-lg border-2 transition-all text-start ${
                   isSelected
                     ? 'border-primary bg-primary/5 shadow-sm'
@@ -459,35 +517,10 @@ const LandingContentSettings = () => {
                     <Check className="h-3 w-3 text-primary-foreground" />
                   </div>
                 )}
-                {/* Mini preview bar */}
                 <div className="w-full h-8 rounded-md bg-muted/70 border border-border/50 flex items-center px-2 gap-1.5">
-                  {key === 'classic' && (
-                    <>
-                      <div className="h-3 w-3 rounded-sm bg-primary/60" />
-                      <div className="flex-1" />
-                      <div className="h-1.5 w-4 rounded-full bg-muted-foreground/30" />
-                      <div className="h-1.5 w-4 rounded-full bg-muted-foreground/30" />
-                      <div className="h-3 w-6 rounded-sm bg-primary/40" />
-                    </>
-                  )}
-                  {key === 'centered' && (
-                    <>
-                      <div className="h-1.5 w-4 rounded-full bg-muted-foreground/30" />
-                      <div className="flex-1" />
-                      <div className="h-3 w-3 rounded-sm bg-primary/60" />
-                      <div className="flex-1" />
-                      <div className="h-1.5 w-4 rounded-full bg-muted-foreground/30" />
-                    </>
-                  )}
-                  {key === 'cta-focused' && (
-                    <>
-                      <div className="h-3 w-3 rounded-sm bg-primary/60" />
-                      <div className="flex-1" />
-                      <div className="h-1.5 w-3 rounded-full bg-muted-foreground/30" />
-                      <div className="h-1.5 w-3 rounded-full bg-muted-foreground/30" />
-                      <div className="h-3 w-8 rounded-sm bg-primary" />
-                    </>
-                  )}
+                  {key === 'classic' && (<><div className="h-3 w-3 rounded-sm bg-primary/60" /><div className="flex-1" /><div className="h-1.5 w-4 rounded-full bg-muted-foreground/30" /><div className="h-1.5 w-4 rounded-full bg-muted-foreground/30" /><div className="h-3 w-6 rounded-sm bg-primary/40" /></>)}
+                  {key === 'centered' && (<><div className="h-1.5 w-4 rounded-full bg-muted-foreground/30" /><div className="flex-1" /><div className="h-3 w-3 rounded-sm bg-primary/60" /><div className="flex-1" /><div className="h-1.5 w-4 rounded-full bg-muted-foreground/30" /></>)}
+                  {key === 'cta-focused' && (<><div className="h-3 w-3 rounded-sm bg-primary/60" /><div className="flex-1" /><div className="h-1.5 w-3 rounded-full bg-muted-foreground/30" /><div className="h-1.5 w-3 rounded-full bg-muted-foreground/30" /><div className="h-3 w-8 rounded-sm bg-primary" /></>)}
                 </div>
                 <div>
                   <p className="text-sm font-medium">{isAr ? meta.labelAr : meta.label}</p>
@@ -499,6 +532,43 @@ const LandingContentSettings = () => {
         </div>
       </div>
 
+      {/* Menu Items Editor */}
+      <div className="rounded-lg border border-border p-4 space-y-4">
+        <h3 className="font-medium flex items-center gap-2"><Menu className="h-4 w-4" />{isAr ? 'عناصر القائمة' : 'Menu Items'}</h3>
+        <p className="text-xs text-muted-foreground">
+          {isCentered
+            ? (isAr ? 'في النمط المركزي، يتم تقسيم القائمة إلى جزأين حول الشعار' : 'In centered style, the menu is split into two parts around the logo')
+            : (isAr ? 'تحرير روابط التنقل التي تظهر في الهيدر' : 'Edit the navigation links shown in the header')}
+        </p>
+
+        {isCentered ? (
+          <div className="space-y-5">
+            <NavItemEditor
+              listKey="nav_items_left"
+              items={navItemsLeft || navItems.slice(0, Math.ceil(navItems.length / 2))}
+              title={isAr ? 'القائمة اليسرى' : 'Left Menu'}
+            />
+            <div className="border-t border-border" />
+            <NavItemEditor
+              listKey="nav_items_right"
+              items={navItemsRight || navItems.slice(Math.ceil(navItems.length / 2))}
+              title={isAr ? 'القائمة اليمنى' : 'Right Menu'}
+            />
+          </div>
+        ) : (
+          <NavItemEditor
+            listKey="nav_items"
+            items={navItems}
+            title={isAr ? 'روابط التنقل' : 'Navigation Links'}
+          />
+        )}
+      </div>
+    </div>
+  );
+
+  // ─── SEO / General settings ───
+  const renderSEO = () => (
+    <div className="space-y-6">
       <div className="rounded-lg border border-border p-4 space-y-4">
         <h3 className="font-medium flex items-center gap-2"><Search className="h-4 w-4" />{isAr ? 'بيانات SEO' : 'SEO Meta Data'}</h3>
         <div className="grid sm:grid-cols-2 gap-4">
@@ -528,16 +598,28 @@ const LandingContentSettings = () => {
           <Layers className="h-4 w-4" />
           {isAr ? 'الأقسام' : 'Sections'}
         </button>
+        <button onClick={() => setActiveTab('header')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'header' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+          <LayoutTemplate className="h-4 w-4" />
+          {isAr ? 'نمط الهيدر' : 'Header Style'}
+        </button>
         <button onClick={() => setActiveTab('seo')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'seo' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
           <Settings2 className="h-4 w-4" />
           {isAr ? 'SEO والعامة' : 'SEO & General'}
         </button>
       </div>
 
-      {activeTab === 'seo' ? (
+      {activeTab === 'header' ? (
         <Card>
           <CardHeader>
-            <CardTitle>{isAr ? 'SEO والإعدادات العامة' : 'SEO & General Settings'}</CardTitle>
+            <CardTitle>{isAr ? 'نمط الهيدر والقائمة' : 'Header Style & Menu'}</CardTitle>
+            <CardDescription>{isAr ? 'اختر نمط الهيدر وعدّل عناصر القائمة' : 'Choose header style and customize menu items'}</CardDescription>
+          </CardHeader>
+          <CardContent>{renderHeaderTab()}</CardContent>
+        </Card>
+      ) : activeTab === 'seo' ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>{isAr ? 'إعدادات SEO' : 'SEO Settings'}</CardTitle>
             <CardDescription>{isAr ? 'إعدادات محركات البحث والمشاركة' : 'Search engine and social sharing settings'}</CardDescription>
           </CardHeader>
           <CardContent>{renderSEO()}</CardContent>

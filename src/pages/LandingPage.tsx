@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import CopyrightText from '@/components/CopyrightText';
-import { DEFAULT_SECTION_ORDER, defaultSectionContent, defaultGeneralContent, type SectionKey } from '@/lib/landingDefaults';
+import { DEFAULT_SECTION_ORDER, defaultSectionContent, defaultGeneralContent, defaultNavItems, type SectionKey } from '@/lib/landingDefaults';
 import { getHeaderComponent, type HeaderStyleKey } from '@/components/landing/LandingHeaders';
 
 // Section components
@@ -98,17 +98,20 @@ const LandingPage = () => {
   const sectionsVisible: Record<string, boolean> = general.sections_visible || {};
   const currencySymbol = pending.currency?.symbol || '$';
 
-  // Visible nav sections
-  const navSections: { label: string; id: string }[] = [];
-  if (sectionsVisible.hero !== false) navSections.push({ label: t('Home', 'الرئيسية'), id: 'top' });
-  if (sectionsVisible.features !== false) navSections.push({ label: t('Features', 'المميزات'), id: 'features' });
-  if (sectionsVisible.courses !== false) navSections.push({ label: t('Courses', 'الدورات'), id: 'courses' });
-  if (sectionsVisible.pricing !== false) navSections.push({ label: t('Pricing', 'الأسعار'), id: 'pricing' });
-  if (sectionsVisible.faq !== false) navSections.push({ label: t('FAQ', 'الأسئلة'), id: 'faq' });
-
-  // Dynamic header
+  // Dynamic nav items from settings
   const headerStyle: HeaderStyleKey = general.header_style || 'classic';
   const HeaderComponent = getHeaderComponent(headerStyle);
+
+  // Build nav items from settings
+  const rawNavItems = general.nav_items || defaultNavItems;
+  const resolveItems = (items: any[]) => items.map((item: any) => ({
+    label: isAr ? (item.label_ar || item.label) : item.label,
+    id: item.id,
+  }));
+
+  const navSections = resolveItems(rawNavItems);
+  const navSectionsLeft = general.nav_items_left ? resolveItems(general.nav_items_left) : undefined;
+  const navSectionsRight = general.nav_items_right ? resolveItems(general.nav_items_right) : undefined;
 
   const renderSection = (key: SectionKey) => {
     const s = content[key] || defaultSectionContent[key] || {};
@@ -136,6 +139,8 @@ const LandingPage = () => {
         appName={appName}
         appLogo={appLogo}
         navSections={navSections}
+        navSectionsLeft={navSectionsLeft}
+        navSectionsRight={navSectionsRight}
         scrollTo={scrollTo}
         user={user}
         profile={profile}
