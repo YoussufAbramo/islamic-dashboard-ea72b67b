@@ -88,7 +88,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       persistLog([...log]);
     };
     try {
-      addLog(isAr ? `🚀 بدء إضافة البيانات التجريبية (${seedQuantity})...` : `🚀 Starting seed process (${seedQuantity})...`);
+      addLog(isAr ? `🚀 بدء إضافة البيانات التجريبية (${seedQuantity}x)...` : `🚀 Starting seed process (${seedQuantity}x multiplier)...`);
       const { data, error } = await supabase.functions.invoke('manage-accounts', {
         body: { action: 'seed_all', categories: seedCategories, quantity: seedQuantity },
       });
