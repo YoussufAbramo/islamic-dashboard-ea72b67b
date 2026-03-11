@@ -36,6 +36,7 @@ import InvoiceView from "./pages/InvoiceView";
 import LandingPage from "./pages/LandingPage";
 import CalculatorPage from "./pages/Calculator";
 import NotFound from "./pages/NotFound";
+import ErrorDetails from "./pages/ErrorDetails";
 
 const queryClient = new QueryClient();
 
