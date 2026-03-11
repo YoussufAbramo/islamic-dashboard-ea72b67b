@@ -174,8 +174,9 @@ const PixelsIntegrationSettings = () => {
                     <div className="grid gap-3 pt-3 ps-2">
                       {group.fields.map(field => {
                         const Logo = (field as any).logo || GroupLogo;
+                        const isEnabled = enabled[field.key];
                         return (
-                          <div key={field.key} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/30 transition-colors">
+                          <div key={field.key} className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${isEnabled ? 'border-primary/30 bg-primary/5' : 'border-border opacity-60'}`}>
                             {Logo && (
                               <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
                                 <Logo />
@@ -190,6 +191,11 @@ const PixelsIntegrationSettings = () => {
                               onChange={e => setPixels(prev => ({ ...prev, [field.key]: e.target.value }))}
                               placeholder={field.placeholder}
                               className="h-8 text-sm font-mono max-w-[280px]"
+                              disabled={!isEnabled}
+                            />
+                            <Switch
+                              checked={isEnabled}
+                              onCheckedChange={v => setEnabled(prev => ({ ...prev, [field.key]: v }))}
                             />
                           </div>
                         );
