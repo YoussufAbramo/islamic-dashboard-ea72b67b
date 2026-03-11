@@ -84,6 +84,8 @@ const Reports = () => {
   const totalRevenue = subscriptions.reduce((s, sub) => s + (Number(sub.price) || 0), 0);
   const activeSubs = subscriptions.filter(s => s.status === 'active').length;
 
+  if (loading) return <TableSkeleton />;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

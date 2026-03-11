@@ -168,6 +168,8 @@ const Timetable = () => {
 
   const getLessonCountForDay = (date: Date) => entries.filter(e => isSameDay(new Date(e.scheduled_at), date)).length;
 
+  if (loading) return <TableSkeleton />;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
