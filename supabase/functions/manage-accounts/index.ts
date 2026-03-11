@@ -124,40 +124,31 @@ Deno.serve(async (req) => {
       const teacherData = allTeacherEmails.slice(0, qty.teachers)
 
       const studentUserIds: string[] = []
-      for (const s of studentData) {
-        try {
-          const { data, error } = await adminClient.auth.admin.createUser({
-            email: s.email, password: crypto.randomUUID(), email_confirm: true,
-            user_metadata: { full_name: s.name, phone: s.phone }
-          })
-          if (!error && data.user) { studentUserIds.push(data.user.id); counts.students++ }
-        } catch (_) { /* skip if exists */ }
-      }
+      if (categories.includes('users')) {
+        for (const s of studentData) {
+          try {
+            const { data, error } = await adminClient.auth.admin.createUser({
+              email: s.email, password: crypto.randomUUID(), email_confirm: true,
+              user_metadata: { full_name: s.name, phone: s.phone }
+            })
+            if (!error && data.user) { studentUserIds.push(data.user.id); counts.students++ }
+          } catch (_) { /* skip if exists */ }
+        }
 
-      // Create sample teachers
-      const teacherData = [
-        { email: 'teacher1@sample.edu', name: 'Dr. Aisha Mohamed', phone: '+201100000001', spec: 'Quran Memorization', bio: 'PhD in Islamic Studies, 10 years teaching experience' },
-        { email: 'teacher2@sample.edu', name: 'Prof. Ibrahim Youssef', phone: '+201100000002', spec: 'Arabic Language', bio: 'Professor of Arabic Literature, specializing in grammar and rhetoric' },
-      ]
-
-      const teacherUserIds: string[] = []
-      for (const t of teacherData) {
-        try {
-          const { data, error } = await adminClient.auth.admin.createUser({
-            email: t.email, password: crypto.randomUUID(), email_confirm: true,
-            user_metadata: { full_name: t.name, phone: t.phone }
-          })
-          if (!error && data.user) {
-            teacherUserIds.push(data.user.id)
-            // Update role from student to teacher
-            await adminClient.from('user_roles').update({ role: 'teacher' }).eq('user_id', data.user.id)
-            // Create teacher record
-            await adminClient.from('teachers').insert({ user_id: data.user.id, specialization: t.spec, bio: t.bio })
-            // Remove auto-created student record
-            await adminClient.from('students').delete().eq('user_id', data.user.id)
-            counts.teachers++
-          }
-        } catch (_) { /* skip if exists */ }
+        for (const t of teacherData) {
+          try {
+            const { data, error } = await adminClient.auth.admin.createUser({
+              email: t.email, password: crypto.randomUUID(), email_confirm: true,
+              user_metadata: { full_name: t.name, phone: t.phone }
+            })
+            if (!error && data.user) {
+              await adminClient.from('user_roles').update({ role: 'teacher' }).eq('user_id', data.user.id)
+              await adminClient.from('teachers').insert({ user_id: data.user.id, specialization: t.spec, bio: t.bio })
+              await adminClient.from('students').delete().eq('user_id', data.user.id)
+              counts.teachers++
+            }
+          } catch (_) { /* skip if exists */ }
+        }
       }
 
       // Get all student & teacher records
