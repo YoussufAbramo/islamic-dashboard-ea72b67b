@@ -98,19 +98,24 @@ const LandingPage = () => {
   const sectionsVisible: Record<string, boolean> = general.sections_visible || {};
   const currencySymbol = pending.currency?.symbol || '$';
 
-  // Visible nav sections
-  const navSections: { label: string; id: string }[] = [];
-  if (sectionsVisible.hero !== false) navSections.push({ label: t('Home', 'الرئيسية'), id: 'top' });
-  if (sectionsVisible.features !== false) navSections.push({ label: t('Features', 'المميزات'), id: 'features' });
-  if (sectionsVisible.courses !== false) navSections.push({ label: t('Courses', 'الدورات'), id: 'courses' });
-  if (sectionsVisible.pricing !== false) navSections.push({ label: t('Pricing', 'الأسعار'), id: 'pricing' });
-  if (sectionsVisible.faq !== false) navSections.push({ label: t('FAQ', 'الأسئلة'), id: 'faq' });
-
-  // Dynamic header
+  // Dynamic nav items from settings
   const headerStyle: HeaderStyleKey = general.header_style || 'classic';
   const HeaderComponent = getHeaderComponent(headerStyle);
 
-  const renderSection = (key: SectionKey) => {
+  // For centered style, merge left+right; otherwise use nav_items
+  const navSections: { label: string; id: string }[] = (() => {
+    if (headerStyle === 'centered' && general.nav_items_left && general.nav_items_right) {
+      return [...general.nav_items_left, ...general.nav_items_right].map((item: any) => ({
+        label: isAr ? (item.label_ar || item.label) : item.label,
+        id: item.id,
+      }));
+    }
+    const items = general.nav_items || defaultNavItems;
+    return items.map((item: any) => ({
+      label: isAr ? (item.label_ar || item.label) : item.label,
+      id: item.id,
+    }));
+  })();
     const s = content[key] || defaultSectionContent[key] || {};
     switch (key) {
       case 'hero': return <HeroSection key={key} content={s} isAr={isAr} user={user} statsContent={content.stats} />;
