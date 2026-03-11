@@ -80,7 +80,7 @@ const FloatingButtons = () => {
         {/* Support Ticket */}
         <button
           onClick={() => setTicketOpen(true)}
-          className="group flex items-center gap-2 pe-2 ps-3 py-2.5 rounded-s-xl rounded-e-none bg-primary text-primary-foreground shadow-md translate-x-[calc(100%-40px)] hover:translate-x-0 transition-transform duration-300 ease-out [border-top-right-radius:0] [border-bottom-right-radius:0]"
+          className="group flex items-center gap-2 pe-2 ps-3 py-2.5 rounded-s-xl !rounded-ee-none !rounded-se-none bg-primary text-primary-foreground shadow-md translate-x-[calc(100%-40px)] hover:translate-x-0 transition-transform duration-300 ease-out"
         >
           <Bug className="h-4 w-4 shrink-0" />
           <span className="text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
