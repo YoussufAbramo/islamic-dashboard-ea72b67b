@@ -83,7 +83,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
     } catch (err: any) {
       addLog(`❌ ${err.message || 'Failed to seed data'}`);
       setShowSeedLog(true);
-      toast.error(err.message || 'Failed to seed data');
+      notifyError({ error: 'DB_OPERATION_FAILED', isAr, rawMessage: err.message || 'Failed to seed data' });
     } finally {
       setSeedLoading(false);
     }
