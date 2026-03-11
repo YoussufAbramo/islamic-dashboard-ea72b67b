@@ -86,6 +86,8 @@ const LandingContentSettings = () => {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'sections' | 'header' | 'seo'>('sections');
   const [saving, setSaving] = useState(false);
+  const [websitePages, setWebsitePages] = useState<{ slug: string; title: string; title_ar: string | null }[]>([]);
+  const [policies, setPolicies] = useState<{ slug: string; title: string; title_ar: string | null }[]>([]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -94,7 +96,13 @@ const LandingContentSettings = () => {
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.from('landing_content').select('*');
+      const [{ data }, { data: pagesData }, { data: policiesData }] = await Promise.all([
+        supabase.from('landing_content').select('*'),
+        supabase.from('website_pages').select('slug, title, title_ar, status').eq('status', 'published'),
+        supabase.from('policies').select('slug, title, title_ar, is_published').eq('is_published', true),
+      ]);
+      if (pagesData) setWebsitePages(pagesData as any);
+      if (policiesData) setPolicies(policiesData as any);
       if (data) {
         const merged = { ...defaultSectionContent };
         let gen = { ...defaultGeneralContent };
@@ -485,12 +493,24 @@ const LandingContentSettings = () => {
                   {DEFAULT_SECTION_ORDER.map(sk => (
                     <SelectItem key={sk} value={sk}>{isAr ? sectionMeta[sk].labelAr : sectionMeta[sk].label}</SelectItem>
                   ))}
-                  <SelectItem value="__group_pages" disabled className="text-xs font-semibold text-muted-foreground">{isAr ? '── صفحات التنقل ──' : '── Navigation Pages ──'}</SelectItem>
-                  <SelectItem value="/login">{isAr ? 'تسجيل الدخول' : 'Login'}</SelectItem>
-                  <SelectItem value="/signup">{isAr ? 'إنشاء حساب' : 'Sign Up'}</SelectItem>
-                  <SelectItem value="/dashboard">{isAr ? 'لوحة التحكم' : 'Dashboard'}</SelectItem>
+                  {websitePages.length > 0 && (
+                    <>
+                      <SelectItem value="__group_pages" disabled className="text-xs font-semibold text-muted-foreground">{isAr ? '── الصفحات الرئيسية ──' : '── Main Pages ──'}</SelectItem>
+                      {websitePages.map(p => (
+                        <SelectItem key={p.slug} value={`/page/${p.slug}`}>{isAr ? (p.title_ar || p.title) : p.title}</SelectItem>
+                      ))}
+                    </>
+                  )}
+                  {policies.length > 0 && (
+                    <>
+                      <SelectItem value="__group_policies" disabled className="text-xs font-semibold text-muted-foreground">{isAr ? '── السياسات ──' : '── Policies ──'}</SelectItem>
+                      {policies.map(p => (
+                        <SelectItem key={p.slug} value={`/policy/${p.slug}`}>{isAr ? (p.title_ar || p.title) : p.title}</SelectItem>
+                      ))}
+                    </>
+                  )}
+                  <SelectItem value="__group_other" disabled className="text-xs font-semibold text-muted-foreground">{isAr ? '── أخرى ──' : '── Other ──'}</SelectItem>
                   <SelectItem value="/blog">{isAr ? 'المدونة' : 'Blog'}</SelectItem>
-                  <SelectItem value="/support">{isAr ? 'الدعم' : 'Support'}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
