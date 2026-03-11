@@ -18,27 +18,27 @@ type LoginRole = 'student' | 'teacher' | 'admin';
 const roleConfig = {
   student: { icon: GraduationCap, color: 'text-emerald-600 dark:text-emerald-400' },
   teacher: { icon: Users, color: 'text-amber-600 dark:text-amber-400' },
-  admin: { icon: ShieldCheck, color: 'text-rose-600 dark:text-rose-400' },
+  admin: { icon: ShieldCheck, color: 'text-rose-600 dark:text-rose-400' }
 };
 
 
-const WhatsAppIcon = () => (
-  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
-    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-  </svg>
-);
+const WhatsAppIcon = () =>
+<svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+  </svg>;
 
-const IslamicCorner = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 120 120" fill="none">
-    <path d="M0 0h60v60H0z" fill="currentColor" opacity="0.08"/>
-    <path d="M30 5L35 15L45 10L40 20L50 25L40 30L45 40L35 35L30 45L25 35L15 40L20 30L10 25L20 20L15 10L25 15Z" stroke="currentColor" strokeWidth="0.5" opacity="0.2"/>
-    <circle cx="30" cy="25" r="8" stroke="currentColor" strokeWidth="0.3" opacity="0.15"/>
-    <circle cx="30" cy="25" r="15" stroke="currentColor" strokeWidth="0.3" opacity="0.1"/>
-    <path d="M5 5L55 5L55 55L5 55Z" stroke="currentColor" strokeWidth="0.3" opacity="0.08"/>
-    <path d="M15 5L15 55M25 5L25 55M35 5L35 55M45 5L45 55" stroke="currentColor" strokeWidth="0.15" opacity="0.06"/>
-    <path d="M5 15L55 15M5 25L55 25M5 35L55 35M5 45L55 45" stroke="currentColor" strokeWidth="0.15" opacity="0.06"/>
-  </svg>
-);
+
+const IslamicCorner = ({ className }: {className?: string;}) =>
+<svg className={className} viewBox="0 0 120 120" fill="none">
+    <path d="M0 0h60v60H0z" fill="currentColor" opacity="0.08" />
+    <path d="M30 5L35 15L45 10L40 20L50 25L40 30L45 40L35 35L30 45L25 35L15 40L20 30L10 25L20 20L15 10L25 15Z" stroke="currentColor" strokeWidth="0.5" opacity="0.2" />
+    <circle cx="30" cy="25" r="8" stroke="currentColor" strokeWidth="0.3" opacity="0.15" />
+    <circle cx="30" cy="25" r="15" stroke="currentColor" strokeWidth="0.3" opacity="0.1" />
+    <path d="M5 5L55 5L55 55L5 55Z" stroke="currentColor" strokeWidth="0.3" opacity="0.08" />
+    <path d="M15 5L15 55M25 5L25 55M35 5L35 55M45 5L45 55" stroke="currentColor" strokeWidth="0.15" opacity="0.06" />
+    <path d="M5 15L55 15M5 25L55 25M5 35L55 35M5 45L55 45" stroke="currentColor" strokeWidth="0.15" opacity="0.06" />
+  </svg>;
+
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -83,9 +83,9 @@ const Login = () => {
           backgroundImage: `url(${islamicBg})`,
           backgroundSize: '400px 400px',
           backgroundRepeat: 'repeat',
-          direction: 'ltr',
-        }}
-      />
+          direction: 'ltr'
+        }} />
+      
       <div className="absolute inset-0 bg-gradient-to-br from-background/90 via-background/80 to-background/90" />
 
       <IslamicCorner className="absolute top-0 left-0 w-28 h-28 text-gold/30" />
@@ -97,14 +97,14 @@ const Login = () => {
       <div className="absolute top-4 end-4 z-10 flex items-center gap-2">
         <button
           onClick={toggleDark}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors p-2 rounded-full border border-border bg-card/80 backdrop-blur-sm"
-        >
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors p-2 rounded-full border border-border bg-card/80 backdrop-blur-sm">
+          
           {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </button>
         <button
           onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}
-          className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-full border border-border bg-card/80 backdrop-blur-sm"
-        >
+          className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-full border border-border bg-card/80 backdrop-blur-sm">
+          
           {language === 'en' ? 'العربية' : 'English'}
         </button>
       </div>
@@ -112,16 +112,16 @@ const Login = () => {
       <div className="relative z-10 w-full max-w-md px-4">
         {/* Header branding */}
         <div className="text-center mb-6">
-          {appLogo ? (
-            <img src={appLogo} alt="Logo" className="max-h-20 mx-auto mb-4 object-contain" />
-          ) : (
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-4 islamic-arch-glow">
+          {appLogo ?
+          <img src={appLogo} alt="Logo" className="max-h-20 mx-auto mb-4 object-contain" /> :
+
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-4 islamic-arch-glow">
               <BookOpen className="w-10 h-10 text-gold" />
             </div>
-          )}
-          <h1 className="text-4xl font-bold font-amiri text-gold">
-            {language === 'ar' ? (appName || 'منصة التعليم') : (appName || 'Islamic Dashboard')}
-          </h1>
+          }
+          
+
+          
           <p className="text-sm text-muted-foreground mt-1 font-amiri">
             {appDescription || (language === 'ar' ? 'بسم الله الرحمن الرحيم' : 'In the Name of Allah, the Most Gracious')}
           </p>
@@ -166,18 +166,18 @@ const Login = () => {
                           onClick={() => setSelectedRole(r)}
                           className={`
                             flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 transition-all duration-300 group
-                            ${isSelected
-                              ? 'border-primary bg-primary/5 shadow-md shadow-primary/10'
-                              : 'border-border hover:border-primary/30 hover:bg-muted/50 hover:shadow-sm'
-                            }
-                          `}
-                        >
+                            ${isSelected ?
+                          'border-primary bg-primary/5 shadow-md shadow-primary/10' :
+                          'border-border hover:border-primary/30 hover:bg-muted/50 hover:shadow-sm'}
+                          `
+                          }>
+                          
                           <Icon className={`h-5 w-5 transition-transform duration-300 group-hover:scale-110 ${isSelected ? config.color : 'text-muted-foreground'}`} />
                           <span className={`text-xs font-medium ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
                             {t(`auth.${r}`)}
                           </span>
-                        </button>
-                      );
+                        </button>);
+
                     })}
                   </div>
                 </div>
@@ -192,8 +192,8 @@ const Login = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     placeholder={language === 'ar' ? 'أدخل بريدك الإلكتروني' : 'Enter your email'}
-                    className="h-11"
-                  />
+                    className="h-11" />
+                  
                 </div>
 
                 {/* Password */}
@@ -202,8 +202,8 @@ const Login = () => {
                     <Label htmlFor="password">{t('auth.password')}</Label>
                     <Link
                       to="/forgot-password"
-                      className="text-xs text-primary hover:underline transition-colors"
-                    >
+                      className="text-xs text-primary hover:underline transition-colors">
+                      
                       {language === 'ar' ? 'نسيت كلمة المرور؟' : 'Forgot password?'}
                     </Link>
                   </div>
@@ -215,13 +215,13 @@ const Login = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       placeholder={language === 'ar' ? 'أدخل كلمة المرور' : 'Enter your password'}
-                      className="h-11 pe-10"
-                    />
+                      className="h-11 pe-10" />
+                    
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
+                      className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                      
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
@@ -232,8 +232,8 @@ const Login = () => {
                 <Button
                   type="submit"
                   className="w-full h-11 text-base font-medium"
-                  disabled={loading || !selectedRole}
-                >
+                  disabled={loading || !selectedRole}>
+                  
                   {loading ? t('common.loading') : t('auth.login')}
                 </Button>
 
@@ -248,8 +248,8 @@ const Login = () => {
                   variant="outline"
                   type="button"
                   className="w-full gap-2 border-primary/30 hover:bg-primary/5"
-                  onClick={() => window.open('/', '_blank')}
-                >
+                  onClick={() => window.open('/', '_blank')}>
+                  
                   <ExternalLink className="h-4 w-4" />
                   {language === 'ar' ? 'زيارة صفحة الهبوط' : 'Visit Landing Page'}
                 </Button>
@@ -281,8 +281,8 @@ const Login = () => {
           <CopyrightText />
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default Login;
