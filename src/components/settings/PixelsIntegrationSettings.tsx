@@ -160,24 +160,37 @@ const PixelsIntegrationSettings = () => {
           <div className="space-y-4">
             {pixelGroups.map(group => {
               const GroupLogo = group.logo;
+              const activeCount = group.fields.filter(f => enabled[f.key]).length;
+              const allEnabled = activeCount === group.fields.length;
+              const toggleGroup = (e: React.MouseEvent) => {
+                e.stopPropagation();
+                const newVal = !allEnabled;
+                setEnabled(prev => {
+                  const updated = { ...prev };
+                  group.fields.forEach(f => { updated[f.key] = newVal; });
+                  return updated;
+                });
+              };
               return (
                 <Collapsible key={group.groupLabel} defaultOpen={group.groupLabel === 'Google'}>
                   <CollapsibleTrigger className="flex items-center justify-between w-full p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
                     <div className="flex items-center gap-2">
                       {GroupLogo && <GroupLogo />}
                       <span className="font-medium text-sm">{isAr ? group.groupLabelAr : group.groupLabel}</span>
-                      {(() => {
-                        const activeCount = group.fields.filter(f => enabled[f.key]).length;
-                        return activeCount > 0 ? (
-                          <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
-                            {activeCount}/{group.fields.length}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">({group.fields.length})</span>
-                        );
-                      })()}
+                      {activeCount > 0 ? (
+                        <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                          {activeCount}/{group.fields.length}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">({group.fields.length})</span>
+                      )}
                     </div>
-                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+                    <div className="flex items-center gap-2">
+                      <div onClick={toggleGroup}>
+                        <Switch checked={allEnabled} />
+                      </div>
+                      <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+                    </div>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <div className="grid gap-3 pt-3 ps-2">
