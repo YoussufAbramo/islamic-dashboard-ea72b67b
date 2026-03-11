@@ -79,6 +79,7 @@ interface PendingSettings {
   defaultLanguage: 'en' | 'ar';
   defaultTimezone: string;
   sidebarMode: SidebarMode;
+  timeFormat: TimeFormat;
 }
 
 interface AppSettingsContextType {
