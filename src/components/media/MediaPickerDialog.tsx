@@ -45,13 +45,32 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
     setBucket(bucketId);
     setCurrentPath(path);
     setLoading(true);
+    setFileUrls({});
     const { data } = await supabase.storage.from(bucketId).list(path, { limit: 200, sortBy: { column: 'created_at', order: 'desc' } });
     const items = data || [];
-    // Folders have null id and no metadata
     const folderItems = items.filter(f => f.id === null || (f.metadata && Object.keys(f.metadata).length === 0 && !f.name.includes('.')));
     const fileItems = items.filter(f => f.id !== null && f.name.includes('.') && isImage(f.name));
     setFolders(folderItems.map(f => f.name));
     setFiles(fileItems);
+
+    // Generate URLs (signed for private buckets, public for public ones)
+    const bucketInfo = BUCKETS.find(b => b.id === bucketId);
+    const urls: Record<string, string> = {};
+    if (bucketInfo && !bucketInfo.public && fileItems.length > 0) {
+      const paths = fileItems.map(f => path ? `${path}/${f.name}` : f.name);
+      const { data: signedData } = await supabase.storage.from(bucketId).createSignedUrls(paths, 3600);
+      if (signedData) {
+        signedData.forEach((item, i) => {
+          if (item.signedUrl) urls[fileItems[i].name] = item.signedUrl;
+        });
+      }
+    } else {
+      fileItems.forEach(f => {
+        const fullPath = path ? `${path}/${f.name}` : f.name;
+        urls[f.name] = supabase.storage.from(bucketId).getPublicUrl(fullPath).data.publicUrl;
+      });
+    }
+    setFileUrls(urls);
     setLoading(false);
   }, []);
 
