@@ -140,7 +140,7 @@ const Chats = () => {
   const handleCreateChat = async () => {
     if (chatType === 'direct') {
       if (!createForm.student_id && !createForm.teacher_id) {
-        toast.error(isAr ? 'يرجى اختيار مستخدم واحد على الأقل' : 'Please select at least one user');
+        notifyError({ error: 'VAL_SELECT_USER', isAr });
         return;
       }
     } else {
