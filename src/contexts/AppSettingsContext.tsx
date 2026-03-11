@@ -269,6 +269,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const setPaymentGateway = useCallback((g: string) => { setPending(p => ({ ...p, paymentGateway: g })); }, []);
   const setDefaultTimezone = useCallback((tz: string) => { setPending(p => ({ ...p, defaultTimezone: tz })); }, []);
   const setSidebarMode = useCallback((m: SidebarMode) => { setPending(p => ({ ...p, sidebarMode: m })); }, []);
+  const setTimeFormat = useCallback((f: TimeFormat) => { setPending(p => ({ ...p, timeFormat: f })); }, []);
 
   return (
     <AppSettingsContext.Provider value={{
