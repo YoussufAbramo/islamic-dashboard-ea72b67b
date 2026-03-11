@@ -108,6 +108,22 @@ const TopBar = () => {
     <>
       <header className="flex h-14 items-center gap-2 border-b bg-background px-4 sticky top-0 z-30">
         <SidebarTrigger className="rounded-full" />
+
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="sm" onClick={() => setSearchOpen(true)} className="gap-2 h-8 px-3 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg">
+                <Search className="h-3.5 w-3.5" />
+                <span className="text-xs hidden sm:inline">{isAr ? 'بحث...' : 'Search...'}</span>
+                <kbd className="hidden sm:inline-flex h-5 items-center gap-0.5 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+                  ⌘K
+                </kbd>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{isAr ? 'بحث سريع (Ctrl+K)' : 'Quick Search (Ctrl+K)'}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
         <div className="flex-1" />
 
         <TooltipProvider delayDuration={300}>
