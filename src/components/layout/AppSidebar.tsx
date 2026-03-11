@@ -191,25 +191,24 @@ const AppSidebar = () => {
                     const hasChildren = item.children && item.children.length > 0;
                     const isParentActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
                     const visibleChildren = hasChildren ? item.children!.filter(c => role && c.roles.includes(role)) : [];
-                    const isExpanded = expandedMenus.has(item.key) || isParentActive;
-                    const toggleExpand = (e: React.MouseEvent) => {
-                      e.stopPropagation();
-                      setExpandedMenus(prev => {
-                        const next = new Set(prev);
-                        if (next.has(item.key)) next.delete(item.key);
-                        else next.add(item.key);
-                        return next;
-                      });
-                    };
+                    const isExpanded = hoveredMenus.has(item.key) || expandedMenus.has(item.key) || isParentActive;
                     return (
-                      <SidebarMenuItem key={item.key}>
+                      <SidebarMenuItem
+                        key={item.key}
+                        onMouseEnter={() => {
+                          if (hasChildren) setHoveredMenus(prev => new Set(prev).add(item.key));
+                        }}
+                        onMouseLeave={() => {
+                          if (hasChildren) setHoveredMenus(prev => {
+                            const next = new Set(prev);
+                            next.delete(item.key);
+                            return next;
+                          });
+                        }}
+                      >
                         <SidebarMenuButton
                           isActive={location.pathname === item.path}
-                          onClick={(e) => {
-                            // Don't navigate if the chevron toggle was clicked
-                            if ((e.target as HTMLElement).closest('[data-expand-toggle]')) return;
-                            navigate(item.path);
-                          }}
+                          onClick={() => navigate(item.path)}
                           tooltip={item.label}
                         >
                           <item.icon className="h-4 w-4" />
@@ -221,14 +220,7 @@ const AppSidebar = () => {
                             </Badge>
                           )}
                           {hasChildren && (
-                            <span
-                              role="button"
-                              data-expand-toggle
-                              onClick={toggleExpand}
-                              className="p-0.5 rounded hover:bg-sidebar-accent shrink-0 ms-auto"
-                            >
-                              <ChevronDown className={`h-3.5 w-3.5 text-sidebar-foreground transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
-                            </span>
+                            <ChevronDown className={`h-3.5 w-3.5 text-sidebar-foreground/50 transition-transform duration-200 shrink-0 ms-auto ${isExpanded ? 'rotate-180' : ''}`} />
                           )}
                           {item.badgeKey === 'chats' && unreadChats > 0 && (
                             <Badge variant="destructive" className="text-[9px] px-1.5 py-0 h-4 min-w-[18px] shrink-0 ms-auto">
