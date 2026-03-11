@@ -99,6 +99,11 @@ const Policies = () => {
                 <Badge variant={policy.is_published ? 'default' : 'secondary'} className="text-xs">
                   {policy.is_published ? (isAr ? 'منشور' : 'Published') : (isAr ? 'مسودة' : 'Draft')}
                 </Badge>
+                {policy.is_published && (
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => window.open(`/policies/${policy.slug}`, '_blank')}>
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </Button>
+                )}
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => togglePublish(policy)}>
                   {policy.is_published ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                 </Button>
