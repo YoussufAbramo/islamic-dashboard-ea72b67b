@@ -21,6 +21,7 @@ import InvoiceStatsCards from '@/components/invoices/InvoiceStatsCards';
 import InvoiceTable from '@/components/invoices/InvoiceTable';
 import InvoicePreviewDialog from '@/components/invoices/InvoicePreviewDialog';
 import InvoiceEmptyState from '@/components/invoices/InvoiceEmptyState';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Invoices = () => {
   const { language } = useLanguage();
