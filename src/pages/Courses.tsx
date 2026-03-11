@@ -109,7 +109,7 @@ const Courses = () => {
             <Input placeholder={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="ps-9 w-48 sm:w-64" />
           </div>
           {canEdit && (
-            <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setEditCourse(null); setForm({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft', image_url: '' }); setImageFile(null); } }}>
+            <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setEditCourse(null); setForm({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft', image_url: '' }); } }}>
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 me-2" />{t('courses.create')}</Button>
               </DialogTrigger>
