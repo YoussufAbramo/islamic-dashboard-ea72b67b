@@ -53,7 +53,7 @@ const SupabaseStatusSettings = () => {
         <div className="grid gap-3">
           <div className="flex items-center justify-between p-3 rounded-md bg-muted/50">
             <span className="text-sm text-muted-foreground">{isAr ? 'عنوان المشروع' : 'Project URL'}</span>
-            <span className="text-sm font-mono truncate max-w-[300px]">{supabaseUrl || '—'}</span>
+            <span className="text-sm font-mono break-all">{supabaseUrl || '—'}</span>
           </div>
           <div className="flex items-center justify-between p-3 rounded-md bg-muted/50">
             <span className="text-sm text-muted-foreground">{isAr ? 'معرف المشروع' : 'Project ID'}</span>
