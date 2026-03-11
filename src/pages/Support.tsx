@@ -19,6 +19,7 @@ import { Plus, Search, Eye, MessageSquare, Mail, Phone, ArrowDown, ArrowUp, Tras
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ticketStatusLabels, ticketPriorityLabels, getLabel } from '@/lib/statusLabels';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 type SortOrder = 'newest' | 'oldest';
 
