@@ -78,6 +78,7 @@ const Settings = () => {
     { value: 'payment', label: 'Payment Methods', labelAr: 'طرق الدفع', icon: CreditCard, adminOnly: true },
     { value: 'data', label: 'Data Management', labelAr: 'إدارة البيانات', icon: Database, adminOnly: true },
     { value: 'backups', label: 'Backups', labelAr: 'النسخ الاحتياطية', icon: HardDrive, adminOnly: true },
+    { value: 'supabase', label: 'Supabase', labelAr: 'Supabase', icon: Cloud, adminOnly: true },
     { value: 'developer', label: 'Developer', labelAr: 'المطور', icon: Code, adminOnly: true },
   ];
 
