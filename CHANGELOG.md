@@ -2,6 +2,12 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.3.4] - 2026-03-11
+
+### Added
+- Auto Fill button on the support ticket dialog that populates name and email from the logged-in user's profile
+- Version bumped to 4.3.4
+
 ## [4.3.3] - 2026-03-11
 
 ### Added
