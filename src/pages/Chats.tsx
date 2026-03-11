@@ -126,7 +126,7 @@ const Chats = () => {
       user_id: userId,
       role: memberRole,
     });
-    if (error) { toast.error(error.message); return; }
+    if (error) { notifyError({ error, isAr, rawMessage: error.message }); return; }
     toast.success(isAr ? 'تمت إضافة العضو' : 'Member added');
     fetchGroupMembers(selectedChat.id);
   };
