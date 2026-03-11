@@ -85,7 +85,13 @@ const AppSidebar = () => {
       label: 'Educate',
       labelAr: 'التعليم',
       items: [
-        { key: 'courses', label: t('nav.courses'), icon: BookOpen, path: '/dashboard/courses', roles: ['admin', 'teacher', 'student'] },
+        { key: 'courses', label: t('nav.courses'), icon: BookOpen, path: '/dashboard/courses', roles: ['admin', 'teacher', 'student'],
+          children: [
+            { key: 'tracks', label: isAr ? 'المسارات' : 'Tracks', icon: Route, path: '/dashboard/courses/tracks', roles: ['admin'] },
+            { key: 'categories', label: isAr ? 'التصنيفات' : 'Categories', icon: FolderTree, path: '/dashboard/courses/categories', roles: ['admin'] },
+            { key: 'levels', label: isAr ? 'المستويات' : 'Levels', icon: Signal, path: '/dashboard/courses/levels', roles: ['admin'] },
+          ],
+        },
         { key: 'timetable', label: t('nav.timetable'), icon: Calendar, path: '/dashboard/timetable', roles: ['admin', 'teacher', 'student'] },
         { key: 'attendance', label: isAr ? 'الحضور' : 'Attendance', icon: ClipboardCheck, path: '/dashboard/attendance', roles: ['admin', 'teacher'] },
         { key: 'certificates', label: isAr ? 'الشهادات' : 'Certificates', icon: Award, path: '/dashboard/certificates', roles: ['admin', 'teacher', 'student'] },
