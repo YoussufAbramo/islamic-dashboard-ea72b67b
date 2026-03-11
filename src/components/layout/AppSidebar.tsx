@@ -30,6 +30,7 @@ interface MenuCategory {
   labelAr: string;
   items: MenuItem[];
   requiresDeveloperMode?: boolean;
+  requiresWebsiteMode?: boolean;
 }
 
 const AppSidebar = () => {
