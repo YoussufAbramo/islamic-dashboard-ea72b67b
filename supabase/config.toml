@@ -2,3 +2,6 @@ project_id = "ubpiluthfipkunectidq"
 
 [functions.auto-invoice]
 verify_jwt = false
+
+[functions.manage-backups]
+verify_jwt = false

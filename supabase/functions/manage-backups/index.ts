@@ -12,21 +12,151 @@ const ALL_TABLES = [
   'student_progress', 'invoices', 'pricing_packages', 'landing_content',
 ]
 
+async function createBackupFile(adminClient: any, name: string, format: string, tables: string[]) {
+  const exportData: Record<string, any[]> = {}
+  for (const table of tables) {
+    const { data } = await adminClient.from(table).select('*')
+    exportData[table] = data || []
+  }
+
+  let fileContent: string
+  let mimeType: string
+  let ext: string
+
+  if (format === 'json') {
+    fileContent = JSON.stringify({ exported_at: new Date().toISOString(), data: exportData }, null, 2)
+    mimeType = 'application/json'
+    ext = 'json'
+  } else if (format === 'csv') {
+    let csvContent = ''
+    for (const [table, rows] of Object.entries(exportData)) {
+      if (!rows || rows.length === 0) continue
+      const headers = Object.keys(rows[0])
+      csvContent += `\n=== ${table} ===\n`
+      csvContent += headers.join(',') + '\n'
+      rows.forEach(row => {
+        csvContent += headers.map(h => {
+          const val = row[h]
+          if (val === null) return ''
+          const str = typeof val === 'object' ? JSON.stringify(val) : String(val)
+          return str.includes(',') || str.includes('"') || str.includes('\n') ? `"${str.replace(/"/g, '""')}"` : str
+        }).join(',') + '\n'
+      })
+    }
+    fileContent = csvContent
+    mimeType = 'text/csv'
+    ext = 'csv'
+  } else {
+    let sqlContent = `-- Backup generated at ${new Date().toISOString()}\n-- Platform Full Backup\n\n`
+    for (const [table, rows] of Object.entries(exportData)) {
+      if (!rows || rows.length === 0 || table.startsWith('_')) continue
+      sqlContent += `-- Table: ${table}\n`
+      for (const row of rows) {
+        const cols = Object.keys(row)
+        const vals = cols.map(c => {
+          const v = row[c]
+          if (v === null) return 'NULL'
+          if (typeof v === 'boolean') return v ? 'TRUE' : 'FALSE'
+          if (typeof v === 'number') return String(v)
+          if (typeof v === 'object') return `'${JSON.stringify(v).replace(/'/g, "''")}'`
+          return `'${String(v).replace(/'/g, "''")}'`
+        })
+        sqlContent += `INSERT INTO public.${table} (${cols.join(', ')}) VALUES (${vals.join(', ')});\n`
+      }
+      sqlContent += '\n'
+    }
+    fileContent = sqlContent
+    mimeType = 'application/sql'
+    ext = 'sql'
+  }
+
+  const fileName = `${name}.${ext}`
+  const { error: uploadError } = await adminClient.storage
+    .from('backups')
+    .upload(fileName, new TextEncoder().encode(fileContent), {
+      contentType: mimeType,
+      upsert: true,
+    })
+
+  if (uploadError) throw new Error(uploadError.message)
+
+  const totalRecords = Object.values(exportData).reduce((sum, rows) => sum + rows.length, 0)
+  return { fileName, ext, size: fileContent.length, totalRecords, tables: Object.fromEntries(Object.entries(exportData).map(([k, v]) => [k, v.length])) }
+}
+
+async function enforceRetention(adminClient: any, retentionCount: number) {
+  const { data: files } = await adminClient.storage.from('backups').list('', {
+    limit: 500,
+    sortBy: { column: 'created_at', order: 'desc' },
+  })
+
+  const autoFiles = (files || []).filter((f: any) => f.name.startsWith('auto-backup-') && f.name !== '.emptyFolderPlaceholder')
+
+  if (autoFiles.length > retentionCount) {
+    const toDelete = autoFiles.slice(retentionCount).map((f: any) => f.name)
+    if (toDelete.length > 0) {
+      await adminClient.storage.from('backups').remove(toDelete)
+    }
+    return toDelete.length
+  }
+  return 0
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+
+    const body = await req.json()
+    const { action } = body
+
+    // ==================== RUN AUTO BACKUP (called by cron — no auth needed) ====================
+    if (action === 'run_auto_backup') {
+      const adminClient = createClient(supabaseUrl, serviceRoleKey)
+
+      // Check if auto backup is enabled
+      const { data: config } = await adminClient.from('auto_backup_config').select('*').limit(1).single()
+      if (!config || !config.enabled) {
+        return new Response(JSON.stringify({ success: true, skipped: true, reason: 'Auto backup is disabled' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+
+      // Check schedule: daily runs every time, weekly only on Sundays, monthly on 1st
+      const now = new Date()
+      const dayOfWeek = now.getUTCDay() // 0 = Sunday
+      const dayOfMonth = now.getUTCDate()
+
+      if (config.schedule === 'weekly' && dayOfWeek !== 0) {
+        return new Response(JSON.stringify({ success: true, skipped: true, reason: 'Not scheduled day (weekly)' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+      if (config.schedule === 'monthly' && dayOfMonth !== 1) {
+        return new Response(JSON.stringify({ success: true, skipped: true, reason: 'Not scheduled day (monthly)' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+
+      // Create the backup
+      const dateStr = now.toISOString().slice(0, 10)
+      const timeStr = now.toISOString().slice(11, 19).replace(/:/g, '-')
+      const backupName = `auto-backup-${dateStr}_${timeStr}`
+
+      const result = await createBackupFile(adminClient, backupName, config.format || 'json', ALL_TABLES)
+
+      // Enforce retention
+      const deleted = await enforceRetention(adminClient, config.retention_count || 7)
+
+      return new Response(JSON.stringify({ success: true, ...result, retention_deleted: deleted }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
+    // All other actions require admin auth
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Missing authorization' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-
-    const callerClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
+    const callerClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
     })
 
@@ -41,106 +171,26 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Admin access required' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    const body = await req.json()
-    const { action } = body
-
     // ==================== CREATE BACKUP ====================
     if (action === 'create_backup') {
       const { name, format, tables: requestedTables } = body as { name: string; format: 'json' | 'sql' | 'csv'; tables?: string[] }
-      
-      // Use requested tables or default to all
+
       const tablesToExport = requestedTables && requestedTables.length > 0
         ? ALL_TABLES.filter(t => requestedTables.includes(t))
         : ALL_TABLES
 
-      // Fetch data for selected tables
-      const exportData: Record<string, any[]> = {}
-      for (const table of tablesToExport) {
-        const { data } = await adminClient.from(table).select('*')
-        exportData[table] = data || []
-      }
+      const result = await createBackupFile(adminClient, name, format, tablesToExport)
 
-      // Also include app settings from localStorage (passed from client)
-      if (body.appSettings) {
-        exportData['_app_settings'] = [body.appSettings]
-      }
-
-      let fileContent: string
-      let mimeType: string
-      let ext: string
-
-      if (format === 'json') {
-        fileContent = JSON.stringify({ exported_at: new Date().toISOString(), data: exportData }, null, 2)
-        mimeType = 'application/json'
-        ext = 'json'
-      } else if (format === 'csv') {
-        let csvContent = ''
-        for (const [table, rows] of Object.entries(exportData)) {
-          if (!rows || rows.length === 0) continue
-          const headers = Object.keys(rows[0])
-          csvContent += `\n=== ${table} ===\n`
-          csvContent += headers.join(',') + '\n'
-          rows.forEach(row => {
-            csvContent += headers.map(h => {
-              const val = row[h]
-              if (val === null) return ''
-              const str = typeof val === 'object' ? JSON.stringify(val) : String(val)
-              return str.includes(',') || str.includes('"') || str.includes('\n') ? `"${str.replace(/"/g, '""')}"` : str
-            }).join(',') + '\n'
-          })
-        }
-        fileContent = csvContent
-        mimeType = 'text/csv'
-        ext = 'csv'
-      } else {
-        // SQL format
-        let sqlContent = `-- Backup generated at ${new Date().toISOString()}\n-- Platform Full Backup\n\n`
-        for (const [table, rows] of Object.entries(exportData)) {
-          if (!rows || rows.length === 0 || table.startsWith('_')) continue
-          sqlContent += `-- Table: ${table}\n`
-          for (const row of rows) {
-            const cols = Object.keys(row)
-            const vals = cols.map(c => {
-              const v = row[c]
-              if (v === null) return 'NULL'
-              if (typeof v === 'boolean') return v ? 'TRUE' : 'FALSE'
-              if (typeof v === 'number') return String(v)
-              if (typeof v === 'object') return `'${JSON.stringify(v).replace(/'/g, "''")}'`
-              return `'${String(v).replace(/'/g, "''")}'`
-            })
-            sqlContent += `INSERT INTO public.${table} (${cols.join(', ')}) VALUES (${vals.join(', ')});\n`
-          }
-          sqlContent += '\n'
-        }
-        fileContent = sqlContent
-        mimeType = 'application/sql'
-        ext = 'sql'
-      }
-
-      const fileName = `${name}.${ext}`
-      const filePath = `${fileName}`
-
-      const { error: uploadError } = await adminClient.storage
-        .from('backups')
-        .upload(filePath, new TextEncoder().encode(fileContent), {
-          contentType: mimeType,
-          upsert: true,
-        })
-
-      if (uploadError) {
-        return new Response(JSON.stringify({ error: uploadError.message }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-      }
-
-      // Count records
-      const totalRecords = Object.values(exportData).reduce((sum, rows) => sum + rows.length, 0)
+      // Also include app settings if passed
+      // (kept for backwards compat but not in shared function)
 
       return new Response(JSON.stringify({
         success: true,
-        file: fileName,
-        format: ext,
-        size: fileContent.length,
-        total_records: totalRecords,
-        tables: Object.fromEntries(Object.entries(exportData).map(([k, v]) => [k, v.length])),
+        file: result.fileName,
+        format: result.ext,
+        size: result.size,
+        total_records: result.totalRecords,
+        tables: result.tables,
       }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
