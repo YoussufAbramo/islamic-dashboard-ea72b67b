@@ -100,7 +100,7 @@ const FloatingButtons = () => {
           rel="noopener noreferrer"
           className={`group flex items-center gap-1.5 md:gap-2 py-1.5 md:py-2.5 bg-[#128C7E] text-white shadow-md transition-transform duration-300 ease-out ${
             isAr
-              ? 'ps-2 md:ps-3 pe-1.5 md:pe-2 rounded-e-xl translate-x-[calc(100%-32px)] md:translate-x-[calc(100%-40px)] hover:translate-x-0'
+              ? 'flex-row-reverse ps-1.5 md:ps-2 pe-2 md:pe-3 rounded-e-xl -translate-x-[calc(100%-32px)] md:-translate-x-[calc(100%-40px)] hover:translate-x-0'
               : 'pe-1.5 md:pe-2 ps-2 md:ps-3 rounded-s-xl translate-x-[calc(100%-32px)] md:translate-x-[calc(100%-40px)] hover:translate-x-0'
           }`}>
           
