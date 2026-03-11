@@ -3,7 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { Button } from '@/components/ui/button';
-import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, DollarSign, HardDrive, GraduationCap } from 'lucide-react';
+import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, DollarSign, HardDrive, GraduationCap, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
 import AppearanceSettings from '@/components/settings/AppearanceSettings';
 import PaymentGatewayCard from '@/components/settings/PaymentGatewayCard';
@@ -14,8 +14,9 @@ import LandingContentSettings from '@/components/settings/LandingContentSettings
 import SaaSPricingSettings from '@/components/settings/SaaSPricingSettings';
 import BackupsSettings from '@/components/settings/BackupsSettings';
 import EducationSystemSettings from '@/components/settings/EducationSystemSettings';
+import PixelsIntegrationSettings from '@/components/settings/PixelsIntegrationSettings';
 
-type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing' | 'backups' | 'education';
+type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing' | 'backups' | 'education' | 'pixels';
 
 const Settings = () => {
   const { language } = useLanguage();
@@ -44,6 +45,7 @@ const Settings = () => {
     { value: 'education', label: 'Education System', labelAr: 'النظام التعليمي', icon: GraduationCap },
     { value: 'landing', label: 'Landing Page', labelAr: 'صفحة الهبوط', icon: Globe, adminOnly: true },
     { value: 'pricing', label: 'Pricing Packages', labelAr: 'باقات الأسعار', icon: DollarSign, adminOnly: true },
+    { value: 'pixels', label: 'Pixels & Tracking', labelAr: 'البيكسل والتتبع', icon: BarChart3, adminOnly: true },
     { value: 'auth', label: 'Authentication', labelAr: 'المصادقة', icon: ShieldCheck, adminOnly: true },
     { value: 'payment', label: 'Payment Methods', labelAr: 'طرق الدفع', icon: CreditCard, adminOnly: true },
     { value: 'data', label: 'Data Management', labelAr: 'إدارة البيانات', icon: Database, adminOnly: true },
