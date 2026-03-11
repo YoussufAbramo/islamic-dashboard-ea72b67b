@@ -15,9 +15,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Search, Eye, Edit, Trash2, Upload } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
+import ImagePickerField from '@/components/media/ImagePickerField';
 import { useNavigate } from 'react-router-dom';
 import { courseStatusLabels, getLabel } from '@/lib/statusLabels';
 import { TableSkeleton } from '@/components/PageSkeleton';
@@ -33,8 +34,6 @@ const Courses = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editCourse, setEditCourse] = useState<any>(null);
   const [form, setForm] = useState({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft', image_url: '' });
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -49,21 +48,8 @@ const Courses = () => {
 
   useEffect(() => { fetchCourses(); }, []);
 
-  const handleImageUpload = async (): Promise<string> => {
-    if (!imageFile) return form.image_url;
-    setUploading(true);
-    const ext = imageFile.name.split('.').pop();
-    const fileName = `${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from('course-images').upload(fileName, imageFile);
-    setUploading(false);
-    if (error) { notifyError({ error, isAr, rawMessage: error.message }); return form.image_url; }
-    const { data: urlData } = supabase.storage.from('course-images').getPublicUrl(fileName);
-    return urlData.publicUrl;
-  };
-
   const handleSave = async () => {
-    const imageUrl = await handleImageUpload();
-    const saveData = { ...form, image_url: imageUrl };
+    const saveData = { ...form };
     if (editCourse) {
       await supabase.from('courses').update(saveData).eq('id', editCourse.id);
       toast.success(isAr ? 'تم تحديث الدورة' : 'Course updated');
@@ -74,14 +60,12 @@ const Courses = () => {
     setDialogOpen(false);
     setEditCourse(null);
     setForm({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft', image_url: '' });
-    setImageFile(null);
     fetchCourses();
   };
 
   const openEdit = (course: any) => {
     setEditCourse(course);
     setForm({ title: course.title, title_ar: course.title_ar || '', description: course.description || '', description_ar: course.description_ar || '', status: course.status, image_url: course.image_url || '' });
-    setImageFile(null);
     setDialogOpen(true);
   };
 
@@ -125,7 +109,7 @@ const Courses = () => {
             <Input placeholder={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="ps-9 w-48 sm:w-64" />
           </div>
           {canEdit && (
-            <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setEditCourse(null); setForm({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft', image_url: '' }); setImageFile(null); } }}>
+            <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setEditCourse(null); setForm({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft', image_url: '' }); } }}>
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 me-2" />{t('courses.create')}</Button>
               </DialogTrigger>
@@ -140,13 +124,11 @@ const Courses = () => {
                     <div><Label>{t('courses.description')} (EN)</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
                     <div><Label>{t('courses.description')} (AR)</Label><Textarea value={form.description_ar} onChange={(e) => setForm({ ...form, description_ar: e.target.value })} dir="rtl" className="text-right" /></div>
                   </div>
-                  <div>
-                    <Label>{isAr ? 'صورة الدورة' : 'Course Image'}</Label>
-                    {(form.image_url || imageFile) && (
-                      <img src={imageFile ? URL.createObjectURL(imageFile) : form.image_url} alt="Preview" className="h-24 w-full object-cover rounded-lg mt-1 mb-2" />
-                    )}
-                    <Input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
-                  </div>
+                  <ImagePickerField
+                    label={isAr ? 'صورة الدورة' : 'Course Image'}
+                    value={form.image_url}
+                    onChange={(url) => setForm({ ...form, image_url: url })}
+                  />
                   <div>
                     <Label>{t('courses.status')}</Label>
                     <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
@@ -158,8 +140,8 @@ const Courses = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button onClick={handleSave} className="w-full" disabled={uploading}>
-                    {uploading ? (isAr ? 'جاري الرفع...' : 'Uploading...') : t('common.save')}
+                  <Button onClick={handleSave} className="w-full">
+                    {t('common.save')}
                   </Button>
                 </div>
               </DialogContent>

@@ -12,12 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { PenLine, Plus, Save, Trash2, Search, ExternalLink, ChevronDown, Image as ImageIcon, HardDrive } from 'lucide-react';
+import { PenLine, Plus, Save, Trash2, Search, ExternalLink, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
 import ContentEditor from '@/components/ContentEditor';
-import MediaPickerDialog from '@/components/media/MediaPickerDialog';
+import ImagePickerField from '@/components/media/ImagePickerField';
 import { format } from 'date-fns';
 
 interface BlogPost {
@@ -58,7 +58,7 @@ const BlogPosts = () => {
   const [search, setSearch] = useState('');
   const [seo, setSeo] = useState<SeoData>(emptySeo);
   const [seoOpen, setSeoOpen] = useState(false);
-  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
+  
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -247,15 +247,11 @@ const BlogPosts = () => {
                 <div><Label>Excerpt (EN)</Label><Textarea value={editPost.excerpt} onChange={e => setEditPost({ ...editPost, excerpt: e.target.value })} rows={2} placeholder="Brief summary..." /></div>
                 <div><Label>Excerpt (AR)</Label><Textarea dir="rtl" value={editPost.excerpt_ar} onChange={e => setEditPost({ ...editPost, excerpt_ar: e.target.value })} rows={2} placeholder="ملخص قصير..." /></div>
               </div>
-              <div>
-                <Label className="flex items-center gap-1.5"><ImageIcon className="h-3.5 w-3.5" />Featured Image URL</Label>
-                <div className="flex gap-2">
-                  <Input value={editPost.featured_image} onChange={e => setEditPost({ ...editPost, featured_image: e.target.value })} placeholder="https://..." className="flex-1" />
-                  <Button variant="outline" size="sm" className="shrink-0 gap-1.5" onClick={() => setMediaPickerOpen(true)}>
-                    <HardDrive className="h-3.5 w-3.5" />{isAr ? 'الوسائط' : 'Media'}
-                  </Button>
-                </div>
-              </div>
+              <ImagePickerField
+                label={isAr ? 'الصورة المميزة' : 'Featured Image'}
+                value={editPost.featured_image}
+                onChange={(url) => setEditPost({ ...editPost, featured_image: url })}
+              />
               <div>
                 <Label className="mb-2 block">Content (EN)</Label>
                 <ContentEditor value={editPost.content} onChange={v => setEditPost({ ...editPost, content: v })} />
@@ -282,10 +278,11 @@ const BlogPosts = () => {
                     <div><Label>Meta Description</Label><Textarea value={seo.meta_description} onChange={e => setSeo(p => ({ ...p, meta_description: e.target.value }))} rows={2} placeholder="Brief description for search results" /></div>
                     <div><Label>OG Description</Label><Textarea value={seo.og_description} onChange={e => setSeo(p => ({ ...p, og_description: e.target.value }))} rows={2} placeholder="Description for social sharing" /></div>
                   </div>
-                  <div>
-                    <Label className="flex items-center gap-1.5"><ImageIcon className="h-3.5 w-3.5" />OG Image URL</Label>
-                    <Input value={seo.og_image} onChange={e => setSeo(p => ({ ...p, og_image: e.target.value }))} placeholder="https://..." className="font-mono text-sm" />
-                  </div>
+                  <ImagePickerField
+                    label="OG Image"
+                    value={seo.og_image}
+                    onChange={(url) => setSeo(p => ({ ...p, og_image: url }))}
+                  />
                 </CollapsibleContent>
               </Collapsible>
 
@@ -300,11 +297,6 @@ const BlogPosts = () => {
         </DialogContent>
       </Dialog>
 
-      <MediaPickerDialog
-        open={mediaPickerOpen}
-        onOpenChange={setMediaPickerOpen}
-        onSelect={(url) => editPost && setEditPost({ ...editPost, featured_image: url })}
-      />
     </div>
   );
 };
