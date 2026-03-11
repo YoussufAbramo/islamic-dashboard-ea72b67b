@@ -335,6 +335,8 @@ const Courses = () => {
               <TableRow>
                 <TableHead>{t('courses.name')}</TableHead>
                 <TableHead>{isAr ? 'التصنيف' : 'Category'}</TableHead>
+                <TableHead>{isAr ? 'المسار' : 'Track'}</TableHead>
+                <TableHead>{isAr ? 'المدة' : 'Duration'}</TableHead>
                 <TableHead>{t('courses.status')}</TableHead>
                 <TableHead>{t('common.actions')}</TableHead>
               </TableRow>
@@ -353,6 +355,12 @@ const Courses = () => {
                       <Badge variant="outline" className="text-xs">{getCategoryLabel(course)}</Badge>
                     ) : '—'}
                   </TableCell>
+                  <TableCell>
+                    {getTrackLabel(course) || '—'}
+                  </TableCell>
+                  <TableCell>
+                    {course.duration_weeks ? `${course.duration_weeks} ${isAr ? 'أسابيع' : 'weeks'}` : '—'}
+                  </TableCell>
                   <TableCell><Badge variant={statusColor[course.status] as any}>{getLabel(courseStatusLabels, course.status, isAr)}</Badge></TableCell>
                   <TableCell className="flex gap-1">
                     <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted h-8 w-8" onClick={() => navigate(`/dashboard/courses/${course.id}`)}><Eye className="h-3.5 w-3.5" /></Button>
@@ -362,7 +370,7 @@ const Courses = () => {
                 </TableRow>
               ))}
               {filtered.length === 0 && (
-                <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">{t('common.noData')}</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">{t('common.noData')}</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
