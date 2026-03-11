@@ -17,7 +17,7 @@ import {
   LayoutDashboard, Users, CreditCard, HeadphonesIcon, Calendar,
   MessageSquare, ClipboardCheck, Award, BarChart3, Bell, Megaphone,
   Settings, Calculator, Shield, ShieldCheck, HardDrive, Webhook,
-  Bug, ClipboardList, Activity, AlertCircle,
+  Bug, ClipboardList, Activity, AlertCircle
 } from 'lucide-react';
 
 interface SearchResult {
