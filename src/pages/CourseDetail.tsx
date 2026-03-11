@@ -408,14 +408,14 @@ const CourseDetail = () => {
                           ))}
 
                           {canEdit && (
-                            <Dialog open={contentDialog && activeSectionId === section.id} onOpenChange={(o) => { setContentDialog(o); if (o) setActiveSectionId(section.id); }}>
+                            <Dialog open={contentDialog && activeSectionId === section.id} onOpenChange={(o) => { setContentDialog(o); if (o) { setActiveSectionId(section.id); } if (!o) { setEditingContentId(null); setContentForm({ title: '', title_ar: '', lesson_type: 'read_listen' }); } }}>
                               <DialogTrigger asChild>
-                                <Button variant="outline" size="sm" className="w-full" onClick={() => setActiveSectionId(section.id)}>
+                                <Button variant="outline" size="sm" className="w-full" onClick={() => { setActiveSectionId(section.id); setEditingContentId(null); setContentForm({ title: '', title_ar: '', lesson_type: 'read_listen' }); }}>
                                   <Plus className="h-3 w-3 me-1" />{t('courses.addContent')}
                                 </Button>
                               </DialogTrigger>
                               <DialogContent>
-                                <DialogHeader><DialogTitle>{t('courses.addContent')}</DialogTitle></DialogHeader>
+                                <DialogHeader><DialogTitle>{editingContentId ? (isAr ? 'تعديل المحتوى' : 'Edit Content') : t('courses.addContent')}</DialogTitle></DialogHeader>
                                 <div className="space-y-3">
                                   <div className="grid grid-cols-2 gap-3">
                                     <div><Label>Title (EN)</Label><Input value={contentForm.title} onChange={(e) => setContentForm({ ...contentForm, title: e.target.value })} /></div>
