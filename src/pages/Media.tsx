@@ -48,6 +48,7 @@ const Media = () => {
   const [search, setSearch] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<FileObject | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
   const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [bulkDownloading, setBulkDownloading] = useState(false);
@@ -62,6 +63,7 @@ const Media = () => {
     setSelectedBucket(bucketName);
     setCurrentPath(path);
     setSelectedFile(null);
+    setPreviewUrl('');
     setSelectedNames(new Set());
     const { data, error } = await supabase.storage.from(bucketName).list(path, { limit: 200, sortBy: { column: 'created_at', order: 'desc' } });
     if (error) {
@@ -142,7 +144,7 @@ const Media = () => {
     if (!selectedBucket) return;
     const { error } = await supabase.storage.from(selectedBucket).remove([getFullPath(fileName)]);
     if (error) { toast.error(isAr ? 'خطأ في حذف الملف' : 'Error deleting file'); }
-    else { toast.success(isAr ? 'تم حذف الملف' : 'File deleted'); setFiles(prev => prev.filter(f => f.name !== fileName)); if (selectedFile?.name === fileName) setSelectedFile(null); setSelectedNames(prev => { const n = new Set(prev); n.delete(fileName); return n; }); }
+    else { toast.success(isAr ? 'تم حذف الملف' : 'File deleted'); setFiles(prev => prev.filter(f => f.name !== fileName)); if (selectedFile?.name === fileName) { setSelectedFile(null); setPreviewUrl(''); } setSelectedNames(prev => { const n = new Set(prev); n.delete(fileName); return n; }); }
   };
 
   const getPublicUrl = (fileName: string) => {
@@ -152,6 +154,19 @@ const Media = () => {
 
   const isImageFile = (name: string) => IMAGE_EXTS.includes(name.split('.').pop()?.toLowerCase() || '');
   const getFileExt = (name: string) => (name.split('.').pop()?.toUpperCase() || '—');
+
+  const selectFile = async (file: FileObject | null) => {
+    setSelectedFile(file);
+    setPreviewUrl('');
+    if (!file || !selectedBucket || !isImageFile(file.name)) return;
+    const bucket = BUCKETS.find(b => b.id === selectedBucket);
+    if (bucket?.public) {
+      setPreviewUrl(getPublicUrl(file.name));
+    } else {
+      const { data } = await supabase.storage.from(selectedBucket).createSignedUrl(getFullPath(file.name), 3600);
+      if (data?.signedUrl) setPreviewUrl(data.signedUrl);
+    }
+  };
 
   const handleDownload = async (fileName: string) => {
     if (!selectedBucket) return;
@@ -206,7 +221,7 @@ const Media = () => {
     } else {
       toast.success(isAr ? `تم حذف ${selectedNames.size} ملف` : `${selectedNames.size} file(s) deleted`);
       setFiles(prev => prev.filter(f => !selectedNames.has(f.name)));
-      if (selectedFile && selectedNames.has(selectedFile.name)) setSelectedFile(null);
+      if (selectedFile && selectedNames.has(selectedFile.name)) { setSelectedFile(null); setPreviewUrl(''); }
       setSelectedNames(new Set());
     }
   };
@@ -470,7 +485,7 @@ const Media = () => {
                         {filteredFiles.map((file, idx) => (
                           <div
                             key={idx}
-                            onClick={() => setSelectedFile(file)}
+                            onClick={() => selectFile(file)}
                             onDoubleClick={() => handleDownload(file.name)}
                             className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors group ${
                               selectedFile?.name === file.name ? 'bg-primary/10 border border-primary/20' : selectedNames.has(file.name) ? 'bg-muted/70' : 'hover:bg-muted/50'
@@ -509,14 +524,14 @@ const Media = () => {
                   <CardContent className="space-y-3">
                     {selectedFile ? (
                       <>
-                        {isImageFile(selectedFile.name) && currentBucket?.public && (
+                        {isImageFile(selectedFile.name) && previewUrl && (
                           <button
                             type="button"
                             onClick={() => setLightboxOpen(true)}
                             className="relative w-full rounded-lg overflow-hidden border border-border bg-muted group cursor-zoom-in"
                           >
                             <img
-                              src={getPublicUrl(selectedFile.name)}
+                              src={previewUrl}
                               alt={selectedFile.name}
                               className="w-full h-auto max-h-72 object-contain"
                             />
@@ -603,12 +618,12 @@ const Media = () => {
       </div>
 
       {/* Lightbox Dialog */}
-      {selectedFile && isImageFile(selectedFile.name) && currentBucket?.public && (
+      {selectedFile && isImageFile(selectedFile.name) && previewUrl && (
         <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
           <DialogContent className="max-w-[90vw] max-h-[90vh] p-2 bg-background/95 backdrop-blur-sm">
             <div className="flex items-center justify-center w-full h-full min-h-[60vh]">
               <img
-                src={getPublicUrl(selectedFile.name)}
+                src={previewUrl}
                 alt={selectedFile.name}
                 className="max-w-full max-h-[80vh] object-contain rounded-lg"
               />
@@ -619,7 +634,7 @@ const Media = () => {
                 <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => handleDownload(selectedFile.name)}>
                   <Download className="h-3 w-3" />{isAr ? 'تحميل' : 'Download'}
                 </Button>
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => window.open(getPublicUrl(selectedFile.name), '_blank')}>
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => window.open(previewUrl, '_blank')}>
                   <ExternalLink className="h-3 w-3" />{isAr ? 'فتح' : 'Open'}
                 </Button>
               </div>
