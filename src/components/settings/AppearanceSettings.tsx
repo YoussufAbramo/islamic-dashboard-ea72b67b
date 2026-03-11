@@ -359,8 +359,8 @@ const AppearanceSettings = () => {
                     <div className="flex flex-col items-center gap-1">
                       <Icon className="h-6 w-6" />
                       <div className={`flex gap-1 ${opt.value === 'dark' ? 'opacity-60' : 'opacity-40'}`}>
-                        <div className="w-6 h-1 rounded-full bg-current" />
-                        <div className="w-4 h-1 rounded-full bg-current" />
+                        <div className="w-6 h-1 rounded-sm bg-current" />
+                        <div className="w-4 h-1 rounded-sm bg-current" />
                       </div>
                     </div>
                   </div>
