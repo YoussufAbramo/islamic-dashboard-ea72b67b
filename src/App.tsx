@@ -46,6 +46,7 @@ import BlogPosts from "./pages/BlogPosts";
 import ActivityLog from "./pages/ActivityLog";
 import WebhookLog from "./pages/WebhookLog";
 import ErrorLog from "./pages/ErrorLog";
+import AuditTrail from "./pages/AuditTrail";
 
 const queryClient = new QueryClient();
 
@@ -96,6 +97,7 @@ const App = () => (
                       <Route path="activity-log" element={<RoleGuard allowed={['admin']}><ActivityLog /></RoleGuard>} />
                       <Route path="webhook-log" element={<RoleGuard allowed={['admin']}><WebhookLog /></RoleGuard>} />
                       <Route path="error-log" element={<RoleGuard allowed={['admin']}><ErrorLog /></RoleGuard>} />
+                      <Route path="audit-trail" element={<RoleGuard allowed={['admin']}><AuditTrail /></RoleGuard>} />
                       <Route path="profile" element={<Profile />} />
                     </Route>
                     <Route path="/invoice/:id" element={<InvoiceView />} />
