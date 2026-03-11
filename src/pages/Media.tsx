@@ -135,10 +135,22 @@ const Media = () => {
     return data.publicUrl;
   };
 
-  const getFileIcon = (name: string) => {
+  const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+
+  const isImageFile = (name: string) => {
     const ext = name.split('.').pop()?.toLowerCase();
-    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext || '')) return <Image className="h-4 w-4 text-blue-500" />;
+    return IMAGE_EXTS.includes(ext || '');
+  };
+
+  const getFileIcon = (name: string) => {
+    if (isImageFile(name)) return <Image className="h-4 w-4 text-primary" />;
     return <FileText className="h-4 w-4 text-muted-foreground" />;
+  };
+
+  const getThumbnailUrl = (fileName: string) => {
+    if (!selectedBucket || !isImageFile(fileName)) return null;
+    const { data } = supabase.storage.from(selectedBucket).getPublicUrl(fileName);
+    return data.publicUrl;
   };
 
   const formatSize = (bytes?: number) => {
