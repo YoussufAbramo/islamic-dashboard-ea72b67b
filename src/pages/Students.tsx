@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Search, Eye, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
+import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Students = () => {
   const { t, language } = useLanguage();
