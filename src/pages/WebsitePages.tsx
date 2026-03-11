@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ACTION_BTN_DESTRUCTIVE, ACTION_ICON } from '@/lib/actionBtnClass';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,11 +10,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { FileText, Plus, Save, Trash2, Search, ExternalLink, ChevronDown, Image } from 'lucide-react';
+import { FileText, Plus, Save, Trash2, Search, ExternalLink, ChevronDown, Image, BookOpen, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
@@ -41,6 +43,67 @@ interface SeoData {
 
 const emptySeo: SeoData = { meta_title: '', meta_description: '', og_title: '', og_description: '', og_image: '' };
 
+/* ─── System page card (Blogs) ─── */
+const SystemPageCard = ({ isAr }: { isAr: boolean }) => {
+  const navigate = useNavigate();
+  const [enabled, setEnabled] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from('landing_content').select('content').eq('section_key', 'system_page_blogs').maybeSingle();
+      if (data?.content && typeof data.content === 'object' && 'enabled' in (data.content as any)) {
+        setEnabled((data.content as any).enabled);
+      }
+      setLoading(false);
+    })();
+  }, []);
+
+  const toggleEnabled = async (val: boolean) => {
+    setEnabled(val);
+    await supabase.from('landing_content').upsert({
+      section_key: 'system_page_blogs',
+      content: { enabled: val } as any,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'section_key' });
+    toast.success(isAr ? (val ? 'تم التفعيل' : 'تم التعطيل') : (val ? 'Enabled' : 'Disabled'));
+  };
+
+  return (
+    <Card className="border-primary/20 bg-primary/[0.02]">
+      <CardContent className="p-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <BookOpen className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <p className="font-medium">{isAr ? 'المدونة' : 'Blogs'}</p>
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0">{isAr ? 'نظام' : 'System'}</Badge>
+            </div>
+            <p className="text-xs text-muted-foreground">/blogs</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">{isAr ? (enabled ? 'مفعّل' : 'معطّل') : (enabled ? 'Enabled' : 'Disabled')}</span>
+            <Switch checked={enabled} onCheckedChange={toggleEnabled} disabled={loading} />
+          </div>
+          {enabled && (
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => window.open('/blogs', '_blank')}>
+              <ExternalLink className="h-3.5 w-3.5" />
+            </Button>
+          )}
+          <Button variant="outline" size="sm" onClick={() => navigate('/dashboard/blog')} className="gap-1">
+            {isAr ? 'إدارة المقالات' : 'Manage Posts'} <ArrowRight className="h-3.5 w-3.5 rtl:-scale-x-100" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+/* ─── Main component ─── */
 const WebsitePages = () => {
   const { language } = useLanguage();
   const { user } = useAuth();
@@ -106,7 +169,6 @@ const WebsitePages = () => {
       }).eq('id', editPage.id);
       if (error) { notifyError({ error, isAr, rawMessage: error.message }); setSaving(false); return; }
     }
-    // Save SEO data
     if (seo.meta_title || seo.meta_description || seo.og_title || seo.og_description || seo.og_image) {
       await supabase.from('landing_content').upsert({
         section_key: `seo_page_${pageId}`, content: seo as any, updated_at: new Date().toISOString(),
@@ -148,59 +210,69 @@ const WebsitePages = () => {
         </div>
       </div>
 
-      {filtered.length === 0 ? (
-        <Card><CardContent className="py-12 text-center text-muted-foreground">
-          <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
-          <p>{isAr ? 'لا توجد صفحات' : 'No pages yet'}</p>
-          <Button variant="outline" size="sm" className="mt-3" onClick={handleNew}>{isAr ? 'إنشاء صفحة' : 'Create Page'}</Button>
-        </CardContent></Card>
-      ) : (
-        <div className="grid gap-3">
-          {filtered.map(page => (
-            <Card key={page.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <FileText className="h-5 w-5 text-primary" />
+      {/* System Pages */}
+      <div className="space-y-2">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{isAr ? 'صفحات النظام' : 'System Pages'}</p>
+        <SystemPageCard isAr={isAr} />
+      </div>
+
+      {/* Custom Pages */}
+      <div className="space-y-2">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{isAr ? 'صفحات مخصصة' : 'Custom Pages'}</p>
+        {filtered.length === 0 ? (
+          <Card><CardContent className="py-12 text-center text-muted-foreground">
+            <FileText className="h-12 w-12 mx-auto mb-3 opacity-30" />
+            <p>{isAr ? 'لا توجد صفحات' : 'No pages yet'}</p>
+            <Button variant="outline" size="sm" className="mt-3" onClick={handleNew}>{isAr ? 'إنشاء صفحة' : 'Create Page'}</Button>
+          </CardContent></Card>
+        ) : (
+          <div className="grid gap-3">
+            {filtered.map(page => (
+              <Card key={page.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <FileText className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{isAr ? page.title_ar || page.title : page.title}</p>
+                      <p className="text-xs text-muted-foreground">/pages/{page.slug}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">{isAr ? page.title_ar || page.title : page.title}</p>
-                    <p className="text-xs text-muted-foreground">/pages/{page.slug}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant={page.status === 'published' ? 'default' : 'secondary'} className="text-xs">
-                    {page.status === 'published' ? (isAr ? 'منشور' : 'Published') : (isAr ? 'مسودة' : 'Draft')}
-                  </Badge>
-                  {page.status === 'published' && (
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => window.open(`/pages/${page.slug}`, '_blank')}>
-                      <ExternalLink className="h-3.5 w-3.5" />
+                  <div className="flex items-center gap-2">
+                    <Badge variant={page.status === 'published' ? 'default' : 'secondary'} className="text-xs">
+                      {page.status === 'published' ? (isAr ? 'منشور' : 'Published') : (isAr ? 'مسودة' : 'Draft')}
+                    </Badge>
+                    {page.status === 'published' && (
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => window.open(`/pages/${page.slug}`, '_blank')}>
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                    <Button variant="outline" size="sm" onClick={() => handleEdit(page)}>
+                      {isAr ? 'تعديل' : 'Edit'}
                     </Button>
-                  )}
-                  <Button variant="outline" size="sm" onClick={() => handleEdit(page)}>
-                    {isAr ? 'تعديل' : 'Edit'}
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE}><Trash2 className={ACTION_ICON} /></Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>{isAr ? 'حذف الصفحة' : 'Delete Page'}</AlertDialogTitle>
-                        <AlertDialogDescription>{isAr ? 'هل أنت متأكد؟' : 'Are you sure?'}</AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDelete(page.id)}>{isAr ? 'حذف' : 'Delete'}</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE}><Trash2 className={ACTION_ICON} /></Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>{isAr ? 'حذف الصفحة' : 'Delete Page'}</AlertDialogTitle>
+                          <AlertDialogDescription>{isAr ? 'هل أنت متأكد؟' : 'Are you sure?'}</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(page.id)}>{isAr ? 'حذف' : 'Delete'}</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
 
       <Dialog open={!!editPage} onOpenChange={(open) => { if (!open) { setEditPage(null); setIsNew(false); } }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -235,7 +307,6 @@ const WebsitePages = () => {
                 <ContentEditor value={editPage.content_ar} onChange={v => setEditPage({ ...editPage, content_ar: v })} />
               </div>
 
-              {/* SEO Section */}
               <Collapsible open={seoOpen} onOpenChange={setSeoOpen}>
                 <CollapsibleTrigger asChild>
                   <Button variant="outline" className="w-full justify-between">
