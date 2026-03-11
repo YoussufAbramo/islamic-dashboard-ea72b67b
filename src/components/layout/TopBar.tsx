@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate } from 'react-router-dom';
@@ -90,84 +91,123 @@ const TopBar = () => {
         <SidebarTrigger className="rounded-full" />
         <div className="flex-1" />
 
-        {/* Go to Landing Page - opens in new tab */}
-        <Button variant="ghost" size="icon" className={iconBtnClass} onClick={() => window.open('/', '_blank')}>
-          <Home className="h-4 w-4" />
-        </Button>
-
-        <Button variant="ghost" size="icon" className={iconBtnClass} onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}>
-          <Globe className="h-4 w-4" />
-        </Button>
-
-        <Button variant="ghost" size="icon" className={iconBtnClass} onClick={toggleDark}>
-          {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-        </Button>
-
-        {/* Announcements */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className={`${iconBtnClass} relative`}>
-              <Megaphone className="h-4 w-4" />
-              {announcements.length > 0 && <Badge className="absolute top-0 -end-0.5 h-4 min-w-[16px] p-0 text-[10px] flex items-center justify-center bg-red-500 text-white border-red-500 hover:bg-red-600">{announcements.length}</Badge>}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
-            <div className="flex items-center justify-between px-3 py-2">
-              <span className="text-sm font-medium">{isAr ? 'الإعلانات' : 'Announcements'}</span>
-              <div className="flex gap-1">
-                {isAdmin && (
-                  <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => setAddAnnouncementOpen(true)}>
-                    <Plus className="h-3 w-3" />
-                  </Button>
-                )}
-              </div>
-            </div>
-            <DropdownMenuSeparator />
-            {announcements.length === 0 ? (
-              <DropdownMenuItem disabled>{t('common.noData')}</DropdownMenuItem>
-            ) : announcements.slice(0, 5).map((a) => (
-              <DropdownMenuItem key={a.id} className="flex flex-col items-start cursor-pointer" onClick={() => handleAnnouncementClick(a)}>
-                <span className="font-medium text-sm">{isAr && a.title_ar ? a.title_ar : a.title}</span>
-                <span className="text-xs text-muted-foreground line-clamp-1">{isAr && a.content_ar ? a.content_ar : a.content}</span>
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="justify-center text-primary text-sm" onClick={() => navigate('/dashboard/announcements')}>
-              <ExternalLink className="h-3 w-3 me-1" />{isAr ? 'عرض الكل' : 'View All'}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Notifications */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className={`${iconBtnClass} relative`}>
-              <Bell className="h-4 w-4" />
-              {notifications.length > 0 && <Badge className="absolute top-0 -end-0.5 h-4 min-w-[16px] p-0 text-[10px] flex items-center justify-center bg-red-500 text-white border-red-500 hover:bg-red-600">{notifications.length}</Badge>}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
-            <div className="flex items-center justify-between px-3 py-2">
-              <span className="text-sm font-medium">{isAr ? 'الإشعارات' : 'Notifications'}</span>
-              <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={markAllNotificationsRead} title={isAr ? 'تحديد الكل كمقروء' : 'Mark all read'}>
-                <CheckCheck className="h-3 w-3" />
+        <TooltipProvider delayDuration={300}>
+          {/* Go to Landing Page */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" className={iconBtnClass} onClick={() => window.open('/', '_blank')}>
+                <Home className="h-4 w-4" />
               </Button>
-            </div>
-            <DropdownMenuSeparator />
-            {notifications.length === 0 ? (
-              <DropdownMenuItem disabled>{t('common.noData')}</DropdownMenuItem>
-            ) : notifications.slice(0, 5).map((n) => (
-              <DropdownMenuItem key={n.id} className="flex flex-col items-start cursor-pointer" onClick={() => handleNotificationClick(n)}>
-                <span className="font-medium text-sm">{n.title}</span>
-                <span className="text-xs text-muted-foreground">{n.message}</span>
+            </TooltipTrigger>
+            <TooltipContent>{isAr ? 'الصفحة الرئيسية' : 'Landing Page'}</TooltipContent>
+          </Tooltip>
+
+          {/* Language toggle */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" className={iconBtnClass} onClick={() => setLanguage(language === 'en' ? 'ar' : 'en')}>
+                <Globe className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{isAr ? 'تغيير اللغة' : 'Switch Language'}</TooltipContent>
+          </Tooltip>
+
+          {/* Dark mode toggle */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" className={iconBtnClass} onClick={toggleDark}>
+                {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{darkMode ? (isAr ? 'الوضع الفاتح' : 'Light Mode') : (isAr ? 'الوضع الداكن' : 'Dark Mode')}</TooltipContent>
+          </Tooltip>
+
+          {/* Announcements */}
+          <DropdownMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className={`${iconBtnClass} relative`}>
+                    <Megaphone className="h-4 w-4" />
+                    {announcements.length > 0 && <Badge className="absolute top-0 -end-0.5 h-4 min-w-[16px] p-0 text-[10px] flex items-center justify-center bg-red-500 text-white border-red-500 hover:bg-red-600">{announcements.length}</Badge>}
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent>{isAr ? 'الإعلانات' : 'Announcements'}</TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent align="end" className="w-80">
+              <div className="flex items-center justify-between px-3 py-2">
+                <span className="text-sm font-medium">{isAr ? 'الإعلانات' : 'Announcements'}</span>
+                <div className="flex gap-1">
+                  {isAdmin && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={() => setAddAnnouncementOpen(true)}>
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{isAr ? 'إعلان جديد' : 'New Announcement'}</TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
+              </div>
+              <DropdownMenuSeparator />
+              {announcements.length === 0 ? (
+                <DropdownMenuItem disabled>{t('common.noData')}</DropdownMenuItem>
+              ) : announcements.slice(0, 5).map((a) => (
+                <DropdownMenuItem key={a.id} className="flex flex-col items-start cursor-pointer" onClick={() => handleAnnouncementClick(a)}>
+                  <span className="font-medium text-sm">{isAr && a.title_ar ? a.title_ar : a.title}</span>
+                  <span className="text-xs text-muted-foreground line-clamp-1">{isAr && a.content_ar ? a.content_ar : a.content}</span>
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="justify-center text-primary text-sm" onClick={() => navigate('/dashboard/announcements')}>
+                <ExternalLink className="h-3 w-3 me-1" />{isAr ? 'عرض الكل' : 'View All'}
               </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="justify-center text-primary text-sm" onClick={() => navigate('/dashboard/notifications')}>
-              <ExternalLink className="h-3 w-3 me-1" />{isAr ? 'عرض الكل' : 'View All'}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Notifications */}
+          <DropdownMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className={`${iconBtnClass} relative`}>
+                    <Bell className="h-4 w-4" />
+                    {notifications.length > 0 && <Badge className="absolute top-0 -end-0.5 h-4 min-w-[16px] p-0 text-[10px] flex items-center justify-center bg-red-500 text-white border-red-500 hover:bg-red-600">{notifications.length}</Badge>}
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent>{isAr ? 'الإشعارات' : 'Notifications'}</TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent align="end" className="w-80">
+              <div className="flex items-center justify-between px-3 py-2">
+                <span className="text-sm font-medium">{isAr ? 'الإشعارات' : 'Notifications'}</span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full" onClick={markAllNotificationsRead}>
+                      <CheckCheck className="h-3 w-3" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{isAr ? 'تحديد الكل كمقروء' : 'Mark all as read'}</TooltipContent>
+                </Tooltip>
+              </div>
+              <DropdownMenuSeparator />
+              {notifications.length === 0 ? (
+                <DropdownMenuItem disabled>{t('common.noData')}</DropdownMenuItem>
+              ) : notifications.slice(0, 5).map((n) => (
+                <DropdownMenuItem key={n.id} className="flex flex-col items-start cursor-pointer" onClick={() => handleNotificationClick(n)}>
+                  <span className="font-medium text-sm">{n.title}</span>
+                  <span className="text-xs text-muted-foreground">{n.message}</span>
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="justify-center text-primary text-sm" onClick={() => navigate('/dashboard/notifications')}>
+                <ExternalLink className="h-3 w-3 me-1" />{isAr ? 'عرض الكل' : 'View All'}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </TooltipProvider>
       </header>
 
       {/* Announcement Detail Dialog */}
