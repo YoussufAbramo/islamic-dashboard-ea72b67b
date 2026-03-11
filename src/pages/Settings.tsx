@@ -24,7 +24,8 @@ import { Badge } from '@/components/ui/badge';
 
 const DeveloperSettings = () => {
   const { language } = useLanguage();
-  const { developerMode, setDeveloperMode } = useAppSettings();
+  const { pending, setDeveloperMode } = useAppSettings();
+  const developerMode = pending.developerMode;
   const isAr = language === 'ar';
   return (
     <Card>
@@ -45,7 +46,8 @@ const DeveloperSettings = () => {
 
 const WebsiteModeSettings = () => {
   const { language } = useLanguage();
-  const { websiteMode, setWebsiteMode } = useAppSettings();
+  const { pending, setWebsiteMode } = useAppSettings();
+  const websiteMode = pending.websiteMode;
   const isAr = language === 'ar';
   return (
     <Card>
