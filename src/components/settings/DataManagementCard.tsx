@@ -19,13 +19,14 @@ interface DataManagementCardProps {
 
 const SEED_LOG_KEY = 'app_seed_log_history';
 
-type SeedCategory = 'users' | 'courses' | 'subscriptions' | 'schedule' | 'communications' | 'support' | 'certificates';
+type SeedCategory = 'users' | 'courses' | 'subscriptions' | 'schedule' | 'communications' | 'support' | 'certificates' | 'invoices';
 type SeedQuantity = 'little' | 'medium' | 'many';
 
 const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon: string }[] = [
   { key: 'users', label: 'Students & Teachers', labelAr: 'طلاب ومعلمون', icon: '👥' },
-  { key: 'courses', label: 'Courses & Lessons', labelAr: 'دورات ودروس', icon: '📚' },
+  { key: 'courses', label: 'Courses, Tracks, Categories & Levels', labelAr: 'دورات ومسارات وتصنيفات ومستويات', icon: '📚' },
   { key: 'subscriptions', label: 'Subscriptions', labelAr: 'اشتراكات', icon: '💳' },
+  { key: 'invoices', label: 'Invoices', labelAr: 'فواتير', icon: '🧾' },
   { key: 'schedule', label: 'Timetable & Attendance', labelAr: 'جدول وحضور', icon: '📅' },
   { key: 'communications', label: 'Announcements, Notifications & Chats', labelAr: 'إعلانات وإشعارات ومحادثات', icon: '💬' },
   { key: 'support', label: 'Support Tickets', labelAr: 'تذاكر الدعم', icon: '🎫' },
