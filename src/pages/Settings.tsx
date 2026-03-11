@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { Button } from '@/components/ui/button';
-import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, DollarSign, HardDrive, GraduationCap, BarChart3, Code } from 'lucide-react';
+import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, DollarSign, HardDrive, GraduationCap, BarChart3, Code, Search as SearchIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import AppearanceSettings from '@/components/settings/AppearanceSettings';
 import PaymentGatewayCard from '@/components/settings/PaymentGatewayCard';
@@ -15,13 +15,14 @@ import SaaSPricingSettings from '@/components/settings/SaaSPricingSettings';
 import BackupsSettings from '@/components/settings/BackupsSettings';
 import EducationSystemSettings from '@/components/settings/EducationSystemSettings';
 import PixelsIntegrationSettings from '@/components/settings/PixelsIntegrationSettings';
+import SeoSettings from '@/components/settings/SeoSettings';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 const DeveloperSettings = () => {
   const { language } = useLanguage();
-  const { developerMode, setDeveloperMode, saveSettings } = useAppSettings();
+  const { developerMode, setDeveloperMode } = useAppSettings();
   const isAr = language === 'ar';
   return (
     <Card>
@@ -40,7 +41,7 @@ const DeveloperSettings = () => {
   );
 };
 
-type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing' | 'backups' | 'education' | 'pixels' | 'developer';
+type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'landing' | 'pricing' | 'backups' | 'education' | 'pixels' | 'seo' | 'developer';
 
 const Settings = () => {
   const { language } = useLanguage();
@@ -50,26 +51,28 @@ const Settings = () => {
   const isAdmin = role === 'admin';
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
 
-  // Auto-discard pending changes when leaving settings
+  // Auto-discard pending changes when leaving settings - use ref to avoid re-running on discardChanges change
+  const discardRef = useRef(discardChanges);
+  discardRef.current = discardChanges;
   useEffect(() => {
     return () => {
-      // On unmount, discard any unsaved changes
-      discardChanges();
+      discardRef.current();
     };
-  }, [discardChanges]);
+  }, []);
 
   const handleSave = () => {
     saveSettings();
     toast.success(isAr ? 'تم حفظ الإعدادات' : 'Settings saved successfully');
   };
 
-  const tabs: { value: SettingsTab; label: string; labelAr: string; icon: any; adminOnly?: boolean; comingSoon?: boolean }[] = [
+  const tabs: { value: SettingsTab; label: string; labelAr: string; icon: any; adminOnly?: boolean }[] = [
     { value: 'general', label: 'General', labelAr: 'عام', icon: Settings2 },
     { value: 'appearance', label: 'Appearance', labelAr: 'المظهر', icon: Palette },
     { value: 'education', label: 'Education System', labelAr: 'النظام التعليمي', icon: GraduationCap },
     { value: 'landing', label: 'Landing Page', labelAr: 'صفحة الهبوط', icon: Globe, adminOnly: true },
     { value: 'pricing', label: 'Pricing Packages', labelAr: 'باقات الأسعار', icon: DollarSign, adminOnly: true },
     { value: 'pixels', label: 'Pixels & Tracking', labelAr: 'البيكسل والتتبع', icon: BarChart3, adminOnly: true },
+    { value: 'seo', label: 'Advanced SEO', labelAr: 'تحسين محركات البحث', icon: SearchIcon, adminOnly: true },
     { value: 'auth', label: 'Authentication', labelAr: 'المصادقة', icon: ShieldCheck, adminOnly: true },
     { value: 'payment', label: 'Payment Methods', labelAr: 'طرق الدفع', icon: CreditCard, adminOnly: true },
     { value: 'data', label: 'Data Management', labelAr: 'إدارة البيانات', icon: Database, adminOnly: true },
@@ -95,9 +98,7 @@ const Settings = () => {
         </div>
       </div>
 
-      {/* Vertical sidebar layout */}
       <div className="flex flex-col md:flex-row gap-6">
-        {/* Vertical Navigation */}
         <div className="md:w-56 shrink-0">
           <nav className="flex flex-row md:flex-col gap-1 p-1 rounded-lg bg-muted overflow-x-auto md:overflow-x-visible">
             {visibleTabs.map((tab) => {
@@ -114,18 +115,12 @@ const Settings = () => {
                 >
                   <Icon className="h-4 w-4 shrink-0" />
                   {isAr ? tab.labelAr : tab.label}
-                  {tab.comingSoon && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted-foreground/20 text-muted-foreground ms-auto">
-                      {isAr ? 'قريباً' : 'Soon'}
-                    </span>
-                  )}
                 </button>
               );
             })}
           </nav>
         </div>
 
-        {/* Tab Content */}
         <div className="flex-1 min-w-0">
           {activeTab === 'general' && <GeneralSettings />}
           {activeTab === 'appearance' && <AppearanceSettings />}
@@ -137,11 +132,11 @@ const Settings = () => {
           {activeTab === 'data' && isAdmin && <DataManagementCard isAr={isAr} />}
           {activeTab === 'backups' && isAdmin && <BackupsSettings />}
           {activeTab === 'pixels' && isAdmin && <PixelsIntegrationSettings />}
+          {activeTab === 'seo' && isAdmin && <SeoSettings />}
           {activeTab === 'developer' && isAdmin && <DeveloperSettings />}
         </div>
       </div>
 
-      {/* Fixed save bar */}
       {hasPendingChanges && (
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 p-3 rounded-lg border bg-card shadow-lg max-w-xl w-[calc(100%-2rem)]">
           <span className="text-sm text-muted-foreground flex items-center me-auto">{isAr ? 'لديك تغييرات غير محفوظة' : 'You have unsaved changes'}</span>
