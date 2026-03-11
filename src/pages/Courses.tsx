@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Search, Eye, Edit, Trash2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 import { useNavigate } from 'react-router-dom';
 import { courseStatusLabels, getLabel } from '@/lib/statusLabels';
 

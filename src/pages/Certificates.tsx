@@ -21,6 +21,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { Award, Plus, Check, Search, ArrowUp, ArrowDown, Trash2, Download, ChevronsUpDown, Printer, LayoutGrid, List, MoreHorizontal, Eye } from 'lucide-react';
 import { toast } from 'sonner';
+import { notifyError } from '@/lib/notifyError';
 import { format } from 'date-fns';
 import { certificateStatusLabels, getLabel } from '@/lib/statusLabels';
 import { exportCertificatePdf } from '@/lib/certificatePdf';
