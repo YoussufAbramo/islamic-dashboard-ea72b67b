@@ -109,6 +109,9 @@ const App = () => (
                       <Route path="profile" element={<Profile />} />
                     </Route>
                     <Route path="/invoice/:id" element={<InvoiceView />} />
+                    <Route path="/blog/:slug" element={<PublicBlogPost />} />
+                    <Route path="/pages/:slug" element={<PublicPage />} />
+                    <Route path="/policies/:slug" element={<PublicPage />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </BrowserRouter>
