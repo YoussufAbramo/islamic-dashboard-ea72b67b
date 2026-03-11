@@ -25,26 +25,25 @@ const ImagePickerField = ({ label, value, onChange, bucket = 'course-images', cl
       <button
         type="button"
         onClick={() => setPickerOpen(true)}
-        className="relative w-full rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer overflow-hidden group bg-muted/30"
+        className="relative inline-flex rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer overflow-hidden group bg-muted/30"
       >
         {value ? (
           <div className="relative">
             <img
               src={value}
               alt="Selected"
-              className="w-full h-32 object-cover rounded-md"
+              className="max-h-20 w-auto object-contain rounded-md"
             />
             <div className="absolute inset-0 bg-background/0 group-hover:bg-background/60 transition-colors flex items-center justify-center">
-              <span className="text-sm font-medium text-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="text-xs font-medium text-foreground opacity-0 group-hover:opacity-100 transition-opacity">
                 {isAr ? 'تغيير الصورة' : 'Change Image'}
               </span>
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-            <Image className="h-8 w-8 mb-2 opacity-40" />
-            <span className="text-sm">{isAr ? 'اضغط لاختيار صورة' : 'Click to select image'}</span>
-            <span className="text-xs mt-0.5 opacity-60">{isAr ? 'من المكتبة أو رفع جديدة' : 'From library or upload new'}</span>
+          <div className="flex flex-col items-center justify-center py-4 px-6 text-muted-foreground">
+            <Image className="h-6 w-6 mb-1.5 opacity-40" />
+            <span className="text-xs">{isAr ? 'اضغط لاختيار صورة' : 'Click to select image'}</span>
           </div>
         )}
       </button>
