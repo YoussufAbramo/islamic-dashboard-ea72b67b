@@ -98,6 +98,34 @@ const Media = () => {
   };
 
   const isImageFile = (name: string) => IMAGE_EXTS.includes(name.split('.').pop()?.toLowerCase() || '');
+  const getFileExt = (name: string) => (name.split('.').pop()?.toUpperCase() || '—');
+
+  const handleDownload = async (fileName: string) => {
+    if (!selectedBucket) return;
+    const bucket = BUCKETS.find(b => b.id === selectedBucket);
+    if (bucket?.public) {
+      const url = getPublicUrl(fileName);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } else {
+      const { data, error } = await supabase.storage.from(selectedBucket).download(fileName);
+      if (error || !data) { toast.error(isAr ? 'خطأ في تحميل الملف' : 'Error downloading file'); return; }
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    toast.success(isAr ? 'جاري التحميل...' : 'Downloading...');
+  };
 
   const formatSize = (bytes?: number) => {
     if (!bytes) return '—';
