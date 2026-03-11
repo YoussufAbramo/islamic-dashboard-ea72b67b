@@ -58,8 +58,9 @@ const SortableSectionCard = ({ sectionKey, isAr, visible, expanded, onToggleVisi
         <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
           <Icon className="h-4 w-4 text-primary" />
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 flex items-center gap-2">
           <div className="font-medium text-sm text-foreground">{isAr ? meta.labelAr : meta.label}</div>
+          {!visible && <Badge variant="secondary" className="text-xs">{isAr ? 'مخفي' : 'Hidden'}</Badge>}
         </div>
         <div className="flex items-center gap-2">
           <button onClick={onToggleVisible} className="text-muted-foreground hover:text-foreground transition-colors" title={visible ? 'Hide' : 'Show'}>
@@ -70,7 +71,6 @@ const SortableSectionCard = ({ sectionKey, isAr, visible, expanded, onToggleVisi
           </button>
         </div>
       </div>
-      {!visible && <div className="px-4 pb-2"><Badge variant="secondary" className="text-xs">{isAr ? 'مخفي' : 'Hidden'}</Badge></div>}
       {expanded && <div className="px-4 pb-4 border-t border-border pt-4">{children}</div>}
     </div>
   );
