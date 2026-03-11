@@ -87,18 +87,18 @@ Deno.serve(async (req) => {
 
     // ==================== SEED ALL ====================
     if (action === 'seed_all') {
-      const categories: string[] = body.categories || ['users', 'courses', 'subscriptions', 'schedule', 'communications', 'support', 'certificates']
+      const categories: string[] = body.categories || ['users', 'courses', 'subscriptions', 'schedule', 'communications', 'support', 'certificates', 'invoices']
       const quantity: string = body.quantity || 'medium'
       
       // Quantity multipliers
       const qtyConfig = {
-        little: { students: 2, teachers: 1, courses: 1, sections: 2, lessonsPerSection: 1, timetable: 3, announcements: 1, notifications: 2, chats: 1, tickets: 1, certs: 1 },
-        medium: { students: 5, teachers: 2, courses: 3, sections: 3, lessonsPerSection: 2, timetable: 10, announcements: 3, notifications: 5, chats: 2, tickets: 3, certs: 2 },
-        many:   { students: 10, teachers: 4, courses: 6, sections: 4, lessonsPerSection: 3, timetable: 20, announcements: 5, notifications: 10, chats: 4, tickets: 6, certs: 4 },
+        little: { students: 2, teachers: 1, courses: 1, sections: 2, lessonsPerSection: 1, lessonSections: 2, timetable: 3, announcements: 1, notifications: 2, chats: 1, tickets: 1, certs: 1, invoices: 2, tracks: 1, categories: 1, levels: 1 },
+        medium: { students: 5, teachers: 2, courses: 3, sections: 3, lessonsPerSection: 2, lessonSections: 2, timetable: 10, announcements: 3, notifications: 5, chats: 2, tickets: 3, certs: 2, invoices: 4, tracks: 2, categories: 3, levels: 3 },
+        many:   { students: 10, teachers: 4, courses: 6, sections: 4, lessonsPerSection: 3, lessonSections: 3, timetable: 20, announcements: 5, notifications: 10, chats: 4, tickets: 6, certs: 4, invoices: 8, tracks: 3, categories: 5, levels: 4 },
       }
       const qty = qtyConfig[quantity as keyof typeof qtyConfig] || qtyConfig.medium
       
-      const counts = { students: 0, teachers: 0, courses: 0, sections: 0, lessons: 0, subscriptions: 0, timetable: 0, attendance: 0, announcements: 0, notifications: 0, chats: 0, messages: 0, tickets: 0, certificates: 0 }
+      const counts: Record<string, number> = { students: 0, teachers: 0, courses: 0, sections: 0, lesson_sections: 0, lessons: 0, tracks: 0, categories: 0, levels: 0, subscriptions: 0, invoices: 0, timetable: 0, attendance: 0, announcements: 0, notifications: 0, chats: 0, messages: 0, tickets: 0, certificates: 0 }
 
       // Build student/teacher data based on quantity
       const allStudentEmails = [
@@ -176,6 +176,42 @@ Deno.serve(async (req) => {
 
       // Create courses
       if (categories.includes('courses')) {
+        // Seed course tracks
+        const allTracks = [
+          { title: 'Quran Track', title_ar: 'مسار القرآن', description: 'Quran memorization and recitation track', description_ar: 'مسار حفظ وتلاوة القرآن', sort_order: 0 },
+          { title: 'Arabic Track', title_ar: 'مسار اللغة العربية', description: 'Arabic language learning track', description_ar: 'مسار تعلم اللغة العربية', sort_order: 1 },
+          { title: 'Islamic Studies Track', title_ar: 'مسار الدراسات الإسلامية', description: 'Comprehensive Islamic studies', description_ar: 'دراسات إسلامية شاملة', sort_order: 2 },
+        ]
+        const tracksInsert = allTracks.slice(0, qty.tracks)
+        const { data: createdTracks } = await adminClient.from('course_tracks').insert(tracksInsert).select('id')
+        const trackIds = (createdTracks || []).map(t => t.id)
+        counts.tracks = trackIds.length
+
+        // Seed course categories
+        const allCategories = [
+          { title: 'Memorization', title_ar: 'حفظ', description: 'Quran memorization courses', description_ar: 'دورات حفظ القرآن', sort_order: 0 },
+          { title: 'Language', title_ar: 'لغة', description: 'Arabic language courses', description_ar: 'دورات اللغة العربية', sort_order: 1 },
+          { title: 'Fiqh & Aqeedah', title_ar: 'فقه وعقيدة', description: 'Islamic jurisprudence and creed', description_ar: 'الفقه الإسلامي والعقيدة', sort_order: 2 },
+          { title: 'Tajweed', title_ar: 'تجويد', description: 'Quran recitation rules', description_ar: 'أحكام تلاوة القرآن', sort_order: 3 },
+          { title: 'History & Seerah', title_ar: 'تاريخ وسيرة', description: 'Islamic history and biography', description_ar: 'التاريخ الإسلامي والسيرة النبوية', sort_order: 4 },
+        ]
+        const catsInsert = allCategories.slice(0, qty.categories)
+        const { data: createdCats } = await adminClient.from('course_categories').insert(catsInsert).select('id')
+        const catIds = (createdCats || []).map(c => c.id)
+        counts.categories = catIds.length
+
+        // Seed course levels
+        const allLevels = [
+          { title: 'Beginner', title_ar: 'مبتدئ', description: 'For new learners', description_ar: 'للمتعلمين الجدد', sort_order: 0 },
+          { title: 'Intermediate', title_ar: 'متوسط', description: 'For learners with basic knowledge', description_ar: 'للمتعلمين ذوي المعرفة الأساسية', sort_order: 1 },
+          { title: 'Advanced', title_ar: 'متقدم', description: 'For experienced learners', description_ar: 'للمتعلمين ذوي الخبرة', sort_order: 2 },
+          { title: 'Expert', title_ar: 'خبير', description: 'For mastery-level learners', description_ar: 'لمستوى الإتقان', sort_order: 3 },
+        ]
+        const levelsInsert = allLevels.slice(0, qty.levels)
+        const { data: createdLevels } = await adminClient.from('course_levels').insert(levelsInsert).select('id')
+        const levelIds = (createdLevels || []).map(l => l.id)
+        counts.levels = levelIds.length
+
         const allCourses = [
           { title: 'Quran Memorization - Juz Amma', title_ar: 'حفظ القرآن - جزء عم', description: 'Complete memorization course for Juz Amma with tajweed rules', description_ar: 'دورة حفظ كاملة لجزء عم مع أحكام التجويد', status: 'active', created_by: caller.id },
           { title: 'Arabic Language Fundamentals', title_ar: 'أساسيات اللغة العربية', description: 'Learn Arabic grammar, reading, and writing from basics', description_ar: 'تعلم قواعد اللغة العربية والقراءة والكتابة من الأساسيات', status: 'active', created_by: caller.id },
@@ -184,12 +220,17 @@ Deno.serve(async (req) => {
           { title: 'Hadith Sciences', title_ar: 'علوم الحديث', description: 'Introduction to Hadith authentication and sciences', description_ar: 'مقدمة في تخريج الأحاديث وعلومها', status: 'active', created_by: caller.id },
           { title: 'Islamic History', title_ar: 'التاريخ الإسلامي', description: 'Comprehensive overview of Islamic civilization history', description_ar: 'نظرة شاملة على تاريخ الحضارة الإسلامية', status: 'active', created_by: caller.id },
         ]
-        const coursesInsert = allCourses.slice(0, qty.courses)
+        const coursesInsert = allCourses.slice(0, qty.courses).map((c, i) => ({
+          ...c,
+          category_id: catIds.length > 0 ? catIds[i % catIds.length] : null,
+          level_id: levelIds.length > 0 ? levelIds[i % levelIds.length] : null,
+          track_id: trackIds.length > 0 ? trackIds[i % trackIds.length] : null,
+        }))
         const { data: createdCourses } = await adminClient.from('courses').insert(coursesInsert).select('id')
         cIds = (createdCourses || []).map(c => c.id)
         counts.courses = cIds.length
 
-        // Create sections
+        // Create course sections (lessons in the 3-level hierarchy)
         const sectionTitles = [
           { title: 'Introduction & Basics', title_ar: 'المقدمة والأساسيات' },
           { title: 'Core Content', title_ar: 'المحتوى الأساسي' },
@@ -205,9 +246,24 @@ Deno.serve(async (req) => {
         const secIds = (createdSections || []).map(s => s.id)
         counts.sections = secIds.length
 
-        // Create lessons
+        // Create lesson_sections (middle level)
+        const lessonSectionTitles = [
+          { title: 'Part 1', title_ar: 'الجزء الأول' },
+          { title: 'Part 2', title_ar: 'الجزء الثاني' },
+          { title: 'Part 3', title_ar: 'الجزء الثالث' },
+        ]
+        const lSecInsert = secIds.flatMap(sid =>
+          lessonSectionTitles.slice(0, qty.lessonSections).map((ls, i) => ({
+            course_section_id: sid, title: ls.title, title_ar: ls.title_ar, sort_order: i
+          }))
+        )
+        const { data: createdLSections } = await adminClient.from('lesson_sections').insert(lSecInsert).select('id')
+        const lSecIds = (createdLSections || []).map(s => s.id)
+        counts.lesson_sections = lSecIds.length
+
+        // Create lessons (content level - linked to lesson_sections)
         const lessonTypes = ['read_listen', 'memorization', 'revision', 'exercise_choose_correct', 'exercise_true_false', 'homework']
-        const lessonsInsert = secIds.flatMap((sid, si) =>
+        const lessonsInsert = lSecIds.flatMap((sid, si) =>
           Array.from({ length: qty.lessonsPerSection }, (_, li) => ({
             section_id: sid, title: `Lesson ${si * qty.lessonsPerSection + li + 1}`, title_ar: `الدرس ${si * qty.lessonsPerSection + li + 1}`,
             sort_order: li, lesson_type: lessonTypes[(si * qty.lessonsPerSection + li) % lessonTypes.length],
@@ -349,7 +405,39 @@ Deno.serve(async (req) => {
         await adminClient.from('certificates').insert(certsInsert)
         counts.certificates = certsInsert.length
       }
-        counts.certificates = certsInsert.length
+
+      // Create invoices
+      if (categories.includes('invoices') && sIds.length > 0) {
+        // Get subscriptions to link invoices
+        const { data: existingSubs } = await adminClient.from('subscriptions').select('id, student_id, course_id, price, subscription_type').limit(20)
+        const subsForInvoices = existingSubs || createdSubs || []
+        
+        if (subsForInvoices.length > 0) {
+          const invoiceStatuses = ['pending', 'paid', 'overdue', 'cancelled']
+          const invCount = Math.min(qty.invoices, Math.max(subsForInvoices.length * 2, qty.invoices))
+          const invoicesInsert = Array.from({ length: invCount }, (_, i) => {
+            const sub = subsForInvoices[i % subsForInvoices.length]
+            const status = invoiceStatuses[i % invoiceStatuses.length]
+            const amount = sub.price || [50, 100, 75, 120][i % 4]
+            const dueDate = new Date()
+            dueDate.setDate(dueDate.getDate() + (status === 'overdue' ? -15 : 30))
+            return {
+              subscription_id: sub.id,
+              student_id: sub.student_id,
+              course_id: sub.course_id || (cIds.length > 0 ? cIds[i % cIds.length] : null),
+              amount,
+              original_price: amount,
+              sale_price: i % 3 === 0 ? amount * 0.8 : null,
+              billing_cycle: sub.subscription_type || 'monthly',
+              due_date: dueDate.toISOString().split('T')[0],
+              status,
+              paid_at: status === 'paid' ? new Date().toISOString() : null,
+              notes: status === 'paid' ? 'Payment received' : status === 'overdue' ? 'Payment overdue - follow up needed' : '',
+            }
+          })
+          const { data: createdInvoices } = await adminClient.from('invoices').insert(invoicesInsert).select('id')
+          counts.invoices = createdInvoices?.length || 0
+        }
       }
 
       return new Response(JSON.stringify({ success: true, counts }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
@@ -357,7 +445,7 @@ Deno.serve(async (req) => {
 
     // ==================== EXPORT ALL ====================
     if (action === 'export_all') {
-      const tableNames = ['courses', 'course_sections', 'lessons', 'students', 'teachers', 'profiles', 'user_roles', 'subscriptions', 'timetable_entries', 'attendance', 'announcements', 'notifications', 'chats', 'chat_messages', 'support_tickets', 'certificates', 'student_progress']
+      const tableNames = ['courses', 'course_sections', 'lesson_sections', 'lessons', 'course_tracks', 'course_categories', 'course_levels', 'students', 'teachers', 'profiles', 'user_roles', 'subscriptions', 'invoices', 'timetable_entries', 'attendance', 'announcements', 'notifications', 'chats', 'chat_messages', 'support_tickets', 'certificates', 'student_progress']
       const exportData: Record<string, any[]> = {}
       for (const table of tableNames) {
         const { data } = await adminClient.from(table).select('*')
@@ -400,8 +488,12 @@ Deno.serve(async (req) => {
       await countAndDelete('invoices', adminClient.from('invoices').delete().neq('id', matchAll))
       await countAndDelete('subscriptions', adminClient.from('subscriptions').delete().neq('id', matchAll))
       await countAndDelete('lessons', adminClient.from('lessons').delete().neq('id', matchAll))
+      await countAndDelete('lesson_sections', adminClient.from('lesson_sections').delete().neq('id', matchAll))
       await countAndDelete('course_sections', adminClient.from('course_sections').delete().neq('id', matchAll))
       await countAndDelete('courses', adminClient.from('courses').delete().neq('id', matchAll))
+      await countAndDelete('course_tracks', adminClient.from('course_tracks').delete().neq('id', matchAll))
+      await countAndDelete('course_categories', adminClient.from('course_categories').delete().neq('id', matchAll))
+      await countAndDelete('course_levels', adminClient.from('course_levels').delete().neq('id', matchAll))
       await countAndDelete('notifications', adminClient.from('notifications').delete().neq('id', matchAll))
       await countAndDelete('announcements', adminClient.from('announcements').delete().neq('id', matchAll))
       await countAndDelete('support_tickets', adminClient.from('support_tickets').delete().neq('id', matchAll))
@@ -456,8 +548,12 @@ Deno.serve(async (req) => {
       await countAndDelete('invoices')
       await countAndDelete('subscriptions')
       await countAndDelete('lessons')
+      await countAndDelete('lesson_sections')
       await countAndDelete('course_sections')
       await countAndDelete('courses')
+      await countAndDelete('course_tracks')
+      await countAndDelete('course_categories')
+      await countAndDelete('course_levels')
       await countAndDelete('notifications')
       await countAndDelete('announcements')
       await countAndDelete('support_tickets')
