@@ -2,6 +2,18 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.3.3] - 2026-03-11
+
+### Added
+- Added side-by-side analytics charts (50% width each) to Reports & Analytics page
+- Subscriptions tab: Monthly Subscriptions bar chart + Subscription Status pie chart
+- Attendance tab: Monthly Attendance stacked bar chart + Attendance Distribution pie chart
+- Finances tab: Monthly Revenue line chart + Revenue by Type pie chart
+- All charts use semantic design tokens and consistent tooltip styling
+
+### Changed
+- Version bumped to 4.3.3
+
 ## [4.3.2] - 2026-03-11
 
 ### Changed

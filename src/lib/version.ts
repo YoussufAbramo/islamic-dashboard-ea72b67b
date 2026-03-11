@@ -1,4 +1,4 @@
-export const APP_VERSION = '4.3.2';
+export const APP_VERSION = '4.3.3';
 export const APP_NAME = 'Islamic Dashboard';
 export const COPYRIGHT_TEXT = '© 2026';
 export const COPYRIGHT_LINK = 'https://codecom.dev/';
