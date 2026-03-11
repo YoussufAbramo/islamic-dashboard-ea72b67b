@@ -96,6 +96,8 @@ const Students = () => {
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
 
+  if (loading) return <TableSkeleton />;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
