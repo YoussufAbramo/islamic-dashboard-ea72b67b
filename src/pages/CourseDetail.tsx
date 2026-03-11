@@ -368,6 +368,11 @@ const CourseDetail = () => {
                   {(sections[lesson.id] || []).map((section: any) => (
                     <AccordionItem key={section.id} value={section.id} className="border rounded-md px-3 bg-muted/30">
                       <div className="flex items-center">
+                        {canEdit && (
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: section.id, type: 'section' }); }}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
                         <AccordionTrigger className="hover:no-underline py-3 text-sm flex-1">
                           <div className="flex items-center gap-2">
                             <Layers className="h-3.5 w-3.5 text-muted-foreground" />
@@ -377,11 +382,6 @@ const CourseDetail = () => {
                             </Badge>
                           </div>
                         </AccordionTrigger>
-                        {canEdit && (
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: section.id, type: 'section' }); }}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        )}
                       </div>
                       <AccordionContent>
                         <div className="space-y-2 pt-1">
