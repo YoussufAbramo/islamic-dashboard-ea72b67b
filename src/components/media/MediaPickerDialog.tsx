@@ -75,9 +75,6 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
   }, []);
 
   const handleOpenChange = (isOpen: boolean) => {
-    if (isOpen && defaultBucket && !bucket) {
-      fetchFiles(defaultBucket, '');
-    }
     if (!isOpen) {
       if (!defaultBucket) {
         setBucket(null);
@@ -90,11 +87,14 @@ const MediaPickerDialog = ({ open, onOpenChange, onSelect, bucket: defaultBucket
     onOpenChange(isOpen);
   };
 
-  useState(() => {
-    if (open && defaultBucket && files.length === 0 && folders.length === 0 && !loading) {
+  // Fetch files when dialog opens
+  useEffect(() => {
+    if (open && defaultBucket) {
       fetchFiles(defaultBucket, '');
+    } else if (open && !defaultBucket) {
+      setBucket(null);
     }
-  });
+  }, [open]);
 
   const getUrl = async (fileName: string): Promise<string> => {
     if (!bucket) return '';
