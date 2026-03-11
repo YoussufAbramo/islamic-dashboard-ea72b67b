@@ -135,10 +135,22 @@ const Media = () => {
     return data.publicUrl;
   };
 
-  const getFileIcon = (name: string) => {
+  const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+
+  const isImageFile = (name: string) => {
     const ext = name.split('.').pop()?.toLowerCase();
-    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext || '')) return <Image className="h-4 w-4 text-blue-500" />;
+    return IMAGE_EXTS.includes(ext || '');
+  };
+
+  const getFileIcon = (name: string) => {
+    if (isImageFile(name)) return <Image className="h-4 w-4 text-primary" />;
     return <FileText className="h-4 w-4 text-muted-foreground" />;
+  };
+
+  const getThumbnailUrl = (fileName: string) => {
+    if (!selectedBucket || !isImageFile(fileName)) return null;
+    const { data } = supabase.storage.from(selectedBucket).getPublicUrl(fileName);
+    return data.publicUrl;
   };
 
   const formatSize = (bytes?: number) => {
@@ -270,7 +282,20 @@ const Media = () => {
               <div className="space-y-1">
                 {filteredFiles.map((file, idx) => (
                   <div key={idx} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors group">
-                    {getFileIcon(file.name)}
+                    {isImageFile(file.name) && currentBucket?.public ? (
+                      <div className="h-9 w-9 rounded-md overflow-hidden border border-border flex-shrink-0 bg-muted">
+                        <img
+                          src={getThumbnailUrl(file.name) || ''}
+                          alt={file.name}
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-9 w-9 rounded-md flex items-center justify-center bg-muted/50 flex-shrink-0">
+                        {getFileIcon(file.name)}
+                      </div>
+                    )}
                     <span className="text-sm flex-1 truncate">{file.name}</span>
                     <span className="text-xs text-muted-foreground">{formatSize(file.metadata?.size)}</span>
                     <Badge variant="outline" className="text-[10px]">{file.metadata?.mimetype || '—'}</Badge>
