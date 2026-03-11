@@ -50,6 +50,8 @@ import ActivityLog from "./pages/ActivityLog";
 import WebhookLog from "./pages/WebhookLog";
 import ErrorLog from "./pages/ErrorLog";
 import AuditTrail from "./pages/AuditTrail";
+import PublicBlogPost from "./pages/PublicBlogPost";
+import PublicPage from "./pages/PublicPage";
 
 const queryClient = new QueryClient();
 
