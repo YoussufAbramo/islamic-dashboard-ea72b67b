@@ -24,6 +24,135 @@ interface BackupFile {
   format: string;
 }
 
+// ==================== Auto Backup Config Card ====================
+const AutoBackupCard = ({ isAr }: { isAr: boolean }) => {
+  const [config, setConfig] = useState({ enabled: false, schedule: 'daily', retention_count: 7, format: 'json' });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
+
+  useEffect(() => {
+    supabase.from('auto_backup_config').select('*').limit(1).single().then(({ data }) => {
+      if (data) { setConfig({ enabled: data.enabled, schedule: data.schedule, retention_count: data.retention_count, format: data.format }); }
+      setLoading(false);
+    });
+  }, []);
+
+  const update = (patch: Partial<typeof config>) => {
+    setConfig(prev => ({ ...prev, ...patch }));
+    setDirty(true);
+  };
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      const { error } = await supabase.from('auto_backup_config').update({
+        enabled: config.enabled,
+        schedule: config.schedule,
+        retention_count: config.retention_count,
+        format: config.format,
+        updated_at: new Date().toISOString(),
+      }).neq('id', '00000000-0000-0000-0000-000000000000'); // update all rows (singleton)
+      if (error) throw error;
+      toast.success(isAr ? 'تم حفظ إعدادات النسخ التلقائي' : 'Auto backup settings saved');
+      setDirty(false);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to save');
+    } finally { setSaving(false); }
+  };
+
+  if (loading) return null;
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Clock className="h-4 w-4 text-primary" />
+              {isAr ? 'النسخ الاحتياطي التلقائي' : 'Auto Backups'}
+            </CardTitle>
+            <CardDescription>{isAr ? 'إنشاء نسخ احتياطية تلقائياً حسب الجدول المحدد' : 'Automatically create backups on a schedule'}</CardDescription>
+          </div>
+          <Badge variant={config.enabled ? 'default' : 'secondary'} className={config.enabled ? 'bg-emerald-600 hover:bg-emerald-600 text-white border-emerald-600' : ''}>
+            {config.enabled ? (isAr ? 'مفعّل' : 'Active') : (isAr ? 'معطّل' : 'Off')}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        {/* Enable toggle */}
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium">{isAr ? 'تفعيل النسخ الاحتياطي التلقائي' : 'Enable Auto Backups'}</p>
+            <p className="text-xs text-muted-foreground">{isAr ? 'يتم التشغيل تلقائياً حسب الجدول أدناه' : 'Runs automatically on the schedule below'}</p>
+          </div>
+          <Switch checked={config.enabled} onCheckedChange={v => update({ enabled: v })} />
+        </div>
+
+        {/* Settings (visible regardless, but visually muted when off) */}
+        <div className={`space-y-4 ${!config.enabled ? 'opacity-50 pointer-events-none' : ''}`}>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Schedule */}
+            <div className="space-y-2">
+              <Label>{isAr ? 'الجدول الزمني' : 'Schedule'}</Label>
+              <Select value={config.schedule} onValueChange={v => update({ schedule: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">{isAr ? 'يومياً' : 'Daily'}</SelectItem>
+                  <SelectItem value="weekly">{isAr ? 'أسبوعياً' : 'Weekly'}</SelectItem>
+                  <SelectItem value="monthly">{isAr ? 'شهرياً' : 'Monthly'}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Retention */}
+            <div className="space-y-2">
+              <Label>{isAr ? 'الاحتفاظ بآخر' : 'Keep Last'}</Label>
+              <Select value={String(config.retention_count)} onValueChange={v => update({ retention_count: Number(v) })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {[3, 5, 7, 14, 30].map(n => (
+                    <SelectItem key={n} value={String(n)}>{n} {isAr ? 'نسخة' : 'backups'}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Format */}
+            <div className="space-y-2">
+              <Label>{isAr ? 'التنسيق' : 'Format'}</Label>
+              <Select value={config.format} onValueChange={v => update({ format: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="json"><span className="flex items-center gap-2"><FileJson className="h-4 w-4" /> JSON</span></SelectItem>
+                  <SelectItem value="sql"><span className="flex items-center gap-2"><Database className="h-4 w-4" /> SQL</span></SelectItem>
+                  <SelectItem value="csv"><span className="flex items-center gap-2"><FileText className="h-4 w-4" /> CSV</span></SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            {isAr
+              ? `سيتم إنشاء نسخة ${config.schedule === 'daily' ? 'يومياً' : config.schedule === 'weekly' ? 'كل يوم أحد' : 'في أول كل شهر'} والاحتفاظ بآخر ${config.retention_count} نسخة. النسخ القديمة تحذف تلقائياً.`
+              : `A backup will run ${config.schedule === 'daily' ? 'every day' : config.schedule === 'weekly' ? 'every Sunday' : 'on the 1st of each month'}, keeping the last ${config.retention_count}. Older auto-backups are deleted automatically.`}
+          </p>
+        </div>
+
+        {dirty && (
+          <div className="flex justify-end">
+            <Button size="sm" onClick={save} disabled={saving}>
+              {saving ? <Loader2 className="h-4 w-4 me-1 animate-spin" /> : <Save className="h-4 w-4 me-1" />}
+              {isAr ? 'حفظ الإعدادات' : 'Save Settings'}
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+// ==================== Main Backups Component ====================
 const BackupsSettings = () => {
   const { language } = useLanguage();
   const { pending } = useAppSettings();
