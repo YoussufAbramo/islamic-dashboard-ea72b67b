@@ -166,7 +166,16 @@ const PixelsIntegrationSettings = () => {
                     <div className="flex items-center gap-2">
                       {GroupLogo && <GroupLogo />}
                       <span className="font-medium text-sm">{isAr ? group.groupLabelAr : group.groupLabel}</span>
-                      <span className="text-xs text-muted-foreground">({group.fields.length})</span>
+                      {(() => {
+                        const activeCount = group.fields.filter(f => enabled[f.key]).length;
+                        return activeCount > 0 ? (
+                          <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                            {activeCount}/{group.fields.length}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">({group.fields.length})</span>
+                        );
+                      })()}
                     </div>
                     <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
                   </CollapsibleTrigger>
