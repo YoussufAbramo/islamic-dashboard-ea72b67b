@@ -140,8 +140,8 @@ const Courses = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button onClick={handleSave} className="w-full" disabled={uploading}>
-                    {uploading ? (isAr ? 'جاري الرفع...' : 'Uploading...') : t('common.save')}
+                  <Button onClick={handleSave} className="w-full">
+                    {t('common.save')}
                   </Button>
                 </div>
               </DialogContent>
