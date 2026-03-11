@@ -38,6 +38,7 @@ import CalculatorPage from "./pages/Calculator";
 import NotFound from "./pages/NotFound";
 import ErrorDetails from "./pages/ErrorDetails";
 import ErrorDocs from "./pages/ErrorDocs";
+import Media from "./pages/Media";
 
 const queryClient = new QueryClient();
 
