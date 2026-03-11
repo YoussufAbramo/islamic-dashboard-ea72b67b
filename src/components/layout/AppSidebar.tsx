@@ -109,6 +109,12 @@ const AppSidebar = () => {
         { key: 'policies', label: isAr ? 'السياسات' : 'Policies', icon: ScrollText, path: '/dashboard/policies', roles: ['admin'] },
         { key: 'website-pages', label: isAr ? 'الصفحات الرئيسية' : 'Main Pages', icon: FileText, path: '/dashboard/website-pages', roles: ['admin'] },
         { key: 'blog', label: isAr ? 'المدونة' : 'Blog', icon: PenLine, path: '/dashboard/blog', roles: ['admin'] },
+      ],
+    },
+    {
+      label: 'Media',
+      labelAr: 'الوسائط',
+      items: [
         { key: 'media', label: isAr ? 'الوسائط' : 'Media', icon: HardDrive, path: '/dashboard/media', roles: ['admin'] },
       ],
     },
