@@ -84,7 +84,7 @@ const Calculator = () => {
 
   const handleCreateSubscription = async () => {
     if (!subForm.student_id || !subForm.course_id) {
-      toast.error(isAr ? 'يرجى اختيار الطالب والدورة' : 'Please select student and course');
+      notifyError({ error: 'VAL_SELECT_STUDENT_COURSE', isAr });
       return;
     }
     setCreating(true);
