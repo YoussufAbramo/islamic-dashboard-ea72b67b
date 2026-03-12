@@ -75,6 +75,31 @@ const SystemPageCard = ({ isAr }: { isAr: boolean }) => {
   );
 };
 
+/* ─── System page card (Contact) ─── */
+const ContactPageCard = ({ isAr }: { isAr: boolean }) => (
+  <Card className="border-primary/20 bg-primary/[0.02]">
+    <CardContent className="p-4 flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+          <MessageSquare className="h-5 w-5 text-primary" />
+        </div>
+        <div>
+          <div className="flex items-center gap-2">
+            <p className="font-medium">{isAr ? 'تواصل معنا' : 'Contact'}</p>
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0">{isAr ? 'نظام' : 'System'}</Badge>
+          </div>
+          <p className="text-xs text-muted-foreground">/contact</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => window.open('/contact', '_blank')}>
+          <ExternalLink className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    </CardContent>
+  </Card>
+);
+
 /* ─── Main component ─── */
 const WebsitePages = () => {
   const { language } = useLanguage();
