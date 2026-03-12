@@ -186,9 +186,10 @@ const Library = () => {
       // Create blog post if requested
       if (andBlog) {
         const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + timestamp;
-        const pdfUrl = pdfUrlData.publicUrl;
-        const blogContent = `<p>${form.description || 'Check out this new e-book available in our library.'}</p>\n<p><a href="${pdfUrl}" target="_blank">📖 Read the E-book here</a></p>`;
-        const blogContentAr = `<p>${form.description_ar || 'اطلع على هذا الكتاب الإلكتروني الجديد المتاح في مكتبتنا.'}</p>\n<p><a href="${pdfUrl}" target="_blank">📖 اقرأ الكتاب من هنا</a></p>`;
+        const signedPdfForBlog = await getEbookSignedUrl(pdfPath);
+        const signedCoverForBlog = coverPath ? await getEbookSignedUrl(coverPath) : '';
+        const blogContent = `<p>${form.description || 'Check out this new e-book available in our library.'}</p>\n<p><a href="${signedPdfForBlog}" target="_blank">📖 Read the E-book here</a></p>`;
+        const blogContentAr = `<p>${form.description_ar || 'اطلع على هذا الكتاب الإلكتروني الجديد المتاح في مكتبتنا.'}</p>\n<p><a href="${signedPdfForBlog}" target="_blank">📖 اقرأ الكتاب من هنا</a></p>`;
 
         const { error: blogError } = await supabase.from('blog_posts').insert({
           title: form.title,
