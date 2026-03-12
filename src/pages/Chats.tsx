@@ -441,37 +441,37 @@ const Chats = () => {
                         student: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
                       };
                       return (
-                        <div key={msg.id} className={`flex items-center gap-1.5 ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                        <div key={msg.id} className={`flex items-start gap-2 ${isOwn ? 'justify-end' : 'justify-start'}`}>
                           {!isOwn && (
-                            <Avatar className="h-6 w-6 shrink-0 ring-1 ring-background">
+                            <Avatar className="h-7 w-7 shrink-0 mt-0.5 shadow-sm">
                               <AvatarFallback className={`text-[9px] font-semibold ${avatarColors[senderRole] || 'bg-primary/10 text-primary'}`}>{initials}</AvatarFallback>
                             </Avatar>
                           )}
                           {isOwn && (role === 'admin' || role === 'teacher') && !msg.is_deleted && (
-                            <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity shrink-0" onClick={() => deleteMessage(msg.id)}>
+                            <Button variant="ghost" size="icon" className="h-5 w-5 mt-1.5 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity shrink-0" onClick={() => deleteMessage(msg.id)}>
                               <Trash2 className="h-2.5 w-2.5" />
                             </Button>
                           )}
-                          <div className={`max-w-[75%] rounded-xl text-xs ${msg.is_deleted ? 'bg-muted/60 italic text-muted-foreground px-2.5 py-1.5' : isOwn ? 'bg-primary text-primary-foreground px-2.5 py-1.5' : 'bg-card border border-border px-2.5 py-1.5'}`}>
+                          <div className={`max-w-[70%] rounded-2xl text-[13px] shadow-sm ${msg.is_deleted ? 'bg-muted/50 italic text-muted-foreground px-3.5 py-2.5' : isOwn ? 'bg-primary/90 text-primary-foreground px-3.5 py-2.5' : 'bg-card border border-border/60 px-3.5 py-2.5'}`}>
                             {!isOwn && (
-                              <div className="flex items-center gap-1 mb-0.5">
-                                <span className="text-[10px] font-semibold">{msg.profiles?.full_name}</span>
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <span className="text-[11px] font-semibold">{msg.profiles?.full_name}</span>
                                 {senderRole && (
-                                  <span className={`text-[8px] px-1 rounded-full border font-medium leading-3 ${roleColors[senderRole] || ''}`}>
+                                  <span className={`text-[8px] px-1.5 py-px rounded-full border font-medium ${roleColors[senderRole] || ''}`}>
                                     {roleLabels[senderRole] || senderRole}
                                   </span>
                                 )}
                               </div>
                             )}
-                            <p className="leading-snug">{msg.message}</p>
+                            <p className="leading-relaxed">{msg.message}</p>
                           </div>
                           {!isOwn && (role === 'admin' || role === 'teacher') && !msg.is_deleted && (
-                            <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity shrink-0" onClick={() => deleteMessage(msg.id)}>
+                            <Button variant="ghost" size="icon" className="h-5 w-5 mt-1.5 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity shrink-0" onClick={() => deleteMessage(msg.id)}>
                               <Trash2 className="h-2.5 w-2.5" />
                             </Button>
                           )}
                           {isOwn && (
-                            <Avatar className="h-6 w-6 shrink-0 ring-1 ring-background">
+                            <Avatar className="h-7 w-7 shrink-0 mt-0.5 shadow-sm">
                               <AvatarFallback className={`text-[9px] font-semibold ${avatarColors[senderRole] || 'bg-primary/10 text-primary'}`}>{initials}</AvatarFallback>
                             </Avatar>
                           )}
