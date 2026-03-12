@@ -30,6 +30,26 @@ interface Ebook {
   created_at: string;
 }
 
+/** Resolve a storage path or full URL to a signed URL */
+async function getEbookSignedUrl(pathOrUrl: string): Promise<string> {
+  if (!pathOrUrl) return '';
+  // If it's already a full URL, extract the path after /ebooks/
+  const bucketPrefix = '/object/public/ebooks/';
+  let storagePath = pathOrUrl;
+  if (pathOrUrl.includes(bucketPrefix)) {
+    storagePath = pathOrUrl.split(bucketPrefix)[1]?.split('?')[0] || '';
+  } else if (pathOrUrl.startsWith('http')) {
+    // Try to extract path from any supabase storage URL
+    const match = pathOrUrl.match(/\/storage\/v1\/object\/(?:public|sign)\/ebooks\/(.+?)(?:\?|$)/);
+    if (match) storagePath = decodeURIComponent(match[1]);
+    else return pathOrUrl; // external URL, return as-is
+  }
+  if (!storagePath) return '';
+  const { data, error } = await supabase.storage.from('ebooks').createSignedUrl(storagePath, 3600);
+  if (error || !data?.signedUrl) return '';
+  return data.signedUrl;
+}
+
 const Library = () => {
   const { language } = useLanguage();
   const { role, user } = useAuth();
@@ -54,8 +74,10 @@ const Library = () => {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [readerEbook, setReaderEbook] = useState<Ebook | null>(null);
+  const [readerPdfUrl, setReaderPdfUrl] = useState('');
   const [readerExpanded, setReaderExpanded] = useState(false);
   const [ebookStats, setEbookStats] = useState<Record<string, { views: number; downloads: number }>>({});
+  const [signedCovers, setSignedCovers] = useState<Record<string, string>>({});
 
   const [form, setForm] = useState({ title: '', title_ar: '', description: '', description_ar: '' });
   const [pdfFile, setPdfFile] = useState<File | null>(null);
@@ -88,6 +110,39 @@ const Library = () => {
   useEffect(() => { fetchEbooks(); }, []);
   useEffect(() => { if (ebooks.length > 0) fetchEbookStats(ebooks.map(e => e.id)); }, [ebooks, fetchEbookStats]);
 
+  // Resolve signed cover URLs for all ebooks
+  useEffect(() => {
+    const resolveCoverUrls = async () => {
+      const covers: Record<string, string> = {};
+      await Promise.all(
+        ebooks.filter(e => e.cover_url).map(async (e) => {
+          covers[e.id] = await getEbookSignedUrl(e.cover_url);
+        })
+      );
+      setSignedCovers(covers);
+    };
+    if (ebooks.length > 0) resolveCoverUrls();
+  }, [ebooks]);
+
+  const openReader = useCallback(async (ebook: Ebook) => {
+    trackView(ebook.id);
+    const signedPdf = await getEbookSignedUrl(ebook.pdf_url);
+    setReaderPdfUrl(signedPdf);
+    setReaderEbook(ebook);
+  }, [trackView]);
+
+  const handleDownload = useCallback(async (ebook: Ebook) => {
+    trackDownload(ebook.id);
+    const signedPdf = await getEbookSignedUrl(ebook.pdf_url);
+    if (signedPdf) {
+      const a = document.createElement('a');
+      a.href = signedPdf;
+      a.download = `${ebook.title}.pdf`;
+      a.target = '_blank';
+      a.click();
+    }
+  }, [trackDownload]);
+
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -109,15 +164,12 @@ const Library = () => {
       const { error: pdfError } = await supabase.storage.from('ebooks').upload(pdfPath, pdfFile);
       if (pdfError) throw pdfError;
 
-      const { data: pdfUrlData } = supabase.storage.from('ebooks').getPublicUrl(pdfPath);
-
-      let coverUrl = '';
+      // Store paths, not public URLs (bucket is now private)
+      let coverPath = '';
       if (coverFile) {
-        const coverPath = `covers/${timestamp}-${coverFile.name}`;
+        coverPath = `covers/${timestamp}-${coverFile.name}`;
         const { error: coverError } = await supabase.storage.from('ebooks').upload(coverPath, coverFile);
         if (coverError) throw coverError;
-        const { data: coverUrlData } = supabase.storage.from('ebooks').getPublicUrl(coverPath);
-        coverUrl = coverUrlData.publicUrl;
       }
 
       const { error } = await supabase.from('ebooks').insert({
@@ -125,8 +177,8 @@ const Library = () => {
         title_ar: form.title_ar || '',
         description: form.description || '',
         description_ar: form.description_ar || '',
-        pdf_url: pdfUrlData.publicUrl,
-        cover_url: coverUrl,
+        pdf_url: pdfPath,
+        cover_url: coverPath,
       });
 
       if (error) throw error;
@@ -134,9 +186,10 @@ const Library = () => {
       // Create blog post if requested
       if (andBlog) {
         const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + timestamp;
-        const pdfUrl = pdfUrlData.publicUrl;
-        const blogContent = `<p>${form.description || 'Check out this new e-book available in our library.'}</p>\n<p><a href="${pdfUrl}" target="_blank">📖 Read the E-book here</a></p>`;
-        const blogContentAr = `<p>${form.description_ar || 'اطلع على هذا الكتاب الإلكتروني الجديد المتاح في مكتبتنا.'}</p>\n<p><a href="${pdfUrl}" target="_blank">📖 اقرأ الكتاب من هنا</a></p>`;
+        const signedPdfForBlog = await getEbookSignedUrl(pdfPath);
+        const signedCoverForBlog = coverPath ? await getEbookSignedUrl(coverPath) : '';
+        const blogContent = `<p>${form.description || 'Check out this new e-book available in our library.'}</p>\n<p><a href="${signedPdfForBlog}" target="_blank">📖 Read the E-book here</a></p>`;
+        const blogContentAr = `<p>${form.description_ar || 'اطلع على هذا الكتاب الإلكتروني الجديد المتاح في مكتبتنا.'}</p>\n<p><a href="${signedPdfForBlog}" target="_blank">📖 اقرأ الكتاب من هنا</a></p>`;
 
         const { error: blogError } = await supabase.from('blog_posts').insert({
           title: form.title,
@@ -146,7 +199,7 @@ const Library = () => {
           excerpt_ar: form.description_ar || '',
           content: blogContent,
           content_ar: blogContentAr,
-          featured_image: coverUrl || '',
+          featured_image: signedCoverForBlog || '',
           status: 'published',
           published_at: new Date().toISOString(),
           created_by: user?.id,
@@ -245,9 +298,9 @@ const Library = () => {
               return (
                 <div key={ebook.id} className="group flex flex-col rounded-xl border bg-card overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-200">
                   {/* Cover */}
-                  <div className="relative aspect-[3/4] bg-muted overflow-hidden cursor-pointer" onClick={() => { trackView(ebook.id); setReaderEbook(ebook); }}>
-                    {ebook.cover_url ? (
-                      <img src={ebook.cover_url} alt={title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                  <div className="relative aspect-[3/4] bg-muted overflow-hidden cursor-pointer" onClick={() => openReader(ebook)}>
+                    {ebook.cover_url && signedCovers[ebook.id] ? (
+                      <img src={signedCovers[ebook.id]} alt={title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
                         <BookOpen className="h-10 w-10 text-primary/30" />
@@ -283,7 +336,7 @@ const Library = () => {
                         size="sm"
                         variant="ghost"
                         className="h-7 px-2 text-xs gap-1 text-primary hover:text-primary hover:bg-primary/10"
-                        onClick={() => { trackView(ebook.id); setReaderEbook(ebook); }}
+                        onClick={() => openReader(ebook)}
                       >
                         <BookOpen className="h-3.5 w-3.5" />
                         {isAr ? 'قراءة' : 'Read'}
@@ -292,14 +345,7 @@ const Library = () => {
                         size="sm"
                         variant="ghost"
                         className="h-7 px-2 text-xs gap-1 hover:bg-muted"
-                        onClick={() => {
-                          trackDownload(ebook.id);
-                          const a = document.createElement('a');
-                          a.href = ebook.pdf_url;
-                          a.download = `${ebook.title}.pdf`;
-                          a.target = '_blank';
-                          a.click();
-                        }}
+                        onClick={() => handleDownload(ebook)}
                       >
                         <Download className="h-3.5 w-3.5" />
                         {isAr ? 'تحميل' : 'Download'}
@@ -400,7 +446,7 @@ const Library = () => {
       </Dialog>
 
       {/* PDF Reader Dialog */}
-      <Dialog open={!!readerEbook} onOpenChange={(open) => { if (!open) { setReaderEbook(null); setReaderExpanded(false); } }}>
+      <Dialog open={!!readerEbook} onOpenChange={(open) => { if (!open) { setReaderEbook(null); setReaderPdfUrl(''); setReaderExpanded(false); } }}>
         <DialogContent className={readerExpanded ? 'max-w-[100vw] w-[100vw] h-[100vh] rounded-none flex flex-col p-0 gap-0' : 'max-w-5xl h-[90vh] flex flex-col p-0 gap-0'}>
           <DialogHeader className="px-6 py-4 border-b shrink-0">
             <DialogTitle className="flex items-center gap-2">
@@ -418,9 +464,9 @@ const Library = () => {
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 min-h-0">
-            {readerEbook && (
+            {readerEbook && readerPdfUrl && (
               <iframe
-                src={`${readerEbook.pdf_url}#toolbar=1&navpanes=1`}
+                src={`${readerPdfUrl}#toolbar=1&navpanes=1`}
                 className="w-full h-full border-0"
                 title={readerEbook.title}
               />
