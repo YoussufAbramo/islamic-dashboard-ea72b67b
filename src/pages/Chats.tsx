@@ -34,6 +34,7 @@ const Chats = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const [loading, setLoading] = useState(true);
+  const [adminJoinedChats, setAdminJoinedChats] = useState<Set<string>>(new Set());
 
   const [createOpen, setCreateOpen] = useState(false);
   const [chatType, setChatType] = useState<'direct' | 'group'>('direct');
