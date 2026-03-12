@@ -67,23 +67,33 @@ const PublicContact = () => {
   const { pending } = useAppSettings();
   const isAr = language === 'ar';
   const [content, setContent] = useState<ContactContent>(defaultContent);
+  const [dbDepartments, setDbDepartments] = useState<{ name: string; name_ar: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
-    name: '', email: '', phone: '', subject: '', department: 'general', message: '',
+    name: '', email: '', phone: '', subject: '', department: '', message: '',
   });
 
   const appName = pending.appName || 'Islamic Dashboard';
 
   useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase.from('landing_content').select('content').eq('section_key', 'contact_page').maybeSingle();
+    const fetchData = async () => {
+      const [{ data }, { data: deptData }] = await Promise.all([
+        supabase.from('landing_content').select('content').eq('section_key', 'contact_page').maybeSingle(),
+        supabase.from('support_departments').select('name, name_ar').eq('is_active', true).order('sort_order'),
+      ]);
       if (data?.content) setContent({ ...defaultContent, ...(data.content as any) });
+      if (deptData && deptData.length > 0) {
+        setDbDepartments(deptData as any);
+        setForm(prev => ({ ...prev, department: (deptData[0] as any).name.toLowerCase() }));
+      } else {
+        setForm(prev => ({ ...prev, department: defaultContent.departments[0]?.value || 'general' }));
+      }
       setLoading(false);
     };
-    fetch();
+    fetchData();
   }, []);
 
   const handleChange = (key: string, val: string) => {
