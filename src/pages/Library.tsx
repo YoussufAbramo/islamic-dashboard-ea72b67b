@@ -464,9 +464,9 @@ const Library = () => {
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 min-h-0">
-            {readerEbook && (
+            {readerEbook && readerPdfUrl && (
               <iframe
-                src={`${readerEbook.pdf_url}#toolbar=1&navpanes=1`}
+                src={`${readerPdfUrl}#toolbar=1&navpanes=1`}
                 className="w-full h-full border-0"
                 title={readerEbook.title}
               />
