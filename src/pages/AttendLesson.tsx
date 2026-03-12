@@ -136,16 +136,23 @@ const AttendLesson = () => {
     // Get existing session reports for these entries
     const entryIds = (timetableData || []).map((e: any) => e.id);
     let reportedIds = new Set<string>();
+    const durationsMap = new Map<string, number>();
     if (entryIds.length > 0) {
       const { data: reports } = await supabase
         .from('session_reports' as any)
-        .select('timetable_entry_id')
+        .select('timetable_entry_id, session_duration_seconds')
         .in('timetable_entry_id', entryIds);
       if (reports) {
-        reportedIds = new Set((reports as any[]).map((r: any) => r.timetable_entry_id));
+        (reports as any[]).forEach((r: any) => {
+          reportedIds.add(r.timetable_entry_id);
+          if (r.session_duration_seconds) {
+            durationsMap.set(r.timetable_entry_id, Math.round(r.session_duration_seconds / 60));
+          }
+        });
       }
     }
     setReportedEntryIds(reportedIds);
+    setReportDurations(durationsMap);
 
     const mapped: LessonEntry[] = (timetableData || []).map((e: any) => {
       const fullKey = `${e.student_id}|${e.teacher_id}|${e.course_id}`;
