@@ -818,10 +818,6 @@ const LandingContentSettings = () => {
           <PanelBottom className="h-4 w-4" />
           {isAr ? 'الفوتر' : 'Footer'}
         </button>
-        <button onClick={() => setActiveTab('seo')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'seo' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-          <Settings2 className="h-4 w-4" />
-          {isAr ? 'SEO' : 'SEO'}
-        </button>
       </div>
 
       {activeTab === 'header' ? (
