@@ -529,10 +529,12 @@ const TeacherProfile = () => {
                   <InfoCard icon={<Briefcase className="h-4 w-4" />} label={isAr ? 'التخصص' : 'Specialization'} value={teacher?.specialization || '-'} />
                   <InfoCard icon={<User className="h-4 w-4" />} label={isAr ? 'الجنس' : 'Gender'} value={(teacher as any)?.gender ? ((teacher as any).gender === 'male' ? (isAr ? 'ذكر' : 'Male') : (isAr ? 'أنثى' : 'Female')) : '-'} />
                   <InfoCard icon={<Cake className="h-4 w-4" />} label={isAr ? 'العمر' : 'Age'} value={(teacher as any)?.date_of_birth ? `${Math.floor((Date.now() - new Date((teacher as any).date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))} ${isAr ? 'سنة' : 'years'}` : '-'} />
-                  <InfoCard icon={<FileText className="h-4 w-4" />} label={isAr ? 'نبذة تعريفية' : 'Bio'} value={teacher?.bio || '-'} truncate />
                   <InfoCard icon={<CalendarDays className="h-4 w-4" />} label={isAr ? 'تاريخ إنشاء الحساب' : 'Account Created'} value={authInfo?.created_at ? format(new Date(authInfo.created_at), 'dd/MM/yyyy HH:mm') : '-'} />
                   <InfoCard icon={<Clock className="h-4 w-4" />} label={isAr ? 'آخر تسجيل دخول' : 'Last Login'} value={authInfo?.last_sign_in_at ? format(new Date(authInfo.last_sign_in_at), 'dd/MM/yyyy HH:mm') : '-'} />
                 </div>
+
+                {/* Bio - full width */}
+                <InfoCard icon={<FileText className="h-4 w-4" />} label={isAr ? 'نبذة تعريفية' : 'Bio'} value={teacher?.bio || '-'} />
 
                 {/* Documents - View mode */}
                 <div>
@@ -557,20 +559,6 @@ const TeacherProfile = () => {
                       iconBg="bg-emerald-500/10"
                     />
                   </div>
-                </div>
-
-                {/* Payout Policy Note */}
-                <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 flex items-start gap-2">
-                  <Info className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                  <p className="text-xs text-muted-foreground">
-                    {isAr
-                      ? 'يتم صرف المستحقات وفقاً لسياسات الصرف الخاصة بنا. إذا كان طلبك مخالفاً لسياساتنا، سيتم رفض الطلب وإعادة المبلغ إلى رصيدك.'
-                      : 'Payouts are processed following our payout policies. If your request violates our policies, it will be rejected and the amount will be returned to your balance.'}
-                    {' '}
-                    <Link to="/policies/payout-policy" className="text-primary underline hover:no-underline font-medium">
-                      {isAr ? 'اطلع على سياسة الصرف' : 'View Payout Policy'}
-                    </Link>
-                  </p>
                 </div>
               </div>
             </div>
