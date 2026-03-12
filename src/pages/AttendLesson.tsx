@@ -39,7 +39,7 @@ const AttendLesson = () => {
   const [now, setNow] = useState(new Date());
   const [joinOpen, setJoinOpen] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<LessonEntry | null>(null);
-  const [vconnectUrl, setVconnectUrl] = useState('');
+  const [vconnctUrl, setVconnctUrl] = useState('');
 
   // Update "now" every 30 seconds for live status updates
   useEffect(() => {
