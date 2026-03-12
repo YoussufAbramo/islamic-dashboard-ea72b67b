@@ -790,7 +790,7 @@ const LandingContentSettings = () => {
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="p-3 space-y-3 border-t border-border">
-                  <div className="grid sm:grid-cols-2 gap-2">
+                  <div className="space-y-2">
                     <div><Label className="text-xs">Title (EN)</Label><Input value={col.title || ''} onChange={e => updateFooterColumn(colIdx, 'title', e.target.value)} className="h-8 text-sm" /></div>
                     <div><Label className="text-xs">Title (AR)</Label><Input dir="rtl" value={col.title_ar || ''} onChange={e => updateFooterColumn(colIdx, 'title_ar', e.target.value)} className="h-8 text-sm" /></div>
                   </div>
@@ -798,13 +798,15 @@ const LandingContentSettings = () => {
                   {col.items.length > 0 && (
                     <div className="space-y-1.5">
                       {col.items.map((link, linkIdx) => (
-                        <div key={linkIdx} className="flex items-center gap-1.5 group">
-                          <Input value={link.label || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'label', e.target.value)} className="h-7 text-xs flex-1" placeholder="Label EN" />
-                          <Input dir="rtl" value={link.label_ar || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'label_ar', e.target.value)} className="h-7 text-xs flex-1" placeholder="Label AR" />
-                          <Input value={link.url || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'url', e.target.value)} className="h-7 text-xs flex-1 font-mono" placeholder="/path or #id" />
-                          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-all" onClick={() => removeFooterColumnItem(colIdx, linkIdx)}>
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
+                        <div key={linkIdx} className="space-y-1 group relative">
+                          <Input value={link.label || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'label', e.target.value)} className="h-7 text-xs" placeholder="Label EN" />
+                          <Input dir="rtl" value={link.label_ar || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'label_ar', e.target.value)} className="h-7 text-xs" placeholder="Label AR" />
+                          <div className="flex items-center gap-1">
+                            <Input value={link.url || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'url', e.target.value)} className="h-7 text-xs flex-1 font-mono" placeholder="/path or #id" />
+                            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-all" onClick={() => removeFooterColumnItem(colIdx, linkIdx)}>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
