@@ -38,7 +38,21 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json()
-    const { action, role, email, password, full_name, phone, specialization, bio } = body
+    const { action, role, email, password, full_name, phone, specialization, bio, user_id: targetUserId } = body
+
+    if (action === 'get-user-info') {
+      if (!targetUserId) {
+        return new Response(JSON.stringify({ error: 'Missing user_id' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+      const { data: userData, error: userError } = await adminClient.auth.admin.getUserById(targetUserId)
+      if (userError || !userData?.user) {
+        return new Response(JSON.stringify({ error: userError?.message || 'User not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+      return new Response(JSON.stringify({
+        created_at: userData.user.created_at,
+        last_sign_in_at: userData.user.last_sign_in_at,
+      }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
 
     if (action !== 'create') {
       return new Response(JSON.stringify({ error: 'Invalid action' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
