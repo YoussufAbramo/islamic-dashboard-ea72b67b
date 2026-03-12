@@ -38,31 +38,43 @@ const CoursesSection = ({ content, isAr }: CoursesSectionProps) => {
           <h2 className="text-3xl md:text-4xl font-bold font-amiri text-foreground mb-4">{getField(content, 'title', isAr)}</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">{getField(content, 'subtitle', isAr)}</p>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {courses.map((course) => (
-            <Card key={course.id} className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/30">
-              <div className="aspect-video bg-muted relative overflow-hidden">
+            <div
+              key={course.id}
+              className="group relative rounded-2xl overflow-hidden cursor-pointer border border-border/40 hover:border-primary/40 bg-card shadow-sm hover:shadow-xl transition-all duration-300"
+              onClick={() => navigate('/login')}
+            >
+              {/* Image */}
+              <div className="aspect-[4/3] relative overflow-hidden">
                 {course.image_url ? (
-                  <img src={course.image_url} alt={isAr ? course.title_ar : course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  <img src={course.image_url} alt={isAr ? course.title_ar : course.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-primary/5">
-                    <BookOpen className="h-12 w-12 text-primary/30" />
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+                    <BookOpen className="h-10 w-10 text-primary/40" />
                   </div>
                 )}
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                 {course.skill_level && (
-                  <Badge className="absolute top-3 end-3" variant="secondary">{course.skill_level}</Badge>
+                  <Badge className="absolute top-3 end-3 text-[10px] px-2 py-0.5 bg-background/80 backdrop-blur-sm text-foreground border-0">{course.skill_level}</Badge>
                 )}
+                {/* Title on image */}
+                <div className="absolute bottom-0 start-0 end-0 p-4">
+                  <h3 className="font-bold text-white text-sm line-clamp-2 drop-shadow-md">{isAr ? (course.title_ar || course.title) : course.title}</h3>
+                </div>
               </div>
-              <CardContent className="pt-4">
-                <h3 className="font-bold text-foreground mb-2 line-clamp-1">{isAr ? (course.title_ar || course.title) : course.title}</h3>
-                <p className="text-sm text-muted-foreground line-clamp-2">{isAr ? (course.description_ar || course.description) : course.description}</p>
-              </CardContent>
-              <CardFooter>
-                <Button variant="ghost" size="sm" className="w-full" onClick={() => navigate('/login')}>
-                  {t('Learn More', 'اعرف المزيد')} <ChevronRight className="h-4 w-4 ms-1 rtl:-scale-x-100" />
-                </Button>
-              </CardFooter>
-            </Card>
+              {/* Bottom */}
+              <div className="p-3 space-y-2">
+                <p className="text-xs text-muted-foreground line-clamp-2 min-h-[2rem]">{isAr ? (course.description_ar || course.description) : course.description}</p>
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-xs font-medium text-primary group-hover:underline underline-offset-2">
+                    {t('Learn More', 'اعرف المزيد')}
+                  </span>
+                  <ChevronRight className="h-3.5 w-3.5 text-primary rtl:-scale-x-100 group-hover:translate-x-0.5 transition-transform" />
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       </div>
