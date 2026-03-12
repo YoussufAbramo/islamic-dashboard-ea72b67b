@@ -25,7 +25,7 @@ const Reports = () => {
   const isAr = language === 'ar';
 
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
-  const [attendance, setAttendance] = useState<any[]>([]);
+  
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const [students, setStudents] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
