@@ -40,6 +40,7 @@ const AttendLesson = () => {
   const [entries, setEntries] = useState<LessonEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(new Date());
+  const [testMode, setTestMode] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<LessonEntry | null>(null);
 
