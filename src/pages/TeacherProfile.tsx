@@ -143,17 +143,6 @@ const TeacherProfile = () => {
       setAbsentSessions(sessions.filter(s => absenceStatuses.includes(s.status)).length);
     }
 
-    // Fetch assigned courses
-    const { data: tc } = await supabase
-      .from('teacher_courses')
-      .select('id, course_id, courses:course_id(id, title, title_ar, status)')
-      .eq('teacher_id', id);
-    setAssignedCourses(tc || []);
-
-    // Fetch all courses for assignment dropdown
-    const { data: courses } = await supabase.from('courses').select('id, title, title_ar').order('title');
-    setAllCourses(courses || []);
-
     // Fetch subscriptions assigned to this teacher
     const { data: subs } = await supabase
       .from('subscriptions')
