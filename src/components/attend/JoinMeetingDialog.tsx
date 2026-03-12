@@ -108,6 +108,7 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr, onSessionStart }: 
       }
       setIframeSrc(trimmed);
       setIframeOpen(true);
+      onSessionStart?.();
       handleClose(false);
     }
   };
