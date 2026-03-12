@@ -17,13 +17,14 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Search, Eye, Plus, ArrowUp, ArrowDown, Trash2, Check, ChevronsUpDown, Video } from 'lucide-react';
+import { Search, Eye, Plus, ArrowUp, ArrowDown, Trash2, Check, ChevronsUpDown, Video, CalendarDays, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { subscriptionStatusLabels, subscriptionTypeLabels, getLabel } from '@/lib/statusLabels';
 import { addDays } from 'date-fns';
 import { cn } from '@/lib/utils';
-import SchedulePicker from '@/components/SchedulePicker';
+import SchedulePicker, { formatTime12, DAY_LABELS } from '@/components/SchedulePicker';
+import { TableSkeleton } from '@/components/PageSkeleton';
 import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Subscriptions = () => {
