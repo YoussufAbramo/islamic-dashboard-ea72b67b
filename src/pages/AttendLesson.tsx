@@ -160,43 +160,8 @@ const AttendLesson = () => {
 
   const handleAttendClick = (entry: LessonEntry) => {
     setSelectedEntry(entry);
-    setVconnectUrl('');
+    setVconnctUrl('');
     setJoinOpen(true);
-  };
-
-  const handleJoin = (method: JoinMethod) => {
-    if (!selectedEntry) return;
-
-    if (method === 'google_meet') {
-      if (!selectedEntry.google_meet_url) {
-        toast.error(isAr ? 'لم يتم إعداد رابط Google Meet' : 'Google Meet URL not configured');
-        return;
-      }
-      window.open(selectedEntry.google_meet_url, '_blank', 'noopener,noreferrer');
-      toast.success(isAr ? 'تم فتح Google Meet' : 'Opening Google Meet');
-    } else if (method === 'zoom') {
-      if (!selectedEntry.zoom_url) {
-        toast.error(isAr ? 'لم يتم إعداد رابط Zoom' : 'Zoom URL not configured');
-        return;
-      }
-      window.open(selectedEntry.zoom_url, '_blank', 'noopener,noreferrer');
-      toast.success(isAr ? 'تم فتح Zoom' : 'Opening Zoom');
-    } else if (method === 'vconnect') {
-      if (!vconnectUrl.trim()) {
-        toast.error(isAr ? 'الرجاء إدخال رابط الجلسة' : 'Please enter the session URL');
-        return;
-      }
-      try {
-        new URL(vconnectUrl.trim());
-      } catch {
-        toast.error(isAr ? 'رابط غير صالح' : 'Invalid URL');
-        return;
-      }
-      window.open(vconnectUrl.trim(), '_blank', 'noopener,noreferrer');
-      toast.success(isAr ? 'تم فتح Vconnect' : 'Opening Vconnect');
-    }
-
-    setJoinOpen(false);
   };
 
   const formatDate = (dateStr: string) => {
