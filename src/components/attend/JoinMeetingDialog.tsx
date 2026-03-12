@@ -50,6 +50,14 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, entryId, isAr, onSession
   const [iframeOpen, setIframeOpen] = useState(false);
   const [iframeSrc, setIframeSrc] = useState('');
   const [dashboardMeetingOpen, setDashboardMeetingOpen] = useState(false);
+  const [MeetingComponent, setMeetingComponent] = useState<ComponentType<any> | null>(null);
+
+  // Dynamically load DashboardMeeting when needed
+  useEffect(() => {
+    if (dashboardMeetingOpen && !MeetingComponent) {
+      import('./DashboardMeeting').then(mod => setMeetingComponent(() => mod.default));
+    }
+  }, [dashboardMeetingOpen, MeetingComponent]);
 
   const handleClose = (val: boolean) => {
     if (!val) {
