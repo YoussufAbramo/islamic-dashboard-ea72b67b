@@ -203,19 +203,13 @@ const SessionReportsLog = () => {
                     </TableCell>
                   )}
                   <TableCell>
-                    <div className="flex items-center gap-1.5">
-                      <BookOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                      <span className="text-sm truncate max-w-[140px]">{report.course_title}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="gap-1 text-[10px]">
-                      <Clock className="h-3 w-3" />
-                      {formatDuration(report.session_duration_seconds)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
                     <p className="text-xs text-muted-foreground truncate max-w-[180px]">{report.summary || '-'}</p>
+                  </TableCell>
+                  <TableCell>
+                    <p className="text-xs text-muted-foreground truncate max-w-[180px]">{report.observations || '-'}</p>
+                  </TableCell>
+                  <TableCell>
+                    <p className="text-xs text-muted-foreground truncate max-w-[180px]">{report.performance_remarks || '-'}</p>
                   </TableCell>
                   <TableCell>
                     <ActionButton icon={Eye} label={isAr ? 'عرض التقرير' : 'View Report'} onClick={() => setDetailReport(report)} />
