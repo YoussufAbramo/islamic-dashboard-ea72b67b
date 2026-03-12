@@ -210,7 +210,6 @@ const Media = () => {
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [bulkDownloading, setBulkDownloading] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
 
