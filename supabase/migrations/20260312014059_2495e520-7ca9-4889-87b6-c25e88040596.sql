@@ -1,0 +1,1 @@
+ALTER TABLE public.lesson_sections ENABLE ROW LEVEL SECURITY;
