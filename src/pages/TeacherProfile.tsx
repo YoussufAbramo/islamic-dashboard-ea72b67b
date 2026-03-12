@@ -20,7 +20,7 @@ import {
   Clock, DollarSign, TrendingUp, AlertTriangle, CheckCircle,
   Loader2, Percent, Mail, Phone, User, Briefcase, FileText,
   ExternalLink, FileUp, Pencil, X, Save,
-  CalendarDays, Wallet, Info,
+  CalendarDays, Wallet, Info, Eye, HeadphonesIcon,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { TableSkeleton } from '@/components/PageSkeleton';
