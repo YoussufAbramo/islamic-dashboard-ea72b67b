@@ -103,6 +103,24 @@ const AppSidebar = () => {
       ],
     },
     {
+      label: 'Website',
+      labelAr: 'الموقع',
+      requiresWebsiteMode: true,
+      items: [
+        { key: 'landing-page', label: isAr ? 'صفحة الهبوط' : 'Landing Page', icon: Globe, path: '/dashboard/landing-page', roles: ['admin'] },
+        { key: 'website-pages', label: isAr ? 'الصفحات الرئيسية' : 'Main Pages', icon: FileText, path: '/dashboard/website-pages', roles: ['admin'] },
+        { key: 'blog', label: isAr ? 'المدونة' : 'Blogs', icon: PenLine, path: '/dashboard/blog', roles: ['admin'] },
+        { key: 'policies', label: isAr ? 'السياسات' : 'Policies', icon: ScrollText, path: '/dashboard/policies', roles: ['admin'] },
+      ],
+    },
+    {
+      label: 'Media',
+      labelAr: 'الوسائط',
+      items: [
+        { key: 'media', label: isAr ? 'الوسائط' : 'Media', icon: HardDrive, path: '/dashboard/media', roles: ['admin'] },
+      ],
+    },
+    {
       label: 'Messages',
       labelAr: 'الرسائل',
       items: [
@@ -147,24 +165,6 @@ const AppSidebar = () => {
       items: [
         { key: 'attendance', label: isAr ? 'تتبع الحضور' : 'Attendance Tracking', icon: ClipboardCheck, path: '/dashboard/attendance', roles: ['admin', 'teacher'], beta: true },
         { key: 'reports', label: isAr ? 'التقارير والتحليلات' : 'Reports & Analytics', icon: BarChart3, path: '/dashboard/reports', roles: ['admin'] },
-      ],
-    },
-    {
-      label: 'Website',
-      labelAr: 'الموقع',
-      requiresWebsiteMode: true,
-      items: [
-        { key: 'landing-page', label: isAr ? 'صفحة الهبوط' : 'Landing Page', icon: Globe, path: '/dashboard/landing-page', roles: ['admin'] },
-        { key: 'website-pages', label: isAr ? 'الصفحات الرئيسية' : 'Main Pages', icon: FileText, path: '/dashboard/website-pages', roles: ['admin'] },
-        { key: 'blog', label: isAr ? 'المدونة' : 'Blogs', icon: PenLine, path: '/dashboard/blog', roles: ['admin'] },
-        { key: 'policies', label: isAr ? 'السياسات' : 'Policies', icon: ScrollText, path: '/dashboard/policies', roles: ['admin'] },
-      ],
-    },
-    {
-      label: 'Media',
-      labelAr: 'الوسائط',
-      items: [
-        { key: 'media', label: isAr ? 'الوسائط' : 'Media', icon: HardDrive, path: '/dashboard/media', roles: ['admin'] },
       ],
     },
     {
