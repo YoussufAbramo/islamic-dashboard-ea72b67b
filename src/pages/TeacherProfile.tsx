@@ -100,6 +100,13 @@ const TeacherProfile = () => {
     if (teacherData.cv_url) getMediaSignedUrl(teacherData.cv_url).then(setCvSignedUrl);
     if (teacherData.contract_url) getMediaSignedUrl(teacherData.contract_url).then(setContractSignedUrl);
 
+    // Fetch auth info (created_at, last_sign_in_at) via edge function
+    supabase.functions.invoke('manage-users', {
+      body: { action: 'get-user-info', user_id: teacherData.user_id },
+    }).then(({ data }) => {
+      if (data) setAuthInfo(data);
+    });
+
     const { data: payouts } = await supabase
       .from('payout_requests')
       .select('*')
