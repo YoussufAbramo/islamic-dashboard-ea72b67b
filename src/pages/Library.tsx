@@ -400,12 +400,21 @@ const Library = () => {
       </Dialog>
 
       {/* PDF Reader Dialog */}
-      <Dialog open={!!readerEbook} onOpenChange={(open) => !open && setReaderEbook(null)}>
-        <DialogContent className="max-w-5xl h-[90vh] flex flex-col p-0 gap-0">
+      <Dialog open={!!readerEbook} onOpenChange={(open) => { if (!open) { setReaderEbook(null); setReaderExpanded(false); } }}>
+        <DialogContent className={readerExpanded ? 'max-w-[100vw] w-[100vw] h-[100vh] rounded-none flex flex-col p-0 gap-0' : 'max-w-5xl h-[90vh] flex flex-col p-0 gap-0'}>
           <DialogHeader className="px-6 py-4 border-b shrink-0">
             <DialogTitle className="flex items-center gap-2">
               <BookOpen className="h-5 w-5 text-primary" />
               {readerEbook && (isAr ? readerEbook.title_ar || readerEbook.title : readerEbook.title)}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0 ms-auto me-6"
+                onClick={() => setReaderExpanded(!readerExpanded)}
+                title={readerExpanded ? (isAr ? 'تصغير' : 'Minimize') : (isAr ? 'تكبير' : 'Maximize')}
+              >
+                {readerExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </Button>
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 min-h-0">
