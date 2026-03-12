@@ -156,6 +156,7 @@ const Subscriptions = () => {
       lesson_duration: parseInt(editForm.lesson_duration) || 60,
       google_meet_url: editForm.google_meet_url || '',
       zoom_url: editForm.zoom_url || '',
+      auto_renew: editForm.auto_renew,
     }).eq('id', selected.id);
     toast.success(isAr ? 'تم تحديث الاشتراك' : 'Subscription updated');
     setEditing(false);
