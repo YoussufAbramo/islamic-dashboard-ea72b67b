@@ -337,213 +337,220 @@ const Subscriptions = () => {
 
       {/* Detail / Edit dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{t('subscriptions.title')}</DialogTitle></DialogHeader>
           {selected && (
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>{t('subscriptions.student')}</Label>
-                  <p className="text-sm">{selected.students?.profiles?.full_name || '-'}</p>
-                </div>
-                <div>
-                  <Label>{t('subscriptions.startDate')}</Label>
-                  <p className="text-sm">{selected.start_date}</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>{t('subscriptions.course')}</Label>
-                  {editing ? (
-                    <Select value={editForm.course_id} onValueChange={(v) => setEditForm({ ...editForm, course_id: v })}>
-                      <SelectTrigger><SelectValue placeholder={isAr ? 'اختر دورة' : 'Select course'} /></SelectTrigger>
-                      <SelectContent>{courses.map((c) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}</SelectContent>
-                    </Select>
-                  ) : (
-                    <p className="text-sm">{selected.courses?.title || '-'}</p>
-                  )}
-                </div>
-                <div>
-                  <Label>{t('subscriptions.teacher')}</Label>
-                  {editing ? (
-                    <Select value={editForm.teacher_id} onValueChange={(v) => setEditForm({ ...editForm, teacher_id: v })}>
-                      <SelectTrigger><SelectValue placeholder={isAr ? 'اختر معلم' : 'Select teacher'} /></SelectTrigger>
-                      <SelectContent>{teachers.map((te) => <SelectItem key={te.id} value={te.id}>{te.profiles?.full_name || te.id}</SelectItem>)}</SelectContent>
-                    </Select>
-                  ) : (
-                    <p className="text-sm">{selected.teachers_rel?.profiles?.full_name || '-'}</p>
-                  )}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>{t('subscriptions.type')}</Label>
-                  {editing ? (
-                    <Select value={editForm.subscription_type} onValueChange={(v) => setEditForm({ ...editForm, subscription_type: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="monthly">{isAr ? 'شهري' : 'Monthly'}</SelectItem>
-                        <SelectItem value="quarterly">{isAr ? '3 أشهر' : '3-Month'}</SelectItem>
-                        <SelectItem value="yearly">{isAr ? 'سنوي' : 'Yearly'}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <p className="text-sm">{getLabel(subscriptionTypeLabels, selected.subscription_type, isAr)}</p>
-                  )}
-                </div>
-                <div>
-                  <Label>{t('subscriptions.status')}</Label>
-                  {editing ? (
-                    <Select value={editForm.status} onValueChange={(v) => setEditForm({ ...editForm, status: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="active">{isAr ? 'نشط' : 'Active'}</SelectItem>
-                        <SelectItem value="expired">{isAr ? 'منتهي' : 'Expired'}</SelectItem>
-                        <SelectItem value="cancelled">{isAr ? 'ملغي' : 'Cancelled'}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <div className="mt-1">
-                      <Badge variant={statusColors[selected.status] as any}>{getLabel(subscriptionStatusLabels, selected.status, isAr)}</Badge>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>{t('subscriptions.renewalDate')}</Label>
-                  {editing ? (
-                    <Input type="date" value={editForm.renewal_date} onChange={(e) => setEditForm({ ...editForm, renewal_date: e.target.value })} />
-                  ) : (
-                    <p className="text-sm">{selected.renewal_date || '-'}</p>
-                  )}
-                </div>
-                <div>
-                  <Label>{isAr ? 'السعر' : 'Price'}</Label>
-                  {editing ? (
-                    <Input type="number" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} />
-                  ) : (
-                    <p className="text-sm">{currency.symbol}{selected.price}</p>
-                  )}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>{isAr ? 'الدروس الأسبوعية' : 'Weekly Lessons'}</Label>
-                  {editing ? (
-                    <Input type="number" min="1" value={editForm.weekly_lessons} onChange={(e) => setEditForm({ ...editForm, weekly_lessons: e.target.value })} />
-                  ) : (
-                    <p className="text-sm">{selected.weekly_lessons || 1}</p>
-                  )}
-                </div>
-                <div>
-                  <Label>{isAr ? 'مدة الدرس (دقيقة)' : 'Lesson Duration (min)'}</Label>
-                  {editing ? (
-                    <Input type="number" min="15" step="15" value={editForm.lesson_duration} onChange={(e) => setEditForm({ ...editForm, lesson_duration: e.target.value })} />
-                  ) : (
-                    <p className="text-sm">{selected.lesson_duration || 60}</p>
-                  )}
-                </div>
-              </div>
-              {/* Live Session URLs */}
-              <div className="space-y-2">
-                <Label className="text-xs flex items-center gap-1.5"><Video className="h-3.5 w-3.5" />{isAr ? 'روابط الجلسات المباشرة' : 'Live Session URLs'}</Label>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2.5 p-2.5 rounded-lg border bg-card min-w-0">
-                    <img src="/icons/google-meet.png" alt="Google Meet" className="h-5 w-5 shrink-0" />
-                    {editing ? (
-                      <Input type="url" placeholder="https://meet.google.com/..." value={editForm.google_meet_url} onChange={(e) => setEditForm({ ...editForm, google_meet_url: e.target.value })} className="h-7 text-xs flex-1 min-w-0" />
-                    ) : (
-                      selected.google_meet_url
-                        ? <a href={selected.google_meet_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex-1 min-w-0 break-all line-clamp-1">{selected.google_meet_url}</a>
-                        : <p className="text-xs text-muted-foreground flex-1">{isAr ? 'لم يتم الإعداد' : 'Not configured'}</p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2.5 p-2.5 rounded-lg border bg-card min-w-0">
-                    <img src="/icons/zoom.png" alt="Zoom" className="h-5 w-5 shrink-0" />
-                    {editing ? (
-                      <Input type="url" placeholder="https://zoom.us/j/..." value={editForm.zoom_url} onChange={(e) => setEditForm({ ...editForm, zoom_url: e.target.value })} className="h-7 text-xs flex-1 min-w-0" />
-                    ) : (
-                      selected.zoom_url
-                        ? <a href={selected.zoom_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex-1 min-w-0 break-all line-clamp-1">{selected.zoom_url}</a>
-                        : <p className="text-xs text-muted-foreground flex-1">{isAr ? 'لم يتم الإعداد' : 'Not configured'}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-              {/* Schedule info */}
-              {(selected.schedule_days?.length > 0 || selected.schedule_time) && (
-                <div className="rounded-xl border bg-card overflow-hidden">
-                  <div className="px-3.5 py-2.5 border-b bg-muted/40 flex items-center gap-2">
-                    <CalendarDays className="h-3.5 w-3.5 text-primary" />
-                    <Label className="text-xs font-semibold">{isAr ? 'الجدول الأسبوعي' : 'Weekly Schedule'}</Label>
-                  </div>
-                  <div className="p-3.5 space-y-3">
-                    {selected.schedule_days?.length > 0 && (
-                      <div className="flex gap-1.5 flex-wrap">
-                        {DAY_LABELS.filter(d => selected.schedule_days?.includes(d.key)).map(day => (
-                          <span key={day.key} className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary text-[11px] font-semibold border border-primary/20">
-                            {isAr ? day.arFull : day.enFull}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    {selected.schedule_time && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 border border-primary/20">
-                          <Clock className="h-4 w-4 text-primary" />
-                        </div>
-                        <div>
-                          <p className="text-[10px] text-muted-foreground leading-none mb-0.5">{isAr ? 'وقت الدرس' : 'Lesson Time'}</p>
-                          <p className="text-sm font-semibold">{formatTime12(selected.schedule_time)}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-              {/* Auto Renewal Toggle */}
-              <div className="flex items-center justify-between p-3.5 rounded-xl border border-primary/20 bg-primary/5">
-                <div className="flex items-center gap-2.5">
-                  <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10">
-                    <RefreshCw className="h-4 w-4 text-primary" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Left Column - Core Info */}
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>{t('subscriptions.student')}</Label>
+                    <p className="text-sm">{selected.students?.profiles?.full_name || '-'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-semibold">{isAr ? 'التجديد التلقائي' : 'Auto Renewal'}</p>
-                    <p className="text-[10px] text-muted-foreground">{isAr ? 'إنشاء فاتورة تلقائياً عند تاريخ التجديد' : 'Auto-generate invoice on renewal date'}</p>
+                    <Label>{t('subscriptions.startDate')}</Label>
+                    <p className="text-sm">{selected.start_date}</p>
                   </div>
                 </div>
-                {editing ? (
-                  <Switch checked={editForm.auto_renew} onCheckedChange={(v) => setEditForm({ ...editForm, auto_renew: v })} />
-                ) : (
-                  <Badge variant={selected.auto_renew ? 'default' : 'secondary'}>{selected.auto_renew ? (isAr ? 'مفعّل' : 'Enabled') : (isAr ? 'معطّل' : 'Disabled')}</Badge>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>{t('subscriptions.course')}</Label>
+                    {editing ? (
+                      <Select value={editForm.course_id} onValueChange={(v) => setEditForm({ ...editForm, course_id: v })}>
+                        <SelectTrigger><SelectValue placeholder={isAr ? 'اختر دورة' : 'Select course'} /></SelectTrigger>
+                        <SelectContent>{courses.map((c) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}</SelectContent>
+                      </Select>
+                    ) : (
+                      <p className="text-sm">{selected.courses?.title || '-'}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label>{t('subscriptions.teacher')}</Label>
+                    {editing ? (
+                      <Select value={editForm.teacher_id} onValueChange={(v) => setEditForm({ ...editForm, teacher_id: v })}>
+                        <SelectTrigger><SelectValue placeholder={isAr ? 'اختر معلم' : 'Select teacher'} /></SelectTrigger>
+                        <SelectContent>{teachers.map((te) => <SelectItem key={te.id} value={te.id}>{te.profiles?.full_name || te.id}</SelectItem>)}</SelectContent>
+                      </Select>
+                    ) : (
+                      <p className="text-sm">{selected.teachers_rel?.profiles?.full_name || '-'}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>{t('subscriptions.type')}</Label>
+                    {editing ? (
+                      <Select value={editForm.subscription_type} onValueChange={(v) => setEditForm({ ...editForm, subscription_type: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="monthly">{isAr ? 'شهري' : 'Monthly'}</SelectItem>
+                          <SelectItem value="quarterly">{isAr ? '3 أشهر' : '3-Month'}</SelectItem>
+                          <SelectItem value="yearly">{isAr ? 'سنوي' : 'Yearly'}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <p className="text-sm">{getLabel(subscriptionTypeLabels, selected.subscription_type, isAr)}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label>{t('subscriptions.status')}</Label>
+                    {editing ? (
+                      <Select value={editForm.status} onValueChange={(v) => setEditForm({ ...editForm, status: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="active">{isAr ? 'نشط' : 'Active'}</SelectItem>
+                          <SelectItem value="expired">{isAr ? 'منتهي' : 'Expired'}</SelectItem>
+                          <SelectItem value="cancelled">{isAr ? 'ملغي' : 'Cancelled'}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="mt-1">
+                        <Badge variant={statusColors[selected.status] as any}>{getLabel(subscriptionStatusLabels, selected.status, isAr)}</Badge>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>{t('subscriptions.renewalDate')}</Label>
+                    {editing ? (
+                      <Input type="date" value={editForm.renewal_date} onChange={(e) => setEditForm({ ...editForm, renewal_date: e.target.value })} />
+                    ) : (
+                      <p className="text-sm">{selected.renewal_date || '-'}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label>{isAr ? 'السعر' : 'Price'}</Label>
+                    {editing ? (
+                      <Input type="number" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} />
+                    ) : (
+                      <p className="text-sm">{currency.symbol}{selected.price}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>{isAr ? 'الدروس الأسبوعية' : 'Weekly Lessons'}</Label>
+                    {editing ? (
+                      <Input type="number" min="1" value={editForm.weekly_lessons} onChange={(e) => setEditForm({ ...editForm, weekly_lessons: e.target.value })} />
+                    ) : (
+                      <p className="text-sm">{selected.weekly_lessons || 1}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label>{isAr ? 'مدة الدرس (دقيقة)' : 'Lesson Duration (min)'}</Label>
+                    {editing ? (
+                      <Input type="number" min="15" step="15" value={editForm.lesson_duration} onChange={(e) => setEditForm({ ...editForm, lesson_duration: e.target.value })} />
+                    ) : (
+                      <p className="text-sm">{selected.lesson_duration || 60}</p>
+                    )}
+                  </div>
+                </div>
+                {/* Live Session URLs */}
+                <div className="space-y-2">
+                  <Label className="text-xs flex items-center gap-1.5"><Video className="h-3.5 w-3.5" />{isAr ? 'روابط الجلسات المباشرة' : 'Live Session URLs'}</Label>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2.5 p-2.5 rounded-lg border bg-card min-w-0">
+                      <img src="/icons/google-meet.png" alt="Google Meet" className="h-5 w-5 shrink-0" />
+                      {editing ? (
+                        <Input type="url" placeholder="https://meet.google.com/..." value={editForm.google_meet_url} onChange={(e) => setEditForm({ ...editForm, google_meet_url: e.target.value })} className="h-7 text-xs flex-1 min-w-0" />
+                      ) : (
+                        selected.google_meet_url
+                          ? <a href={selected.google_meet_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex-1 min-w-0 break-all line-clamp-1">{selected.google_meet_url}</a>
+                          : <p className="text-xs text-muted-foreground flex-1">{isAr ? 'لم يتم الإعداد' : 'Not configured'}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2.5 p-2.5 rounded-lg border bg-card min-w-0">
+                      <img src="/icons/zoom.png" alt="Zoom" className="h-5 w-5 shrink-0" />
+                      {editing ? (
+                        <Input type="url" placeholder="https://zoom.us/j/..." value={editForm.zoom_url} onChange={(e) => setEditForm({ ...editForm, zoom_url: e.target.value })} className="h-7 text-xs flex-1 min-w-0" />
+                      ) : (
+                        selected.zoom_url
+                          ? <a href={selected.zoom_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex-1 min-w-0 break-all line-clamp-1">{selected.zoom_url}</a>
+                          : <p className="text-xs text-muted-foreground flex-1">{isAr ? 'لم يتم الإعداد' : 'Not configured'}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {isAdmin && (
+                  <div className="flex gap-2 pt-2 border-t">
+                    {editing ? (
+                      <>
+                        <Button onClick={saveEdit}>{t('common.save')}</Button>
+                        <Button variant="outline" onClick={() => setEditing(false)}>{t('common.cancel')}</Button>
+                      </>
+                    ) : (
+                      <Button variant="outline" size="sm" onClick={() => setEditing(true)}>{t('common.edit')}</Button>
+                    )}
+                  </div>
                 )}
               </div>
-              {/* Session Reports for this subscription */}
-              <div className="border-t pt-3 space-y-2">
-                <p className="text-sm font-semibold flex items-center gap-1.5">
-                  <span className="h-4 w-4 text-primary">📋</span>
-                  {isAr ? 'تقارير الجلسات' : 'Session Reports'}
-                </p>
-                <SessionReportsList
-                  isAr={isAr}
-                  studentId={selected.student_id}
-                  courseId={selected.course_id}
-                  limit={5}
-                />
-              </div>
-              {isAdmin && (
-                <div className="flex gap-2 pt-2 border-t">
+
+              {/* Right Column - Schedule, Auto Renewal & Reports */}
+              <div className="space-y-3">
+                {/* Schedule info */}
+                {(selected.schedule_days?.length > 0 || selected.schedule_time) && (
+                  <div className="rounded-xl border bg-card overflow-hidden">
+                    <div className="px-3.5 py-2.5 border-b bg-muted/40 flex items-center gap-2">
+                      <CalendarDays className="h-3.5 w-3.5 text-primary" />
+                      <Label className="text-xs font-semibold">{isAr ? 'الجدول الأسبوعي' : 'Weekly Schedule'}</Label>
+                    </div>
+                    <div className="p-3.5 space-y-3">
+                      {selected.schedule_days?.length > 0 && (
+                        <div className="flex gap-1.5 flex-wrap">
+                          {DAY_LABELS.filter(d => selected.schedule_days?.includes(d.key)).map(day => (
+                            <span key={day.key} className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary text-[11px] font-semibold border border-primary/20">
+                              {isAr ? day.arFull : day.enFull}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {selected.schedule_time && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 border border-primary/20">
+                            <Clock className="h-4 w-4 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-muted-foreground leading-none mb-0.5">{isAr ? 'وقت الدرس' : 'Lesson Time'}</p>
+                            <p className="text-sm font-semibold">{formatTime12(selected.schedule_time)}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {/* Auto Renewal Toggle */}
+                <div className="flex items-center justify-between p-3.5 rounded-xl border border-primary/20 bg-primary/5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10">
+                      <RefreshCw className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold">{isAr ? 'التجديد التلقائي' : 'Auto Renewal'}</p>
+                      <p className="text-[10px] text-muted-foreground">{isAr ? 'إنشاء فاتورة تلقائياً عند تاريخ التجديد' : 'Auto-generate invoice on renewal date'}</p>
+                    </div>
+                  </div>
                   {editing ? (
-                    <>
-                      <Button onClick={saveEdit}>{t('common.save')}</Button>
-                      <Button variant="outline" onClick={() => setEditing(false)}>{t('common.cancel')}</Button>
-                    </>
+                    <Switch checked={editForm.auto_renew} onCheckedChange={(v) => setEditForm({ ...editForm, auto_renew: v })} />
                   ) : (
-                    <Button variant="outline" size="sm" onClick={() => setEditing(true)}>{t('common.edit')}</Button>
+                    <Badge variant={selected.auto_renew ? 'default' : 'secondary'}>{selected.auto_renew ? (isAr ? 'مفعّل' : 'Enabled') : (isAr ? 'معطّل' : 'Disabled')}</Badge>
                   )}
                 </div>
-              )}
+                {/* Session Reports for this subscription */}
+                <div className="border-t pt-3 space-y-2">
+                  <p className="text-sm font-semibold flex items-center gap-1.5">
+                    <span className="h-4 w-4 text-primary">📋</span>
+                    {isAr ? 'تقارير الجلسات' : 'Session Reports'}
+                  </p>
+                  <SessionReportsList
+                    isAr={isAr}
+                    studentId={selected.student_id}
+                    courseId={selected.course_id}
+                    limit={5}
+                  />
+                </div>
+              </div>
             </div>
           )}
         </DialogContent>
