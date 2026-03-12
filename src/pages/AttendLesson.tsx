@@ -60,6 +60,7 @@ const AttendLesson = () => {
 
   // Set of entry IDs that already have reports
   const [reportedEntryIds, setReportedEntryIds] = useState<Set<string>>(new Set());
+  const [viewReportEntry, setViewReportEntry] = useState<LessonEntry | null>(null);
 
   // Update "now" every 30 seconds for live status updates
   useEffect(() => {
