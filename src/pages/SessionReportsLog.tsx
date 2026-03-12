@@ -173,9 +173,9 @@ const SessionReportsLog = () => {
                 <TableHead>{isAr ? 'التاريخ والوقت' : 'Date & Time'}</TableHead>
                 {role !== 'student' && <TableHead>{isAr ? 'الطالب' : 'Student'}</TableHead>}
                 {role !== 'teacher' && <TableHead>{isAr ? 'المعلم' : 'Teacher'}</TableHead>}
-                <TableHead>{isAr ? 'الدورة' : 'Course'}</TableHead>
-                <TableHead>{isAr ? 'المدة' : 'Duration'}</TableHead>
                 <TableHead>{isAr ? 'الملخص' : 'Summary'}</TableHead>
+                <TableHead>{isAr ? 'الملاحظات' : 'Observations'}</TableHead>
+                <TableHead>{isAr ? 'ملاحظات الأداء' : 'Performance'}</TableHead>
                 <TableHead className="w-[60px]">{isAr ? 'عرض' : 'View'}</TableHead>
               </TableRow>
             </TableHeader>
@@ -203,19 +203,13 @@ const SessionReportsLog = () => {
                     </TableCell>
                   )}
                   <TableCell>
-                    <div className="flex items-center gap-1.5">
-                      <BookOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                      <span className="text-sm truncate max-w-[140px]">{report.course_title}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="gap-1 text-[10px]">
-                      <Clock className="h-3 w-3" />
-                      {formatDuration(report.session_duration_seconds)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
                     <p className="text-xs text-muted-foreground truncate max-w-[180px]">{report.summary || '-'}</p>
+                  </TableCell>
+                  <TableCell>
+                    <p className="text-xs text-muted-foreground truncate max-w-[180px]">{report.observations || '-'}</p>
+                  </TableCell>
+                  <TableCell>
+                    <p className="text-xs text-muted-foreground truncate max-w-[180px]">{report.performance_remarks || '-'}</p>
                   </TableCell>
                   <TableCell>
                     <ActionButton icon={Eye} label={isAr ? 'عرض التقرير' : 'View Report'} onClick={() => setDetailReport(report)} />
