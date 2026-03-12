@@ -186,6 +186,7 @@ const WebsitePages = () => {
       <div className="space-y-2">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{isAr ? 'صفحات النظام' : 'System Pages'}</p>
         <SystemPageCard isAr={isAr} />
+        <ContactPageCard isAr={isAr} />
       </div>
 
       {/* Custom Pages */}
