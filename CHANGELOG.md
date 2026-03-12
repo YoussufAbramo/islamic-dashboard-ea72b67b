@@ -2,6 +2,13 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.12.0] - 2026-03-12
+
+### Changed
+- **FAQ Section redesign** — boxed layout with heavy border radius (`rounded-3xl`), background contained within container instead of full-width
+- **FAQ animation** — smooth expand/collapse animation using CSS Grid `grid-template-rows` transition
+- **Newsletter Section redesign** — compact horizontal layout with reduced vertical footprint, inline form, and boxed styling with border and muted background
+
 ## [4.11.0] - 2026-03-12
 
 ### Added
