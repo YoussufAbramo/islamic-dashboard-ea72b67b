@@ -255,8 +255,17 @@ const Library = () => {
                   </div>
 
                   {/* Info */}
-                  <div className="flex-1 flex flex-col p-3 gap-1.5">
-                    <h3 className="text-sm font-semibold truncate" title={title}>{title}</h3>
+                  <div className="relative flex-1 flex flex-col p-3 gap-1.5">
+                    {isAdmin && (
+                      <ActionButton
+                        icon={Trash2}
+                        label={isAr ? 'حذف' : 'Delete'}
+                        destructive
+                        className="absolute top-1.5 end-1.5 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => setDeleteTarget(ebook.id)}
+                      />
+                    )}
+                    <h3 className="text-sm font-semibold truncate pe-6" title={title}>{title}</h3>
                     {desc && (
                       <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">{desc}</p>
                     )}
@@ -294,15 +303,6 @@ const Library = () => {
                         <Download className="h-3.5 w-3.5" />
                         {isAr ? 'تحميل' : 'Download'}
                       </Button>
-                      {isAdmin && (
-                        <ActionButton
-                          icon={Trash2}
-                          label={isAr ? 'حذف' : 'Delete'}
-                          destructive
-                          className="ms-auto h-7 w-7"
-                          onClick={() => setDeleteTarget(ebook.id)}
-                        />
-                      )}
                     </div>
                   </div>
                 </div>
