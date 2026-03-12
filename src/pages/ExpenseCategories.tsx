@@ -200,7 +200,17 @@ const ExpenseCategories = () => {
             <div className="flex items-center gap-4">
               <div>
                 <Label>{isAr ? 'اللون' : 'Color'}</Label>
-                <Input type="color" value={form.color} onChange={e => setForm({ ...form, color: e.target.value })} className="h-10 w-16 p-1 cursor-pointer" />
+                <div className="flex flex-wrap gap-2 mt-1.5">
+                  {['#ef4444','#f97316','#f59e0b','#eab308','#22c55e','#14b8a6','#06b6d4','#3b82f6','#6366f1','#a855f7','#ec4899','#64748b'].map(c => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setForm({ ...form, color: c })}
+                      className={`h-8 w-8 rounded-lg border-2 transition-all ${form.color === c ? 'border-foreground scale-110 shadow-md' : 'border-transparent hover:scale-105'}`}
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
+                </div>
               </div>
               <div className="flex items-center gap-2 pt-5">
                 <Switch checked={form.is_active} onCheckedChange={v => setForm({ ...form, is_active: v })} />
