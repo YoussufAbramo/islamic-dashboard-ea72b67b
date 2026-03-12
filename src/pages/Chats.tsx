@@ -199,6 +199,10 @@ const Chats = () => {
         notifyError({ error: 'VAL_GROUP_NAME', isAr });
         return;
       }
+      if (createForm.group_students.length === 0 && createForm.group_teachers.length === 0) {
+        toast.error(isAr ? 'يجب اختيار عضو واحد على الأقل' : 'Select at least one member');
+        return;
+      }
     }
 
     setCreateLoading(true);
