@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-
+import { COPYRIGHT_TEXT, COPYRIGHT_LINK, COPYRIGHT_NAME, COPYRIGHT_SUFFIX } from '@/lib/version';
 export interface CopyrightSlotContent {
   type: 'image' | 'text' | 'links';
   text?: string;
@@ -69,12 +69,14 @@ const SlotRenderer = ({ slot, isAr }: { slot?: CopyrightSlotContent; isAr: boole
 };
 
 const CopyrightBar = ({ config, isAr }: CopyrightBarProps) => {
-  const copyrightText = isAr
-    ? (config.copyright_text_ar || config.copyright_text || '')
-    : (config.copyright_text || '');
-
   const CopyrightSlot = () => (
-    <span className="text-[11px] text-muted-foreground/70">{copyrightText}</span>
+    <span className="text-[11px] text-muted-foreground/70">
+      {COPYRIGHT_TEXT}{' '}
+      <a href={COPYRIGHT_LINK} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+        {COPYRIGHT_NAME}
+      </a>{' '}
+      {COPYRIGHT_SUFFIX}
+    </span>
   );
 
   const OtherSlot = () => <SlotRenderer slot={config.other_content} isAr={isAr} />;

@@ -1,4 +1,5 @@
 import { useLanguage } from '@/contexts/LanguageContext';
+import { COPYRIGHT_TEXT, COPYRIGHT_LINK, COPYRIGHT_NAME, COPYRIGHT_SUFFIX } from '@/lib/version';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -219,10 +220,9 @@ const CopyrightSettingsEditor = ({ config, onChange, policies, websitePages }: P
         </div>
       </div>
 
-      {/* Copyright text */}
-      <div className="grid sm:grid-cols-2 gap-3">
-        <div><Label className="text-xs">Copyright (EN)</Label><Input value={config.copyright_text || ''} onChange={e => update('copyright_text', e.target.value)} className="h-8 text-sm" placeholder="© 2026 All rights reserved." /></div>
-        <div><Label className="text-xs">Copyright (AR)</Label><Input dir="rtl" value={config.copyright_text_ar || ''} onChange={e => update('copyright_text_ar', e.target.value)} className="h-8 text-sm" /></div>
+      {/* Copyright text - uses developer copyright from version.ts */}
+      <div className="rounded-md bg-muted/50 border border-border px-3 py-2">
+        <p className="text-xs text-muted-foreground">{COPYRIGHT_TEXT} <a href={COPYRIGHT_LINK} target="_blank" rel="noopener noreferrer" className="underline">{COPYRIGHT_NAME}</a> {COPYRIGHT_SUFFIX}</p>
       </div>
 
       {/* Other content slot */}
