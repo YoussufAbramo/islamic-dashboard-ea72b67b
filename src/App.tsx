@@ -24,6 +24,8 @@ import Teachers from "./pages/Teachers";
 import Admins from "./pages/Admins";
 import RoleManagement from "./pages/RoleManagement";
 import Support from "./pages/Support";
+import SupportDepartments from "./pages/SupportDepartments";
+import SupportPriorities from "./pages/SupportPriorities";
 import Timetable from "./pages/Timetable";
 import Subscriptions from "./pages/Subscriptions";
 import Chats from "./pages/Chats";
