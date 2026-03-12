@@ -30,6 +30,7 @@ import SchedulePicker, { formatTime12, DAY_LABELS } from '@/components/ScheduleP
 import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Subscriptions = () => {
+  const navigate = useNavigate();
   const { t, language } = useLanguage();
   const { role } = useAuth();
   const { currency } = useAppSettings();
