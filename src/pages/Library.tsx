@@ -74,8 +74,10 @@ const Library = () => {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [readerEbook, setReaderEbook] = useState<Ebook | null>(null);
+  const [readerPdfUrl, setReaderPdfUrl] = useState('');
   const [readerExpanded, setReaderExpanded] = useState(false);
   const [ebookStats, setEbookStats] = useState<Record<string, { views: number; downloads: number }>>({});
+  const [signedCovers, setSignedCovers] = useState<Record<string, string>>({});
 
   const [form, setForm] = useState({ title: '', title_ar: '', description: '', description_ar: '' });
   const [pdfFile, setPdfFile] = useState<File | null>(null);
