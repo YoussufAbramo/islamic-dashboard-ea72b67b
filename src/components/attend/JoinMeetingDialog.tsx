@@ -79,6 +79,7 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr, onSessionStart }: 
       }
       window.open(entry.google_meet_url, '_blank', 'noopener,noreferrer');
       toast.success(isAr ? 'تم فتح Google Meet' : 'Opening Google Meet');
+      onSessionStart?.();
       handleClose(false);
     } else if (selected === 'zoom') {
       if (!entry.zoom_url) {
@@ -87,6 +88,7 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr, onSessionStart }: 
       }
       window.open(entry.zoom_url, '_blank', 'noopener,noreferrer');
       toast.success(isAr ? 'تم فتح Zoom' : 'Opening Zoom');
+      onSessionStart?.();
       handleClose(false);
     } else if (selected === 'vconnct') {
       const trimmed = vconnctUrl.trim();
