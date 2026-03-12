@@ -211,21 +211,21 @@ const WebsitePages = () => {
                       <p className="text-xs text-muted-foreground">/pages/{page.slug}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <Badge variant={page.status === 'published' ? 'default' : 'secondary'} className="text-xs">
                       {page.status === 'published' ? (isAr ? 'منشور' : 'Published') : (isAr ? 'مسودة' : 'Draft')}
                     </Badge>
                     {page.status === 'published' && (
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => window.open(`/pages/${page.slug}`, '_blank')}>
-                        <ExternalLink className="h-3.5 w-3.5" />
+                      <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => window.open(`/pages/${page.slug}`, '_blank')} title={isAr ? 'عرض' : 'View'}>
+                        <ExternalLink className={ACTION_ICON} />
                       </Button>
                     )}
-                    <Button variant="outline" size="sm" onClick={() => handleEdit(page)}>
-                      {isAr ? 'تعديل' : 'Edit'}
+                    <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => handleEdit(page)} title={isAr ? 'تعديل' : 'Edit'}>
+                      <Pencil className={ACTION_ICON} />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE}><Trash2 className={ACTION_ICON} /></Button>
+                        <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} title={isAr ? 'حذف' : 'Delete'}><Trash2 className={ACTION_ICON} /></Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
