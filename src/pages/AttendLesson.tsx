@@ -211,6 +211,9 @@ const AttendLesson = () => {
     if (entry.status === 'postponed') {
       return { label: isAr ? 'مؤجل' : 'Postponed', variant: 'outline', className: 'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400', isLive: false };
     }
+    if (entry.status === 'cancelled') {
+      return { label: isAr ? 'ملغى' : 'Cancelled', variant: 'outline', className: 'border-red-500/40 bg-red-500/10 text-red-600 dark:text-red-400', isLive: false };
+    }
     if (entry.status === 'completed' || entry.has_report) {
       return { label: isAr ? 'انتهى' : 'Ended', variant: 'outline', className: 'border-muted-foreground/30 bg-muted text-muted-foreground', isLive: false };
     }
