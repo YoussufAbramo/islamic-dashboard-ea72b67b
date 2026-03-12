@@ -12,6 +12,8 @@ export interface CopyrightConfig {
   layout: 1 | 2 | 3 | 4 | 5 | 6;
   copyright_text?: string;
   copyright_text_ar?: string;
+  sub_text?: string;
+  sub_text_ar?: string;
   other_content?: CopyrightSlotContent;
   secondary_content?: CopyrightSlotContent;
 }
