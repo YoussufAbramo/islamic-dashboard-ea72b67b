@@ -199,7 +199,7 @@ const Library = () => {
           excerpt_ar: form.description_ar || '',
           content: blogContent,
           content_ar: blogContentAr,
-          featured_image: coverUrl || '',
+          featured_image: signedCoverForBlog || '',
           status: 'published',
           published_at: new Date().toISOString(),
           created_by: user?.id,
