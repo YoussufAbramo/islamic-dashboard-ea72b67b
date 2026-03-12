@@ -21,6 +21,7 @@ interface MenuItem {
   path: string;
   roles: string[];
   comingSoon?: boolean;
+  beta?: boolean;
   badgeKey?: string;
   children?: MenuItem[];
 }
