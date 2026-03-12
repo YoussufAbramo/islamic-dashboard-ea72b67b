@@ -458,7 +458,10 @@ const AttendLesson = () => {
                     <TableRow key={entry.id} className={`${isTestEntry ? 'bg-violet-500/10 border-l-4 border-l-violet-500 ring-1 ring-violet-500/20' : isActiveEntry ? 'bg-emerald-500/5' : status.isLive ? 'bg-destructive/5' : ''}`}>
                       <TableCell>
                         <div>
-                          <p className="text-sm font-medium">{formatDate(entry.scheduled_at)}</p>
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-sm font-medium">{formatDate(entry.scheduled_at)}</p>
+                            {isTestEntry && <Badge className="bg-violet-500 text-white text-[9px] px-1.5 py-0 h-4">TEST</Badge>}
+                          </div>
                           <p className="text-[10px] text-muted-foreground">{format(new Date(entry.scheduled_at), 'yyyy-MM-dd')}</p>
                         </div>
                       </TableCell>
