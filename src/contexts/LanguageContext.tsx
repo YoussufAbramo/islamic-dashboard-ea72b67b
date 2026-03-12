@@ -353,7 +353,7 @@ const translations: Record<Language, Record<string, string>> = {
     'subscriptions.student': 'الطالب',
     'subscriptions.course': 'الدورة',
     'subscriptions.teacher': 'المعلم',
-    'subscriptions.type': 'النوع',
+    'subscriptions.type': 'دورة الفوترة',
     'subscriptions.startDate': 'تاريخ البدء',
     'subscriptions.renewalDate': 'تاريخ التجديد',
     'subscriptions.status': 'الحالة',

@@ -8,6 +8,7 @@ export const subscriptionStatusLabels: Record<string, { en: string; ar: string }
 
 export const subscriptionTypeLabels: Record<string, { en: string; ar: string }> = {
   monthly: { en: 'Monthly', ar: 'شهري' },
+  quarterly: { en: '3-Month', ar: '3 أشهر' },
   yearly: { en: 'Yearly', ar: 'سنوي' },
 };
 
