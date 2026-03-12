@@ -346,9 +346,9 @@ const AttendLesson = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{isAr ? 'حضور الدرس' : 'Attend Lesson'}</h1>
+          <h1 className="text-2xl font-bold">{isAr ? 'حضور الجلسة' : 'Attend Session'}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {isAr ? 'عرض وحضور الدروس المجدولة لهذا الأسبوع' : 'View and attend your scheduled lessons this week'}
+            {isAr ? 'عرض وحضور الجلسات المجدولة لهذا الأسبوع' : 'View and attend your scheduled sessions this week'}
           </p>
         </div>
         {role === 'admin' && (
