@@ -110,6 +110,39 @@ const Library = () => {
   useEffect(() => { fetchEbooks(); }, []);
   useEffect(() => { if (ebooks.length > 0) fetchEbookStats(ebooks.map(e => e.id)); }, [ebooks, fetchEbookStats]);
 
+  // Resolve signed cover URLs for all ebooks
+  useEffect(() => {
+    const resolveCoverUrls = async () => {
+      const covers: Record<string, string> = {};
+      await Promise.all(
+        ebooks.filter(e => e.cover_url).map(async (e) => {
+          covers[e.id] = await getEbookSignedUrl(e.cover_url);
+        })
+      );
+      setSignedCovers(covers);
+    };
+    if (ebooks.length > 0) resolveCoverUrls();
+  }, [ebooks]);
+
+  const openReader = useCallback(async (ebook: Ebook) => {
+    trackView(ebook.id);
+    const signedPdf = await getEbookSignedUrl(ebook.pdf_url);
+    setReaderPdfUrl(signedPdf);
+    setReaderEbook(ebook);
+  }, [trackView]);
+
+  const handleDownload = useCallback(async (ebook: Ebook) => {
+    trackDownload(ebook.id);
+    const signedPdf = await getEbookSignedUrl(ebook.pdf_url);
+    if (signedPdf) {
+      const a = document.createElement('a');
+      a.href = signedPdf;
+      a.download = `${ebook.title}.pdf`;
+      a.target = '_blank';
+      a.click();
+    }
+  }, [trackDownload]);
+
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
