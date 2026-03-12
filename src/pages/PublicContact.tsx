@@ -134,7 +134,7 @@ const PublicContact = () => {
     }
 
     setSubmitted(true);
-    setForm({ name: '', email: '', phone: '', subject: '', department: 'general', message: '' });
+    setForm({ name: '', email: '', phone: '', subject: '', department: dbDepartments[0]?.name.toLowerCase() || 'general', message: '' });
   };
 
   const t = (en: string, ar: string) => isAr ? ar : en;
