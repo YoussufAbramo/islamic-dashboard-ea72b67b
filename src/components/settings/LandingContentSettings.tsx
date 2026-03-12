@@ -791,8 +791,8 @@ const LandingContentSettings = () => {
       ) : activeTab === 'footer' ? (
         <Card>
           <CardHeader>
-            <CardTitle>{isAr ? 'إعدادات الفوتر' : 'Footer Settings'}</CardTitle>
-            <CardDescription>{isAr ? 'تخصيص تذييل صفحة الهبوط' : 'Customize the landing page footer'}</CardDescription>
+            <CardTitle>{isAr ? 'بناء الفوتر' : 'Footer Builder'}</CardTitle>
+            <CardDescription>{isAr ? 'صمم تذييل صفحة الهبوط بسهولة' : 'Design your landing page footer with ease'}</CardDescription>
           </CardHeader>
           <CardContent>{renderFooterTab()}</CardContent>
         </Card>
