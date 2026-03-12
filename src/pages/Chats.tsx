@@ -224,6 +224,12 @@ const Chats = () => {
     // For group chats, add selected members to chat_members
     if (chatType === 'group' && newChat) {
       const members: { chat_id: string; user_id: string; role: string }[] = [];
+      
+      // Add the admin creator as a member
+      if (user) {
+        members.push({ chat_id: newChat.id, user_id: user.id, role: 'admin' });
+      }
+      
       createForm.group_students.forEach(sid => {
         const student = studentsList.find(s => s.id === sid);
         if (student) members.push({ chat_id: newChat.id, user_id: student.user_id, role: 'student' });
@@ -232,11 +238,20 @@ const Chats = () => {
         const teacher = teachersList.find(t => t.id === tid);
         if (teacher) members.push({ chat_id: newChat.id, user_id: teacher.user_id, role: 'teacher' });
       });
+      
+      console.log('Inserting group members:', members);
+      
       if (members.length > 0) {
-        const { error: membersError } = await supabase.from('chat_members').insert(members);
+        const { data: insertedMembers, error: membersError } = await supabase
+          .from('chat_members')
+          .insert(members)
+          .select();
+        
         if (membersError) {
           console.error('Failed to add group members:', membersError);
           notifyError({ error: membersError, isAr, rawMessage: membersError.message });
+        } else {
+          console.log('Successfully inserted members:', insertedMembers);
         }
       }
     }
