@@ -367,7 +367,8 @@ const Subscriptions = () => {
                 </div>
                 {/* Course & Teacher */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-card">
+                  <div className="relative flex items-start gap-2.5 p-2.5 rounded-lg border bg-card cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-colors" onClick={() => !editing && navigate(`/dashboard/courses/${selected.course_id}`)}>
+                    {!editing && <span className="absolute top-1.5 end-2 text-[9px] text-primary font-medium">{isAr ? 'عرض' : 'View'}</span>}
                     <div className="flex items-center justify-center h-7 w-7 rounded-md bg-primary/10 shrink-0 mt-0.5">
                       <BookOpen className="h-3.5 w-3.5 text-primary" />
                     </div>
