@@ -441,46 +441,38 @@ const Chats = () => {
                         student: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
                       };
                       return (
-                        <div key={msg.id} className={`flex items-end gap-2 ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                        <div key={msg.id} className={`flex items-center gap-1.5 ${isOwn ? 'justify-end' : 'justify-start'}`}>
                           {!isOwn && (
-                            <Avatar className="h-8 w-8 shrink-0 ring-2 ring-background shadow-sm">
-                              <AvatarFallback className={`text-xs font-semibold ${avatarColors[senderRole] || 'bg-primary/10 text-primary'}`}>{initials}</AvatarFallback>
+                            <Avatar className="h-6 w-6 shrink-0 ring-1 ring-background">
+                              <AvatarFallback className={`text-[9px] font-semibold ${avatarColors[senderRole] || 'bg-primary/10 text-primary'}`}>{initials}</AvatarFallback>
                             </Avatar>
                           )}
-                          <div className={`max-w-[70%] rounded-2xl text-sm shadow-sm ${msg.is_deleted ? 'bg-muted/60 italic text-muted-foreground p-3' : isOwn ? 'bg-primary text-primary-foreground p-3' : 'bg-card border border-border p-3'}`}>
+                          {isOwn && (role === 'admin' || role === 'teacher') && !msg.is_deleted && (
+                            <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity shrink-0" onClick={() => deleteMessage(msg.id)}>
+                              <Trash2 className="h-2.5 w-2.5" />
+                            </Button>
+                          )}
+                          <div className={`max-w-[75%] rounded-xl text-xs ${msg.is_deleted ? 'bg-muted/60 italic text-muted-foreground px-2.5 py-1.5' : isOwn ? 'bg-primary text-primary-foreground px-2.5 py-1.5' : 'bg-card border border-border px-2.5 py-1.5'}`}>
                             {!isOwn && (
-                              <div className="flex items-center gap-1.5 mb-1">
-                                <span className="text-xs font-semibold">{msg.profiles?.full_name}</span>
+                              <div className="flex items-center gap-1 mb-0.5">
+                                <span className="text-[10px] font-semibold">{msg.profiles?.full_name}</span>
                                 {senderRole && (
-                                  <span className={`text-[9px] px-1.5 py-0 rounded-full border font-medium leading-4 ${roleColors[senderRole] || ''}`}>
+                                  <span className={`text-[8px] px-1 rounded-full border font-medium leading-3 ${roleColors[senderRole] || ''}`}>
                                     {roleLabels[senderRole] || senderRole}
                                   </span>
                                 )}
                               </div>
                             )}
-                            {isOwn && !msg.is_deleted && (
-                              <div className="flex items-center gap-1.5 mb-1">
-                                <span className="text-xs font-semibold opacity-90">{msg.profiles?.full_name}</span>
-                                {senderRole && (
-                                  <span className="text-[9px] px-1.5 py-0 rounded-full border border-primary-foreground/20 font-medium leading-4 opacity-80">
-                                    {roleLabels[senderRole] || senderRole}
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                            <p className="leading-relaxed">{msg.message}</p>
-                            <div className="flex items-center justify-between mt-1.5 gap-2">
-                              <span className="text-[10px] opacity-60">{format(new Date(msg.created_at), 'HH:mm')}</span>
-                              {(role === 'admin' || role === 'teacher') && !msg.is_deleted && (
-                                <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-100 hover:opacity-100 transition-opacity" onClick={() => deleteMessage(msg.id)}>
-                                  <Trash2 className="h-2.5 w-2.5" />
-                                </Button>
-                              )}
-                            </div>
+                            <p className="leading-snug">{msg.message}</p>
                           </div>
+                          {!isOwn && (role === 'admin' || role === 'teacher') && !msg.is_deleted && (
+                            <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity shrink-0" onClick={() => deleteMessage(msg.id)}>
+                              <Trash2 className="h-2.5 w-2.5" />
+                            </Button>
+                          )}
                           {isOwn && (
-                            <Avatar className="h-8 w-8 shrink-0 ring-2 ring-background shadow-sm">
-                              <AvatarFallback className={`text-xs font-semibold ${avatarColors[senderRole] || 'bg-primary/10 text-primary'}`}>{initials}</AvatarFallback>
+                            <Avatar className="h-6 w-6 shrink-0 ring-1 ring-background">
+                              <AvatarFallback className={`text-[9px] font-semibold ${avatarColors[senderRole] || 'bg-primary/10 text-primary'}`}>{initials}</AvatarFallback>
                             </Avatar>
                           )}
                         </div>
