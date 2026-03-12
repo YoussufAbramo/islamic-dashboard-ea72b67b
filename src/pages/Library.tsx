@@ -367,6 +367,27 @@ const Library = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* PDF Reader Dialog */}
+      <Dialog open={!!readerEbook} onOpenChange={(open) => !open && setReaderEbook(null)}>
+        <DialogContent className="max-w-5xl h-[90vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="px-6 py-4 border-b shrink-0">
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" />
+              {readerEbook && (isAr ? readerEbook.title_ar || readerEbook.title : readerEbook.title)}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 min-h-0">
+            {readerEbook && (
+              <iframe
+                src={`${readerEbook.pdf_url}#toolbar=1&navpanes=1`}
+                className="w-full h-full border-0"
+                title={readerEbook.title}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
