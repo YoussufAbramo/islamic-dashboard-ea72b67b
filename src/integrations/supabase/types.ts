@@ -1218,6 +1218,7 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          auto_renew: boolean
           course_id: string
           created_at: string
           google_meet_url: string | null
@@ -1237,6 +1238,7 @@ export type Database = {
           zoom_url: string | null
         }
         Insert: {
+          auto_renew?: boolean
           course_id: string
           created_at?: string
           google_meet_url?: string | null
@@ -1256,6 +1258,7 @@ export type Database = {
           zoom_url?: string | null
         }
         Update: {
+          auto_renew?: boolean
           course_id?: string
           created_at?: string
           google_meet_url?: string | null

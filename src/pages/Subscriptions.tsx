@@ -17,7 +17,8 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Search, Eye, Plus, ArrowUp, ArrowDown, Trash2, Check, ChevronsUpDown, Video, CalendarDays, Clock } from 'lucide-react';
+import { Search, Eye, Plus, ArrowUp, ArrowDown, Trash2, Check, ChevronsUpDown, Video, CalendarDays, Clock, RefreshCw } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { subscriptionStatusLabels, subscriptionTypeLabels, getLabel } from '@/lib/statusLabels';
@@ -39,7 +40,7 @@ const Subscriptions = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [selected, setSelected] = useState<any>(null);
   const [editing, setEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ subscription_type: 'monthly', status: 'active', renewal_date: '', teacher_id: '', course_id: '', price: '', weekly_lessons: '', lesson_duration: '', google_meet_url: '', zoom_url: '' });
+  const [editForm, setEditForm] = useState({ subscription_type: 'monthly', status: 'active', renewal_date: '', teacher_id: '', course_id: '', price: '', weekly_lessons: '', lesson_duration: '', google_meet_url: '', zoom_url: '', auto_renew: false });
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -51,7 +52,7 @@ const Subscriptions = () => {
   const [studentOpen, setStudentOpen] = useState(false);
   const [courseOpen, setCourseOpen] = useState(false);
   const [teacherOpen, setTeacherOpen] = useState(false);
-  const [createForm, setCreateForm] = useState({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', price_rate: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '', weekly_lessons: '1', lesson_duration: '60', schedule_days: [] as string[], schedule_time: '', google_meet_url: '', zoom_url: '' });
+  const [createForm, setCreateForm] = useState({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', price_rate: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '', weekly_lessons: '1', lesson_duration: '60', schedule_days: [] as string[], schedule_time: '', google_meet_url: '', zoom_url: '', auto_renew: false });
   const [createLoading, setCreateLoading] = useState(false);
 
   const fetchSubscriptions = async () => {
@@ -136,6 +137,7 @@ const Subscriptions = () => {
       lesson_duration: sub.lesson_duration?.toString() || '60',
       google_meet_url: sub.google_meet_url || '',
       zoom_url: sub.zoom_url || '',
+      auto_renew: sub.auto_renew || false,
     });
     setDetailOpen(true);
     setEditing(false);
@@ -154,6 +156,7 @@ const Subscriptions = () => {
       lesson_duration: parseInt(editForm.lesson_duration) || 60,
       google_meet_url: editForm.google_meet_url || '',
       zoom_url: editForm.zoom_url || '',
+      auto_renew: editForm.auto_renew,
     }).eq('id', selected.id);
     toast.success(isAr ? 'تم تحديث الاشتراك' : 'Subscription updated');
     setEditing(false);
@@ -176,6 +179,7 @@ const Subscriptions = () => {
       schedule_time: createForm.schedule_time || null,
       google_meet_url: createForm.google_meet_url || '',
       zoom_url: createForm.zoom_url || '',
+      auto_renew: createForm.auto_renew,
     });
     setCreateLoading(false);
     if (error) {
@@ -183,7 +187,7 @@ const Subscriptions = () => {
     } else {
       toast.success(isAr ? 'تم إنشاء الاشتراك' : 'Subscription created');
       setCreateOpen(false);
-      setCreateForm({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', price_rate: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '', weekly_lessons: '1', lesson_duration: '60', schedule_days: [], schedule_time: '', google_meet_url: '', zoom_url: '' });
+      setCreateForm({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', price_rate: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '', weekly_lessons: '1', lesson_duration: '60', schedule_days: [], schedule_time: '', google_meet_url: '', zoom_url: '', auto_renew: false });
       fetchSubscriptions();
     }
   };
@@ -497,6 +501,21 @@ const Subscriptions = () => {
                   </div>
                 </div>
               )}
+              {/* Auto Renewal Toggle */}
+              <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                <div className="flex items-center gap-2">
+                  <RefreshCw className="h-4 w-4 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium">{isAr ? 'التجديد التلقائي' : 'Auto Renewal'}</p>
+                    <p className="text-[10px] text-muted-foreground">{isAr ? 'إنشاء فاتورة تلقائياً عند تاريخ التجديد' : 'Auto-generate invoice on renewal date'}</p>
+                  </div>
+                </div>
+                {editing ? (
+                  <Switch checked={editForm.auto_renew} onCheckedChange={(v) => setEditForm({ ...editForm, auto_renew: v })} />
+                ) : (
+                  <Badge variant={selected.auto_renew ? 'default' : 'secondary'}>{selected.auto_renew ? (isAr ? 'مفعّل' : 'Enabled') : (isAr ? 'معطّل' : 'Disabled')}</Badge>
+                )}
+              </div>
               {isAdmin && (
                 <div className="flex gap-2 pt-2 border-t">
                   {editing ? (
@@ -635,6 +654,18 @@ const Subscriptions = () => {
                       : (isAr ? 'يتجدد كل 365 يومًا' : 'Renews every 365 days')}
                 </p>
               </div>
+            </div>
+
+            {/* Auto Renewal Toggle */}
+            <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
+              <div className="flex items-center gap-2">
+                <RefreshCw className="h-4 w-4 text-primary" />
+                <div>
+                  <p className="text-sm font-medium">{isAr ? 'التجديد التلقائي' : 'Auto Renewal'}</p>
+                  <p className="text-[10px] text-muted-foreground">{isAr ? 'إنشاء فاتورة تلقائياً عند تاريخ التجديد' : 'Auto-generate invoice on renewal date'}</p>
+                </div>
+              </div>
+              <Switch checked={createForm.auto_renew} onCheckedChange={(v) => setCreateForm(prev => ({ ...prev, auto_renew: v }))} />
             </div>
 
             {/* Schedule Picker */}

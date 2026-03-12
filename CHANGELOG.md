@@ -2,6 +2,19 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.15.0] - 2026-03-12
+
+### Added
+- **Auto Renewal toggle** — new `auto_renew` boolean column on subscriptions with Switch UI in both create and edit dialogs
+- **Automatic invoice generation** — when auto-renew is enabled, invoices are auto-generated at the renewal date via the `auto-invoice` edge function
+- **Vconnct dashboard link** — "+" button next to Vconnct URL input opens `dashboard.vconnct.me` for creating meeting links
+
+### Improved
+- **Auto-invoice edge function** — now filters subscriptions by `auto_renew = true` to only generate invoices for opted-in subscriptions
+- **Library PDF reader** — added expand/minimize toggle for full-screen viewing
+
+---
+
 ## [4.14.0] - 2026-03-12
 
 ### Added
