@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   Save, Plus, Trash2, GripVertical, ChevronDown, ChevronUp, Pencil, X, Search, Globe, Menu, Columns3,
-  Star, Sparkles, Shield, Megaphone, BookOpen, Users, BarChart3, HelpCircle, Mail, Layers, CreditCard, Quote, Handshake, Settings2, Eye, EyeOff, LayoutTemplate, Check, PanelBottom,
+  Star, Sparkles, Shield, Megaphone, BookOpen, Users, BarChart3, HelpCircle, Mail, Layers, CreditCard, Quote, Handshake, Settings2, Eye, EyeOff, LayoutTemplate, Check, PanelBottom, Sun, Moon, ImageIcon,
 } from 'lucide-react';
 import { HEADER_STYLES, type HeaderStyleKey } from '@/components/landing/LandingHeaders';
 import ImagePickerField from '@/components/media/ImagePickerField';
