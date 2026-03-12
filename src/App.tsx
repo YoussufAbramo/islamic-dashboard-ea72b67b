@@ -40,6 +40,8 @@ import Library from "./pages/Library";
 import Announcements from "./pages/Announcements";
 import Notifications from "./pages/Notifications";
 import Invoices from "./pages/Invoices";
+import Expenses from "./pages/Expenses";
+import ExpenseCategories from "./pages/ExpenseCategories";
 import InvoiceView from "./pages/InvoiceView";
 import LandingPage from "./pages/LandingPage";
 import CalculatorPage from "./pages/Calculator";
