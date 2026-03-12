@@ -231,8 +231,8 @@ const LandingPage = () => {
                 ))}
               </div>
 
-              <div className="mt-10 pt-6 border-t border-border/50 text-center">
-                <CopyrightText />
+              <div className="mt-10 pt-6 border-t border-border/50">
+                <CopyrightBar config={ft.copyright || defaultCopyrightConfig} isAr={isAr} />
               </div>
             </div>
           </footer>

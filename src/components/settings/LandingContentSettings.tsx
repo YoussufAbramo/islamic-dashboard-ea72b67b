@@ -805,6 +805,14 @@ const LandingContentSettings = () => {
           </Collapsible>
         ))}
       </div>
+
+      {/* Copyright bar settings */}
+      <CopyrightSettingsEditor
+        config={(footer.copyright as CopyrightConfig) || defaultCopyrightConfig}
+        onChange={(copyrightConfig) => updateFooterField('copyright', copyrightConfig)}
+        policies={policies}
+        websitePages={websitePages}
+      />
     </div>
   );
 
