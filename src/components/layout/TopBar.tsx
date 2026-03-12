@@ -229,8 +229,6 @@ const TopBar = () => {
             <TooltipContent>{darkMode ? (isAr ? 'الوضع الفاتح' : 'Light Mode') : (isAr ? 'الوضع الداكن' : 'Dark Mode')}</TooltipContent>
           </Tooltip>
 
-          <ImpersonationSwitcher />
-
 
           <DropdownMenu>
             <Tooltip>
