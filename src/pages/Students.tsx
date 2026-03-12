@@ -164,13 +164,25 @@ const Students = () => {
                     <div><Label>{t('students.name')}</Label><Input value={editForm.full_name} onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })} /></div>
                     <div><Label>{t('students.email')}</Label><Input value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} /></div>
                     <div><Label>{t('students.phone')}</Label><Input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} /></div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div><Label>{t('students.lessonDuration')} ({t('common.minutes')})</Label>
-                      <Input type="number" value={editForm.lesson_duration} onChange={(e) => setEditForm({ ...editForm, lesson_duration: parseInt(e.target.value) })} /></div>
-                    <div><Label>{t('students.weeklyRepeat')}</Label>
-                      <Input type="number" value={editForm.weekly_repeat} onChange={(e) => setEditForm({ ...editForm, weekly_repeat: parseInt(e.target.value) })} /></div>
-                  </div>
+                   </div>
+                   <div className="grid grid-cols-2 gap-4">
+                     <div><Label>{t('students.lessonDuration')} ({t('common.minutes')})</Label>
+                       <Input type="number" value={editForm.lesson_duration} onChange={(e) => setEditForm({ ...editForm, lesson_duration: parseInt(e.target.value) })} /></div>
+                     <div><Label>{t('students.weeklyRepeat')}</Label>
+                       <Input type="number" value={editForm.weekly_repeat} onChange={(e) => setEditForm({ ...editForm, weekly_repeat: parseInt(e.target.value) })} /></div>
+                   </div>
+                   <div>
+                     <Label>{isAr ? 'المعلم المعيّن' : 'Assigned Teacher'}</Label>
+                     <Select value={editForm.assigned_teacher_id || 'none'} onValueChange={(v) => setEditForm({ ...editForm, assigned_teacher_id: v === 'none' ? '' : v })}>
+                       <SelectTrigger><SelectValue placeholder={isAr ? 'اختر معلم' : 'Select teacher'} /></SelectTrigger>
+                       <SelectContent>
+                         <SelectItem value="none">{isAr ? 'بدون معلم' : 'No teacher'}</SelectItem>
+                         {allTeachers.map(t => (
+                           <SelectItem key={t.id} value={t.id}>{t.profiles?.full_name || t.id}</SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
+                   </div>
                   <div className="flex gap-2">
                     <Button onClick={saveEdit}>{t('common.save')}</Button>
                     <Button variant="outline" onClick={() => setEditing(false)}>{t('common.cancel')}</Button>
