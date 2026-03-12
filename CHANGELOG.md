@@ -2,6 +2,23 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.14.0] - 2026-03-12
+
+### Added
+- **Join Meeting Dialog refactored** — extracted into dedicated `JoinMeetingDialog` component with platform selection workflow (select platform → click Join)
+- **Vconnct in-platform meeting** — Vconnct sessions open in an embedded iframe modal inside the dashboard instead of redirecting externally
+- **Vconnct branding** — Vconnct favicon icon downloaded and displayed; all references renamed from "Vconnect" to "Vconnct"
+- **URL masking** — meeting URLs in the dialog are masked after the domain (e.g., `https://meet.google.com/••••••`) for security
+- **Vconnct URL validation** — validates that entered URLs contain `vconnct` in the hostname before allowing join
+- **Iframe sandbox security** — Vconnct iframe uses `sandbox` and `allow` attributes for camera, microphone, and display-capture permissions
+
+### Improved
+- **Meeting dialog UX** — replaced direct-click-to-join with a two-step select-then-join flow with visual selection state (checkmark indicator)
+- **Vconnct URL input** — input field now appears inside the Vconnct card (same box) with a Link2 icon prefix
+- **External platform description** — Google Meet and Zoom cards now show "You will be redirected to..." instead of the masked URL
+- **Subscription URL matching** — improved lookup to match by `student_id + teacher_id + course_id` first, with fallback to `student_id + teacher_id`, preventing wrong URL for multi-subscription pairs
+- **Code architecture** — dialog logic extracted from `AttendLesson.tsx` (445→334 lines) into `src/components/attend/JoinMeetingDialog.tsx`
+
 ## [4.13.0] - 2026-03-12
 
 ### Added
