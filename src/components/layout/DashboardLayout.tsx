@@ -6,18 +6,10 @@ import CopyrightText from '@/components/CopyrightText';
 import AppSidebar from './AppSidebar';
 import TopBar from './TopBar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Bug, UserCheck } from 'lucide-react';
+import { Bug } from 'lucide-react';
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { notifyError } from '@/lib/notifyError';
 
 const DashboardSkeleton = () =>
 <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-300">
@@ -49,40 +41,10 @@ const WhatsAppIcon = () =>
 
 const FloatingButtons = () => {
   const { language } = useLanguage();
-  const { user, profile } = useAuth();
   const isAr = language === 'ar';
   const [ticketOpen, setTicketOpen] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '', department: 'general', priority: 'medium' });
-  const [submitting, setSubmitting] = useState(false);
-
-  const handleAutoFill = () => {
-    setForm(prev => ({
-      ...prev,
-      name: profile?.full_name || prev.name,
-      email: profile?.email || user?.email || prev.email,
-      phone: profile?.phone || prev.phone,
-    }));
-  };
 
   const whatsappUrl = `https://wa.me/201558612808?text=${encodeURIComponent("Hello Dear, I'm texting you regarding Quran.CodeCom.dev, are you available to talk?")}`;
-
-  const handleSubmit = async () => {
-    if (!form.name.trim() || !form.email.trim() || !form.subject.trim() || !form.message.trim()) {
-      toast.error(isAr ? 'يرجى ملء جميع الحقول' : 'Please fill all fields');
-      return;
-    }
-    setSubmitting(true);
-    const { error } = await supabase.from('support_tickets').insert({
-      name: form.name, email: form.email, phone: form.phone, subject: form.subject,
-      message: form.message, department: form.department, priority: form.priority,
-      user_id: user?.id
-    });
-    setSubmitting(false);
-    if (error) {notifyError({ error, isAr, rawMessage: error.message });return;}
-    toast.success(isAr ? 'تم إرسال التذكرة بنجاح' : 'Ticket submitted successfully');
-    setTicketOpen(false);
-    setForm({ name: '', email: '', phone: '', subject: '', message: '', department: 'general', priority: 'medium' });
-  };
 
   return (
     <>
@@ -121,55 +83,15 @@ const FloatingButtons = () => {
       </div>
 
       <Dialog open={ticketOpen} onOpenChange={setTicketOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Bug className="h-5 w-5 text-primary" />
-              {isAr ? 'إنشاء تذكرة دعم' : 'Create Support Ticket'}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Button type="button" variant="outline" size="sm" onClick={handleAutoFill} className="gap-1.5 text-xs">
-                <UserCheck className="h-3.5 w-3.5" />
-                {isAr ? 'ملء تلقائي' : 'Auto Fill'}
-              </Button>
-            </div>
-            <div className="grid sm:grid-cols-3 gap-3">
-              <div><Label>{isAr ? 'الاسم' : 'Name'}</Label><Input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} /></div>
-              <div><Label>{isAr ? 'البريد' : 'Email'}</Label><Input type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} /></div>
-              <div><Label>{isAr ? 'الهاتف' : 'Phone'}</Label><Input type="tel" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} /></div>
-            </div>
-            <div><Label>{isAr ? 'الموضوع' : 'Subject'}</Label><Input value={form.subject} onChange={(e) => setForm((p) => ({ ...p, subject: e.target.value }))} /></div>
-            <div className="grid sm:grid-cols-2 gap-3">
-              <div>
-                <Label>{isAr ? 'القسم' : 'Department'}</Label>
-                <Select value={form.department} onValueChange={(v) => setForm((p) => ({ ...p, department: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="general">{isAr ? 'عام' : 'General'}</SelectItem>
-                    <SelectItem value="technical">{isAr ? 'تقني' : 'Technical'}</SelectItem>
-                    <SelectItem value="billing">{isAr ? 'مالي' : 'Billing'}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>{isAr ? 'الأولوية' : 'Priority'}</Label>
-                <Select value={form.priority} onValueChange={(v) => setForm((p) => ({ ...p, priority: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">{isAr ? 'منخفضة' : 'Low'}</SelectItem>
-                    <SelectItem value="medium">{isAr ? 'متوسطة' : 'Medium'}</SelectItem>
-                    <SelectItem value="high">{isAr ? 'عالية' : 'High'}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div><Label>{isAr ? 'الرسالة' : 'Message'}</Label><Textarea value={form.message} onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))} rows={4} /></div>
-            <Button onClick={handleSubmit} disabled={submitting} className="w-full">
-              {submitting ? '...' : isAr ? 'إرسال التذكرة' : 'Submit Ticket'}
-            </Button>
-          </div>
+        <DialogContent className="max-w-[640px] p-0 overflow-hidden border-none [&>button]:z-10">
+          <iframe
+            src="https://portal.codecom.dev/forms/ticket"
+            width="100%"
+            height="850"
+            frameBorder="0"
+            allowFullScreen
+            className="rounded-lg"
+          />
         </DialogContent>
       </Dialog>
     </>);
