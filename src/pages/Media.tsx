@@ -789,36 +789,6 @@ const Media = () => {
         </Dialog>
       )}
 
-      {/* New Folder Dialog */}
-      <Dialog open={newFolderOpen} onOpenChange={setNewFolderOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FolderPlus className="h-5 w-5 text-primary" />
-              {isAr ? 'مجلد جديد' : 'New Folder'}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-2">
-            <Label>{isAr ? 'اسم المجلد' : 'Folder Name'}</Label>
-            <Input
-              value={newFolderName}
-              onChange={e => setNewFolderName(e.target.value)}
-              placeholder={isAr ? 'أدخل اسم المجلد...' : 'Enter folder name...'}
-              onKeyDown={e => { if (e.key === 'Enter') createFolder(); }}
-            />
-            <p className="text-xs text-muted-foreground">
-              {isAr ? 'سيتم إنشاء المجلد داخل:' : 'Will be created inside:'} <code className="bg-muted px-1 rounded">{currentPath}/</code>
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setNewFolderOpen(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
-            <Button onClick={createFolder} disabled={!newFolderName.trim()}>
-              <FolderPlus className="h-4 w-4 me-1" />
-              {isAr ? 'إنشاء' : 'Create'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
