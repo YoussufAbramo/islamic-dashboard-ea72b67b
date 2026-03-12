@@ -139,7 +139,8 @@ const TeacherProfile = () => {
     if (sessions) {
       setCompletedSessions(sessions.filter(s => s.status === 'completed').length);
       setScheduledSessions(sessions.length);
-      setAbsentSessions(sessions.filter(s => s.status === 'cancelled').length);
+      const absenceStatuses = ['teacher_not_attend', 'student_not_attend', 'not_attend'];
+      setAbsentSessions(sessions.filter(s => absenceStatuses.includes(s.status)).length);
     }
 
     // Fetch assigned courses
