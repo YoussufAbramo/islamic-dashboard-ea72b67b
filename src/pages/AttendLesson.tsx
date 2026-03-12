@@ -600,6 +600,48 @@ const AttendLesson = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Cancellation Dialog */}
+      <Dialog open={!!cancelEntry} onOpenChange={(val) => { if (!val) { setCancelEntry(null); setCancelReason(''); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <XCircle className="h-5 w-5" />
+              {isAr ? 'إلغاء الدرس' : 'Cancel Lesson'}
+            </DialogTitle>
+          </DialogHeader>
+          {cancelEntry && (
+            <div className="space-y-4">
+              <div className="p-3 rounded-lg border bg-muted/30 text-sm">
+                <p className="font-medium">{cancelEntry.course_title}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {cancelEntry.student_name} — {format(new Date(cancelEntry.scheduled_at), 'MMM d, h:mm a')}
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-sm font-semibold">
+                  {isAr ? 'سبب الإلغاء' : 'Cancellation Reason'} <span className="text-destructive">*</span>
+                </Label>
+                <Textarea
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  placeholder={isAr ? 'اكتب سبب إلغاء الدرس...' : 'Write the reason for cancelling this lesson...'}
+                  rows={3}
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => { setCancelEntry(null); setCancelReason(''); }}>
+                  {isAr ? 'تراجع' : 'Go Back'}
+                </Button>
+                <Button variant="destructive" onClick={handleCancelSubmit} disabled={!cancelReason.trim()}>
+                  <XCircle className="h-4 w-4 me-2" />
+                  {isAr ? 'تأكيد الإلغاء' : 'Confirm Cancellation'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
