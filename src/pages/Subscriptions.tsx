@@ -546,7 +546,7 @@ const Subscriptions = () => {
               <div className="hidden md:block w-px bg-border" />
 
               {/* Right Column - Schedule, Auto Renewal & Reports */}
-              <div className="space-y-3">
+              <div className="space-y-3 ps-6 md:border-s-0">
                 {/* Schedule info */}
                 {(selected.schedule_days?.length > 0 || selected.schedule_time) && (
                   <div className="rounded-xl border bg-card overflow-hidden">
