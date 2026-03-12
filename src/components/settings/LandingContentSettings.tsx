@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   Save, Plus, Trash2, GripVertical, ChevronDown, ChevronUp, Pencil, X, Search, Globe, Menu, Columns3,
   Star, Sparkles, Shield, Megaphone, BookOpen, Users, BarChart3, HelpCircle, Mail, Layers, CreditCard, Quote, Handshake, Settings2, Eye, EyeOff, LayoutTemplate, Check, PanelBottom,
@@ -671,71 +672,90 @@ const LandingContentSettings = () => {
   };
 
   const renderFooterTab = () => (
-    <div className="space-y-6">
-      {/* App branding */}
-      <div className="rounded-lg border border-border p-4 space-y-4">
-        <h3 className="font-medium flex items-center gap-2"><LayoutTemplate className="h-4 w-4" />{isAr ? 'هوية التطبيق' : 'App Branding'}</h3>
+    <div className="space-y-5">
+      {/* Branding row */}
+      <div className="space-y-3">
         <ImagePickerField label={isAr ? 'شعار الفوتر' : 'Footer Logo'} value={footer.logo || ''} onChange={(url) => updateFooterField('logo', url)} />
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div><Label>Title (EN)</Label><Input value={footer.title || ''} onChange={e => updateFooterField('title', e.target.value)} placeholder="Islamic Dashboard" /></div>
-          <div><Label>Title (AR)</Label><Input dir="rtl" value={footer.title_ar || ''} onChange={e => updateFooterField('title_ar', e.target.value)} /></div>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div><Label className="text-xs">Title (EN)</Label><Input value={footer.title || ''} onChange={e => updateFooterField('title', e.target.value)} placeholder="App Name" className="h-9" /></div>
+          <div><Label className="text-xs">Title (AR)</Label><Input dir="rtl" value={footer.title_ar || ''} onChange={e => updateFooterField('title_ar', e.target.value)} className="h-9" /></div>
         </div>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div><Label>Description (EN)</Label><Textarea value={footer.description || ''} onChange={e => updateFooterField('description', e.target.value)} rows={2} /></div>
-          <div><Label>Description (AR)</Label><Textarea dir="rtl" value={footer.description_ar || ''} onChange={e => updateFooterField('description_ar', e.target.value)} rows={2} /></div>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div><Label className="text-xs">Description (EN)</Label><Textarea value={footer.description || ''} onChange={e => updateFooterField('description', e.target.value)} rows={2} className="text-sm" /></div>
+          <div><Label className="text-xs">Description (AR)</Label><Textarea dir="rtl" value={footer.description_ar || ''} onChange={e => updateFooterField('description_ar', e.target.value)} rows={2} className="text-sm" /></div>
         </div>
       </div>
 
-      {/* Columns layout */}
-      <div className="rounded-lg border border-border p-4 space-y-4">
-        <h3 className="font-medium flex items-center gap-2"><Columns3 className="h-4 w-4" />{isAr ? 'تخطيط الأعمدة' : 'Column Layout'}</h3>
-        <div className="flex items-center gap-2">
+      <hr className="border-border" />
+
+      {/* Columns count picker */}
+      <div className="flex items-center gap-3">
+        <Label className="text-sm font-medium shrink-0">{isAr ? 'عدد الأعمدة' : 'Columns'}</Label>
+        <div className="flex gap-1.5">
           {[1, 2, 3, 4].map(n => (
             <button
               key={n}
               onClick={() => handleColumnsCountChange(n)}
-              className={`h-10 w-10 rounded-lg border-2 flex items-center justify-center text-sm font-bold transition-all ${
+              className={`h-8 w-8 rounded-md border text-xs font-bold transition-all ${
                 footerColumnsCount === n
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border text-muted-foreground hover:border-primary/40'
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border text-muted-foreground hover:border-primary/40 hover:bg-muted'
               }`}
             >
               {n}
             </button>
           ))}
-          <span className="text-sm text-muted-foreground ms-2">{isAr ? 'أعمدة' : 'columns'}</span>
         </div>
       </div>
 
-      {/* Column editors */}
-      {footerColumns.slice(0, footerColumnsCount).map((col, colIdx) => (
-        <div key={colIdx} className="rounded-lg border border-border p-4 space-y-4">
-          <h3 className="font-medium text-sm">{isAr ? `العمود ${colIdx + 1}` : `Column ${colIdx + 1}`}</h3>
-          <div className="grid sm:grid-cols-2 gap-3">
-            <div><Label className="text-xs">Title (EN)</Label><Input value={col.title || ''} onChange={e => updateFooterColumn(colIdx, 'title', e.target.value)} className="h-8 text-sm" /></div>
-            <div><Label className="text-xs">Title (AR)</Label><Input dir="rtl" value={col.title_ar || ''} onChange={e => updateFooterColumn(colIdx, 'title_ar', e.target.value)} className="h-8 text-sm" /></div>
-          </div>
-          <div className="flex items-center justify-between">
-            <Label className="text-xs font-medium">{isAr ? 'الروابط' : 'Links'}</Label>
-            <Button variant="outline" size="sm" onClick={() => addFooterColumnItem(colIdx)}>
-              <Plus className="h-3.5 w-3.5 me-1" />{isAr ? 'إضافة' : 'Add'}
-            </Button>
-          </div>
-          {col.items.map((link, linkIdx) => (
-            <div key={linkIdx} className="flex items-start gap-2 rounded-md border border-border/60 p-2">
-              <div className="grid grid-cols-3 gap-2 flex-1">
-                <div><Label className="text-xs">Label (EN)</Label><Input value={link.label || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'label', e.target.value)} className="h-7 text-xs" /></div>
-                <div><Label className="text-xs">Label (AR)</Label><Input dir="rtl" value={link.label_ar || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'label_ar', e.target.value)} className="h-7 text-xs" /></div>
-                <div><Label className="text-xs">URL</Label><Input value={link.url || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'url', e.target.value)} className="h-7 text-xs" placeholder="#section or /page" /></div>
-              </div>
-              <Button variant="ghost" size="icon" className="h-7 w-7 mt-4 text-muted-foreground hover:text-destructive shrink-0" onClick={() => removeFooterColumnItem(colIdx, linkIdx)}>
-                <Trash2 className="h-3 w-3" />
-              </Button>
+      {/* Column editors — compact accordion style */}
+      <div className="space-y-3">
+        {footerColumns.slice(0, footerColumnsCount).map((col, colIdx) => (
+          <Collapsible key={colIdx} defaultOpen={colIdx === 0}>
+            <div className="rounded-lg border border-border overflow-hidden">
+              <CollapsibleTrigger asChild>
+                <button className="w-full flex items-center justify-between px-3 py-2.5 bg-muted/40 hover:bg-muted/70 transition-colors text-sm font-medium">
+                  <span className="flex items-center gap-2">
+                    <Columns3 className="h-3.5 w-3.5 text-muted-foreground" />
+                    {col.title || col.title_ar || (isAr ? `العمود ${colIdx + 1}` : `Column ${colIdx + 1}`)}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{col.items.length} {isAr ? 'رابط' : 'links'}</Badge>
+                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                  </div>
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="p-3 space-y-3 border-t border-border">
+                  <div className="grid sm:grid-cols-2 gap-2">
+                    <div><Label className="text-xs">Title (EN)</Label><Input value={col.title || ''} onChange={e => updateFooterColumn(colIdx, 'title', e.target.value)} className="h-8 text-sm" /></div>
+                    <div><Label className="text-xs">Title (AR)</Label><Input dir="rtl" value={col.title_ar || ''} onChange={e => updateFooterColumn(colIdx, 'title_ar', e.target.value)} className="h-8 text-sm" /></div>
+                  </div>
+
+                  {col.items.length > 0 && (
+                    <div className="space-y-1.5">
+                      {col.items.map((link, linkIdx) => (
+                        <div key={linkIdx} className="flex items-center gap-1.5 group">
+                          <Input value={link.label || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'label', e.target.value)} className="h-7 text-xs flex-1" placeholder="Label EN" />
+                          <Input dir="rtl" value={link.label_ar || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'label_ar', e.target.value)} className="h-7 text-xs flex-1" placeholder="Label AR" />
+                          <Input value={link.url || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'url', e.target.value)} className="h-7 text-xs flex-1 font-mono" placeholder="/path or #id" />
+                          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-all" onClick={() => removeFooterColumnItem(colIdx, linkIdx)}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <Button variant="outline" size="sm" className="w-full h-7 text-xs" onClick={() => addFooterColumnItem(colIdx)}>
+                    <Plus className="h-3 w-3 me-1" />{isAr ? 'إضافة رابط' : 'Add Link'}
+                  </Button>
+                </div>
+              </CollapsibleContent>
             </div>
-          ))}
-          {col.items.length === 0 && <p className="text-xs text-muted-foreground text-center py-2 border border-dashed border-border rounded-md">{isAr ? 'لا توجد روابط' : 'No links yet'}</p>}
-        </div>
-      ))}
+          </Collapsible>
+        ))}
+      </div>
     </div>
   );
 
@@ -772,8 +792,8 @@ const LandingContentSettings = () => {
       ) : activeTab === 'footer' ? (
         <Card>
           <CardHeader>
-            <CardTitle>{isAr ? 'إعدادات الفوتر' : 'Footer Settings'}</CardTitle>
-            <CardDescription>{isAr ? 'تخصيص تذييل صفحة الهبوط' : 'Customize the landing page footer'}</CardDescription>
+            <CardTitle>{isAr ? 'بناء الفوتر' : 'Footer Builder'}</CardTitle>
+            <CardDescription>{isAr ? 'صمم تذييل صفحة الهبوط بسهولة' : 'Design your landing page footer with ease'}</CardDescription>
           </CardHeader>
           <CardContent>{renderFooterTab()}</CardContent>
         </Card>
