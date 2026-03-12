@@ -208,7 +208,11 @@ const Chats = () => {
         if (teacher) members.push({ chat_id: newChat.id, user_id: teacher.user_id, role: 'teacher' });
       });
       if (members.length > 0) {
-        await supabase.from('chat_members').insert(members);
+        const { error: membersError } = await supabase.from('chat_members').insert(members);
+        if (membersError) {
+          console.error('Failed to add group members:', membersError);
+          notifyError({ error: membersError, isAr, rawMessage: membersError.message });
+        }
       }
     }
 
