@@ -29,6 +29,7 @@ interface SessionReportsListProps {
   teacherId?: string;
   courseId?: string;
   subscriptionId?: string;
+  timetableEntryId?: string;
   /** Maximum rows to show (default: all) */
   limit?: number;
 }
@@ -41,7 +42,7 @@ const formatDuration = (seconds: number): string => {
   return `${m}m ${s}s`;
 };
 
-const SessionReportsList = ({ isAr, studentId, teacherId, courseId, subscriptionId, limit }: SessionReportsListProps) => {
+const SessionReportsList = ({ isAr, studentId, teacherId, courseId, subscriptionId, timetableEntryId, limit }: SessionReportsListProps) => {
   const [reports, setReports] = useState<SessionReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [detailReport, setDetailReport] = useState<SessionReport | null>(null);
@@ -58,6 +59,7 @@ const SessionReportsList = ({ isAr, studentId, teacherId, courseId, subscription
       if (teacherId) query = query.eq('teacher_id', teacherId);
       if (courseId) query = query.eq('course_id', courseId);
       if (subscriptionId) query = query.eq('subscription_id', subscriptionId);
+      if (timetableEntryId) query = query.eq('timetable_entry_id', timetableEntryId);
       if (limit) query = query.limit(limit);
 
       const { data } = await query;
@@ -93,7 +95,7 @@ const SessionReportsList = ({ isAr, studentId, teacherId, courseId, subscription
       setLoading(false);
     };
     fetchReports();
-  }, [studentId, teacherId, courseId, subscriptionId, limit]);
+  }, [studentId, teacherId, courseId, subscriptionId, timetableEntryId, limit]);
 
   if (loading) {
     return <p className="text-sm text-muted-foreground py-4 text-center">{isAr ? 'جاري التحميل...' : 'Loading...'}</p>;

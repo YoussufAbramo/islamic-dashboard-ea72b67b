@@ -9,7 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import JoinMeetingDialog from '@/components/attend/JoinMeetingDialog';
 import SessionReportDialog from '@/components/attend/SessionReportDialog';
+import SessionReportsList from '@/components/attend/SessionReportsList';
 import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format, differenceInMinutes, isToday, isTomorrow, addDays, startOfWeek, endOfWeek } from 'date-fns';
 import { Video, Clock, MonitorPlay, AlertCircle, CalendarDays, FileText, CheckCircle2, XCircle, FlaskConical } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
@@ -58,6 +60,7 @@ const AttendLesson = () => {
 
   // Set of entry IDs that already have reports
   const [reportedEntryIds, setReportedEntryIds] = useState<Set<string>>(new Set());
+  const [viewReportEntry, setViewReportEntry] = useState<LessonEntry | null>(null);
 
   // Update "now" every 30 seconds for live status updates
   useEffect(() => {
@@ -479,10 +482,15 @@ const AttendLesson = () => {
                       </TableCell>
                       <TableCell>
                         {hasReport ? (
-                          <Badge variant="outline" className="gap-1 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px]">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="gap-1 px-2 h-auto py-1 border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] hover:bg-emerald-500/20"
+                            onClick={() => setViewReportEntry(entry)}
+                          >
                             <CheckCircle2 className="h-3 w-3" />
-                            {isAr ? 'مكتمل' : 'Done'}
-                          </Badge>
+                            {isAr ? 'عرض التقرير' : 'View Report'}
+                          </Button>
                         ) : (
                           <span className="text-[10px] text-muted-foreground">{isAr ? 'لا يوجد' : 'None'}</span>
                         )}
@@ -566,6 +574,30 @@ const AttendLesson = () => {
         sessionData={reportSessionData}
         onReportSubmitted={handleReportSubmitted}
       />
+
+      {/* View Report Dialog */}
+      <Dialog open={!!viewReportEntry} onOpenChange={(val) => !val && setViewReportEntry(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              {isAr ? 'تقرير الجلسة' : 'Session Report'}
+              {viewReportEntry && (
+                <span className="text-xs font-normal text-muted-foreground">
+                  — {viewReportEntry.course_title}
+                </span>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          {viewReportEntry && (
+            <SessionReportsList
+              isAr={isAr}
+              timetableEntryId={viewReportEntry.id}
+              limit={1}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
