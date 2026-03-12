@@ -129,6 +129,18 @@ const Chats = () => {
     fetchMessages(selectedChat.id);
   };
 
+  const joinConversation = async () => {
+    if (!selectedChat || !user || !profile) return;
+    const adminName = profile.full_name || 'Admin';
+    const systemMsg = isAr
+      ? `[SYSTEM] المشرف ${adminName} انضم إلى المحادثة.`
+      : `[SYSTEM] Admin ${adminName} has joined the conversation.`;
+    await supabase.from('chat_messages').insert({ chat_id: selectedChat.id, sender_id: user.id, message: systemMsg });
+    setAdminJoinedChats(prev => new Set(prev).add(selectedChat.id));
+    fetchMessages(selectedChat.id);
+    toast.success(isAr ? 'انضممت إلى المحادثة' : 'Joined conversation');
+  };
+
   const deleteMessage = async (messageId: string) => {
     const deletedText = isAr
       ? `تم حذف هذه الرسالة بواسطة ${role === 'admin' ? 'المسؤول' : 'المعلم'}`
