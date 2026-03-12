@@ -59,6 +59,8 @@ import ErrorLog from "./pages/ErrorLog";
 import AuditTrail from "./pages/AuditTrail";
 import StudentReports from "./pages/StudentReports";
 import SessionReportsLog from "./pages/SessionReportsLog";
+import TeacherProfile from "./pages/TeacherProfile";
+import PayoutRequests from "./pages/PayoutRequests";
 import PublicBlogPost from "./pages/PublicBlogPost";
 import PublicBlogArchive from "./pages/PublicBlogArchive";
 import PublicPage from "./pages/PublicPage";
