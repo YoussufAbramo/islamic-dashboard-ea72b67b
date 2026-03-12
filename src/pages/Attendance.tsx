@@ -8,8 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { CheckCircle, XCircle, Clock, UserCheck, ClipboardCheck } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, UserCheck, ClipboardCheck, Download } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { format } from 'date-fns';
 
 interface AttendanceRecord {
   id: string;
