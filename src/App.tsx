@@ -34,6 +34,7 @@ import Attendance from "./pages/Attendance";
 import Settings from "./pages/Settings";
 import Certificates from "./pages/Certificates";
 import Reports from "./pages/Reports";
+import Library from "./pages/Library";
 import Announcements from "./pages/Announcements";
 import Notifications from "./pages/Notifications";
 import Invoices from "./pages/Invoices";
@@ -99,6 +100,7 @@ const App = () => (
                       <Route path="settings" element={<RoleGuard allowed={['admin']}><Settings /></RoleGuard>} />
                       <Route path="certificates" element={<Certificates />} />
                       <Route path="reports" element={<RoleGuard allowed={['admin']}><Reports /></RoleGuard>} />
+                      <Route path="library" element={<Library />} />
                       <Route path="invoices" element={<RoleGuard allowed={['admin']}><Invoices /></RoleGuard>} />
                       <Route path="calculator" element={<RoleGuard allowed={['admin']}><CalculatorPage /></RoleGuard>} />
                       <Route path="announcements" element={<Announcements />} />
