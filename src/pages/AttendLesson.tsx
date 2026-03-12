@@ -18,6 +18,8 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { TableSkeleton } from '@/components/PageSkeleton';
 import EmptyState from '@/components/EmptyState';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 interface LessonEntry {
   id: string;
