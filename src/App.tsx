@@ -27,6 +27,7 @@ import Support from "./pages/Support";
 import SupportDepartments from "./pages/SupportDepartments";
 import SupportPriorities from "./pages/SupportPriorities";
 import Timetable from "./pages/Timetable";
+import AttendLesson from "./pages/AttendLesson";
 import Subscriptions from "./pages/Subscriptions";
 import Chats from "./pages/Chats";
 import Profile from "./pages/Profile";
@@ -94,6 +95,7 @@ const App = () => (
                       <Route path="support/departments" element={<RoleGuard allowed={['admin']}><SupportDepartments /></RoleGuard>} />
                       <Route path="support/priorities" element={<RoleGuard allowed={['admin']}><SupportPriorities /></RoleGuard>} />
                       <Route path="timetable" element={<Timetable />} />
+                      <Route path="attend-lesson" element={<AttendLesson />} />
                       <Route path="subscriptions" element={<RoleGuard allowed={['admin']}><Subscriptions /></RoleGuard>} />
                       <Route path="chats" element={<Chats />} />
                       <Route path="attendance" element={<RoleGuard allowed={['admin', 'teacher']}><Attendance /></RoleGuard>} />
