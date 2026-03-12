@@ -142,7 +142,7 @@ const Attendance = () => {
         <Card><CardContent className="pt-6 text-center"><Clock className="h-8 w-8 mx-auto text-muted-foreground mb-2" /><p className="text-2xl font-bold">{totalLate + totalExcused}</p><p className="text-sm text-muted-foreground">{isAr ? 'متأخر / معذور' : 'Late / Excused'}</p></CardContent></Card>
       </div>
 
-      <Tabs defaultValue="students">
+      <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="students">{isAr ? 'حسب الطالب' : 'Per Student'}</TabsTrigger>
           <TabsTrigger value="teachers">{isAr ? 'حسب المعلم' : 'Per Teacher'}</TabsTrigger>
