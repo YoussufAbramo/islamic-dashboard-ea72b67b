@@ -162,7 +162,7 @@ const translations: Record<Language, Record<string, string>> = {
     'subscriptions.student': 'Student',
     'subscriptions.course': 'Course',
     'subscriptions.teacher': 'Teacher',
-    'subscriptions.type': 'Type',
+    'subscriptions.type': 'Billing Cycle',
     'subscriptions.startDate': 'Start Date',
     'subscriptions.renewalDate': 'Renewal Date',
     'subscriptions.status': 'Status',
