@@ -312,7 +312,7 @@ const AttendLesson = () => {
   };
 
   const sortedEntries = useMemo(() => {
-    return entries.filter(e => e.status !== 'cancelled');
+    return entries;
   }, [entries]);
 
   // Stats
