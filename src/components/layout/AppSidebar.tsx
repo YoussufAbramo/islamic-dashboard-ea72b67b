@@ -157,7 +157,6 @@ const AppSidebar = () => {
         { key: 'subscriptions', label: t('nav.subscriptions'), icon: CreditCard, path: '/dashboard/subscriptions', roles: ['admin'] },
         { key: 'invoices', label: isAr ? 'الفواتير' : 'Invoices', icon: FileText, path: '/dashboard/invoices', roles: ['admin'] },
         { key: 'calculator', label: isAr ? 'الحاسبة' : 'Calculator', icon: Calculator, path: '/dashboard/calculator', roles: ['admin'] },
-        { key: 'reports', label: isAr ? 'التقارير' : 'Reports', icon: BarChart3, path: '/dashboard/reports', roles: ['admin'] },
       ],
     },
     {
