@@ -48,7 +48,7 @@ const SlotRenderer = ({ slot, isAr }: { slot?: CopyrightSlotContent; isAr: boole
       return (
         <div className="flex items-center gap-3 flex-wrap">
           {(slot.links || []).map((link, i) => {
-            const url = link.type === 'policy' ? `/policies/${link.slug}` : `/pages/${link.slug}`;
+            const url = link.type === 'policy' ? `/policies/${link.slug}` : link.type === 'system' ? link.slug : `/pages/${link.slug}`;
             return (
               <a
                 key={i}

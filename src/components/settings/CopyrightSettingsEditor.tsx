@@ -143,6 +143,14 @@ const CopyrightSettingsEditor = ({ config, onChange, policies, websitePages }: P
                     <SelectValue placeholder={isAr ? 'اختر صفحة' : 'Select page'} />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="__system_header" disabled className="text-[10px] font-bold text-muted-foreground">
+                      {isAr ? '── صفحات النظام ──' : '── System Pages ──'}
+                    </SelectItem>
+                    {systemPages.map(p => (
+                      <SelectItem key={`system:${p.slug}`} value={`system:${p.slug}`}>
+                        {isAr ? (p.title_ar || p.title) : p.title}
+                      </SelectItem>
+                    ))}
                     {policies.length > 0 && (
                       <>
                         <SelectItem value="__policies_header" disabled className="text-[10px] font-bold text-muted-foreground">
