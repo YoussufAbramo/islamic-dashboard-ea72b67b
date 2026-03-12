@@ -456,6 +456,7 @@ const Chats = () => {
                             {!isOwn && (
                               <div className="flex items-center gap-1 mb-0.5">
                                 <span className="text-[10px] font-semibold">{msg.profiles?.full_name}</span>
+                                <span className="text-[8px] text-muted-foreground/70">{format(new Date(msg.created_at), 'hh:mm a')}</span>
                                 {senderRole && (
                                   <span className={`text-[8px] px-1 rounded-full border font-medium leading-3 ${roleColors[senderRole] || ''}`}>
                                     {roleLabels[senderRole] || senderRole}
