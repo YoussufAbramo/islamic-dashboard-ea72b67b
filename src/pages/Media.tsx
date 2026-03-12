@@ -511,14 +511,12 @@ const Media = () => {
                   <Input placeholder={isAr ? 'بحث...' : 'Search files...'} value={search} onChange={e => setSearch(e.target.value)} className="ps-9 h-9" />
                 </div>
                 <input ref={fileInputRef} type="file" multiple accept={getAcceptedTypes()} className="hidden" onChange={handleUpload} />
-                <Button size="sm" className="h-9 gap-1.5" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
-                  <Upload className="h-3.5 w-3.5" />
-                  {uploading ? (isAr ? 'جاري الرفع...' : 'Uploading...') : (isAr ? 'رفع ملف' : 'Upload')}
-                </Button>
-                <Button variant="outline" size="sm" className="h-9 gap-1.5" onClick={() => setNewFolderOpen(true)}>
-                  <FolderPlus className="h-3.5 w-3.5" />
-                  {isAr ? 'مجلد جديد' : 'New Folder'}
-                </Button>
+                {canUpload && (
+                  <Button size="sm" className="h-9 gap-1.5" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="h-3.5 w-3.5" />
+                    {uploading ? (isAr ? 'جاري الرفع...' : 'Uploading...') : (isAr ? 'رفع ملف' : 'Upload')}
+                  </Button>
+                )}
                 <Button variant="outline" size="sm" className="h-9" onClick={() => fetchFiles(currentPath)}>
                   <RefreshCw className="h-3.5 w-3.5" />
                 </Button>
