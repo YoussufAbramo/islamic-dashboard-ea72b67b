@@ -179,6 +179,7 @@ const Subscriptions = () => {
       schedule_time: createForm.schedule_time || null,
       google_meet_url: createForm.google_meet_url || '',
       zoom_url: createForm.zoom_url || '',
+      auto_renew: createForm.auto_renew,
     });
     setCreateLoading(false);
     if (error) {
