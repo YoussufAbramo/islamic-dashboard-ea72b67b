@@ -257,6 +257,16 @@ const AttendLesson = () => {
         </Card>
       </div>
 
+      {/* Info note */}
+      <div className="flex items-start gap-2 p-3 rounded-lg border bg-muted/30">
+        <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+        <p className="text-xs text-muted-foreground">
+          {isAr
+            ? 'زر "حضور" يتم تفعيله تلقائياً قبل 15 دقيقة من موعد الدرس ويبقى نشطاً حتى انتهاء الدرس.'
+            : 'The "Attend" button activates automatically 15 minutes before the lesson starts and remains active until the lesson ends.'}
+        </p>
+      </div>
+
       {/* Lessons Table */}
       {loading ? (
         <TableSkeleton />
@@ -331,15 +341,6 @@ const AttendLesson = () => {
         </Card>
       )}
 
-      {/* Info note */}
-      <div className="flex items-start gap-2 p-3 rounded-lg border bg-muted/30">
-        <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-        <p className="text-xs text-muted-foreground">
-          {isAr
-            ? 'زر "حضور" يتم تفعيله تلقائياً قبل 15 دقيقة من موعد الدرس ويبقى نشطاً حتى انتهاء الدرس.'
-            : 'The "Attend" button activates automatically 15 minutes before the lesson starts and remains active until the lesson ends.'}
-        </p>
-      </div>
 
       {/* Join Method Dialog */}
       <Dialog open={joinOpen} onOpenChange={setJoinOpen}>
