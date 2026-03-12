@@ -40,8 +40,12 @@ const Students = () => {
 
   const fetchStudents = async () => {
     setLoading(true);
-    const { data } = await supabase.from('students').select('*, profiles:students_user_id_profiles_fkey(full_name, phone, email)');
-    setStudents(data || []);
+    const [studentsRes, teachersRes] = await Promise.all([
+      supabase.from('students').select('*, profiles:students_user_id_profiles_fkey(full_name, phone, email)'),
+      supabase.from('teachers').select('id, profiles:teachers_user_id_profiles_fkey(full_name)'),
+    ]);
+    setStudents(studentsRes.data || []);
+    setAllTeachers(teachersRes.data || []);
     setLoading(false);
   };
 
