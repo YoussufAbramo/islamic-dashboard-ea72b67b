@@ -129,7 +129,7 @@ const AppSidebar = () => {
         },
         { key: 'attend-lesson', label: isAr ? 'حضور الجلسة' : 'Attend Session', icon: MonitorPlay, path: '/dashboard/attend-lesson', roles: ['admin', 'teacher', 'student'] },
         { key: 'timetable', label: t('nav.timetable'), icon: Calendar, path: '/dashboard/timetable', roles: ['admin', 'teacher', 'student'] },
-        { key: 'certificates', label: isAr ? 'الشهادات' : 'Certificates', icon: Award, path: '/dashboard/certificates', roles: ['admin', 'teacher', 'student'], beta: true },
+        { key: 'certificates', label: isAr ? 'الشهادات' : 'Certificates', icon: Award, path: '/dashboard/certificates', roles: ['admin', 'teacher', 'student'] },
         { key: 'library', label: isAr ? 'المكتبة' : 'Library', icon: Library, path: '/dashboard/library', roles: ['admin', 'teacher', 'student'] },
       ],
     },
