@@ -340,7 +340,7 @@ const Subscriptions = () => {
       {/* Detail / Edit dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{t('subscriptions.title')}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{isAr ? 'تفاصيل الاشتراك' : 'Subscription Details'} {selected ? <span className="text-muted-foreground font-mono text-sm">#{selected.id.slice(0, 8).toUpperCase()}</span> : ''}</DialogTitle></DialogHeader>
           {selected && (
             <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-0">
               {/* Left Column - Core Info */}
