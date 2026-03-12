@@ -2,6 +2,27 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.13.0] - 2026-03-12
+
+### Added
+- **Attend Lesson page** — new section under Educate menu (`/dashboard/attend-lesson`) with weekly scheduled lessons table showing Date, Time, Student, Teacher, Duration, Status, and Attend action
+- **Smart lesson status indicators** — Live (🔴 pulsing), Starting Soon, Coming Later, Completed, Ended, and Cancelled statuses with real-time 30-second refresh
+- **15-minute attend rule** — Attend button auto-enables 15 minutes before lesson start and stays active until lesson ends
+- **Join Method modal** — choose between Google Meet, Zoom, or Vconnect when attending a lesson; Google Meet and Zoom open configured URLs from the subscription; Vconnect requires manual URL entry with validation
+- **Attend Lesson stats cards** — Live Now, Today's Lessons, and This Week counters
+- **3-Month (Quarterly) billing cycle** — new subscription type with 12-week calculation for pricing
+- **Renewal date descriptive note** — displays the exact day-cycle below the renewal date field (28 days for monthly, 84 for quarterly, 365 for yearly)
+- **BETA badge on Webhook Log** sidebar item
+
+### Improved
+- **Subscription "Type" renamed to "Billing Cycle"** (`دورة الفوترة`) for clarity across UI and labels
+- **Renewal date calculation** — uses fixed day counts instead of calendar months (28/84/365 days)
+- **Time picker redesigned** — dual-column Hour + Minute selector with 15-minute increments, full-width trigger, and AM/PM formatting
+- **Schedule section redesigned** — subscription detail now shows a card with full day names as styled chips and a dedicated time display with icon
+- **Live Session URLs restyled** — Google Meet and Zoom favicons with card-style layout in both detail view and create dialog
+- **URL overflow fix** — long session URLs now clip properly with `break-all` and `line-clamp-1`
+- **Status badge alignment** — badge in subscription detail view properly aligned below its label
+
 ## [4.12.0] - 2026-03-12
 
 ### Changed
