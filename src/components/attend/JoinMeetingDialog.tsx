@@ -305,15 +305,13 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, entryId, isAr, onSession
       </Dialog>
 
       {/* Dashboard Meeting (WebRTC) */}
-      {entryId && dashboardMeetingOpen && (
-        <Suspense fallback={null}>
-          <DashboardMeeting
-            open={dashboardMeetingOpen}
-            onOpenChange={setDashboardMeetingOpen}
-            entryId={entryId}
-            isAr={isAr}
-          />
-        </Suspense>
+      {entryId && dashboardMeetingOpen && MeetingComponent && (
+        <MeetingComponent
+          open={dashboardMeetingOpen}
+          onOpenChange={setDashboardMeetingOpen}
+          entryId={entryId}
+          isAr={isAr}
+        />
       )}
     </>
   );
