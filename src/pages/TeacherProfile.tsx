@@ -92,6 +92,8 @@ const TeacherProfile = () => {
       specialization: teacherData.specialization || '',
       bio: teacherData.bio || '',
       hourly_rate: teacherData.hourly_rate || 0,
+      gender: (teacherData as any).gender || '',
+      date_of_birth: (teacherData as any).date_of_birth || '',
     });
 
     if (teacherData.profiles?.avatar_url) {
