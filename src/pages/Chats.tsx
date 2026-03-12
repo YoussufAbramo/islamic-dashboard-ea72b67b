@@ -422,7 +422,7 @@ const Chats = () => {
                   <div className="absolute inset-0 opacity-15 dark:opacity-10" style={{ backgroundImage: `url(${islamicBg})`, backgroundSize: '400px 400px', backgroundRepeat: 'repeat' }} />
                   <div className="absolute inset-0 bg-gradient-to-br from-background/90 via-background/80 to-background/90" />
                   <div className="space-y-3 p-4 min-h-full relative z-10">
-                    {messages.map((msg) => {
+                    {messages.map((msg, idx) => {
                       const isOwn = msg.sender_id === user?.id;
                       const initials = (msg.profiles?.full_name || '?').charAt(0).toUpperCase();
                       const senderRole = senderRoles[msg.sender_id] || '';
@@ -441,47 +441,66 @@ const Chats = () => {
                         teacher: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
                         student: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
                       };
+                      const msgDate = new Date(msg.created_at);
+                      const prevDate = idx > 0 ? new Date(messages[idx - 1].created_at) : null;
+                      const showDateSep = !prevDate || msgDate.toDateString() !== prevDate.toDateString();
+                      const today = new Date();
+                      const yesterday = new Date(); yesterday.setDate(today.getDate() - 1);
+                      const dateLabel = msgDate.toDateString() === today.toDateString()
+                        ? (isAr ? 'اليوم' : 'Today')
+                        : msgDate.toDateString() === yesterday.toDateString()
+                          ? (isAr ? 'أمس' : 'Yesterday')
+                          : format(msgDate, 'dd MMM yyyy');
                       return (
-                        <div key={msg.id} className={`group flex items-end gap-1.5 ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                          {!isOwn && (
-                            <Avatar className="h-6 w-6 shrink-0 ring-1 ring-background">
-                              <AvatarFallback className={`text-[9px] font-semibold ${avatarColors[senderRole] || 'bg-primary/10 text-primary'}`}>{initials}</AvatarFallback>
-                            </Avatar>
+                        <div key={msg.id}>
+                          {showDateSep && (
+                            <div className="flex items-center gap-3 my-3">
+                              <div className="flex-1 h-px bg-border" />
+                              <span className="text-[10px] text-muted-foreground bg-background/80 px-2.5 py-0.5 rounded-full border">{dateLabel}</span>
+                              <div className="flex-1 h-px bg-border" />
+                            </div>
                           )}
-                          <div className={`max-w-[75%] rounded-xl text-xs ${msg.is_deleted ? 'bg-muted/60 italic text-muted-foreground px-2.5 py-1.5' : isOwn ? 'bg-primary text-primary-foreground px-2.5 py-1.5' : 'bg-card border border-border px-2.5 py-1.5'}`}>
+                          <div className={`group flex items-end gap-1.5 ${isOwn ? 'justify-end' : 'justify-start'}`}>
                             {!isOwn && (
-                              <div className="flex items-center gap-1 mb-0.5">
-                                <span className="text-[10px] font-semibold">{msg.profiles?.full_name}</span>
-                                {senderRole && (
-                                  <span className={`text-[8px] px-1 rounded-full border font-medium leading-3 ${roleColors[senderRole] || ''}`}>
-                                    {roleLabels[senderRole] || senderRole}
-                                  </span>
-                                )}
-                              </div>
+                              <Avatar className="h-6 w-6 shrink-0 ring-1 ring-background">
+                                <AvatarFallback className={`text-[9px] font-semibold ${avatarColors[senderRole] || 'bg-primary/10 text-primary'}`}>{initials}</AvatarFallback>
+                              </Avatar>
                             )}
-                            <p className="leading-snug">{msg.message}</p>
+                            <div className={`max-w-[75%] rounded-xl text-xs ${msg.is_deleted ? 'bg-muted/60 italic text-muted-foreground px-2.5 py-1.5' : isOwn ? 'bg-primary text-primary-foreground px-2.5 py-1.5' : 'bg-card border border-border px-2.5 py-1.5'}`}>
+                              {!isOwn && (
+                                <div className="flex items-center gap-1 mb-0.5">
+                                  <span className="text-[10px] font-semibold">{msg.profiles?.full_name}</span>
+                                  {senderRole && (
+                                    <span className={`text-[8px] px-1 rounded-full border font-medium leading-3 ${roleColors[senderRole] || ''}`}>
+                                      {roleLabels[senderRole] || senderRole}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                              <p className="leading-snug">{msg.message}</p>
+                            </div>
+                            <span className="text-[8px] text-muted-foreground/60 shrink-0 pb-0.5">{format(msgDate, 'hh:mm a')}</span>
+                            {(role === 'admin' || role === 'teacher') && !msg.is_deleted && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity shrink-0">
+                                    <MoreVertical className="h-3 w-3" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align={isOwn ? 'end' : 'start'} className="min-w-[120px]">
+                                  <DropdownMenuItem className="text-destructive focus:text-destructive gap-2 text-xs" onClick={() => deleteMessage(msg.id)}>
+                                    <Trash2 className="h-3 w-3" />
+                                    {isAr ? 'حذف' : 'Delete'}
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                            {isOwn && (
+                              <Avatar className="h-6 w-6 shrink-0 ring-1 ring-background">
+                                <AvatarFallback className={`text-[9px] font-semibold ${avatarColors[senderRole] || 'bg-primary/10 text-primary'}`}>{initials}</AvatarFallback>
+                              </Avatar>
+                            )}
                           </div>
-                          <span className="text-[8px] text-muted-foreground/60 shrink-0 pb-0.5">{format(new Date(msg.created_at), 'hh:mm a')}</span>
-                          {(role === 'admin' || role === 'teacher') && !msg.is_deleted && (
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity shrink-0">
-                                  <MoreVertical className="h-3 w-3" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align={isOwn ? 'end' : 'start'} className="min-w-[120px]">
-                                <DropdownMenuItem className="text-destructive focus:text-destructive gap-2 text-xs" onClick={() => deleteMessage(msg.id)}>
-                                  <Trash2 className="h-3 w-3" />
-                                  {isAr ? 'حذف' : 'Delete'}
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          )}
-                          {isOwn && (
-                            <Avatar className="h-6 w-6 shrink-0 ring-1 ring-background">
-                              <AvatarFallback className={`text-[9px] font-semibold ${avatarColors[senderRole] || 'bg-primary/10 text-primary'}`}>{initials}</AvatarFallback>
-                            </Avatar>
-                          )}
                         </div>
                       );
                     })}
