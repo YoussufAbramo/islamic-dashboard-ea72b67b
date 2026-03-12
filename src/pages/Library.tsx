@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Card } from '@/components/ui/card';
-import { Plus, Search, Trash2, FileText, Upload, ExternalLink, ArrowUp, ArrowDown, BookOpen, Download } from 'lucide-react';
+import { Plus, Search, Trash2, FileText, Upload, ArrowUp, ArrowDown, BookOpen, Download, Eye, Users } from 'lucide-react';
 import ActionButton from '@/components/ui/action-button';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
