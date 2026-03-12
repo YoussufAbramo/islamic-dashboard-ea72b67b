@@ -502,11 +502,13 @@ const Subscriptions = () => {
                 </div>
               )}
               {/* Auto Renewal Toggle */}
-              <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
-                <div className="flex items-center gap-2">
-                  <RefreshCw className="h-4 w-4 text-primary" />
+              <div className="flex items-center justify-between p-3.5 rounded-xl border border-primary/20 bg-primary/5">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10">
+                    <RefreshCw className="h-4 w-4 text-primary" />
+                  </div>
                   <div>
-                    <p className="text-sm font-medium">{isAr ? 'التجديد التلقائي' : 'Auto Renewal'}</p>
+                    <p className="text-sm font-semibold">{isAr ? 'التجديد التلقائي' : 'Auto Renewal'}</p>
                     <p className="text-[10px] text-muted-foreground">{isAr ? 'إنشاء فاتورة تلقائياً عند تاريخ التجديد' : 'Auto-generate invoice on renewal date'}</p>
                   </div>
                 </div>
@@ -657,11 +659,13 @@ const Subscriptions = () => {
             </div>
 
             {/* Auto Renewal Toggle */}
-            <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
-              <div className="flex items-center gap-2">
-                <RefreshCw className="h-4 w-4 text-primary" />
+            <div className="flex items-center justify-between p-3.5 rounded-xl border border-primary/20 bg-primary/5">
+              <div className="flex items-center gap-2.5">
+                <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10">
+                  <RefreshCw className="h-4 w-4 text-primary" />
+                </div>
                 <div>
-                  <p className="text-sm font-medium">{isAr ? 'التجديد التلقائي' : 'Auto Renewal'}</p>
+                  <p className="text-sm font-semibold">{isAr ? 'التجديد التلقائي' : 'Auto Renewal'}</p>
                   <p className="text-[10px] text-muted-foreground">{isAr ? 'إنشاء فاتورة تلقائياً عند تاريخ التجديد' : 'Auto-generate invoice on renewal date'}</p>
                 </div>
               </div>
