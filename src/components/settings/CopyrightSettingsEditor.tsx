@@ -225,6 +225,12 @@ const CopyrightSettingsEditor = ({ config, onChange, policies, websitePages }: P
         <p className="text-xs text-muted-foreground">{COPYRIGHT_TEXT} <a href={COPYRIGHT_LINK} target="_blank" rel="noopener noreferrer" className="underline">{COPYRIGHT_NAME}</a> {COPYRIGHT_SUFFIX}</p>
       </div>
 
+      {/* Additional content below copyright */}
+      <div className="grid sm:grid-cols-2 gap-3">
+        <div><Label className="text-xs">{isAr ? 'محتوى إضافي (EN)' : 'Additional Content (EN)'}</Label><Input value={config.sub_text || ''} onChange={e => update('sub_text', e.target.value)} className="h-8 text-sm" placeholder={isAr ? 'نص يظهر أسفل حقوق النشر' : 'Text displayed below copyright'} /></div>
+        <div><Label className="text-xs">{isAr ? 'محتوى إضافي (AR)' : 'Additional Content (AR)'}</Label><Input dir="rtl" value={config.sub_text_ar || ''} onChange={e => update('sub_text_ar', e.target.value)} className="h-8 text-sm" /></div>
+      </div>
+
       {/* Other content slot */}
       {hasOther && renderSlotEditor('other_content', isAr ? 'المحتوى الإضافي' : 'Other Content')}
 
