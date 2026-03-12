@@ -35,9 +35,9 @@ export const courseStatusLabels: Record<string, { en: string; ar: string }> = {
 export const timetableStatusLabels: Record<string, { en: string; ar: string }> = {
   scheduled: { en: 'Upcoming', ar: 'قادم' },
   completed: { en: 'Ended', ar: 'انتهى' },
-  teacher_not_attend: { en: 'Not Attend', ar: 'لم يحضر' },
-  student_not_attend: { en: 'Not Attend', ar: 'لم يحضر' },
-  not_attend: { en: 'Not Attend', ar: 'لم يحضر' },
+  teacher_not_attend: { en: 'Absence', ar: 'غياب' },
+  student_not_attend: { en: 'Absence', ar: 'غياب' },
+  not_attend: { en: 'Absence', ar: 'غياب' },
   postponed: { en: 'Postponed', ar: 'مؤجل' },
 };
 

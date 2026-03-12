@@ -425,8 +425,8 @@ const AttendLesson = () => {
           </p>
           <p>
             {isAr
-              ? 'خيار "عدم الحضور" متاح حتى 30 دقيقة قبل موعد الدرس. خلال آخر 30 دقيقة، لا يمكن إلغاء الحضور. لمزيد من التفاصيل، راجع '
-              : 'The "Not Attend" option is available up to 30 minutes before the lesson. Within the last 30 minutes, cancellation is not allowed. For more details, see the '}
+              ? 'خيار "الغياب" متاح حتى 30 دقيقة قبل موعد الجلسة. خلال آخر 30 دقيقة، لا يمكن إلغاء الحضور. لمزيد من التفاصيل، راجع '
+              : 'The "Absence" option is available up to 30 minutes before the session. Within the last 30 minutes, cancellation is not allowed. For more details, see the '}
             <a href="/policies/attendance-policy" target="_blank" className="text-primary underline underline-offset-2 hover:text-primary/80">
               {isAr ? 'سياسة الحضور' : 'Attendance Policy'}
             </a>.

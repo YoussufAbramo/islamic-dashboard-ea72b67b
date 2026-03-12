@@ -401,7 +401,7 @@ const StudentReports = () => {
                   <TableRow>
                     <TableHead>{isAr ? 'الطالب' : 'Student'}</TableHead>
                     <TableHead>{isAr ? 'الدروس المكتملة' : 'Attended'}</TableHead>
-                    <TableHead>{isAr ? 'لم يحضر' : 'Absent'}</TableHead>
+                    <TableHead>{isAr ? 'غياب' : 'Absent'}</TableHead>
                     <TableHead>{isAr ? 'نسبة الحضور' : 'Rate'}</TableHead>
                     <TableHead className="text-end">{isAr ? 'إجراء' : 'Action'}</TableHead>
                   </TableRow>
