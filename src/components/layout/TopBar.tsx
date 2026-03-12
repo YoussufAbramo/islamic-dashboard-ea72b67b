@@ -313,6 +313,8 @@ const TopBar = () => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <ImpersonationSwitcher />
         </TooltipProvider>
       </header>
 

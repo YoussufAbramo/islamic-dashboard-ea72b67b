@@ -628,7 +628,8 @@ const TeacherProfile = () => {
       {/* Account Statement */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Receipt className="h-5 w-5 text-primary" />
             {isAr ? 'كشف الحساب' : 'Account Statement'}
           </CardTitle>
         </CardHeader>
