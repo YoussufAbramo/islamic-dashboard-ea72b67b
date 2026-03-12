@@ -28,7 +28,7 @@ interface LessonEntry {
   zoom_url: string;
 }
 
-type JoinMethod = 'vconnect' | 'google_meet' | 'zoom';
+type JoinMethod = 'vconnct' | 'google_meet' | 'zoom';
 
 const AttendLesson = () => {
   const { language } = useLanguage();
