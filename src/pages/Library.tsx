@@ -95,7 +95,7 @@ const Library = () => {
     }
   };
 
-  const handleCreate = async () => {
+  const handleCreate = async (andBlog = false) => {
     if (!form.title.trim() || !pdfFile) {
       toast.error(isAr ? 'العنوان وملف PDF مطلوبان' : 'Title and PDF file are required');
       return;
@@ -130,7 +130,33 @@ const Library = () => {
 
       if (error) throw error;
 
-      toast.success(isAr ? 'تم إضافة الكتاب' : 'E-book added successfully');
+      // Create blog post if requested
+      if (andBlog) {
+        const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + timestamp;
+        const pdfUrl = pdfUrlData.publicUrl;
+        const blogContent = `<p>${form.description || 'Check out this new e-book available in our library.'}</p>\n<p><a href="${pdfUrl}" target="_blank">📖 Read the E-book here</a></p>`;
+        const blogContentAr = `<p>${form.description_ar || 'اطلع على هذا الكتاب الإلكتروني الجديد المتاح في مكتبتنا.'}</p>\n<p><a href="${pdfUrl}" target="_blank">📖 اقرأ الكتاب من هنا</a></p>`;
+
+        const { error: blogError } = await supabase.from('blog_posts').insert({
+          title: form.title,
+          title_ar: form.title_ar || '',
+          slug,
+          excerpt: form.description || '',
+          excerpt_ar: form.description_ar || '',
+          content: blogContent,
+          content_ar: blogContentAr,
+          featured_image: coverUrl || '',
+          status: 'published',
+          published_at: new Date().toISOString(),
+          created_by: user?.id,
+        });
+
+        if (blogError) throw blogError;
+        toast.success(isAr ? 'تم إضافة الكتاب ونشر المقال' : 'E-book added & blog post published');
+      } else {
+        toast.success(isAr ? 'تم إضافة الكتاب' : 'E-book added successfully');
+      }
+
       setCreateOpen(false);
       resetForm();
       fetchEbooks();
