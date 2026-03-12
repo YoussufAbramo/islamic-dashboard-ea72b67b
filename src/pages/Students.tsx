@@ -196,6 +196,7 @@ const Students = () => {
                     <div><Label>{t('students.phone')}</Label><p>{profile.phone}</p></div>
                     <div><Label>{t('students.lessonDuration')}</Label><p>{selected.lesson_duration} {t('common.minutes')}</p></div>
                     <div><Label>{t('students.weeklyRepeat')}</Label><p>{selected.weekly_repeat}x</p></div>
+                    <div><Label>{isAr ? 'المعلم المعيّن' : 'Assigned Teacher'}</Label><p>{allTeachers.find(t => t.id === selected.assigned_teacher_id)?.profiles?.full_name || (isAr ? 'غير محدد' : 'Not assigned')}</p></div>
                   </div>
                   <Button variant="outline" size="sm" onClick={() => setEditing(true)}>{t('common.edit')}</Button>
                 </>
