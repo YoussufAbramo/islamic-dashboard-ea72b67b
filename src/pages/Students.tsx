@@ -62,7 +62,7 @@ const Students = () => {
   };
 
   const saveEdit = async () => {
-    await supabase.from('students').update({ lesson_duration: editForm.lesson_duration, weekly_repeat: editForm.weekly_repeat }).eq('id', selected.id);
+    await supabase.from('students').update({ lesson_duration: editForm.lesson_duration, weekly_repeat: editForm.weekly_repeat, assigned_teacher_id: editForm.assigned_teacher_id || null }).eq('id', selected.id);
     await supabase.from('profiles').update({ full_name: editForm.full_name, phone: editForm.phone, email: editForm.email }).eq('id', selected.user_id);
     toast.success(isAr ? 'تم تحديث الطالب' : 'Student updated');
     setEditing(false);
