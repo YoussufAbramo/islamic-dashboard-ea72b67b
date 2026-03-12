@@ -53,8 +53,14 @@ const Support = () => {
 
   const fetchTickets = async () => {
     setLoading(true);
-    const { data } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
+    const [{ data }, { data: deptData }, { data: prioData }] = await Promise.all([
+      supabase.from('support_tickets').select('*').order('created_at', { ascending: false }),
+      supabase.from('support_departments').select('id, name, name_ar').eq('is_active', true).order('sort_order'),
+      supabase.from('support_priorities').select('id, name, name_ar, color').eq('is_active', true).order('sort_order'),
+    ]);
     setTickets(data || []);
+    if (deptData) setDepartments(deptData as any);
+    if (prioData) setPriorities(prioData as any);
     setLoading(false);
   };
 
