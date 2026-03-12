@@ -61,6 +61,7 @@ const AttendLesson = () => {
 
   // Set of entry IDs that already have reports
   const [reportedEntryIds, setReportedEntryIds] = useState<Set<string>>(new Set());
+  const [reportDurations, setReportDurations] = useState<Map<string, number>>(new Map());
   const [viewReportEntry, setViewReportEntry] = useState<LessonEntry | null>(null);
   const [cancelEntry, setCancelEntry] = useState<LessonEntry | null>(null);
   const [cancelReason, setCancelReason] = useState('');
