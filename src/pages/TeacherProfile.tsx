@@ -222,6 +222,8 @@ const TeacherProfile = () => {
         specialization: editForm.specialization,
         bio: editForm.bio,
         hourly_rate: editForm.hourly_rate,
+        gender: editForm.gender || null,
+        date_of_birth: editForm.date_of_birth || null,
       })
       .eq('id', id!);
 
