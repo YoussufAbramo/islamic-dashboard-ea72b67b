@@ -1,16 +1,16 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import JoinMeetingDialog from '@/components/attend/JoinMeetingDialog';
-import SessionTimer from '@/components/attend/SessionTimer';
 import SessionReportDialog from '@/components/attend/SessionReportDialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { format, differenceInMinutes, isToday, isTomorrow, addDays, startOfWeek, endOfWeek } from 'date-fns';
-import { Video, Clock, MonitorPlay, AlertCircle, CalendarDays, FileText, CheckCircle2 } from 'lucide-react';
+import { Video, Clock, MonitorPlay, AlertCircle, CalendarDays, FileText, CheckCircle2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { TableSkeleton } from '@/components/PageSkeleton';
 import EmptyState from '@/components/EmptyState';
@@ -34,6 +34,7 @@ interface LessonEntry {
 const AttendLesson = () => {
   const { language } = useLanguage();
   const { role, user } = useAuth();
+  const { activeSessionId, startSession, clearSession, setPendingAttend } = useSession();
   const isAr = language === 'ar';
   const [entries, setEntries] = useState<LessonEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,9 +42,7 @@ const AttendLesson = () => {
   const [joinOpen, setJoinOpen] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<LessonEntry | null>(null);
 
-  // Session tracking state
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
-  const [sessionStartedAt, setSessionStartedAt] = useState<string | null>(null);
+  // Session report state
   const [reportOpen, setReportOpen] = useState(false);
   const [reportSessionData, setReportSessionData] = useState<{
     timetableEntryId: string;
@@ -62,6 +61,26 @@ const AttendLesson = () => {
     const interval = setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // Listen for end-session request from TopBar
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { durationSeconds: number; startedAt: string };
+      if (!activeSessionId) return;
+      const entry = entries.find(e => e.id === activeSessionId);
+      setReportSessionData({
+        timetableEntryId: activeSessionId,
+        teacherId: entry?.teacher_id || null,
+        studentId: entry?.student_id || null,
+        courseId: entry?.course_id || null,
+        durationSeconds: detail.durationSeconds,
+        startedAt: detail.startedAt,
+      });
+      setReportOpen(true);
+    };
+    window.addEventListener('session-end-request', handler);
+    return () => window.removeEventListener('session-end-request', handler);
+  }, [activeSessionId, entries]);
 
   const fetchEntries = async () => {
     setLoading(true);
@@ -164,12 +183,32 @@ const AttendLesson = () => {
 
   useEffect(() => { fetchEntries(); }, []);
 
+  // Update pending attend in context for TopBar
+  useEffect(() => {
+    if (activeSessionId) {
+      setPendingAttend(null);
+      return;
+    }
+    // Find the first entry that can be attended
+    const attendable = entries.find(e => isAttendEnabled(e));
+    if (attendable) {
+      setPendingAttend({
+        id: attendable.id,
+        courseTitle: attendable.course_title,
+        studentName: attendable.student_name,
+        onAttend: () => handleAttendClick(attendable),
+      });
+    } else {
+      setPendingAttend(null);
+    }
+    return () => setPendingAttend(null);
+  }, [entries, activeSessionId, now]);
+
   const getLessonStatus = (entry: LessonEntry): { label: string; variant: string; className: string; isLive: boolean } => {
     const scheduledTime = new Date(entry.scheduled_at);
     const endTime = new Date(scheduledTime.getTime() + entry.duration_minutes * 60000);
     const minutesUntil = differenceInMinutes(scheduledTime, now);
 
-    // If this session is currently active (being tracked)
     if (activeSessionId === entry.id) {
       return { label: isAr ? '🟢 جلسة نشطة' : '🟢 In Session', variant: 'default', className: 'bg-emerald-600 text-white', isLive: true };
     }
@@ -192,8 +231,8 @@ const AttendLesson = () => {
   };
 
   const isAttendEnabled = (entry: LessonEntry): boolean => {
-    if (activeSessionId) return false; // Can't start another session while one is active
-    if (entry.has_report || reportedEntryIds.has(entry.id)) return false; // Already reported
+    if (activeSessionId) return false;
+    if (entry.has_report || reportedEntryIds.has(entry.id)) return false;
     const scheduledTime = new Date(entry.scheduled_at);
     const endTime = new Date(scheduledTime.getTime() + entry.duration_minutes * 60000);
     const minutesUntil = differenceInMinutes(scheduledTime, now);
@@ -201,43 +240,67 @@ const AttendLesson = () => {
     return minutesUntil <= 15 && now <= endTime;
   };
 
+  // "Not Attend" is available until 30 mins before lesson, disabled within 30 mins
+  const isNotAttendEnabled = (entry: LessonEntry): boolean => {
+    if (activeSessionId === entry.id) return false;
+    if (entry.has_report || reportedEntryIds.has(entry.id)) return false;
+    if (entry.status === 'cancelled' || entry.status === 'completed') return false;
+    const scheduledTime = new Date(entry.scheduled_at);
+    const minutesUntil = differenceInMinutes(scheduledTime, now);
+    // Available when more than 30 mins before lesson
+    return minutesUntil > 30;
+  };
+
+  const isNotAttendVisible = (entry: LessonEntry): boolean => {
+    if (activeSessionId === entry.id) return false;
+    if (entry.has_report || reportedEntryIds.has(entry.id)) return false;
+    if (entry.status === 'cancelled' || entry.status === 'completed') return false;
+    const scheduledTime = new Date(entry.scheduled_at);
+    const endTime = new Date(scheduledTime.getTime() + entry.duration_minutes * 60000);
+    // Show only for future entries
+    return now < endTime;
+  };
+
+  const handleNotAttend = async (entry: LessonEntry) => {
+    const { error } = await supabase
+      .from('timetable_entries')
+      .update({ status: 'cancelled' })
+      .eq('id', entry.id);
+    if (error) {
+      toast.error(isAr ? 'فشل تحديث الحالة' : 'Failed to update status');
+      return;
+    }
+    toast.success(isAr ? 'تم تسجيل عدم الحضور' : 'Marked as not attending');
+    fetchEntries();
+  };
+
   const handleAttendClick = (entry: LessonEntry) => {
     setSelectedEntry(entry);
     setJoinOpen(true);
   };
 
-  // Called when a meeting is successfully joined
   const handleSessionStart = useCallback((entryId: string) => {
-    setActiveSessionId(entryId);
-    setSessionStartedAt(new Date().toISOString());
-    toast.success(isAr ? 'بدأت الجلسة — المؤقت يعمل' : 'Session started — timer is running');
-  }, [isAr]);
-
-  // Called when End Session is clicked
-  const handleEndSession = useCallback((durationSeconds: number) => {
-    if (!activeSessionId) return;
-    const entry = entries.find(e => e.id === activeSessionId);
-    setReportSessionData({
-      timetableEntryId: activeSessionId,
+    const entry = entries.find(e => e.id === entryId);
+    startSession({
+      id: entryId,
+      courseTitle: entry?.course_title || '',
+      studentName: entry?.student_name || '',
       teacherId: entry?.teacher_id || null,
       studentId: entry?.student_id || null,
       courseId: entry?.course_id || null,
-      durationSeconds,
-      startedAt: sessionStartedAt || new Date().toISOString(),
     });
-    setReportOpen(true);
-  }, [activeSessionId, entries, sessionStartedAt]);
+    toast.success(isAr ? 'بدأت الجلسة — المؤقت يعمل' : 'Session started — timer is running');
+  }, [entries, isAr, startSession]);
 
   // Called after report is submitted
   const handleReportSubmitted = useCallback(() => {
     if (activeSessionId) {
       setReportedEntryIds(prev => new Set([...prev, activeSessionId]));
     }
-    setActiveSessionId(null);
-    setSessionStartedAt(null);
+    clearSession();
     setReportSessionData(null);
     fetchEntries();
-  }, [activeSessionId]);
+  }, [activeSessionId, clearSession]);
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
@@ -260,7 +323,7 @@ const AttendLesson = () => {
   const todayCount = entries.filter(e => isToday(new Date(e.scheduled_at))).length;
   const weekTotal = entries.length;
 
-  // Find the active entry for the timer display
+  // Find the active entry for the banner display
   const activeEntry = activeSessionId ? entries.find(e => e.id === activeSessionId) : null;
 
   return (
@@ -272,14 +335,6 @@ const AttendLesson = () => {
             {isAr ? 'عرض وحضور الدروس المجدولة لهذا الأسبوع' : 'View and attend your scheduled lessons this week'}
           </p>
         </div>
-        {/* Active Session Timer in header */}
-        {activeEntry && (
-          <SessionTimer
-            isActive={!!activeSessionId}
-            onEndSession={handleEndSession}
-            isAr={isAr}
-          />
-        )}
       </div>
 
       {/* Active Session Banner */}
@@ -336,14 +391,24 @@ const AttendLesson = () => {
         </Card>
       </div>
 
-      {/* Info note */}
+      {/* Info note with attendance policy */}
       <div className="flex items-start gap-2 p-3 rounded-lg border bg-muted/30">
         <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-        <p className="text-xs text-muted-foreground">
-          {isAr
-            ? 'زر "حضور" يتم تفعيله تلقائياً قبل 15 دقيقة من موعد الدرس. عند الانضمام يبدأ مؤقت الجلسة ويجب إنهاء الجلسة وكتابة تقرير.'
-            : 'The "Attend" button activates 15 minutes before the lesson. Joining starts a session timer — end the session to submit a report.'}
-        </p>
+        <div className="text-xs text-muted-foreground space-y-1">
+          <p>
+            {isAr
+              ? 'زر "حضور" يتم تفعيله تلقائياً قبل 15 دقيقة من موعد الدرس. عند الانضمام يبدأ مؤقت الجلسة ويجب إنهاء الجلسة وكتابة تقرير.'
+              : 'The "Attend" button activates 15 minutes before the lesson. Joining starts a session timer — end the session to submit a report.'}
+          </p>
+          <p>
+            {isAr
+              ? 'خيار "عدم الحضور" متاح حتى 30 دقيقة قبل موعد الدرس. خلال آخر 30 دقيقة، لا يمكن إلغاء الحضور. لمزيد من التفاصيل، راجع '
+              : 'The "Not Attend" option is available up to 30 minutes before the lesson. Within the last 30 minutes, cancellation is not allowed. For more details, see the '}
+            <a href="/policies/attendance-policy" target="_blank" className="text-primary underline underline-offset-2 hover:text-primary/80">
+              {isAr ? 'سياسة الحضور' : 'Attendance Policy'}
+            </a>.
+          </p>
+        </div>
       </div>
 
       {/* Lessons Table */}
@@ -377,6 +442,8 @@ const AttendLesson = () => {
                   const canAttend = isAttendEnabled(entry);
                   const isActiveEntry = activeSessionId === entry.id;
                   const hasReport = entry.has_report || reportedEntryIds.has(entry.id);
+                  const showNotAttend = isNotAttendVisible(entry);
+                  const canNotAttend = isNotAttendEnabled(entry);
 
                   return (
                     <TableRow key={entry.id} className={isActiveEntry ? 'bg-emerald-500/5' : status.isLive ? 'bg-destructive/5' : ''}>
@@ -414,21 +481,37 @@ const AttendLesson = () => {
                         )}
                       </TableCell>
                       <TableCell className="text-center">
-                        {isActiveEntry ? (
-                          <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                            {isAr ? 'جلسة نشطة...' : 'In session...'}
-                          </span>
-                        ) : (
-                          <Button
-                            size="sm"
-                            disabled={!canAttend}
-                            onClick={() => handleAttendClick(entry)}
-                            className="gap-1.5"
-                          >
-                            <Video className="h-3.5 w-3.5" />
-                            {isAr ? 'حضور' : 'Attend'}
-                          </Button>
-                        )}
+                        <div className="flex items-center justify-center gap-1.5">
+                          {isActiveEntry ? (
+                            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                              {isAr ? 'جلسة نشطة...' : 'In session...'}
+                            </span>
+                          ) : (
+                            <>
+                              <Button
+                                size="sm"
+                                disabled={!canAttend}
+                                onClick={() => handleAttendClick(entry)}
+                                className="gap-1.5"
+                              >
+                                <Video className="h-3.5 w-3.5" />
+                                {isAr ? 'حضور' : 'Attend'}
+                              </Button>
+                              {showNotAttend && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={!canNotAttend}
+                                  onClick={() => handleNotAttend(entry)}
+                                  className="gap-1 text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/5"
+                                >
+                                  <XCircle className="h-3.5 w-3.5" />
+                                  {isAr ? 'عدم الحضور' : 'Not Attend'}
+                                </Button>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
@@ -444,10 +527,6 @@ const AttendLesson = () => {
         open={joinOpen}
         onOpenChange={(val) => {
           setJoinOpen(val);
-          // If closing the dialog after a join was initiated, start the session
-          if (!val && selectedEntry && joinOpen) {
-            // We'll trigger session start from inside JoinMeetingDialog via onSessionStart
-          }
         }}
         entry={selectedEntry}
         isAr={isAr}
@@ -458,16 +537,12 @@ const AttendLesson = () => {
         }}
       />
 
-      {/* Session Report Dialog */}
+      {/* Session Report Dialog — closing does NOT end session */}
       <SessionReportDialog
         open={reportOpen}
         onOpenChange={(val) => {
           setReportOpen(val);
-          if (!val && activeSessionId) {
-            // If they close without submitting, still end the session
-            setActiveSessionId(null);
-            setSessionStartedAt(null);
-          }
+          // Just close the dialog, do NOT end the session
         }}
         isAr={isAr}
         sessionData={reportSessionData}

@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AppSettingsProvider } from "@/contexts/AppSettingsContext";
+import { SessionProvider } from "@/contexts/SessionContext";
 import { ThemeProvider } from "next-themes";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -70,68 +71,70 @@ const App = () => (
         <LanguageProvider>
           <AuthProvider>
             <AppSettingsProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  <Routes>
-                    <Route path="/" element={<PublicRouteGuard><LandingPage /></PublicRouteGuard>} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<Signup />} />
-                    <Route path="/reset-password" element={<Navigate to="/forgot-password" replace />}/>
-                    <Route path="/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/dashboard" element={<DashboardLayout />}>
-                      <Route index element={<Dashboard />} />
-                      <Route path="courses" element={<Courses />} />
-                      <Route path="courses/tracks" element={<RoleGuard allowed={['admin']}><CourseTracks /></RoleGuard>} />
-                      <Route path="courses/categories" element={<RoleGuard allowed={['admin']}><CourseCategories /></RoleGuard>} />
-                      <Route path="courses/levels" element={<RoleGuard allowed={['admin']}><CourseLevels /></RoleGuard>} />
-                      <Route path="courses/:id" element={<CourseDetail />} />
-                      <Route path="students" element={<RoleGuard allowed={['admin', 'teacher']}><Students /></RoleGuard>} />
-                      <Route path="teachers" element={<RoleGuard allowed={['admin']}><Teachers /></RoleGuard>} />
-                      <Route path="admins" element={<RoleGuard allowed={['admin']}><Admins /></RoleGuard>} />
-                      <Route path="roles" element={<RoleGuard allowed={['admin']}><RoleManagement /></RoleGuard>} />
-                      <Route path="support" element={<RoleGuard allowed={['admin']}><Support /></RoleGuard>} />
-                      <Route path="support/departments" element={<RoleGuard allowed={['admin']}><SupportDepartments /></RoleGuard>} />
-                      <Route path="support/priorities" element={<RoleGuard allowed={['admin']}><SupportPriorities /></RoleGuard>} />
-                      <Route path="timetable" element={<Timetable />} />
-                      <Route path="attend-lesson" element={<AttendLesson />} />
-                      <Route path="subscriptions" element={<RoleGuard allowed={['admin']}><Subscriptions /></RoleGuard>} />
-                      <Route path="chats" element={<Chats />} />
-                      <Route path="attendance" element={<RoleGuard allowed={['admin', 'teacher']}><Attendance /></RoleGuard>} />
-                      <Route path="settings" element={<RoleGuard allowed={['admin']}><Settings /></RoleGuard>} />
-                      <Route path="certificates" element={<Certificates />} />
-                      <Route path="reports" element={<RoleGuard allowed={['admin']}><Reports /></RoleGuard>} />
-                      <Route path="library" element={<Library />} />
-                      <Route path="invoices" element={<RoleGuard allowed={['admin']}><Invoices /></RoleGuard>} />
-                      <Route path="calculator" element={<RoleGuard allowed={['admin']}><CalculatorPage /></RoleGuard>} />
-                      <Route path="announcements" element={<Announcements />} />
-                      <Route path="notifications" element={<Notifications />} />
-                      <Route path="error/:code" element={<ErrorDetails />} />
-                      <Route path="error-docs" element={<RoleGuard allowed={['admin']}><ErrorDocs /></RoleGuard>} />
-                      <Route path="media" element={<RoleGuard allowed={['admin']}><Media /></RoleGuard>} />
-                      <Route path="landing-page" element={<RoleGuard allowed={['admin']}><WebsiteModeGuard><LandingPageManager /></WebsiteModeGuard></RoleGuard>} />
-                      <Route path="policies" element={<RoleGuard allowed={['admin']}><WebsiteModeGuard><Policies /></WebsiteModeGuard></RoleGuard>} />
-                      <Route path="website-pages" element={<RoleGuard allowed={['admin']}><WebsiteModeGuard><WebsitePages /></WebsiteModeGuard></RoleGuard>} />
-                      <Route path="blog" element={<RoleGuard allowed={['admin']}><WebsiteModeGuard><BlogPosts /></WebsiteModeGuard></RoleGuard>} />
-                      <Route path="activity-log" element={<RoleGuard allowed={['admin']}><ActivityLog /></RoleGuard>} />
-                      <Route path="webhook-log" element={<RoleGuard allowed={['admin']}><WebhookLog /></RoleGuard>} />
-                      <Route path="error-log" element={<RoleGuard allowed={['admin']}><ErrorLog /></RoleGuard>} />
-                      <Route path="audit-trail" element={<RoleGuard allowed={['admin']}><AuditTrail /></RoleGuard>} />
-                      <Route path="profile" element={<Profile />} />
-                    </Route>
-                    <Route path="/invoice/:id" element={<InvoiceView />} />
-                    <Route path="/blogs" element={<PublicRouteGuard><PublicBlogArchive /></PublicRouteGuard>} />
-                    <Route path="/blogs/:slug" element={<PublicRouteGuard><PublicBlogPost /></PublicRouteGuard>} />
-                    <Route path="/pages/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
-                    <Route path="/page/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
-                    <Route path="/policies/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
-                    <Route path="/policy/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
-                    <Route path="/contact" element={<PublicRouteGuard><PublicContact /></PublicRouteGuard>} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </BrowserRouter>
-              </TooltipProvider>
+              <SessionProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
+                  <BrowserRouter>
+                    <Routes>
+                      <Route path="/" element={<PublicRouteGuard><LandingPage /></PublicRouteGuard>} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/signup" element={<Signup />} />
+                      <Route path="/reset-password" element={<Navigate to="/forgot-password" replace />}/>
+                      <Route path="/forgot-password" element={<ForgotPassword />} />
+                      <Route path="/dashboard" element={<DashboardLayout />}>
+                        <Route index element={<Dashboard />} />
+                        <Route path="courses" element={<Courses />} />
+                        <Route path="courses/tracks" element={<RoleGuard allowed={['admin']}><CourseTracks /></RoleGuard>} />
+                        <Route path="courses/categories" element={<RoleGuard allowed={['admin']}><CourseCategories /></RoleGuard>} />
+                        <Route path="courses/levels" element={<RoleGuard allowed={['admin']}><CourseLevels /></RoleGuard>} />
+                        <Route path="courses/:id" element={<CourseDetail />} />
+                        <Route path="students" element={<RoleGuard allowed={['admin', 'teacher']}><Students /></RoleGuard>} />
+                        <Route path="teachers" element={<RoleGuard allowed={['admin']}><Teachers /></RoleGuard>} />
+                        <Route path="admins" element={<RoleGuard allowed={['admin']}><Admins /></RoleGuard>} />
+                        <Route path="roles" element={<RoleGuard allowed={['admin']}><RoleManagement /></RoleGuard>} />
+                        <Route path="support" element={<RoleGuard allowed={['admin']}><Support /></RoleGuard>} />
+                        <Route path="support/departments" element={<RoleGuard allowed={['admin']}><SupportDepartments /></RoleGuard>} />
+                        <Route path="support/priorities" element={<RoleGuard allowed={['admin']}><SupportPriorities /></RoleGuard>} />
+                        <Route path="timetable" element={<Timetable />} />
+                        <Route path="attend-lesson" element={<AttendLesson />} />
+                        <Route path="subscriptions" element={<RoleGuard allowed={['admin']}><Subscriptions /></RoleGuard>} />
+                        <Route path="chats" element={<Chats />} />
+                        <Route path="attendance" element={<RoleGuard allowed={['admin', 'teacher']}><Attendance /></RoleGuard>} />
+                        <Route path="settings" element={<RoleGuard allowed={['admin']}><Settings /></RoleGuard>} />
+                        <Route path="certificates" element={<Certificates />} />
+                        <Route path="reports" element={<RoleGuard allowed={['admin']}><Reports /></RoleGuard>} />
+                        <Route path="library" element={<Library />} />
+                        <Route path="invoices" element={<RoleGuard allowed={['admin']}><Invoices /></RoleGuard>} />
+                        <Route path="calculator" element={<RoleGuard allowed={['admin']}><CalculatorPage /></RoleGuard>} />
+                        <Route path="announcements" element={<Announcements />} />
+                        <Route path="notifications" element={<Notifications />} />
+                        <Route path="error/:code" element={<ErrorDetails />} />
+                        <Route path="error-docs" element={<RoleGuard allowed={['admin']}><ErrorDocs /></RoleGuard>} />
+                        <Route path="media" element={<RoleGuard allowed={['admin']}><Media /></RoleGuard>} />
+                        <Route path="landing-page" element={<RoleGuard allowed={['admin']}><WebsiteModeGuard><LandingPageManager /></WebsiteModeGuard></RoleGuard>} />
+                        <Route path="policies" element={<RoleGuard allowed={['admin']}><WebsiteModeGuard><Policies /></WebsiteModeGuard></RoleGuard>} />
+                        <Route path="website-pages" element={<RoleGuard allowed={['admin']}><WebsiteModeGuard><WebsitePages /></WebsiteModeGuard></RoleGuard>} />
+                        <Route path="blog" element={<RoleGuard allowed={['admin']}><WebsiteModeGuard><BlogPosts /></WebsiteModeGuard></RoleGuard>} />
+                        <Route path="activity-log" element={<RoleGuard allowed={['admin']}><ActivityLog /></RoleGuard>} />
+                        <Route path="webhook-log" element={<RoleGuard allowed={['admin']}><WebhookLog /></RoleGuard>} />
+                        <Route path="error-log" element={<RoleGuard allowed={['admin']}><ErrorLog /></RoleGuard>} />
+                        <Route path="audit-trail" element={<RoleGuard allowed={['admin']}><AuditTrail /></RoleGuard>} />
+                        <Route path="profile" element={<Profile />} />
+                      </Route>
+                      <Route path="/invoice/:id" element={<InvoiceView />} />
+                      <Route path="/blogs" element={<PublicRouteGuard><PublicBlogArchive /></PublicRouteGuard>} />
+                      <Route path="/blogs/:slug" element={<PublicRouteGuard><PublicBlogPost /></PublicRouteGuard>} />
+                      <Route path="/pages/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
+                      <Route path="/page/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
+                      <Route path="/policies/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
+                      <Route path="/policy/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
+                      <Route path="/contact" element={<PublicRouteGuard><PublicContact /></PublicRouteGuard>} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </BrowserRouter>
+                </TooltipProvider>
+              </SessionProvider>
             </AppSettingsProvider>
           </AuthProvider>
         </LanguageProvider>

@@ -1,4 +1,4 @@
-import { Moon, Sun, Bell, Megaphone, Globe, Plus, CheckCheck, ExternalLink, Eye, Languages, Search } from 'lucide-react';
+import { Moon, Sun, Bell, Megaphone, Globe, Plus, CheckCheck, ExternalLink, Eye, Languages, Search, StopCircle, Timer, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -9,9 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useSession } from '@/contexts/SessionContext';
 import { useNavigate } from 'react-router-dom';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -22,9 +23,18 @@ const ArabicLetterIcon = () => (
   <span className="text-sm font-bold leading-none" style={{ fontFamily: "'Noto Kufi Arabic', sans-serif" }}>ع</span>
 );
 
+const formatTimer = (seconds: number): string => {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+};
+
 const TopBar = () => {
   const { user, role } = useAuth();
   const { t, language, setLanguage } = useLanguage();
+  const { activeSessionId, activeEntry, sessionStartedAt, pendingAttend, endSession } = useSession();
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -36,6 +46,24 @@ const TopBar = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const isAr = language === 'ar';
   const isAdmin = role === 'admin';
+
+  // Session timer state
+  const [elapsed, setElapsed] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (activeSessionId && sessionStartedAt) {
+      const start = new Date(sessionStartedAt).getTime();
+      setElapsed(Math.floor((Date.now() - start) / 1000));
+      intervalRef.current = setInterval(() => {
+        setElapsed(Math.floor((Date.now() - start) / 1000));
+      }, 1000);
+    } else {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      setElapsed(0);
+    }
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [activeSessionId, sessionStartedAt]);
 
   // Ctrl+K / Cmd+K shortcut
   useEffect(() => {
@@ -101,6 +129,14 @@ const TopBar = () => {
     setAnnouncementDetailOpen(true);
   };
 
+  const handleEndSessionClick = () => {
+    const result = endSession();
+    if (result) {
+      // Dispatch a custom event so the AttendLesson page can open report dialog
+      window.dispatchEvent(new CustomEvent('session-end-request', { detail: result }));
+    }
+  };
+
   const iconBtnClass = "rounded-full h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted";
 
   return (
@@ -124,6 +160,37 @@ const TopBar = () => {
         </TooltipProvider>
 
         <div className="flex-1" />
+
+        {/* Pending Attend button in TopBar */}
+        {pendingAttend && !activeSessionId && (
+          <Button
+            size="sm"
+            className="gap-1.5 h-8"
+            onClick={pendingAttend.onAttend}
+          >
+            <Video className="h-3.5 w-3.5" />
+            {isAr ? 'حضور' : 'Attend'}
+          </Button>
+        )}
+
+        {/* Active Session Timer in TopBar */}
+        {activeSessionId && (
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="gap-1.5 border-destructive/30 bg-destructive/5 text-destructive font-mono text-sm px-3 py-1 animate-pulse">
+              <Timer className="h-3.5 w-3.5" />
+              {formatTimer(elapsed)}
+            </Badge>
+            <Button
+              size="sm"
+              variant="destructive"
+              className="gap-1.5 h-8"
+              onClick={handleEndSessionClick}
+            >
+              <StopCircle className="h-3.5 w-3.5" />
+              {isAr ? 'إنهاء الجلسة' : 'End Session'}
+            </Button>
+          </div>
+        )}
 
         <TooltipProvider delayDuration={300}>
           <Tooltip>
