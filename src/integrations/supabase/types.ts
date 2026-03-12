@@ -1641,6 +1641,42 @@ export type Database = {
         }
         Relationships: []
       }
+      teacher_courses: {
+        Row: {
+          assigned_at: string
+          course_id: string
+          id: string
+          teacher_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          course_id: string
+          id?: string
+          teacher_id: string
+        }
+        Update: {
+          assigned_at?: string
+          course_id?: string
+          id?: string
+          teacher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teacher_courses_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_courses_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teachers: {
         Row: {
           bio: string | null
@@ -1651,6 +1687,7 @@ export type Database = {
           id: string
           required_monthly_hours: number
           specialization: string | null
+          title: string | null
           user_id: string
           weekly_schedule: Json | null
         }
@@ -1663,6 +1700,7 @@ export type Database = {
           id?: string
           required_monthly_hours?: number
           specialization?: string | null
+          title?: string | null
           user_id: string
           weekly_schedule?: Json | null
         }
@@ -1675,6 +1713,7 @@ export type Database = {
           id?: string
           required_monthly_hours?: number
           specialization?: string | null
+          title?: string | null
           user_id?: string
           weekly_schedule?: Json | null
         }
