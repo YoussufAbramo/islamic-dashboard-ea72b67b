@@ -386,7 +386,11 @@ const Library = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
-            <Button onClick={handleCreate} disabled={uploading}>
+            <Button variant="secondary" onClick={() => handleCreate(true)} disabled={uploading}>
+              <Newspaper className="h-4 w-4 me-2" />
+              {uploading ? (isAr ? 'جاري الرفع...' : 'Uploading...') : (isAr ? 'إنشاء ونشر مقال' : 'Create & Blog it!')}
+            </Button>
+            <Button onClick={() => handleCreate(false)} disabled={uploading}>
               <FileText className="h-4 w-4 me-2" />
               {uploading ? (isAr ? 'جاري الرفع...' : 'Uploading...') : (isAr ? 'إضافة الكتاب' : 'Add E-book')}
             </Button>
