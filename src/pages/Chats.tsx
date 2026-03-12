@@ -649,8 +649,9 @@ const Chats = () => {
                 <button type="button" onClick={() => setChatType('direct')} className={`p-3 rounded-lg border-2 text-sm transition-all ${chatType === 'direct' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'}`}>
                   {isAr ? 'محادثة مباشرة' : '1-on-1 Chat'}
                 </button>
-                <button type="button" onClick={() => setChatType('group')} className={`p-3 rounded-lg border-2 text-sm transition-all ${chatType === 'group' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'}`}>
+                <button type="button" onClick={() => setChatType('group')} className={`relative p-3 rounded-lg border-2 text-sm transition-all ${chatType === 'group' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'}`}>
                   {isAr ? 'مجموعة' : 'Group Chat'}
+                  <Badge className="absolute -top-1.5 -end-1.5 text-[7px] px-1 py-0 h-3.5 bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">Beta</Badge>
                 </button>
               </div>
             </div>
