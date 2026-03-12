@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Card } from '@/components/ui/card';
-import { Plus, Search, Trash2, FileText, Upload, ArrowUp, ArrowDown, BookOpen, Download, Eye, Users } from 'lucide-react';
+import { Plus, Search, Trash2, FileText, Upload, ArrowUp, ArrowDown, BookOpen, Download, Eye, Users, Newspaper } from 'lucide-react';
 import ActionButton from '@/components/ui/action-button';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
@@ -95,7 +95,7 @@ const Library = () => {
     }
   };
 
-  const handleCreate = async () => {
+  const handleCreate = async (andBlog = false) => {
     if (!form.title.trim() || !pdfFile) {
       toast.error(isAr ? 'العنوان وملف PDF مطلوبان' : 'Title and PDF file are required');
       return;
@@ -130,7 +130,33 @@ const Library = () => {
 
       if (error) throw error;
 
-      toast.success(isAr ? 'تم إضافة الكتاب' : 'E-book added successfully');
+      // Create blog post if requested
+      if (andBlog) {
+        const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + timestamp;
+        const pdfUrl = pdfUrlData.publicUrl;
+        const blogContent = `<p>${form.description || 'Check out this new e-book available in our library.'}</p>\n<p><a href="${pdfUrl}" target="_blank">📖 Read the E-book here</a></p>`;
+        const blogContentAr = `<p>${form.description_ar || 'اطلع على هذا الكتاب الإلكتروني الجديد المتاح في مكتبتنا.'}</p>\n<p><a href="${pdfUrl}" target="_blank">📖 اقرأ الكتاب من هنا</a></p>`;
+
+        const { error: blogError } = await supabase.from('blog_posts').insert({
+          title: form.title,
+          title_ar: form.title_ar || '',
+          slug,
+          excerpt: form.description || '',
+          excerpt_ar: form.description_ar || '',
+          content: blogContent,
+          content_ar: blogContentAr,
+          featured_image: coverUrl || '',
+          status: 'published',
+          published_at: new Date().toISOString(),
+          created_by: user?.id,
+        });
+
+        if (blogError) throw blogError;
+        toast.success(isAr ? 'تم إضافة الكتاب ونشر المقال' : 'E-book added & blog post published');
+      } else {
+        toast.success(isAr ? 'تم إضافة الكتاب' : 'E-book added successfully');
+      }
+
       setCreateOpen(false);
       resetForm();
       fetchEbooks();
@@ -360,7 +386,11 @@ const Library = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
-            <Button onClick={handleCreate} disabled={uploading}>
+            <Button variant="secondary" onClick={() => handleCreate(true)} disabled={uploading}>
+              <Newspaper className="h-4 w-4 me-2" />
+              {uploading ? (isAr ? 'جاري الرفع...' : 'Uploading...') : (isAr ? 'إنشاء ونشر مقال' : 'Create & Blog it!')}
+            </Button>
+            <Button onClick={() => handleCreate(false)} disabled={uploading}>
               <FileText className="h-4 w-4 me-2" />
               {uploading ? (isAr ? 'جاري الرفع...' : 'Uploading...') : (isAr ? 'إضافة الكتاب' : 'Add E-book')}
             </Button>
