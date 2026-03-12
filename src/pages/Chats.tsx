@@ -549,7 +549,7 @@ const Chats = () => {
               <>
                 <div>
                   <Label>{isAr ? 'الطالب' : 'Student'}</Label>
-                  <Select value={createForm.student_id} onValueChange={(v) => setCreateForm({ ...createForm, student_id: v })}>
+                  <Select value={createForm.student_id} onValueChange={(v) => setCreateForm(prev => ({ ...prev, student_id: v }))}>
                     <SelectTrigger><SelectValue placeholder={isAr ? 'اختر طالب' : 'Select student'} /></SelectTrigger>
                     <SelectContent>{studentsList.map((s) => <SelectItem key={s.id} value={s.id}>{s.profiles?.full_name || s.id}</SelectItem>)}</SelectContent>
                   </Select>
