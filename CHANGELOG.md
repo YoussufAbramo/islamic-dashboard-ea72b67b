@@ -2,6 +2,39 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.11.0] - 2026-03-12
+
+### Added
+- **Certificate Type column** — table now shows whether recipient is a Student or Teacher
+- **Radio buttons for Recipient Type** — replaced dropdown with radio buttons in certificate creation dialog
+
+## [4.10.0] - 2026-03-12
+
+### Changed
+- **Copyright text updated** — "All Rights Reserved © 2026 — Developed By CodeCom.dev"
+- **Rich text editor for Policies** — replaced plain textareas with visual content editor (HTML mode removed)
+
+## [4.9.0] - 2026-03-12
+
+### Added
+- **Additional content field** in Copyright settings — EN/AR text displayed below the copyright line
+- Copyright text is now non-editable, always uses developer copyright from version.ts
+
+## [4.8.0] - 2026-03-12
+
+### Added
+- **System Pages in Copyright links** — Home, Contact, Blog added as selectable links in the copyright bar dropdown
+- Link type extended to support `system` pages with direct URL paths
+
+## [4.7.0] - 2026-03-12
+
+### Added
+- **Copyright Bar** moved to its own separate tab in Landing Page settings (Header → Sections → Footer → Copyright)
+- **Support RLS policies** — added SELECT policies for `support_departments` and `support_priorities` for authenticated users
+
+### Changed
+- Support ticket creation now dynamically fetches departments and priorities from sub-menu managed data
+
 ## [4.6.0] - 2026-03-11
 
 ### Added
