@@ -378,6 +378,7 @@ const Subscriptions = () => {
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="monthly">{isAr ? 'شهري' : 'Monthly'}</SelectItem>
+                        <SelectItem value="quarterly">{isAr ? '3 أشهر' : '3-Month'}</SelectItem>
                         <SelectItem value="yearly">{isAr ? 'سنوي' : 'Yearly'}</SelectItem>
                       </SelectContent>
                     </Select>
