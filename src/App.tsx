@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AppSettingsProvider } from "@/contexts/AppSettingsContext";
 import { SessionProvider } from "@/contexts/SessionContext";
+import { ImpersonationProvider } from "@/contexts/ImpersonationContext";
 import { ThemeProvider } from "next-themes";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import DashboardLayout from "@/components/layout/DashboardLayout";
