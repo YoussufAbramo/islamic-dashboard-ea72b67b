@@ -12,7 +12,7 @@ import { ScrollText, Save, ExternalLink, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
-import ContentEditor from '@/components/ContentEditor';
+
 
 interface Policy {
   id: string;
