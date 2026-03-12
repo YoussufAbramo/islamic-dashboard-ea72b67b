@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ACTION_BTN, ACTION_BTN_DESTRUCTIVE, ACTION_ICON } from '@/lib/actionBtnClass';
 import { usePagination } from '@/hooks/use-pagination';
 import PaginationControls from '@/components/PaginationControls';
@@ -12,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Search, Eye, Plus, Trash2, Pencil } from 'lucide-react';
+import { Search, Eye, Plus, Trash2, Pencil, UserCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
@@ -20,6 +21,7 @@ import { TableSkeleton } from '@/components/PageSkeleton';
 const Teachers = () => {
   const { t, language } = useLanguage();
   const { role } = useAuth();
+  const navigate = useNavigate();
   const isAr = language === 'ar';
   const [teachers, setTeachers] = useState<any[]>([]);
   const [search, setSearch] = useState('');
@@ -132,6 +134,7 @@ const Teachers = () => {
                 <TableCell>{teacher.specialization}</TableCell>
                 <TableCell className="flex gap-1">
                   <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => viewDetails(teacher)}><Eye className={ACTION_ICON} /></Button>
+                  <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => navigate(`/dashboard/teacher-profile/${teacher.id}`)} title={isAr ? 'الملف الشخصي' : 'Profile'}><UserCircle className={ACTION_ICON} /></Button>
                   <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => { viewDetails(teacher); setTimeout(() => setEditing(true), 100); }}><Pencil className={ACTION_ICON} /></Button>
                   {role === 'admin' && <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteTarget(teacher.id)}><Trash2 className={ACTION_ICON} /></Button>}
                 </TableCell>

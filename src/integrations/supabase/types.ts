@@ -1095,6 +1095,56 @@ export type Database = {
         }
         Relationships: []
       }
+      payout_requests: {
+        Row: {
+          admin_id: string | null
+          admin_notes: string | null
+          available_balance_at_request: number
+          created_at: string
+          decline_reason: string | null
+          id: string
+          requested_amount: number
+          reviewed_at: string | null
+          status: string
+          teacher_id: string
+          transaction_ref: string
+        }
+        Insert: {
+          admin_id?: string | null
+          admin_notes?: string | null
+          available_balance_at_request?: number
+          created_at?: string
+          decline_reason?: string | null
+          id?: string
+          requested_amount: number
+          reviewed_at?: string | null
+          status?: string
+          teacher_id: string
+          transaction_ref?: string
+        }
+        Update: {
+          admin_id?: string | null
+          admin_notes?: string | null
+          available_balance_at_request?: number
+          created_at?: string
+          decline_reason?: string | null
+          id?: string
+          requested_amount?: number
+          reviewed_at?: string | null
+          status?: string
+          teacher_id?: string
+          transaction_ref?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payout_requests_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       policies: {
         Row: {
           content: string | null
@@ -1595,7 +1645,9 @@ export type Database = {
         Row: {
           bio: string | null
           created_at: string
+          hourly_rate: number
           id: string
+          required_monthly_hours: number
           specialization: string | null
           user_id: string
           weekly_schedule: Json | null
@@ -1603,7 +1655,9 @@ export type Database = {
         Insert: {
           bio?: string | null
           created_at?: string
+          hourly_rate?: number
           id?: string
+          required_monthly_hours?: number
           specialization?: string | null
           user_id: string
           weekly_schedule?: Json | null
@@ -1611,7 +1665,9 @@ export type Database = {
         Update: {
           bio?: string | null
           created_at?: string
+          hourly_rate?: number
           id?: string
+          required_monthly_hours?: number
           specialization?: string | null
           user_id?: string
           weekly_schedule?: Json | null

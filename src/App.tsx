@@ -59,6 +59,8 @@ import ErrorLog from "./pages/ErrorLog";
 import AuditTrail from "./pages/AuditTrail";
 import StudentReports from "./pages/StudentReports";
 import SessionReportsLog from "./pages/SessionReportsLog";
+import TeacherProfile from "./pages/TeacherProfile";
+import PayoutRequests from "./pages/PayoutRequests";
 import PublicBlogPost from "./pages/PublicBlogPost";
 import PublicBlogArchive from "./pages/PublicBlogArchive";
 import PublicPage from "./pages/PublicPage";
@@ -115,6 +117,8 @@ const App = () => (
                         <Route path="expenses" element={<RoleGuard allowed={['admin']}><Expenses /></RoleGuard>} />
                         <Route path="expenses/categories" element={<RoleGuard allowed={['admin']}><ExpenseCategories /></RoleGuard>} />
                         <Route path="calculator" element={<RoleGuard allowed={['admin']}><CalculatorPage /></RoleGuard>} />
+                        <Route path="payout-requests" element={<RoleGuard allowed={['admin']}><PayoutRequests /></RoleGuard>} />
+                        <Route path="teacher-profile/:id" element={<TeacherProfile />} />
                         <Route path="announcements" element={<Announcements />} />
                         <Route path="notifications" element={<Notifications />} />
                         <Route path="error/:code" element={<ErrorDetails />} />
