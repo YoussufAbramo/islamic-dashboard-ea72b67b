@@ -428,38 +428,33 @@ const Chats = () => {
                       <DialogContent className="max-w-sm">
                         <DialogHeader><DialogTitle>{isAr ? 'أعضاء المجموعة' : 'Group Members'}</DialogTitle></DialogHeader>
                         <div className="space-y-3">
-                          {/* Current Members from chat_members table */}
+                          {/* Members from chat_members table */}
                           <div className="space-y-2">
-                            {groupMembers.map(member => (
-                              <div key={member.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/50">
-                                <div className="flex items-center gap-2">
-                                  <Avatar className="h-7 w-7"><AvatarFallback className="text-xs bg-primary/10 text-primary">{(member.profiles?.full_name || '?').charAt(0).toUpperCase()}</AvatarFallback></Avatar>
-                                  <div>
-                                    <p className="text-sm font-medium">{member.profiles?.full_name || member.user_id}</p>
-                                    <p className="text-[10px] text-muted-foreground">{member.role === 'teacher' ? (isAr ? 'معلم' : 'Teacher') : (isAr ? 'طالب' : 'Student')}</p>
+                            {groupMembers.map(member => {
+                              const roleLabelMap: Record<string, string> = {
+                                admin: isAr ? 'مشرف' : 'Admin',
+                                teacher: isAr ? 'معلم' : 'Teacher',
+                                student: isAr ? 'طالب' : 'Student',
+                                member: isAr ? 'عضو' : 'Member',
+                              };
+                              return (
+                                <div key={member.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/50">
+                                  <div className="flex items-center gap-2">
+                                    <Avatar className="h-7 w-7"><AvatarFallback className="text-xs bg-primary/10 text-primary">{(member.profiles?.full_name || '?').charAt(0).toUpperCase()}</AvatarFallback></Avatar>
+                                    <div>
+                                      <p className="text-sm font-medium">{member.profiles?.full_name || member.user_id}</p>
+                                      <p className="text-[10px] text-muted-foreground">{roleLabelMap[member.role] || member.role}</p>
+                                    </div>
                                   </div>
+                                  {role === 'admin' && member.user_id !== user?.id && (
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={() => removeGroupMember(member.id)}>
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  )}
                                 </div>
-                                {role === 'admin' && (
-                                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={() => removeGroupMember(member.id)}>
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                )}
-                              </div>
-                            ))}
-                            {/* Legacy single teacher/student */}
-                            {selectedChat.teachers?.profiles?.full_name && (
-                              <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
-                                <Avatar className="h-7 w-7"><AvatarFallback className="text-xs bg-primary/10 text-primary">{selectedChat.teachers.profiles.full_name.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
-                                <div><p className="text-sm font-medium">{selectedChat.teachers.profiles.full_name}</p><p className="text-[10px] text-muted-foreground">{isAr ? 'معلم (أساسي)' : 'Teacher (primary)'}</p></div>
-                              </div>
-                            )}
-                            {selectedChat.students?.profiles?.full_name && (
-                              <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
-                                <Avatar className="h-7 w-7"><AvatarFallback className="text-xs bg-primary/10 text-primary">{selectedChat.students.profiles.full_name.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
-                                <div><p className="text-sm font-medium">{selectedChat.students.profiles.full_name}</p><p className="text-[10px] text-muted-foreground">{isAr ? 'طالب (أساسي)' : 'Student (primary)'}</p></div>
-                              </div>
-                            )}
-                            {groupMembers.length === 0 && !selectedChat.teachers?.profiles?.full_name && !selectedChat.students?.profiles?.full_name && (
+                              );
+                            })}
+                            {groupMembers.length === 0 && (
                               <p className="text-sm text-muted-foreground text-center py-2">{isAr ? 'لا يوجد أعضاء' : 'No members yet'}</p>
                             )}
                           </div>
