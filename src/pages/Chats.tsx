@@ -208,7 +208,11 @@ const Chats = () => {
         if (teacher) members.push({ chat_id: newChat.id, user_id: teacher.user_id, role: 'teacher' });
       });
       if (members.length > 0) {
-        await supabase.from('chat_members').insert(members);
+        const { error: membersError } = await supabase.from('chat_members').insert(members);
+        if (membersError) {
+          console.error('Failed to add group members:', membersError);
+          notifyError({ error: membersError, isAr, rawMessage: membersError.message });
+        }
       }
     }
 
@@ -545,14 +549,14 @@ const Chats = () => {
               <>
                 <div>
                   <Label>{isAr ? 'الطالب' : 'Student'}</Label>
-                  <Select value={createForm.student_id} onValueChange={(v) => setCreateForm({ ...createForm, student_id: v })}>
+                  <Select value={createForm.student_id} onValueChange={(v) => setCreateForm(prev => ({ ...prev, student_id: v }))}>
                     <SelectTrigger><SelectValue placeholder={isAr ? 'اختر طالب' : 'Select student'} /></SelectTrigger>
                     <SelectContent>{studentsList.map((s) => <SelectItem key={s.id} value={s.id}>{s.profiles?.full_name || s.id}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label>{isAr ? 'المعلم' : 'Teacher'}</Label>
-                  <Select value={createForm.teacher_id} onValueChange={(v) => setCreateForm({ ...createForm, teacher_id: v })}>
+                  <Select value={createForm.teacher_id} onValueChange={(v) => setCreateForm(prev => ({ ...prev, teacher_id: v }))}>
                     <SelectTrigger><SelectValue placeholder={isAr ? 'اختر معلم' : 'Select teacher'} /></SelectTrigger>
                     <SelectContent>{teachersList.map((te) => <SelectItem key={te.id} value={te.id}>{te.profiles?.full_name || te.id}</SelectItem>)}</SelectContent>
                   </Select>
@@ -562,11 +566,11 @@ const Chats = () => {
               <>
                 <div>
                   <Label>{isAr ? 'اسم المجموعة' : 'Group Name'} *</Label>
-                  <Input value={createForm.name} onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })} />
+                  <Input value={createForm.name} onChange={(e) => setCreateForm(prev => ({ ...prev, name: e.target.value }))} />
                 </div>
                 <div>
                   <Label>{isAr ? 'الاشتراك المرتبط (اختياري)' : 'Linked Subscription (optional)'}</Label>
-                  <Select value={createForm.subscription_id} onValueChange={(v) => setCreateForm({ ...createForm, subscription_id: v })}>
+                  <Select value={createForm.subscription_id} onValueChange={(v) => setCreateForm(prev => ({ ...prev, subscription_id: v }))}>
                     <SelectTrigger><SelectValue placeholder={isAr ? 'اختر اشتراك' : 'Select subscription'} /></SelectTrigger>
                     <SelectContent>{subscriptionsList.map((sub) => <SelectItem key={sub.id} value={sub.id}>{sub.students?.profiles?.full_name || ''} - {sub.courses?.title || ''}</SelectItem>)}</SelectContent>
                   </Select>
