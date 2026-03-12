@@ -784,12 +784,12 @@ const TeacherProfile = () => {
 
 /* ── Reusable Sub-Components ── */
 
-const InfoCard = ({ icon, label, value, truncate }: { icon: React.ReactNode; label: string; value: string; truncate?: boolean }) => (
-  <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
+const InfoCard = ({ icon, label, value, truncate, small }: { icon: React.ReactNode; label: string; value: string; truncate?: boolean; small?: boolean }) => (
+  <div className={`flex items-center gap-2.5 rounded-lg border bg-muted/30 ${small ? 'p-2.5' : 'p-3'}`}>
     <span className="text-muted-foreground shrink-0">{icon}</span>
     <div className="min-w-0">
-      <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{label}</p>
-      <p className={`text-sm font-medium ${truncate ? 'line-clamp-2' : ''}`}>{value}</p>
+      <p className={`text-muted-foreground uppercase tracking-wider ${small ? 'text-[10px]' : 'text-[11px]'}`}>{label}</p>
+      <p className={`font-medium ${truncate ? 'line-clamp-2' : ''} ${small ? 'text-xs' : 'text-sm'}`}>{value}</p>
     </div>
   </div>
 );
