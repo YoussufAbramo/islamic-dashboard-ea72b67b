@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ScrollText, Save, ExternalLink, Eye, EyeOff, Pencil } from 'lucide-react';
+import { ScrollText, Save, ExternalLink, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
