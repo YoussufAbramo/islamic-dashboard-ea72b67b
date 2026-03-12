@@ -78,6 +78,7 @@ const App = () => (
         <LanguageProvider>
           <AuthProvider>
             <AppSettingsProvider>
+              <ImpersonationProvider>
               <SessionProvider>
                 <TooltipProvider>
                   <Toaster />
