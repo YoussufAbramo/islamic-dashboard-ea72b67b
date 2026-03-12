@@ -88,6 +88,7 @@ const SortableSectionCard = ({ sectionKey, isAr, visible, expanded, onToggleVisi
 // ─── Main Component ───
 const LandingContentSettings = () => {
   const { language } = useLanguage();
+  const { appLogo, darkLogo, favicon } = useAppSettings();
   const isAr = language === 'ar';
   const [content, setContent] = useState<Record<string, Record<string, any>>>({ ...defaultSectionContent });
   const [general, setGeneral] = useState<Record<string, any>>({ ...defaultGeneralContent });
