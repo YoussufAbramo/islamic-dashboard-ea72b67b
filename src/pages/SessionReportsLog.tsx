@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
+import ActionButton from '@/components/ui/action-button';
 import { FileText, Clock, Eye, User, BookOpen, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 
