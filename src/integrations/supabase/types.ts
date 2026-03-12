@@ -1644,7 +1644,9 @@ export type Database = {
       teachers: {
         Row: {
           bio: string | null
+          contract_url: string | null
           created_at: string
+          cv_url: string | null
           hourly_rate: number
           id: string
           required_monthly_hours: number
@@ -1654,7 +1656,9 @@ export type Database = {
         }
         Insert: {
           bio?: string | null
+          contract_url?: string | null
           created_at?: string
+          cv_url?: string | null
           hourly_rate?: number
           id?: string
           required_monthly_hours?: number
@@ -1664,7 +1668,9 @@ export type Database = {
         }
         Update: {
           bio?: string | null
+          contract_url?: string | null
           created_at?: string
+          cv_url?: string | null
           hourly_rate?: number
           id?: string
           required_monthly_hours?: number
