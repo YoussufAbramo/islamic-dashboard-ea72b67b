@@ -527,6 +527,8 @@ const TeacherProfile = () => {
                   <InfoCard icon={<Mail className="h-4 w-4" />} label={isAr ? 'البريد الإلكتروني' : 'Email'} value={profile?.email || '-'} />
                   <InfoCard icon={<Phone className="h-4 w-4" />} label={isAr ? 'الهاتف' : 'Phone'} value={profile?.phone || '-'} />
                   <InfoCard icon={<Briefcase className="h-4 w-4" />} label={isAr ? 'التخصص' : 'Specialization'} value={teacher?.specialization || '-'} />
+                  <InfoCard icon={<User className="h-4 w-4" />} label={isAr ? 'الجنس' : 'Gender'} value={(teacher as any)?.gender ? ((teacher as any).gender === 'male' ? (isAr ? 'ذكر' : 'Male') : (isAr ? 'أنثى' : 'Female')) : '-'} />
+                  <InfoCard icon={<Cake className="h-4 w-4" />} label={isAr ? 'العمر' : 'Age'} value={(teacher as any)?.date_of_birth ? `${Math.floor((Date.now() - new Date((teacher as any).date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))} ${isAr ? 'سنة' : 'years'}` : '-'} />
                   <InfoCard icon={<FileText className="h-4 w-4" />} label={isAr ? 'نبذة تعريفية' : 'Bio'} value={teacher?.bio || '-'} truncate />
                   <InfoCard icon={<CalendarDays className="h-4 w-4" />} label={isAr ? 'تاريخ إنشاء الحساب' : 'Account Created'} value={authInfo?.created_at ? format(new Date(authInfo.created_at), 'dd/MM/yyyy HH:mm') : '-'} />
                   <InfoCard icon={<Clock className="h-4 w-4" />} label={isAr ? 'آخر تسجيل دخول' : 'Last Login'} value={authInfo?.last_sign_in_at ? format(new Date(authInfo.last_sign_in_at), 'dd/MM/yyyy HH:mm') : '-'} />
