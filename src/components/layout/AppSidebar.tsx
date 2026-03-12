@@ -136,7 +136,7 @@ const AppSidebar = () => {
             { key: 'support-priorities', label: isAr ? 'الأولويات' : 'Priorities', icon: Flag, path: '/dashboard/support/priorities', roles: ['admin'] },
           ],
         },
-        { key: 'chats', label: t('nav.chats'), icon: MessageSquare, path: '/dashboard/chats', roles: ['admin', 'teacher', 'student'], badgeKey: 'chats' },
+        { key: 'chats', label: t('nav.chats'), icon: MessageSquare, path: '/dashboard/chats', roles: ['admin', 'teacher', 'student'], badgeKey: 'chats', beta: true },
         { key: 'announcements', label: isAr ? 'الإعلانات' : 'Announcements', icon: Megaphone, path: '/dashboard/announcements', roles: ['admin', 'teacher', 'student'] },
         { key: 'notifications', label: isAr ? 'الإشعارات' : 'Notifications', icon: Bell, path: '/dashboard/notifications', roles: ['admin', 'teacher', 'student'] },
       ],
