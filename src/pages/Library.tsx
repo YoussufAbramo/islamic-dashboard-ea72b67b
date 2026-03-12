@@ -85,6 +85,7 @@ const Library = () => {
   }, []);
 
   useEffect(() => { fetchEbooks(); }, []);
+  useEffect(() => { if (ebooks.length > 0) fetchEbookStats(ebooks.map(e => e.id)); }, [ebooks, fetchEbookStats]);
 
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
