@@ -313,8 +313,11 @@ const AttendLesson = () => {
   };
 
   const sortedEntries = useMemo(() => {
-    return entries;
-  }, [entries]);
+    if (!testMode || !testEntryId) return entries;
+    const testEntry = entries.find(e => e.id === testEntryId);
+    const rest = entries.filter(e => e.id !== testEntryId);
+    return testEntry ? [testEntry, ...rest] : entries;
+  }, [entries, testMode, testEntryId]);
 
   // Stats
   const liveCount = entries.filter(e => getLessonStatus(e).isLive).length;
@@ -449,12 +452,16 @@ const AttendLesson = () => {
                   const hasReport = entry.has_report || reportedEntryIds.has(entry.id);
                   const showNotAttend = isNotAttendVisible(entry);
                   const canNotAttend = isNotAttendEnabled(entry);
+                  const isTestEntry = testMode && entry.id === testEntryId;
 
                   return (
-                    <TableRow key={entry.id} className={isActiveEntry ? 'bg-emerald-500/5' : status.isLive ? 'bg-destructive/5' : ''}>
+                    <TableRow key={entry.id} className={`${isTestEntry ? 'bg-violet-500/10 border-l-4 border-l-violet-500 ring-1 ring-violet-500/20' : isActiveEntry ? 'bg-emerald-500/5' : status.isLive ? 'bg-destructive/5' : ''}`}>
                       <TableCell>
                         <div>
-                          <p className="text-sm font-medium">{formatDate(entry.scheduled_at)}</p>
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-sm font-medium">{formatDate(entry.scheduled_at)}</p>
+                            {isTestEntry && <Badge className="bg-violet-500 text-white text-[9px] px-1.5 py-0 h-4">TEST</Badge>}
+                          </div>
                           <p className="text-[10px] text-muted-foreground">{format(new Date(entry.scheduled_at), 'yyyy-MM-dd')}</p>
                         </div>
                       </TableCell>
