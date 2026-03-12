@@ -10,7 +10,8 @@ import JoinMeetingDialog from '@/components/attend/JoinMeetingDialog';
 import SessionReportDialog from '@/components/attend/SessionReportDialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { format, differenceInMinutes, isToday, isTomorrow, addDays, startOfWeek, endOfWeek } from 'date-fns';
-import { Video, Clock, MonitorPlay, AlertCircle, CalendarDays, FileText, CheckCircle2, XCircle } from 'lucide-react';
+import { Video, Clock, MonitorPlay, AlertCircle, CalendarDays, FileText, CheckCircle2, XCircle, FlaskConical } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { TableSkeleton } from '@/components/PageSkeleton';
 import EmptyState from '@/components/EmptyState';
@@ -39,6 +40,7 @@ const AttendLesson = () => {
   const [entries, setEntries] = useState<LessonEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(new Date());
+  const [testMode, setTestMode] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<LessonEntry | null>(null);
 
@@ -158,26 +160,7 @@ const AttendLesson = () => {
       };
     });
 
-    // Mock test entry
-    const testTime = new Date();
-    testTime.setMinutes(testTime.getMinutes() + 10);
-    const mockEntry: LessonEntry = {
-      id: 'mock-test-entry',
-      scheduled_at: testTime.toISOString(),
-      duration_minutes: 45,
-      status: 'scheduled',
-      course_id: null,
-      student_id: null,
-      teacher_id: null,
-      course_title: 'Test Course',
-      student_name: 'Test Student',
-      teacher_name: 'Test Teacher',
-      google_meet_url: 'https://meet.google.com/test-session',
-      zoom_url: 'https://zoom.us/j/123456789',
-      has_report: false,
-    };
-
-    setEntries([mockEntry, ...mapped]);
+    setEntries(mapped);
     setLoading(false);
   };
 
@@ -230,13 +213,17 @@ const AttendLesson = () => {
     return { label: isAr ? 'قادم لاحقاً' : 'Coming Later', variant: 'outline', className: 'border-primary/30 bg-primary/5 text-primary', isLive: false };
   };
 
+  // In test mode, the first non-completed/cancelled entry has all restrictions lifted
+  const testEntryId = testMode ? entries.find(e => e.status !== 'cancelled' && e.status !== 'completed' && !e.has_report && !reportedEntryIds.has(e.id))?.id : null;
+
   const isAttendEnabled = (entry: LessonEntry): boolean => {
     if (activeSessionId) return false;
     if (entry.has_report || reportedEntryIds.has(entry.id)) return false;
+    if (entry.status === 'cancelled' || entry.status === 'completed') return false;
+    if (testMode && entry.id === testEntryId) return true;
     const scheduledTime = new Date(entry.scheduled_at);
     const endTime = new Date(scheduledTime.getTime() + entry.duration_minutes * 60000);
     const minutesUntil = differenceInMinutes(scheduledTime, now);
-    if (entry.status === 'cancelled' || entry.status === 'completed') return false;
     return minutesUntil <= 15 && now <= endTime;
   };
 
@@ -245,9 +232,9 @@ const AttendLesson = () => {
     if (activeSessionId === entry.id) return false;
     if (entry.has_report || reportedEntryIds.has(entry.id)) return false;
     if (entry.status === 'cancelled' || entry.status === 'completed') return false;
+    if (testMode && entry.id === testEntryId) return true;
     const scheduledTime = new Date(entry.scheduled_at);
     const minutesUntil = differenceInMinutes(scheduledTime, now);
-    // Available when more than 30 mins before lesson
     return minutesUntil > 30;
   };
 
@@ -335,6 +322,13 @@ const AttendLesson = () => {
             {isAr ? 'عرض وحضور الدروس المجدولة لهذا الأسبوع' : 'View and attend your scheduled lessons this week'}
           </p>
         </div>
+        {role === 'admin' && (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border bg-muted/30">
+            <FlaskConical className="h-4 w-4 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">{isAr ? 'وضع الاختبار' : 'Test Mode'}</span>
+            <Switch checked={testMode} onCheckedChange={setTestMode} />
+          </div>
+        )}
       </div>
 
       {/* Active Session Banner */}
