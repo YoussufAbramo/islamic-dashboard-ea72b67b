@@ -447,6 +447,7 @@ const Certificates = () => {
                   <TableHead>{isAr ? 'الرقم' : 'Number'}</TableHead>
                   <TableHead>{isAr ? 'العنوان' : 'Title'}</TableHead>
                   <TableHead>{isAr ? 'المستلم' : 'Recipient'}</TableHead>
+                  <TableHead>{isAr ? 'النوع' : 'Type'}</TableHead>
                   <TableHead>{isAr ? 'الدورة' : 'Course'}</TableHead>
                   <TableHead>{isAr ? 'الحالة' : 'Status'}</TableHead>
                   <TableHead>{isAr ? 'التاريخ' : 'Date'}</TableHead>
