@@ -226,7 +226,7 @@ const Attendance = () => {
           )}
         </TabsContent>
 
-        <TabsContent value="teachers" className="space-y-6">
+        <TabsContent value="teachers" className="space-y-4">
           {teacherStats.length === 0 ? (
             <EmptyState
               icon={ClipboardCheck}
@@ -234,40 +234,42 @@ const Attendance = () => {
               description={isAr ? 'ستظهر البيانات عند تسجيل حضور المعلمين' : 'Data will appear when teacher attendance is recorded'}
             />
           ) : (
-            <>
-              <Card>
-                <CardHeader><CardTitle>{isAr ? 'معدل حضور طلاب كل معلم' : 'Teacher Student Attendance Rates'}</CardTitle></CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={Math.max(300, teacherStats.length * 60)}>
-                    <BarChart data={teacherStats} layout="vertical" margin={{ left: 20, right: 20 }}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                      <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${v}%`} className="text-muted-foreground" />
-                      <YAxis type="category" dataKey="name" width={120} className="text-muted-foreground" tick={{ fontSize: 12 }} />
-                      <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} formatter={(value: number) => [`${value}%`, isAr ? 'معدل الحضور' : 'Attendance Rate']} />
-                      <Bar dataKey="rate" fill="hsl(var(--chart-2))" radius={[0, 4, 4, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader><CardTitle>{isAr ? 'تفاصيل حضور طلاب المعلمين' : 'Teacher Student Attendance Breakdown'}</CardTitle></CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={Math.max(300, teacherStats.length * 60)}>
-                    <BarChart data={teacherStats} layout="vertical" margin={{ left: 20, right: 20 }}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                      <XAxis type="number" className="text-muted-foreground" />
-                      <YAxis type="category" dataKey="name" width={120} className="text-muted-foreground" tick={{ fontSize: 12 }} />
-                      <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
-                      <Legend />
-                      <Bar dataKey="present" name={isAr ? 'حاضر' : 'Present'} stackId="a" fill="hsl(var(--primary))" />
-                      <Bar dataKey="absent" name={isAr ? 'غائب' : 'Absent'} stackId="a" fill="hsl(var(--destructive))" />
-                      <Bar dataKey="late" name={isAr ? 'متأخر' : 'Late'} stackId="a" fill="hsl(var(--chart-3))" />
-                      <Bar dataKey="excused" name={isAr ? 'معذور' : 'Excused'} stackId="a" fill="hsl(var(--chart-4))" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </>
+            <div className="grid gap-3">
+              {teacherStats.map((t) => {
+                const rateColor = t.rate >= 80 ? 'text-green-600 dark:text-green-400' : t.rate >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-destructive';
+                const barColor = t.rate >= 80 ? 'bg-green-500' : t.rate >= 50 ? 'bg-yellow-500' : 'bg-destructive';
+                const studentCount = students.filter(s => s.assigned_teacher_id === t.teacherId).length;
+                return (
+                  <Card key={t.teacherId} className="hover:shadow-sm transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-4">
+                        <div className="shrink-0 h-10 w-10 rounded-full bg-[hsl(var(--chart-2)/0.1)] flex items-center justify-center">
+                          <GraduationCap className="h-5 w-5 text-[hsl(var(--chart-2))]" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <h3 className="text-sm font-semibold truncate">{t.name}</h3>
+                              <Badge variant="outline" className="text-[10px] shrink-0">{studentCount} {isAr ? 'طالب' : 'students'}</Badge>
+                            </div>
+                            <span className={`text-lg font-bold ${rateColor}`}>{t.rate}%</span>
+                          </div>
+                          <div className="w-full h-2 bg-muted rounded-full overflow-hidden mb-2">
+                            <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${t.rate}%` }} />
+                          </div>
+                          <div className="flex items-center gap-3 flex-wrap text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-primary inline-block" />{isAr ? 'حاضر' : 'Present'}: {t.present}</span>
+                            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-destructive inline-block" />{isAr ? 'غائب' : 'Absent'}: {t.absent}</span>
+                            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[hsl(var(--chart-3))] inline-block" />{isAr ? 'متأخر' : 'Late'}: {t.late}</span>
+                            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[hsl(var(--chart-4))] inline-block" />{isAr ? 'معذور' : 'Excused'}: {t.excused}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           )}
         </TabsContent>
 
