@@ -609,6 +609,15 @@ const Subscriptions = () => {
               />
             </div>
 
+            {/* Live Session URLs */}
+            <div className="border-t pt-3 space-y-2">
+              <Label className="flex items-center gap-1.5"><Video className="h-4 w-4" />{isAr ? 'روابط الجلسات المباشرة' : 'Live Session URLs'}</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-xs text-muted-foreground">Google Meet</Label><Input type="url" placeholder="https://meet.google.com/..." value={createForm.google_meet_url} onChange={(e) => setCreateForm(prev => ({ ...prev, google_meet_url: e.target.value }))} /></div>
+                <div><Label className="text-xs text-muted-foreground">Zoom</Label><Input type="url" placeholder="https://zoom.us/j/..." value={createForm.zoom_url} onChange={(e) => setCreateForm(prev => ({ ...prev, zoom_url: e.target.value }))} /></div>
+              </div>
+            </div>
+
             <Button onClick={handleCreate} disabled={createLoading} className="w-full">
               {createLoading ? t('common.loading') : (isAr ? 'إنشاء الاشتراك' : 'Create Subscription')}
             </Button>
