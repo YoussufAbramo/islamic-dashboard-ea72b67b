@@ -1,0 +1,1 @@
+ALTER TABLE public.courses ADD COLUMN IF NOT EXISTS track_sort_order integer NOT NULL DEFAULT 0;

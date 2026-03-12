@@ -605,6 +605,7 @@ export type Database = {
           title: string
           title_ar: string | null
           track_id: string | null
+          track_sort_order: number
           updated_at: string
         }
         Insert: {
@@ -623,6 +624,7 @@ export type Database = {
           title: string
           title_ar?: string | null
           track_id?: string | null
+          track_sort_order?: number
           updated_at?: string
         }
         Update: {
@@ -641,6 +643,7 @@ export type Database = {
           title?: string
           title_ar?: string | null
           track_id?: string | null
+          track_sort_order?: number
           updated_at?: string
         }
         Relationships: [
