@@ -67,23 +67,33 @@ const AttendLesson = () => {
       return;
     }
 
-    // Get subscription URLs for each student-teacher pair
+    // Get subscription URLs for each student-teacher-course combination
     const { data: subscriptions } = await supabase
       .from('subscriptions')
-      .select('student_id, teacher_id, google_meet_url, zoom_url');
+      .select('student_id, teacher_id, course_id, google_meet_url, zoom_url');
 
     const subMap = new Map<string, { google_meet_url: string; zoom_url: string }>();
     (subscriptions || []).forEach(sub => {
-      const key = `${sub.student_id}|${sub.teacher_id}`;
-      subMap.set(key, {
+      // Primary key: student + teacher + course (most specific)
+      const fullKey = `${sub.student_id}|${sub.teacher_id}|${sub.course_id}`;
+      subMap.set(fullKey, {
         google_meet_url: sub.google_meet_url || '',
         zoom_url: sub.zoom_url || '',
       });
+      // Fallback key: student + teacher (for entries without course match)
+      const pairKey = `${sub.student_id}|${sub.teacher_id}|`;
+      if (!subMap.has(pairKey)) {
+        subMap.set(pairKey, {
+          google_meet_url: sub.google_meet_url || '',
+          zoom_url: sub.zoom_url || '',
+        });
+      }
     });
 
     const mapped: LessonEntry[] = (timetableData || []).map((e: any) => {
-      const subKey = `${e.student_id}|${e.teacher_id}`;
-      const urls = subMap.get(subKey) || { google_meet_url: '', zoom_url: '' };
+      const fullKey = `${e.student_id}|${e.teacher_id}|${e.course_id}`;
+      const pairKey = `${e.student_id}|${e.teacher_id}|`;
+      const urls = subMap.get(fullKey) || subMap.get(pairKey) || { google_meet_url: '', zoom_url: '' };
       return {
         id: e.id,
         scheduled_at: e.scheduled_at,
