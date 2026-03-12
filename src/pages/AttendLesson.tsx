@@ -574,6 +574,32 @@ const AttendLesson = () => {
         sessionData={reportSessionData}
         onReportSubmitted={handleReportSubmitted}
       />
+
+      {/* View Report Dialog */}
+      <Dialog open={!!viewReportEntry} onOpenChange={(val) => !val && setViewReportEntry(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              {isAr ? 'تقرير الجلسة' : 'Session Report'}
+              {viewReportEntry && (
+                <span className="text-xs font-normal text-muted-foreground">
+                  — {viewReportEntry.course_title}
+                </span>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          {viewReportEntry && (
+            <SessionReportsList
+              isAr={isAr}
+              studentId={viewReportEntry.student_id || undefined}
+              teacherId={viewReportEntry.teacher_id || undefined}
+              courseId={viewReportEntry.course_id || undefined}
+              limit={1}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
