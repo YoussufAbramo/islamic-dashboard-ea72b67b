@@ -218,9 +218,7 @@ const SessionReportsLog = () => {
                     <p className="text-xs text-muted-foreground truncate max-w-[180px]">{report.summary || '-'}</p>
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailReport(report)}>
-                      <Eye className="h-3.5 w-3.5" />
-                    </Button>
+                    <ActionButton icon={Eye} label={isAr ? 'عرض التقرير' : 'View Report'} onClick={() => setDetailReport(report)} />
                   </TableCell>
                 </TableRow>
               ))}
