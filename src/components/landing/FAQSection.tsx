@@ -24,7 +24,7 @@ const FAQSection = ({ content, isAr }: FAQSectionProps) => {
         </div>
         <div className="space-y-3">
           {items.map((item: any, i: number) => (
-            <div key={i} className="rounded-xl border border-border/50 bg-background overflow-hidden">
+            <div key={i} className="rounded-xl border border-border/50 bg-background overflow-hidden transition-shadow duration-300 hover:shadow-sm">
               <button
                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
                 className="w-full flex items-center justify-between p-5 text-start"
@@ -32,11 +32,16 @@ const FAQSection = ({ content, isAr }: FAQSectionProps) => {
                 <span className="font-medium text-foreground">{isAr ? (item.question_ar || item.question) : item.question}</span>
                 <ChevronDown className={`h-5 w-5 text-muted-foreground shrink-0 transition-transform ${openIndex === i ? 'rotate-180' : ''}`} />
               </button>
-              {openIndex === i && (
-                <div className="px-5 pb-5 text-sm text-muted-foreground leading-relaxed">
-                  {isAr ? (item.answer_ar || item.answer) : item.answer}
+              <div
+                className="grid transition-[grid-template-rows] duration-300 ease-out"
+                style={{ gridTemplateRows: openIndex === i ? '1fr' : '0fr' }}
+              >
+                <div className="overflow-hidden">
+                  <div className="px-5 pb-5 text-sm text-muted-foreground leading-relaxed">
+                    {isAr ? (item.answer_ar || item.answer) : item.answer}
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
           ))}
         </div>
