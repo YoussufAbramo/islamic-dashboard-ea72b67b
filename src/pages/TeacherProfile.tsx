@@ -640,9 +640,9 @@ const TeacherProfile = () => {
                   <TableRow>
                     <TableHead>{isAr ? 'المرجع' : 'Ref ID'}</TableHead>
                     <TableHead>{isAr ? 'تاريخ الطلب' : 'Date of Request'}</TableHead>
-                    <TableHead>{isAr ? 'المبلغ' : 'Amount'}</TableHead>
-                    <TableHead>{isAr ? 'الرصيد قبل' : 'Balance Before'}</TableHead>
-                    <TableHead>{isAr ? 'الرصيد بعد' : 'Balance After'}</TableHead>
+                    <TableHead>{isAr ? 'الرصيد قبل' : 'Bal Before'}</TableHead>
+                    <TableHead>{isAr ? 'مبلغ الصرف' : 'Payout Amount'}</TableHead>
+                    <TableHead>{isAr ? 'الرصيد بعد' : 'Bal After'}</TableHead>
                     <TableHead>{isAr ? 'الحالة' : 'Status'}</TableHead>
                     <TableHead>{isAr ? 'إجراءات' : 'Actions'}</TableHead>
                   </TableRow>
@@ -652,17 +652,19 @@ const TeacherProfile = () => {
                     const balanceBefore = Number(req.available_balance_at_request) + Number(req.requested_amount);
                     const balanceAfter = Number(req.available_balance_at_request);
                     return (
-                      <TableRow key={req.id}>
+                      <TableRow key={req.id} className="hover:bg-muted/50 transition-colors">
                         <TableCell className="font-mono text-xs">{req.transaction_ref}</TableCell>
                         <TableCell className="text-sm">{format(new Date(req.created_at), 'dd/MM/yyyy HH:mm')}</TableCell>
-                        <TableCell className="font-semibold">${Number(req.requested_amount).toFixed(2)}</TableCell>
                         <TableCell className="text-muted-foreground">${balanceBefore.toFixed(2)}</TableCell>
+                        <TableCell className="font-semibold">${Number(req.requested_amount).toFixed(2)}</TableCell>
                         <TableCell className="text-muted-foreground">${balanceAfter.toFixed(2)}</TableCell>
                         <TableCell>{statusBadge(req.status)}</TableCell>
                         <TableCell>
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setQuickViewReq(req)}>
-                            <Eye className="h-3.5 w-3.5" />
-                          </Button>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => setQuickViewReq(req)} title={isAr ? 'التفاصيل' : 'Details'}>
+                              <Eye className={ACTION_ICON} />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
