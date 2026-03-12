@@ -71,14 +71,19 @@ const SlotRenderer = ({ slot, isAr }: { slot?: CopyrightSlotContent; isAr: boole
 };
 
 const CopyrightBar = ({ config, isAr }: CopyrightBarProps) => {
+  const subText = isAr ? (config.sub_text_ar || config.sub_text || '') : (config.sub_text || '');
+
   const CopyrightSlot = () => (
-    <span className="text-[11px] text-muted-foreground/70">
-      {COPYRIGHT_TEXT}{' '}
-      <a href={COPYRIGHT_LINK} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
-        {COPYRIGHT_NAME}
-      </a>{' '}
-      {COPYRIGHT_SUFFIX}
-    </span>
+    <div className="flex flex-col items-center gap-0.5">
+      <span className="text-[11px] text-muted-foreground/70">
+        {COPYRIGHT_TEXT}{' '}
+        <a href={COPYRIGHT_LINK} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+          {COPYRIGHT_NAME}
+        </a>{' '}
+        {COPYRIGHT_SUFFIX}
+      </span>
+      {subText && <span className="text-[10px] text-muted-foreground/50">{subText}</span>}
+    </div>
   );
 
   const OtherSlot = () => <SlotRenderer slot={config.other_content} isAr={isAr} />;
