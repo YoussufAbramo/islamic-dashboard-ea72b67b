@@ -363,6 +363,21 @@ const AppSidebar = () => {
         )}
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border">
+        {!role ? (
+          <div className="p-3 space-y-2 animate-fade-in">
+            <div className="flex items-center gap-3 p-2">
+              <Skeleton className="h-5 w-5 rounded" />
+              <Skeleton className="h-3.5 w-24 rounded" />
+            </div>
+            <div className="flex items-center gap-3 p-2">
+              <Skeleton className="h-9 w-9 rounded-full shrink-0" />
+              <div className="flex-1 space-y-1.5">
+                <Skeleton className="h-3.5 w-20 rounded" />
+                <Skeleton className="h-2.5 w-12 rounded" />
+              </div>
+            </div>
+          </div>
+        ) : (
         <div className="p-3 space-y-2">
           <div
             className="flex items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent cursor-pointer transition-colors"
@@ -405,6 +420,7 @@ const AppSidebar = () => {
             </TooltipProvider>
           </div>
         </div>
+        )}
       </SidebarFooter>
     </Sidebar>
   );
