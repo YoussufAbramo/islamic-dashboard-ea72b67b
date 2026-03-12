@@ -517,6 +517,20 @@ const TeacherProfile = () => {
                     {isAr ? 'طلب صرف' : 'Request Payout'}
                   </Button>
                 </div>
+
+                {/* Payout Policy Note */}
+                <div className="w-full mt-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-2.5 flex items-start gap-2">
+                  <Info className="h-3.5 w-3.5 text-amber-600 mt-0.5 shrink-0" />
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    {isAr
+                      ? 'يتم صرف المستحقات وفقاً لسياسات الصرف الخاصة بنا. إذا كان طلبك مخالفاً لسياساتنا، سيتم رفض الطلب وإعادة المبلغ إلى رصيدك.'
+                      : 'Payouts are processed following our payout policies. If your request violates our policies, it will be rejected and the amount will be returned to your balance.'}
+                    {' '}
+                    <Link to="/policies/payout-policy" className="text-primary underline hover:no-underline font-medium">
+                      {isAr ? 'اطلع على سياسة الصرف' : 'View Payout Policy'}
+                    </Link>
+                  </p>
+                </div>
               </div>
 
               <Separator orientation="vertical" className="hidden md:block h-auto" />
