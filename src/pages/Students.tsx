@@ -31,6 +31,7 @@ const Students = () => {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [allTeachers, setAllTeachers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [addOpen, setAddOpen] = useState(false);
