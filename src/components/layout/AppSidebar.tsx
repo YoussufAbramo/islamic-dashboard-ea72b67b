@@ -122,7 +122,12 @@ const AppSidebar = () => {
       label: 'Messages',
       labelAr: 'الرسائل',
       items: [
-        { key: 'support', label: t('nav.support'), icon: HeadphonesIcon, path: '/dashboard/support', roles: ['admin'] },
+        { key: 'support', label: t('nav.support'), icon: HeadphonesIcon, path: '/dashboard/support', roles: ['admin'],
+          children: [
+            { key: 'support-departments', label: isAr ? 'الأقسام' : 'Departments', icon: Building2, path: '/dashboard/support/departments', roles: ['admin'] },
+            { key: 'support-priorities', label: isAr ? 'الأولويات' : 'Priorities', icon: Flag, path: '/dashboard/support/priorities', roles: ['admin'] },
+          ],
+        },
         { key: 'chats', label: t('nav.chats'), icon: MessageSquare, path: '/dashboard/chats', roles: ['admin', 'teacher', 'student'], badgeKey: 'chats' },
         { key: 'announcements', label: isAr ? 'الإعلانات' : 'Announcements', icon: Megaphone, path: '/dashboard/announcements', roles: ['admin', 'teacher', 'student'] },
         { key: 'notifications', label: isAr ? 'الإشعارات' : 'Notifications', icon: Bell, path: '/dashboard/notifications', roles: ['admin', 'teacher', 'student'] },
