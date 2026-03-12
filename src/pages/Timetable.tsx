@@ -54,10 +54,15 @@ const Timetable = () => {
     fetchEntries();
   };
 
+  const isNotAttend = (status: string) =>
+    status === 'not_attend' || status === 'teacher_not_attend' || status === 'student_not_attend';
+
   const statusCounts = {
     all: entries.length,
     scheduled: entries.filter(e => e.status === 'scheduled').length,
     completed: entries.filter(e => e.status === 'completed').length,
+    not_attend: entries.filter(e => isNotAttend(e.status)).length,
+    postponed: entries.filter(e => e.status === 'postponed').length,
     cancelled: entries.filter(e => e.status === 'cancelled').length,
   };
 
@@ -65,11 +70,17 @@ const Timetable = () => {
     { value: 'all', label: isAr ? 'الكل' : 'All' },
     { value: 'scheduled', label: getLabel(timetableStatusLabels, 'scheduled', isAr) },
     { value: 'completed', label: getLabel(timetableStatusLabels, 'completed', isAr) },
-    { value: 'cancelled', label: getLabel(timetableStatusLabels, 'cancelled', isAr) },
+    { value: 'not_attend', label: isAr ? 'لم يحضر' : 'Not Attend' },
+    { value: 'postponed', label: getLabel(timetableStatusLabels, 'postponed', isAr) },
+    { value: 'cancelled', label: isAr ? 'ملغي' : 'Cancelled' },
   ];
 
   const filteredEntries = useMemo(() => {
-    let result = entries.filter(e => statusFilter === 'all' || e.status === statusFilter);
+    let result = entries.filter(e => {
+      if (statusFilter === 'all') return true;
+      if (statusFilter === 'not_attend') return isNotAttend(e.status);
+      return e.status === statusFilter;
+    });
     result.sort((a, b) => {
       const da = new Date(a.scheduled_at).getTime();
       const db = new Date(b.scheduled_at).getTime();
@@ -82,7 +93,7 @@ const Timetable = () => {
   const upcoming = filteredEntries.filter((e) => e.scheduled_at >= now);
   const past = filteredEntries.filter((e) => e.scheduled_at < now);
 
-  const statusColors: Record<string, string> = { scheduled: 'default', completed: 'secondary', cancelled: 'destructive' };
+  const statusColors: Record<string, string> = { scheduled: 'default', completed: 'secondary', cancelled: 'destructive', not_attend: 'outline', teacher_not_attend: 'outline', student_not_attend: 'outline', postponed: 'secondary' };
 
   const { currentPage: upPage, totalPages: upTotal, paginatedItems: upItems, setCurrentPage: setUpPage, totalItems: upCount, startIndex: upStart, endIndex: upEnd } = usePagination(upcoming);
   const { currentPage: pastPage, totalPages: pastTotal, paginatedItems: pastItems, setCurrentPage: setPastPage, totalItems: pastCount, startIndex: pastStart, endIndex: pastEnd } = usePagination(past);
