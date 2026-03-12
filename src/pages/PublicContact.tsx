@@ -205,8 +205,8 @@ const PublicContact = () => {
               <CardContent className="p-6 sm:p-8">
                 {submitted ? (
                   <div className="text-center py-12 space-y-4">
-                    <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto">
-                      <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
+                    <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                      <CheckCircle2 className="h-8 w-8 text-primary" />
                     </div>
                     <h3 className="text-xl font-semibold text-foreground">
                       {t('Message Sent!', 'تم إرسال الرسالة!')}
