@@ -41,6 +41,7 @@ const Support = () => {
   const [tickets, setTickets] = useState<any[]>([]);
   const [departments, setDepartments] = useState<{ id: string; name: string; name_ar: string | null }[]>([]);
   const [priorities, setPriorities] = useState<{ id: string; name: string; name_ar: string | null; color: string }[]>([]);
+  const [search, setSearch] = useState('');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const [statusFilter, setStatusFilter] = useState('all');
   const [createOpen, setCreateOpen] = useState(false);
