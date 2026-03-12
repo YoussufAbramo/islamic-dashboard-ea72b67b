@@ -104,7 +104,7 @@ const AppSidebar = () => {
       label: 'Reports',
       labelAr: 'التقارير',
       items: [
-        { key: 'attendance', label: isAr ? 'تتبع الحضور' : 'Attendance Tracking', icon: ClipboardCheck, path: '/dashboard/attendance', roles: ['admin', 'teacher'] },
+        { key: 'attendance', label: isAr ? 'تتبع الحضور' : 'Attendance Tracking', icon: ClipboardCheck, path: '/dashboard/attendance', roles: ['admin', 'teacher'], beta: true },
         { key: 'reports', label: isAr ? 'التقارير والتحليلات' : 'Reports & Analytics', icon: BarChart3, path: '/dashboard/reports', roles: ['admin'] },
       ],
     },
