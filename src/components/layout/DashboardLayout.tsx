@@ -41,8 +41,19 @@ const WhatsAppIcon = () =>
 
 const FloatingButtons = () => {
   const { language } = useLanguage();
+  const { profile, user } = useAuth();
   const isAr = language === 'ar';
   const [ticketOpen, setTicketOpen] = useState(false);
+
+  const iframeSrc = (() => {
+    const base = 'https://portal.codecom.dev/forms/ticket';
+    const params = new URLSearchParams();
+    if (profile?.full_name) params.set('name', profile.full_name);
+    if (user?.email || profile?.email) params.set('email', user?.email || profile?.email || '');
+    if (profile?.phone) params.set('phone', profile.phone);
+    const qs = params.toString();
+    return qs ? `${base}?${qs}` : base;
+  })();
 
   const whatsappUrl = `https://wa.me/201558612808?text=${encodeURIComponent("Hello Dear, I'm texting you regarding Quran.CodeCom.dev, are you available to talk?")}`;
 
