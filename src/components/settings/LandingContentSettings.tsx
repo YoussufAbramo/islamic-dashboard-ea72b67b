@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   Save, Plus, Trash2, GripVertical, ChevronDown, ChevronUp, Pencil, X, Search, Globe, Menu, Columns3,
   Star, Sparkles, Shield, Megaphone, BookOpen, Users, BarChart3, HelpCircle, Mail, Layers, CreditCard, Quote, Handshake, Settings2, Eye, EyeOff, LayoutTemplate, Check, PanelBottom,
