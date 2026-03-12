@@ -194,12 +194,12 @@ const BlogPosts = () => {
                     {post.status === 'published' ? (isAr ? 'منشور' : 'Published') : (isAr ? 'مسودة' : 'Draft')}
                   </Badge>
                   {post.status === 'published' && (
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => window.open(`/blogs/${post.slug}`, '_blank')}>
-                      <ExternalLink className="h-3.5 w-3.5" />
+                    <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => window.open(`/blogs/${post.slug}`, '_blank')}>
+                      <ExternalLink className={ACTION_ICON} />
                     </Button>
                   )}
-                  <Button variant="outline" size="sm" onClick={() => handleEdit(post)}>
-                    {isAr ? 'تعديل' : 'Edit'}
+                  <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => handleEdit(post)}>
+                    <Pencil className={ACTION_ICON} />
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
