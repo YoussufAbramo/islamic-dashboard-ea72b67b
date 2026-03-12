@@ -144,6 +144,19 @@ const SeoSettings = () => {
   };
 
   const setLandingField = (key: string, val: string) => setLanding(p => ({ ...p, [key]: val }));
+  const setBlogSeoField = (key: string, val: string) => setBlogSeo(p => ({ ...p, [key]: val }));
+
+  const handleSaveBlog = async () => {
+    setSavingBlog(true);
+    const { error } = await supabase.from('landing_content').upsert({
+      section_key: 'blog_seo',
+      content: blogSeo as any,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'section_key' });
+    setSavingBlog(false);
+    if (error) { notifyError({ error: 'GENERAL_SAVE_FAILED', isAr }); return; }
+    toast.success(isAr ? 'تم حفظ بيانات SEO للمدونة' : 'Blog SEO saved');
+  };
 
   const set = (key: keyof SeoConfig) => (val: string | boolean) => setSeo(p => ({ ...p, [key]: val }));
 
