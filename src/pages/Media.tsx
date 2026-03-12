@@ -446,16 +446,18 @@ const Media = () => {
           </CardHeader>
           <ScrollArea className="flex-1 px-2 pb-2">
             <nav className="space-y-0.5 py-1">
-              {MEDIA_TREE.map(node => (
-                <TreeItem
-                  key={node.path}
-                  node={node}
-                  activePath={currentPath}
-                  onSelect={(path) => fetchFiles(path)}
-                  expandedPaths={expandedPaths}
-                  toggleExpand={toggleExpand}
-                  isAr={isAr}
-                />
+              {MEDIA_TREE.map((node, idx) => (
+                <div key={node.path}>
+                  {idx > 0 && <div className="my-1.5 mx-2 border-t border-border" />}
+                  <TreeItem
+                    node={node}
+                    activePath={currentPath}
+                    onSelect={(path) => fetchFiles(path)}
+                    expandedPaths={expandedPaths}
+                    toggleExpand={toggleExpand}
+                    isAr={isAr}
+                  />
+                </div>
               ))}
             </nav>
           </ScrollArea>
