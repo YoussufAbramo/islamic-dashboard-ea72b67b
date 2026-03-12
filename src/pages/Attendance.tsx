@@ -183,7 +183,7 @@ const Attendance = () => {
           <TabsTrigger value="reports">{isAr ? 'التقارير' : 'Reports'}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="students" className="space-y-6">
+        <TabsContent value="students" className="space-y-4">
           {studentStats.length === 0 ? (
             <EmptyState
               icon={ClipboardCheck}
@@ -191,40 +191,38 @@ const Attendance = () => {
               description={isAr ? 'ستظهر البيانات عند تسجيل حضور الطلاب' : 'Data will appear when student attendance is recorded'}
             />
           ) : (
-            <>
-              <Card>
-                <CardHeader><CardTitle>{isAr ? 'معدل حضور الطلاب' : 'Student Attendance Rates'}</CardTitle></CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={Math.max(300, studentStats.length * 50)}>
-                    <BarChart data={studentStats} layout="vertical" margin={{ left: 20, right: 20 }}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                      <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${v}%`} className="text-muted-foreground" />
-                      <YAxis type="category" dataKey="name" width={120} className="text-muted-foreground" tick={{ fontSize: 12 }} />
-                      <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} formatter={(value: number) => [`${value}%`, isAr ? 'معدل الحضور' : 'Attendance Rate']} />
-                      <Bar dataKey="rate" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader><CardTitle>{isAr ? 'تفاصيل حضور الطلاب' : 'Student Attendance Breakdown'}</CardTitle></CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={Math.max(300, studentStats.length * 50)}>
-                    <BarChart data={studentStats} layout="vertical" margin={{ left: 20, right: 20 }}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                      <XAxis type="number" className="text-muted-foreground" />
-                      <YAxis type="category" dataKey="name" width={120} className="text-muted-foreground" tick={{ fontSize: 12 }} />
-                      <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
-                      <Legend />
-                      <Bar dataKey="present" name={isAr ? 'حاضر' : 'Present'} stackId="a" fill="hsl(var(--primary))" />
-                      <Bar dataKey="absent" name={isAr ? 'غائب' : 'Absent'} stackId="a" fill="hsl(var(--destructive))" />
-                      <Bar dataKey="late" name={isAr ? 'متأخر' : 'Late'} stackId="a" fill="hsl(var(--chart-3))" />
-                      <Bar dataKey="excused" name={isAr ? 'معذور' : 'Excused'} stackId="a" fill="hsl(var(--chart-4))" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </>
+            <div className="grid gap-3">
+              {studentStats.map((s) => {
+                const rateColor = s.rate >= 80 ? 'text-green-600 dark:text-green-400' : s.rate >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-destructive';
+                const barColor = s.rate >= 80 ? 'bg-green-500' : s.rate >= 50 ? 'bg-yellow-500' : 'bg-destructive';
+                return (
+                  <Card key={s.studentId} className="hover:shadow-sm transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-4">
+                        <div className="shrink-0 h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <User className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <h3 className="text-sm font-semibold truncate">{s.name}</h3>
+                            <span className={`text-lg font-bold ${rateColor}`}>{s.rate}%</span>
+                          </div>
+                          <div className="w-full h-2 bg-muted rounded-full overflow-hidden mb-2">
+                            <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${s.rate}%` }} />
+                          </div>
+                          <div className="flex items-center gap-3 flex-wrap text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-primary inline-block" />{isAr ? 'حاضر' : 'Present'}: {s.present}</span>
+                            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-destructive inline-block" />{isAr ? 'غائب' : 'Absent'}: {s.absent}</span>
+                            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[hsl(var(--chart-3))] inline-block" />{isAr ? 'متأخر' : 'Late'}: {s.late}</span>
+                            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[hsl(var(--chart-4))] inline-block" />{isAr ? 'معذور' : 'Excused'}: {s.excused}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           )}
         </TabsContent>
 
