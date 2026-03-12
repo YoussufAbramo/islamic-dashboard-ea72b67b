@@ -24,7 +24,7 @@ const FAQSection = ({ content, isAr }: FAQSectionProps) => {
         </div>
         <div className="space-y-3">
           {items.map((item: any, i: number) => (
-            <div key={i} className="rounded-xl border border-border/50 bg-background overflow-hidden">
+            <div key={i} className="rounded-xl border border-border/50 bg-background overflow-hidden transition-shadow duration-300 hover:shadow-sm">
               <button
                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
                 className="w-full flex items-center justify-between p-5 text-start"
