@@ -439,7 +439,7 @@ const Chats = () => {
                   )}
                 </div>
               </div>
-              <CardContent className="flex-1 flex flex-col p-0">
+              <div className="flex-1 flex flex-col relative overflow-hidden">
                 <ScrollArea className="flex-1 relative">
                   <div className="absolute inset-0 opacity-15 dark:opacity-10" style={{ backgroundImage: `url(${islamicBg})`, backgroundSize: '400px 400px', backgroundRepeat: 'repeat' }} />
                   <div className="absolute inset-0 bg-gradient-to-br from-background/90 via-background/80 to-background/90" />
