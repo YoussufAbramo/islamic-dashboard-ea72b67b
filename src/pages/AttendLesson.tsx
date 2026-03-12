@@ -566,6 +566,7 @@ const AttendLesson = () => {
           setJoinOpen(val);
         }}
         entry={selectedEntry}
+        entryId={selectedEntry?.id}
         isAr={isAr}
         onSessionStart={() => {
           if (selectedEntry) {
