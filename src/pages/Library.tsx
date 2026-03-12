@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { usePagination } from '@/hooks/use-pagination';
+import PaginationControls from '@/components/PaginationControls';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,15 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Card } from '@/components/ui/card';
-import { Plus, Search, Trash2, FileText, Upload, ExternalLink } from 'lucide-react';
+import { Plus, Search, Trash2, FileText, Upload, ExternalLink, ArrowUp, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
-import EmptyState from '@/components/EmptyState';
-import { ACTION_BTN_DESTRUCTIVE, ACTION_ICON } from '@/lib/actionBtnClass';
+import LibraryStatsCards from '@/components/library/LibraryStatsCards';
+import LibraryEmptyState from '@/components/library/LibraryEmptyState';
 
 interface Ebook {
   id: string;
@@ -36,6 +38,7 @@ const Library = () => {
   const [ebooks, setEbooks] = useState<Ebook[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -126,28 +129,43 @@ const Library = () => {
     setCoverPreview('');
   };
 
-  const filtered = ebooks.filter((e) => {
+  const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return e.title.toLowerCase().includes(q) || e.title_ar?.toLowerCase().includes(q);
-  });
-
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-bold">{isAr ? 'المكتبة' : 'Library'}</h1>
-        <TableSkeleton cols={4} />
-      </div>
+    let result = ebooks.filter((e) =>
+      e.title.toLowerCase().includes(q) || e.title_ar?.toLowerCase().includes(q)
     );
-  }
+    result.sort((a, b) => {
+      const da = new Date(a.created_at).getTime();
+      const db = new Date(b.created_at).getTime();
+      return sortOrder === 'newest' ? db - da : da - db;
+    });
+    return result;
+  }, [ebooks, search, sortOrder]);
+
+  const showEmptyState = !loading && ebooks.length === 0;
+
+  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+
+  if (loading) return <TableSkeleton />;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold shrink-0">{isAr ? 'المكتبة' : 'Library'}</h1>
         <div className="flex items-center gap-2 ms-auto">
+          <Button variant="outline" size="sm" onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')} className="gap-1 h-9">
+            {sortOrder === 'newest' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}
+            {sortOrder === 'newest' ? (isAr ? 'الأحدث' : 'Newest') : (isAr ? 'الأقدم' : 'Oldest')}
+          </Button>
           <div className="relative">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder={isAr ? 'بحث...' : 'Search...'} value={search} onChange={(e) => setSearch(e.target.value)} className="ps-9 w-48 sm:w-64" />
+            <Input
+              placeholder={isAr ? 'بحث...' : 'Search...'}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="ps-9 w-48 sm:w-64"
+            />
           </div>
           {isAdmin && (
             <Button onClick={() => { resetForm(); setCreateOpen(true); }}>
@@ -158,44 +176,50 @@ const Library = () => {
         </div>
       </div>
 
-      {filtered.length === 0 ? (
-        <EmptyState title={isAr ? 'لا توجد كتب' : 'No e-books yet'} description={isAr ? 'أضف كتبًا إلكترونية لبدء مكتبتك' : 'Add e-books to start building your library'} />
+      {/* Stats Cards */}
+      <LibraryStatsCards ebooks={ebooks} loading={loading} isAr={isAr} />
+
+      {showEmptyState ? (
+        <LibraryEmptyState isAr={isAr} isAdmin={isAdmin} onCreateClick={() => { resetForm(); setCreateOpen(true); }} />
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {filtered.map((ebook) => (
-            <Card key={ebook.id} className="group relative overflow-hidden border rounded-lg hover:shadow-md transition-shadow">
-              {/* Book cover with 3:4 ratio */}
-              <div className="relative aspect-[3/4] bg-muted overflow-hidden">
-                {ebook.cover_url ? (
-                  <img src={ebook.cover_url} alt={isAr ? ebook.title_ar || ebook.title : ebook.title} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-primary/10 to-primary/5">
-                    <FileText className="h-10 w-10 text-primary/40" />
-                    <span className="text-[10px] text-muted-foreground px-2 text-center line-clamp-2">{isAr ? ebook.title_ar || ebook.title : ebook.title}</span>
-                  </div>
-                )}
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                  <Button size="sm" variant="secondary" className="h-8 text-xs" onClick={() => window.open(ebook.pdf_url, '_blank')}>
-                    <ExternalLink className="h-3 w-3 me-1" />
-                    {isAr ? 'فتح' : 'Open'}
-                  </Button>
-                  {isAdmin && (
-                    <Button size="sm" variant="destructive" className="h-8 text-xs" onClick={() => setDeleteTarget(ebook.id)}>
-                      <Trash2 className="h-3 w-3" />
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {paginatedItems.map((ebook) => (
+              <Card key={ebook.id} className="group relative overflow-hidden border rounded-lg hover:shadow-md transition-shadow">
+                {/* Book cover with 3:4 ratio */}
+                <div className="relative aspect-[3/4] bg-muted overflow-hidden">
+                  {ebook.cover_url ? (
+                    <img src={ebook.cover_url} alt={isAr ? ebook.title_ar || ebook.title : ebook.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-primary/10 to-primary/5">
+                      <FileText className="h-10 w-10 text-primary/40" />
+                      <span className="text-[10px] text-muted-foreground px-2 text-center line-clamp-2">{isAr ? ebook.title_ar || ebook.title : ebook.title}</span>
+                    </div>
+                  )}
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <Button size="sm" variant="secondary" className="h-8 text-xs" onClick={() => window.open(ebook.pdf_url, '_blank')}>
+                      <ExternalLink className="h-3 w-3 me-1" />
+                      {isAr ? 'فتح' : 'Open'}
                     </Button>
+                    {isAdmin && (
+                      <Button size="sm" variant="destructive" className="h-8 text-xs" onClick={() => setDeleteTarget(ebook.id)}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <div className="p-2.5">
+                  <h3 className="text-sm font-medium truncate">{isAr ? ebook.title_ar || ebook.title : ebook.title}</h3>
+                  {(isAr ? ebook.description_ar || ebook.description : ebook.description) && (
+                    <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">{isAr ? ebook.description_ar || ebook.description : ebook.description}</p>
                   )}
                 </div>
-              </div>
-              <div className="p-2.5">
-                <h3 className="text-sm font-medium truncate">{isAr ? ebook.title_ar || ebook.title : ebook.title}</h3>
-                {(isAr ? ebook.description_ar || ebook.description : ebook.description) && (
-                  <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">{isAr ? ebook.description_ar || ebook.description : ebook.description}</p>
-                )}
-              </div>
-            </Card>
-          ))}
-        </div>
+              </Card>
+            ))}
+          </div>
+          <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
+        </>
       )}
 
       {/* Delete confirmation */}
@@ -218,44 +242,42 @@ const Library = () => {
           <DialogHeader><DialogTitle>{isAr ? 'إضافة كتاب إلكتروني' : 'Add E-book'}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
-              <div>
+              <div className="space-y-2">
                 <Label>{isAr ? 'العنوان (EN)' : 'Title (EN)'} *</Label>
                 <Input value={form.title} onChange={(e) => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Book title" />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label>{isAr ? 'العنوان (AR)' : 'Title (AR)'}</Label>
                 <Input value={form.title_ar} onChange={(e) => setForm(f => ({ ...f, title_ar: e.target.value }))} placeholder="عنوان الكتاب" dir="rtl" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div>
+              <div className="space-y-2">
                 <Label>{isAr ? 'الوصف (EN)' : 'Description (EN)'}</Label>
                 <Textarea value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Brief description" rows={3} />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label>{isAr ? 'الوصف (AR)' : 'Description (AR)'}</Label>
                 <Textarea value={form.description_ar} onChange={(e) => setForm(f => ({ ...f, description_ar: e.target.value }))} placeholder="وصف مختصر" dir="rtl" rows={3} />
               </div>
             </div>
 
             {/* PDF Upload */}
-            <div>
+            <div className="space-y-2">
               <Label>{isAr ? 'ملف PDF' : 'PDF File'} *</Label>
-              <div className="mt-1">
-                <label className="flex items-center gap-2 p-3 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors">
-                  <Upload className="h-5 w-5 text-muted-foreground shrink-0" />
-                  <span className="text-sm text-muted-foreground truncate">
-                    {pdfFile ? pdfFile.name : (isAr ? 'اختر ملف PDF...' : 'Choose PDF file...')}
-                  </span>
-                  <input type="file" accept=".pdf" className="hidden" onChange={(e) => setPdfFile(e.target.files?.[0] || null)} />
-                </label>
-              </div>
+              <label className="flex items-center gap-2 p-3 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors">
+                <Upload className="h-5 w-5 text-muted-foreground shrink-0" />
+                <span className="text-sm text-muted-foreground truncate">
+                  {pdfFile ? pdfFile.name : (isAr ? 'اختر ملف PDF...' : 'Choose PDF file...')}
+                </span>
+                <input type="file" accept=".pdf" className="hidden" onChange={(e) => setPdfFile(e.target.files?.[0] || null)} />
+              </label>
             </div>
 
             {/* Cover Image Upload */}
-            <div>
+            <div className="space-y-2">
               <Label>{isAr ? 'صورة الغلاف' : 'Cover Image'}</Label>
-              <div className="mt-1 flex gap-3 items-start">
+              <div className="flex gap-3 items-start">
                 <label className="flex-1 flex items-center gap-2 p-3 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors">
                   <Upload className="h-5 w-5 text-muted-foreground shrink-0" />
                   <span className="text-sm text-muted-foreground truncate">
@@ -270,11 +292,14 @@ const Library = () => {
                 )}
               </div>
             </div>
-
-            <Button onClick={handleCreate} disabled={uploading} className="w-full">
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateOpen(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
+            <Button onClick={handleCreate} disabled={uploading}>
+              <FileText className="h-4 w-4 me-2" />
               {uploading ? (isAr ? 'جاري الرفع...' : 'Uploading...') : (isAr ? 'إضافة الكتاب' : 'Add E-book')}
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
