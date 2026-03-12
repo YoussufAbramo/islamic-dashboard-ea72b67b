@@ -101,7 +101,9 @@ const SeoSettings = () => {
   const [seo, setSeo] = useState<SeoConfig>(defaultSeo);
   const [landing, setLanding] = useState<Record<string, any>>({ ...defaultGeneralContent });
   const [blogSeo, setBlogSeo] = useState<Record<string, any>>({});
+  const [saving, setSaving] = useState(false);
   const [savingLanding, setSavingLanding] = useState(false);
+  const [savingBlog, setSavingBlog] = useState(false);
 
   useEffect(() => {
     const fetchAll = async () => {
