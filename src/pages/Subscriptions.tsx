@@ -398,7 +398,9 @@ const Subscriptions = () => {
                       </SelectContent>
                     </Select>
                   ) : (
-                    <Badge variant={statusColors[selected.status] as any}>{getLabel(subscriptionStatusLabels, selected.status, isAr)}</Badge>
+                    <div className="mt-1">
+                      <Badge variant={statusColors[selected.status] as any}>{getLabel(subscriptionStatusLabels, selected.status, isAr)}</Badge>
+                    </div>
                   )}
                 </div>
               </div>
@@ -442,23 +444,23 @@ const Subscriptions = () => {
               <div className="space-y-2">
                 <Label className="text-xs flex items-center gap-1.5"><Video className="h-3.5 w-3.5" />{isAr ? 'روابط الجلسات المباشرة' : 'Live Session URLs'}</Label>
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2.5 p-2.5 rounded-lg border bg-card">
+                  <div className="flex items-center gap-2.5 p-2.5 rounded-lg border bg-card min-w-0">
                     <img src="/icons/google-meet.png" alt="Google Meet" className="h-5 w-5 shrink-0" />
                     {editing ? (
-                      <Input type="url" placeholder="https://meet.google.com/..." value={editForm.google_meet_url} onChange={(e) => setEditForm({ ...editForm, google_meet_url: e.target.value })} className="h-7 text-xs flex-1" />
+                      <Input type="url" placeholder="https://meet.google.com/..." value={editForm.google_meet_url} onChange={(e) => setEditForm({ ...editForm, google_meet_url: e.target.value })} className="h-7 text-xs flex-1 min-w-0" />
                     ) : (
                       selected.google_meet_url
-                        ? <a href={selected.google_meet_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate flex-1">{selected.google_meet_url}</a>
+                        ? <a href={selected.google_meet_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex-1 min-w-0 break-all line-clamp-1">{selected.google_meet_url}</a>
                         : <p className="text-xs text-muted-foreground flex-1">{isAr ? 'لم يتم الإعداد' : 'Not configured'}</p>
                     )}
                   </div>
-                  <div className="flex items-center gap-2.5 p-2.5 rounded-lg border bg-card">
+                  <div className="flex items-center gap-2.5 p-2.5 rounded-lg border bg-card min-w-0">
                     <img src="/icons/zoom.png" alt="Zoom" className="h-5 w-5 shrink-0" />
                     {editing ? (
-                      <Input type="url" placeholder="https://zoom.us/j/..." value={editForm.zoom_url} onChange={(e) => setEditForm({ ...editForm, zoom_url: e.target.value })} className="h-7 text-xs flex-1" />
+                      <Input type="url" placeholder="https://zoom.us/j/..." value={editForm.zoom_url} onChange={(e) => setEditForm({ ...editForm, zoom_url: e.target.value })} className="h-7 text-xs flex-1 min-w-0" />
                     ) : (
                       selected.zoom_url
-                        ? <a href={selected.zoom_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate flex-1">{selected.zoom_url}</a>
+                        ? <a href={selected.zoom_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex-1 min-w-0 break-all line-clamp-1">{selected.zoom_url}</a>
                         : <p className="text-xs text-muted-foreground flex-1">{isAr ? 'لم يتم الإعداد' : 'Not configured'}</p>
                     )}
                   </div>
