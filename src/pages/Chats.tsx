@@ -13,7 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, Ban, CheckCircle, Trash2, Plus, Search, ArrowDown, ArrowUp, Users, UserPlus, MoreVertical, LogIn } from 'lucide-react';
+import { Send, Ban, CheckCircle, Trash2, Plus, Search, ArrowDown, ArrowUp, Users, UserPlus, MoreVertical, LogIn, Check, CheckCheck } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
@@ -59,6 +59,7 @@ const Chats = () => {
   };
 
   const [senderRoles, setSenderRoles] = useState<Record<string, string>>({});
+  const [readReceipts, setReadReceipts] = useState<{ user_id: string; last_read_at: string }[]>([]);
 
   const fetchMessages = async (chatId: string) => {
     const { data } = await supabase
@@ -89,6 +90,23 @@ const Chats = () => {
     }
   };
 
+  const fetchReadReceipts = async (chatId: string) => {
+    const { data } = await supabase
+      .from('chat_read_receipts')
+      .select('user_id, last_read_at')
+      .eq('chat_id', chatId);
+    setReadReceipts(data || []);
+  };
+
+  const upsertReadReceipt = async (chatId: string) => {
+    if (!user) return;
+    const now = new Date().toISOString();
+    await supabase.from('chat_read_receipts').upsert(
+      { chat_id: chatId, user_id: user.id, last_read_at: now },
+      { onConflict: 'chat_id,user_id' }
+    );
+  };
+
   const fetchGroupMembers = async (chatId: string) => {
     const { data } = await supabase
       .from('chat_members')
@@ -113,9 +131,14 @@ const Chats = () => {
   useEffect(() => {
     if (selectedChat) {
       fetchMessages(selectedChat.id);
+      fetchReadReceipts(selectedChat.id);
+      upsertReadReceipt(selectedChat.id);
       if (selectedChat.is_group) fetchGroupMembers(selectedChat.id);
-      const interval = setInterval(() => fetchMessages(selectedChat.id), 5000);
-      // Mark chats as read
+      const interval = setInterval(() => {
+        fetchMessages(selectedChat.id);
+        fetchReadReceipts(selectedChat.id);
+        upsertReadReceipt(selectedChat.id);
+      }, 5000);
       localStorage.setItem('chat_last_check', new Date().toISOString());
       return () => clearInterval(interval);
     }
@@ -547,9 +570,19 @@ const Chats = () => {
                                   )}
                                 </div>
                               )}
-                              <div className="flex items-end gap-2">
+                              <div className="flex items-end gap-1.5">
                                 <p className="leading-snug flex-1">{msg.message}</p>
-                                <span className={`text-[8px] shrink-0 whitespace-nowrap ${isOwn ? 'text-primary-foreground/60' : 'text-muted-foreground/60'}`}>{format(msgDate, 'hh:mm a')}</span>
+                                <span className={`flex items-center gap-0.5 text-[8px] shrink-0 whitespace-nowrap ${isOwn ? 'text-primary-foreground/60' : 'text-muted-foreground/60'}`}>
+                                  {format(msgDate, 'hh:mm a')}
+                                  {isOwn && !msg.is_deleted && (() => {
+                                    const seenByOthers = readReceipts.some(
+                                      r => r.user_id !== user?.id && new Date(r.last_read_at) >= msgDate
+                                    );
+                                    return seenByOthers
+                                      ? <CheckCheck className="h-3 w-3 text-blue-400" />
+                                      : <Check className="h-3 w-3" />;
+                                  })()}
+                                </span>
                               </div>
                             </div>
                             {(role === 'admin' || role === 'teacher') && !msg.is_deleted && (
