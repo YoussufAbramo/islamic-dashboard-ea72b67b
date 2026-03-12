@@ -38,7 +38,7 @@ const maskUrl = (url: string): string => {
 };
 
 const platforms: { id: JoinMethod; label: string; labelAr: string; icon: string; iconType: 'img' | 'lucide' }[] = [
-  { id: 'dashboard', label: 'Dashboard Meeting', labelAr: 'اجتماع المنصة', icon: 'video', iconType: 'lucide' },
+  { id: 'dashboard', label: 'CodeCom Meeting', labelAr: 'اجتماع كودكوم', icon: 'video', iconType: 'lucide' },
   { id: 'google_meet', label: 'Google Meet', labelAr: 'Google Meet', icon: '/icons/google-meet.png', iconType: 'img' },
   { id: 'zoom', label: 'Zoom', labelAr: 'Zoom', icon: '/icons/zoom.png', iconType: 'img' },
   { id: 'vconnct', label: 'Vconnct', labelAr: 'Vconnct', icon: '/icons/vconnct.ico', iconType: 'img' },
