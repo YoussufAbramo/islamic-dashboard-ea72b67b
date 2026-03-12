@@ -562,10 +562,19 @@ const Chats = () => {
                   </div>
                 </ScrollArea>
                 {!selectedChat.is_suspended && (
-                  <div className="p-3 border-t flex gap-2">
-                    <Input placeholder={t('chats.typeMessage')} value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendMessage()} />
-                    <Button size="icon" onClick={sendMessage}><Send className="h-4 w-4" /></Button>
-                  </div>
+                  role === 'admin' && !adminJoinedChats.has(selectedChat.id) ? (
+                    <div className="p-3 border-t flex justify-center">
+                      <Button variant="outline" className="gap-2" onClick={joinConversation}>
+                        <LogIn className="h-4 w-4" />
+                        {isAr ? 'انضم إلى المحادثة' : 'Join Conversation'}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="p-3 border-t flex gap-2">
+                      <Input placeholder={t('chats.typeMessage')} value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendMessage()} />
+                      <Button size="icon" onClick={sendMessage}><Send className="h-4 w-4" /></Button>
+                    </div>
+                  )
                 )}
               </div>
             </>
