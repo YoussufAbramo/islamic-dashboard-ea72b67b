@@ -8,8 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { CheckCircle, XCircle, Clock, UserCheck, ClipboardCheck } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, UserCheck, ClipboardCheck, Download } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { format } from 'date-fns';
 
 interface AttendanceRecord {
   id: string;
@@ -48,6 +50,20 @@ const Attendance = () => {
   
 
   const isAr = language === 'ar';
+
+  const exportCSV = (headers: string[], rows: string[][], filename: string) => {
+    const csv = [headers.join(','), ...rows.map(r => r.map(c => `"${c}"`).join(','))].join('\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `${filename}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const getStudentName = (studentId: string) => {
+    const s = students.find(st => st.id === studentId);
+    return s ? (profiles[s.user_id] || studentId) : studentId;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -118,6 +134,23 @@ const Attendance = () => {
     { name: isAr ? 'معذور' : 'Excused', value: totalExcused },
   ].filter((d) => d.value > 0);
 
+  const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' };
+
+  const attMonthlyData = useMemo(() => {
+    const map: Record<string, { present: number; absent: number; late: number }> = {};
+    attendance.forEach(a => {
+      const month = format(new Date(a.created_at), 'yyyy-MM');
+      if (!map[month]) map[month] = { present: 0, absent: 0, late: 0 };
+      if (a.status === 'present') map[month].present++;
+      else if (a.status === 'absent') map[month].absent++;
+      else map[month].late++;
+    });
+    return Object.entries(map)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-12)
+      .map(([month, data]) => ({ month: format(new Date(month + '-01'), 'MMM yyyy'), ...data }));
+  }, [attendance]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -147,6 +180,7 @@ const Attendance = () => {
           <TabsTrigger value="students">{isAr ? 'حسب الطالب' : 'Per Student'}</TabsTrigger>
           <TabsTrigger value="teachers">{isAr ? 'حسب المعلم' : 'Per Teacher'}</TabsTrigger>
           <TabsTrigger value="overview">{isAr ? 'نظرة عامة' : 'Overview'}</TabsTrigger>
+          <TabsTrigger value="reports">{isAr ? 'التقارير' : 'Reports'}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="students" className="space-y-6">
@@ -271,6 +305,77 @@ const Attendance = () => {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="reports" className="space-y-4">
+          <div className="flex items-center justify-end">
+            <Button variant="outline" size="sm" onClick={() => exportCSV(
+              ['Student', 'Status', 'Date', 'Notes'],
+              sortedAttendance.map(a => [getStudentName(a.student_id), a.status, format(new Date(a.created_at), 'PP'), a.notes || '']),
+              'attendance-report'
+            )}>
+              <Download className="h-4 w-4 me-2" />CSV
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader><CardTitle className="text-base">{isAr ? 'الحضور الشهري' : 'Monthly Attendance'}</CardTitle></CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={attMonthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="month" className="text-muted-foreground" tick={{ fontSize: 11 }} />
+                    <YAxis className="text-muted-foreground" allowDecimals={false} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend />
+                    <Bar dataKey="present" name={isAr ? 'حاضر' : 'Present'} stackId="a" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="absent" name={isAr ? 'غائب' : 'Absent'} stackId="a" fill="hsl(var(--destructive))" />
+                    <Bar dataKey="late" name={isAr ? 'متأخر' : 'Late'} stackId="a" fill="hsl(var(--chart-3))" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle className="text-base">{isAr ? 'توزيع الحضور' : 'Attendance Distribution'}</CardTitle></CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={280}>
+                  <PieChart>
+                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={55} outerRadius={95} paddingAngle={4} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                      {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{isAr ? 'الطالب' : 'Student'}</TableHead>
+                    <TableHead>{isAr ? 'الحالة' : 'Status'}</TableHead>
+                    <TableHead>{isAr ? 'التاريخ' : 'Date'}</TableHead>
+                    <TableHead>{isAr ? 'ملاحظات' : 'Notes'}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sortedAttendance.map(a => (
+                    <TableRow key={a.id}>
+                      <TableCell>{getStudentName(a.student_id)}</TableCell>
+                      <TableCell><Badge variant={a.status === 'present' ? 'default' : a.status === 'absent' ? 'destructive' : 'secondary'}>{a.status}</Badge></TableCell>
+                      <TableCell>{format(new Date(a.created_at), 'PP')}</TableCell>
+                      <TableCell className="text-muted-foreground">{a.notes || '—'}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

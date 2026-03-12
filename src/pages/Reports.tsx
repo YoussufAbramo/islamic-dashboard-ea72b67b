@@ -25,7 +25,7 @@ const Reports = () => {
   const isAr = language === 'ar';
 
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
-  const [attendance, setAttendance] = useState<any[]>([]);
+  
   const [profiles, setProfiles] = useState<Record<string, string>>({});
   const [students, setStudents] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
@@ -34,15 +34,13 @@ const Reports = () => {
 
   useEffect(() => {
     const fetchAll = async () => {
-      const [subsRes, attRes, profRes, studRes, courseRes] = await Promise.all([
+      const [subsRes, profRes, studRes, courseRes] = await Promise.all([
         supabase.from('subscriptions').select('*'),
-        supabase.from('attendance').select('*'),
         supabase.from('profiles').select('id, full_name'),
         supabase.from('students').select('id, user_id'),
         supabase.from('courses').select('id, title, title_ar'),
       ]);
       setSubscriptions(subsRes.data || []);
-      setAttendance(attRes.data || []);
       setStudents(studRes.data || []);
       setCourses(courseRes.data || []);
       const pm: Record<string, string> = {};
@@ -84,14 +82,10 @@ const Reports = () => {
     return result;
   }, [subscriptions, subStatusFilter]);
 
-  const sortedAttendance = useMemo(() => {
-    return [...attendance].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  }, [attendance]);
 
   const totalRevenue = subscriptions.reduce((s, sub) => s + (Number(sub.price) || 0), 0);
   const activeSubs = subscriptions.filter(s => s.status === 'active').length;
 
-  // === Subscription chart data ===
   const subStatusPieData = useMemo(() => [
     { name: isAr ? 'نشط' : 'Active', value: subStatusCounts.active },
     { name: isAr ? 'منتهي' : 'Expired', value: subStatusCounts.expired },
@@ -109,35 +103,6 @@ const Reports = () => {
       .slice(-12)
       .map(([month, count]) => ({ month: format(new Date(month + '-01'), 'MMM yyyy'), count }));
   }, [subscriptions]);
-
-  // === Attendance chart data ===
-  const attStatusPieData = useMemo(() => {
-    const present = attendance.filter(a => a.status === 'present').length;
-    const absent = attendance.filter(a => a.status === 'absent').length;
-    const late = attendance.filter(a => a.status === 'late').length;
-    const excused = attendance.filter(a => a.status === 'excused').length;
-    return [
-      { name: isAr ? 'حاضر' : 'Present', value: present },
-      { name: isAr ? 'غائب' : 'Absent', value: absent },
-      { name: isAr ? 'متأخر' : 'Late', value: late },
-      { name: isAr ? 'معذور' : 'Excused', value: excused },
-    ].filter(d => d.value > 0);
-  }, [attendance, isAr]);
-
-  const attMonthlyData = useMemo(() => {
-    const map: Record<string, { present: number; absent: number; late: number }> = {};
-    attendance.forEach(a => {
-      const month = format(new Date(a.created_at), 'yyyy-MM');
-      if (!map[month]) map[month] = { present: 0, absent: 0, late: 0 };
-      if (a.status === 'present') map[month].present++;
-      else if (a.status === 'absent') map[month].absent++;
-      else map[month].late++;
-    });
-    return Object.entries(map)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .slice(-12)
-      .map(([month, data]) => ({ month: format(new Date(month + '-01'), 'MMM yyyy'), ...data }));
-  }, [attendance]);
 
   // === Finance chart data ===
   const revenueMonthlyData = useMemo(() => {
@@ -175,7 +140,6 @@ const Reports = () => {
       <Tabs defaultValue="subscriptions">
         <TabsList>
           <TabsTrigger value="subscriptions">{isAr ? 'الاشتراكات' : 'Subscriptions'}</TabsTrigger>
-          <TabsTrigger value="attendance">{isAr ? 'الحضور' : 'Attendance'}</TabsTrigger>
           <TabsTrigger value="finances">{isAr ? 'المالية' : 'Finances'}</TabsTrigger>
         </TabsList>
 
@@ -259,79 +223,6 @@ const Reports = () => {
                       <TableCell><Badge variant="outline">{getLabel(subscriptionTypeLabels, s.subscription_type, isAr)}</Badge></TableCell>
                       <TableCell><Badge variant={s.status === 'active' ? 'default' : 'secondary'}>{getLabel(subscriptionStatusLabels, s.status, isAr)}</Badge></TableCell>
                       <TableCell>{currency.symbol}{Number(s.price || 0).toFixed(2)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* ── Attendance Tab ── */}
-        <TabsContent value="attendance" className="space-y-4">
-          <div className="flex items-center justify-end">
-            <Button variant="outline" size="sm" onClick={() => exportCSV(
-              ['Student', 'Status', 'Date', 'Notes'],
-              sortedAttendance.map(a => [getStudentName(a.student_id), a.status, format(new Date(a.created_at), 'PP'), a.notes || '']),
-              'attendance-report'
-            )}>
-              <Download className="h-4 w-4 me-2" />CSV
-            </Button>
-          </div>
-
-          {/* Charts row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader><CardTitle className="text-base">{isAr ? 'الحضور الشهري' : 'Monthly Attendance'}</CardTitle></CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={attMonthlyData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis dataKey="month" className="text-muted-foreground" tick={{ fontSize: 11 }} />
-                    <YAxis className="text-muted-foreground" allowDecimals={false} />
-                    <Tooltip contentStyle={tooltipStyle} />
-                    <Legend />
-                    <Bar dataKey="present" name={isAr ? 'حاضر' : 'Present'} stackId="a" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="absent" name={isAr ? 'غائب' : 'Absent'} stackId="a" fill="hsl(var(--destructive))" />
-                    <Bar dataKey="late" name={isAr ? 'متأخر' : 'Late'} stackId="a" fill="hsl(var(--chart-3))" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle className="text-base">{isAr ? 'توزيع الحضور' : 'Attendance Distribution'}</CardTitle></CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={280}>
-                  <PieChart>
-                    <Pie data={attStatusPieData} cx="50%" cy="50%" innerRadius={55} outerRadius={95} paddingAngle={4} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                      {attStatusPieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                    </Pie>
-                    <Tooltip contentStyle={tooltipStyle} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{isAr ? 'الطالب' : 'Student'}</TableHead>
-                    <TableHead>{isAr ? 'الحالة' : 'Status'}</TableHead>
-                    <TableHead>{isAr ? 'التاريخ' : 'Date'}</TableHead>
-                    <TableHead>{isAr ? 'ملاحظات' : 'Notes'}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sortedAttendance.map(a => (
-                    <TableRow key={a.id}>
-                      <TableCell>{getStudentName(a.student_id)}</TableCell>
-                      <TableCell><Badge variant={a.status === 'present' ? 'default' : a.status === 'absent' ? 'destructive' : 'secondary'}>{a.status}</Badge></TableCell>
-                      <TableCell>{format(new Date(a.created_at), 'PP')}</TableCell>
-                      <TableCell className="text-muted-foreground">{a.notes || '—'}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
