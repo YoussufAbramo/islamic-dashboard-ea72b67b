@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-
+import { COPYRIGHT_TEXT, COPYRIGHT_LINK, COPYRIGHT_NAME, COPYRIGHT_SUFFIX } from '@/lib/version';
 export interface CopyrightSlotContent {
   type: 'image' | 'text' | 'links';
   text?: string;
