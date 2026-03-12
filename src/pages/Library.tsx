@@ -208,7 +208,7 @@ const Library = () => {
                   )}
                   {/* Hover overlay */}
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <Button size="sm" variant="secondary" className="h-8 text-xs" onClick={() => window.open(ebook.pdf_url, '_blank')}>
+                    <Button size="sm" variant="secondary" className="h-8 text-xs" onClick={() => { trackView(ebook.id); trackDownload(ebook.id); window.open(ebook.pdf_url, '_blank'); }}>
                       <ExternalLink className="h-3 w-3 me-1" />
                       {isAr ? 'فتح' : 'Open'}
                     </Button>
