@@ -18,6 +18,7 @@ import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
 import LibraryStatsCards from '@/components/library/LibraryStatsCards';
 import LibraryEmptyState from '@/components/library/LibraryEmptyState';
+import { MEDIA_BUCKET, MEDIA_PATHS, resolveMediaUrl, getMediaSignedUrl } from '@/lib/mediaStorage';
 
 interface Ebook {
   id: string;
@@ -30,24 +31,10 @@ interface Ebook {
   created_at: string;
 }
 
-/** Resolve a storage path or full URL to a signed URL */
+/** Resolve a storage path or full URL to a signed URL (uses unified media bucket with legacy fallback) */
 async function getEbookSignedUrl(pathOrUrl: string): Promise<string> {
   if (!pathOrUrl) return '';
-  // If it's already a full URL, extract the path after /ebooks/
-  const bucketPrefix = '/object/public/ebooks/';
-  let storagePath = pathOrUrl;
-  if (pathOrUrl.includes(bucketPrefix)) {
-    storagePath = pathOrUrl.split(bucketPrefix)[1]?.split('?')[0] || '';
-  } else if (pathOrUrl.startsWith('http')) {
-    // Try to extract path from any supabase storage URL
-    const match = pathOrUrl.match(/\/storage\/v1\/object\/(?:public|sign)\/ebooks\/(.+?)(?:\?|$)/);
-    if (match) storagePath = decodeURIComponent(match[1]);
-    else return pathOrUrl; // external URL, return as-is
-  }
-  if (!storagePath) return '';
-  const { data, error } = await supabase.storage.from('ebooks').createSignedUrl(storagePath, 3600);
-  if (error || !data?.signedUrl) return '';
-  return data.signedUrl;
+  return resolveMediaUrl(pathOrUrl);
 }
 
 const Library = () => {
