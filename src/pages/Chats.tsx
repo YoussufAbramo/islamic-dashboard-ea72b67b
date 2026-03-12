@@ -570,7 +570,7 @@ const Chats = () => {
                 </div>
                 <div>
                   <Label>{isAr ? 'الاشتراك المرتبط (اختياري)' : 'Linked Subscription (optional)'}</Label>
-                  <Select value={createForm.subscription_id} onValueChange={(v) => setCreateForm({ ...createForm, subscription_id: v })}>
+                  <Select value={createForm.subscription_id} onValueChange={(v) => setCreateForm(prev => ({ ...prev, subscription_id: v }))}>
                     <SelectTrigger><SelectValue placeholder={isAr ? 'اختر اشتراك' : 'Select subscription'} /></SelectTrigger>
                     <SelectContent>{subscriptionsList.map((sub) => <SelectItem key={sub.id} value={sub.id}>{sub.students?.profiles?.full_name || ''} - {sub.courses?.title || ''}</SelectItem>)}</SelectContent>
                   </Select>
