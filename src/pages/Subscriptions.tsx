@@ -17,7 +17,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Search, Eye, Plus, ArrowUp, ArrowDown, Trash2, Check, ChevronsUpDown } from 'lucide-react';
+import { Search, Eye, Plus, ArrowUp, ArrowDown, Trash2, Check, ChevronsUpDown, Video } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { subscriptionStatusLabels, subscriptionTypeLabels, getLabel } from '@/lib/statusLabels';
@@ -39,7 +39,7 @@ const Subscriptions = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [selected, setSelected] = useState<any>(null);
   const [editing, setEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ subscription_type: 'monthly', status: 'active', renewal_date: '', teacher_id: '', course_id: '', price: '', weekly_lessons: '', lesson_duration: '' });
+  const [editForm, setEditForm] = useState({ subscription_type: 'monthly', status: 'active', renewal_date: '', teacher_id: '', course_id: '', price: '', weekly_lessons: '', lesson_duration: '', google_meet_url: '', zoom_url: '' });
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -51,7 +51,7 @@ const Subscriptions = () => {
   const [studentOpen, setStudentOpen] = useState(false);
   const [courseOpen, setCourseOpen] = useState(false);
   const [teacherOpen, setTeacherOpen] = useState(false);
-  const [createForm, setCreateForm] = useState({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', price_rate: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '', weekly_lessons: '1', lesson_duration: '60', schedule_days: [] as string[], schedule_time: '' });
+  const [createForm, setCreateForm] = useState({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', price_rate: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '', weekly_lessons: '1', lesson_duration: '60', schedule_days: [] as string[], schedule_time: '', google_meet_url: '', zoom_url: '' });
   const [createLoading, setCreateLoading] = useState(false);
 
   const fetchSubscriptions = async () => {
@@ -131,6 +131,8 @@ const Subscriptions = () => {
       price: sub.price?.toString() || '',
       weekly_lessons: sub.weekly_lessons?.toString() || '1',
       lesson_duration: sub.lesson_duration?.toString() || '60',
+      google_meet_url: sub.google_meet_url || '',
+      zoom_url: sub.zoom_url || '',
     });
     setDetailOpen(true);
     setEditing(false);
@@ -147,6 +149,8 @@ const Subscriptions = () => {
       price: parseFloat(editForm.price) || 0,
       weekly_lessons: parseInt(editForm.weekly_lessons) || 1,
       lesson_duration: parseInt(editForm.lesson_duration) || 60,
+      google_meet_url: editForm.google_meet_url || '',
+      zoom_url: editForm.zoom_url || '',
     }).eq('id', selected.id);
     toast.success(isAr ? 'تم تحديث الاشتراك' : 'Subscription updated');
     setEditing(false);
@@ -167,6 +171,8 @@ const Subscriptions = () => {
       lesson_duration: parseInt(createForm.lesson_duration) || 60,
       schedule_days: createForm.schedule_days,
       schedule_time: createForm.schedule_time || null,
+      google_meet_url: createForm.google_meet_url || '',
+      zoom_url: createForm.zoom_url || '',
     });
     setCreateLoading(false);
     if (error) {
@@ -174,7 +180,7 @@ const Subscriptions = () => {
     } else {
       toast.success(isAr ? 'تم إنشاء الاشتراك' : 'Subscription created');
       setCreateOpen(false);
-      setCreateForm({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', price_rate: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '', weekly_lessons: '1', lesson_duration: '60', schedule_days: [], schedule_time: '' });
+      setCreateForm({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', price_rate: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '', weekly_lessons: '1', lesson_duration: '60', schedule_days: [], schedule_time: '', google_meet_url: '', zoom_url: '' });
       fetchSubscriptions();
     }
   };
@@ -428,6 +434,28 @@ const Subscriptions = () => {
                   )}
                 </div>
               </div>
+              {/* Live Session URLs */}
+              <div className="p-3 rounded-lg bg-muted/50 space-y-2">
+                <Label className="text-xs flex items-center gap-1.5"><Video className="h-3.5 w-3.5" />{isAr ? 'روابط الجلسات المباشرة' : 'Live Session URLs'}</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Google Meet</Label>
+                    {editing ? (
+                      <Input type="url" placeholder="https://meet.google.com/..." value={editForm.google_meet_url} onChange={(e) => setEditForm({ ...editForm, google_meet_url: e.target.value })} className="h-8 text-xs" />
+                    ) : (
+                      selected.google_meet_url ? <a href={selected.google_meet_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline break-all">{selected.google_meet_url}</a> : <p className="text-xs text-muted-foreground">-</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Zoom</Label>
+                    {editing ? (
+                      <Input type="url" placeholder="https://zoom.us/j/..." value={editForm.zoom_url} onChange={(e) => setEditForm({ ...editForm, zoom_url: e.target.value })} className="h-8 text-xs" />
+                    ) : (
+                      selected.zoom_url ? <a href={selected.zoom_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline break-all">{selected.zoom_url}</a> : <p className="text-xs text-muted-foreground">-</p>
+                    )}
+                  </div>
+                </div>
+              </div>
               {/* Schedule info */}
               {(selected.schedule_days?.length > 0 || selected.schedule_time) && (
                 <div className="p-3 rounded-lg bg-muted/50 space-y-1">
@@ -579,6 +607,15 @@ const Subscriptions = () => {
                 time={createForm.schedule_time}
                 onTimeChange={(time) => setCreateForm(prev => ({ ...prev, schedule_time: time }))}
               />
+            </div>
+
+            {/* Live Session URLs */}
+            <div className="border-t pt-3 space-y-2">
+              <Label className="flex items-center gap-1.5"><Video className="h-4 w-4" />{isAr ? 'روابط الجلسات المباشرة' : 'Live Session URLs'}</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-xs text-muted-foreground">Google Meet</Label><Input type="url" placeholder="https://meet.google.com/..." value={createForm.google_meet_url} onChange={(e) => setCreateForm(prev => ({ ...prev, google_meet_url: e.target.value }))} /></div>
+                <div><Label className="text-xs text-muted-foreground">Zoom</Label><Input type="url" placeholder="https://zoom.us/j/..." value={createForm.zoom_url} onChange={(e) => setCreateForm(prev => ({ ...prev, zoom_url: e.target.value }))} /></div>
+              </div>
             </div>
 
             <Button onClick={handleCreate} disabled={createLoading} className="w-full">
