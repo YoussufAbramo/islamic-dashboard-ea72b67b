@@ -1625,6 +1625,7 @@ export type Database = {
       }
       timetable_entries: {
         Row: {
+          cancellation_reason: string | null
           course_id: string | null
           created_at: string
           duration_minutes: number
@@ -1636,6 +1637,7 @@ export type Database = {
           teacher_id: string | null
         }
         Insert: {
+          cancellation_reason?: string | null
           course_id?: string | null
           created_at?: string
           duration_minutes?: number
@@ -1647,6 +1649,7 @@ export type Database = {
           teacher_id?: string | null
         }
         Update: {
+          cancellation_reason?: string | null
           course_id?: string | null
           created_at?: string
           duration_minutes?: number

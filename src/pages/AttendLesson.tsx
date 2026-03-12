@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import JoinMeetingDialog from '@/components/attend/JoinMeetingDialog';
@@ -18,6 +17,8 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { TableSkeleton } from '@/components/PageSkeleton';
 import EmptyState from '@/components/EmptyState';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 interface LessonEntry {
   id: string;
@@ -61,6 +62,8 @@ const AttendLesson = () => {
   // Set of entry IDs that already have reports
   const [reportedEntryIds, setReportedEntryIds] = useState<Set<string>>(new Set());
   const [viewReportEntry, setViewReportEntry] = useState<LessonEntry | null>(null);
+  const [cancelEntry, setCancelEntry] = useState<LessonEntry | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
 
   // Update "now" every 30 seconds for live status updates
   useEffect(() => {
@@ -207,6 +210,9 @@ const AttendLesson = () => {
     if (entry.status === 'postponed') {
       return { label: isAr ? 'مؤجل' : 'Postponed', variant: 'outline', className: 'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400', isLive: false };
     }
+    if (entry.status === 'cancelled') {
+      return { label: isAr ? 'ملغى' : 'Cancelled', variant: 'outline', className: 'border-red-500/40 bg-red-500/10 text-red-600 dark:text-red-400', isLive: false };
+    }
     if (entry.status === 'completed' || entry.has_report) {
       return { label: isAr ? 'انتهى' : 'Ended', variant: 'outline', className: 'border-muted-foreground/30 bg-muted text-muted-foreground', isLive: false };
     }
@@ -222,7 +228,7 @@ const AttendLesson = () => {
   // In test mode, the first non-completed/cancelled entry has all restrictions lifted
   const testEntryId = testMode ? entries.find(e => e.status !== 'cancelled' && e.status !== 'completed' && !e.has_report && !reportedEntryIds.has(e.id))?.id : null;
 
-  const terminalStatuses = ['teacher_not_attend', 'student_not_attend', 'postponed', 'completed'];
+  const terminalStatuses = ['teacher_not_attend', 'student_not_attend', 'postponed', 'completed', 'cancelled'];
 
   const isAttendEnabled = (entry: LessonEntry): boolean => {
     if (activeSessionId) return false;
@@ -256,17 +262,23 @@ const AttendLesson = () => {
     return now < endTime;
   };
 
-  const handleNotAttend = async (entry: LessonEntry, who: 'teacher' | 'student') => {
-    const newStatus = who === 'teacher' ? 'teacher_not_attend' : 'student_not_attend';
-    const { error } = await supabase
-      .from('timetable_entries')
-      .update({ status: newStatus })
-      .eq('id', entry.id);
-    if (error) {
-      toast.error(isAr ? 'فشل تحديث الحالة' : 'Failed to update status');
+  const handleCancelSubmit = async () => {
+    if (!cancelEntry) return;
+    if (!cancelReason.trim()) {
+      toast.error(isAr ? 'يرجى كتابة سبب الإلغاء' : 'Please provide a cancellation reason');
       return;
     }
-    toast.success(isAr ? 'تم تسجيل عدم الحضور' : 'Marked as not attending');
+    const { error } = await supabase
+      .from('timetable_entries')
+      .update({ status: 'cancelled', cancellation_reason: cancelReason.trim() } as any)
+      .eq('id', cancelEntry.id);
+    if (error) {
+      toast.error(isAr ? 'فشل إلغاء الدرس' : 'Failed to cancel lesson');
+      return;
+    }
+    toast.success(isAr ? 'تم إلغاء الدرس' : 'Lesson cancelled');
+    setCancelEntry(null);
+    setCancelReason('');
     fetchEntries();
   };
 
@@ -513,27 +525,16 @@ const AttendLesson = () => {
                                 {isAr ? 'حضور' : 'Attend'}
                               </Button>
                               {(showNotAttend || isTestEntry) && (
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      disabled={!canNotAttend && !isTestEntry}
-                                      className="gap-1 text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/5"
-                                    >
-                                      <XCircle className="h-3.5 w-3.5" />
-                                      {isAr ? 'عدم الحضور' : 'Not Attend'}
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => handleNotAttend(entry, 'teacher')} className="text-destructive focus:text-destructive">
-                                      {isAr ? 'لم يحضر المعلم' : 'Teacher Not Attend'}
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleNotAttend(entry, 'student')} className="text-destructive focus:text-destructive">
-                                      {isAr ? 'لم يحضر الطالب' : 'Student Not Attend'}
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={!canNotAttend && !isTestEntry}
+                                  onClick={() => { setCancelEntry(entry); setCancelReason(''); }}
+                                  className="gap-1 text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/5"
+                                >
+                                  <XCircle className="h-3.5 w-3.5" />
+                                  {isAr ? 'عدم الحضور' : 'Not Attending'}
+                                </Button>
                               )}
                             </>
                           )}
@@ -595,6 +596,48 @@ const AttendLesson = () => {
               timetableEntryId={viewReportEntry.id}
               limit={1}
             />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancellation Dialog */}
+      <Dialog open={!!cancelEntry} onOpenChange={(val) => { if (!val) { setCancelEntry(null); setCancelReason(''); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <XCircle className="h-5 w-5" />
+              {isAr ? 'إلغاء الدرس' : 'Cancel Lesson'}
+            </DialogTitle>
+          </DialogHeader>
+          {cancelEntry && (
+            <div className="space-y-4">
+              <div className="p-3 rounded-lg border bg-muted/30 text-sm">
+                <p className="font-medium">{cancelEntry.course_title}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {cancelEntry.student_name} — {format(new Date(cancelEntry.scheduled_at), 'MMM d, h:mm a')}
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-sm font-semibold">
+                  {isAr ? 'سبب الإلغاء' : 'Cancellation Reason'} <span className="text-destructive">*</span>
+                </Label>
+                <Textarea
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  placeholder={isAr ? 'اكتب سبب إلغاء الدرس...' : 'Write the reason for cancelling this lesson...'}
+                  rows={3}
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => { setCancelEntry(null); setCancelReason(''); }}>
+                  {isAr ? 'تراجع' : 'Go Back'}
+                </Button>
+                <Button variant="destructive" onClick={handleCancelSubmit} disabled={!cancelReason.trim()}>
+                  <XCircle className="h-4 w-4 me-2" />
+                  {isAr ? 'تأكيد الإلغاء' : 'Confirm Cancellation'}
+                </Button>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>

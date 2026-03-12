@@ -1,0 +1,1 @@
+ALTER TABLE public.timetable_entries ADD COLUMN cancellation_reason text DEFAULT null;
