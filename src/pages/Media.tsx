@@ -392,19 +392,6 @@ const Media = () => {
     toast.success(isAr ? `تم تحميل ${selectedNames.size} ملف` : `${selectedNames.size} file(s) downloaded`);
   };
 
-  // ─── New folder ────────────────────────────────────────
-  const createFolder = async () => {
-    if (!newFolderName.trim() || !currentPath) return;
-    const sanitized = newFolderName.trim().replace(/[^a-zA-Z0-9_-]/g, '_');
-    const folderPath = `${currentPath}/${sanitized}/.emptyFolderPlaceholder`;
-    if (!isValidPath(folderPath)) { toast.error('Invalid folder name'); return; }
-    const { error } = await supabase.storage.from(MEDIA_BUCKET).upload(folderPath, new Blob(['']), { cacheControl: '3600', upsert: true });
-    if (error) toast.error(isAr ? 'خطأ في إنشاء المجلد' : 'Error creating folder');
-    else { toast.success(isAr ? 'تم إنشاء المجلد' : 'Folder created'); fetchFiles(currentPath); }
-    setNewFolderName('');
-    setNewFolderOpen(false);
-  };
-
   // ─── Computed ──────────────────────────────────────────
   const filteredFiles = files.filter(f => f.name.toLowerCase().includes(search.toLowerCase()));
   const filteredFolders = useMemo(() => {
