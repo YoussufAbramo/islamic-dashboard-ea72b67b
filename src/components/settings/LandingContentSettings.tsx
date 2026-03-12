@@ -529,8 +529,8 @@ const LandingContentSettings = () => {
               </Select>
             </div>
           </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8 mt-5 text-muted-foreground hover:text-destructive shrink-0" onClick={() => removeNavItem(listKey, i)}>
-            <Trash2 className="h-3.5 w-3.5" />
+          <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE + ' mt-5 shrink-0'} onClick={() => removeNavItem(listKey, i)}>
+            <Trash2 className={ACTION_ICON} />
           </Button>
         </div>
       ))}
