@@ -190,6 +190,11 @@ export const defaultFooterContent: Record<string, any> = {
       { label: 'Terms of Service', label_ar: 'شروط الخدمة', url: '/policy/terms-of-service' },
     ]},
   ] as FooterColumn[],
+  copyright: {
+    layout: 1,
+    copyright_text: '© 2026 All rights reserved.',
+    copyright_text_ar: '© 2026 جميع الحقوق محفوظة.',
+  },
 };
 
 export const defaultGeneralContent: Record<string, any> = {

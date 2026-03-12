@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { useAuth } from '@/contexts/AuthContext';
-import CopyrightText from '@/components/CopyrightText';
+import CopyrightBar, { defaultCopyrightConfig } from '@/components/landing/CopyrightBar';
 import { DEFAULT_SECTION_ORDER, defaultSectionContent, defaultGeneralContent, defaultNavItems, defaultFooterContent, type SectionKey, type FooterColumn } from '@/lib/landingDefaults';
 import { getHeaderComponent, type HeaderStyleKey } from '@/components/landing/LandingHeaders';
 
@@ -231,8 +231,8 @@ const LandingPage = () => {
                 ))}
               </div>
 
-              <div className="mt-10 pt-6 border-t border-border/50 text-center">
-                <CopyrightText />
+              <div className="mt-10 pt-6 border-t border-border/50">
+                <CopyrightBar config={ft.copyright || defaultCopyrightConfig} isAr={isAr} />
               </div>
             </div>
           </footer>
