@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,10 +16,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import ImagePickerField from '@/components/media/ImagePickerField';
 import {
   Clock, DollarSign, TrendingUp, AlertTriangle, CheckCircle,
   Loader2, Percent, Mail, Phone, User, Briefcase, FileText,
   Upload, ExternalLink, FileUp, Pencil, X, Save, Plus, Trash2, BookOpen,
+  CalendarDays, Users,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { TableSkeleton } from '@/components/PageSkeleton';
@@ -29,6 +31,7 @@ const TeacherProfile = () => {
   const { id } = useParams<{ id: string }>();
   const { language } = useLanguage();
   const { user, role } = useAuth();
+  const navigate = useNavigate();
   const isAr = language === 'ar';
 
   const [teacher, setTeacher] = useState<any>(null);
@@ -58,7 +61,7 @@ const TeacherProfile = () => {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     full_name: '', email: '', phone: '', title: '', specialization: '', bio: '',
-    hourly_rate: 0, required_monthly_hours: 0,
+    hourly_rate: 0,
   });
   const [saving, setSaving] = useState(false);
 
@@ -68,13 +71,17 @@ const TeacherProfile = () => {
   const [courseDialogOpen, setCourseDialogOpen] = useState(false);
   const [selectedCourseId, setSelectedCourseId] = useState('');
 
+  // Subscriptions
+  const [subscriptions, setSubscriptions] = useState<any[]>([]);
+  const [requiredMonthlyHours, setRequiredMonthlyHours] = useState(0);
+
   const fetchData = async () => {
     if (!id) return;
     setLoading(true);
 
     const { data: teacherData } = await supabase
       .from('teachers')
-      .select('*, profiles:teachers_user_id_profiles_fkey(full_name, phone, email, avatar_url)')
+      .select('*, profiles:teachers_user_id_profiles_fkey(id, full_name, phone, email, avatar_url)')
       .eq('id', id)
       .single();
 
@@ -91,7 +98,6 @@ const TeacherProfile = () => {
       specialization: teacherData.specialization || '',
       bio: teacherData.bio || '',
       hourly_rate: teacherData.hourly_rate || 0,
-      required_monthly_hours: teacherData.required_monthly_hours || 0,
     });
 
     // Resolve avatar
@@ -116,7 +122,6 @@ const TeacherProfile = () => {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
     const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
 
-    // Real logged hours from session_reports
     const { data: reports } = await supabase
       .from('session_reports')
       .select('session_duration_seconds')
@@ -153,6 +158,25 @@ const TeacherProfile = () => {
     const { data: courses } = await supabase.from('courses').select('id, title, title_ar').order('title');
     setAllCourses(courses || []);
 
+    // Fetch subscriptions assigned to this teacher
+    const { data: subs } = await supabase
+      .from('subscriptions')
+      .select('*, courses:course_id(title, title_ar), students:student_id(id, user_id, profiles:students_user_id_profiles_fkey(full_name))')
+      .eq('teacher_id', id)
+      .order('created_at', { ascending: false });
+    setSubscriptions(subs || []);
+
+    // Calculate required monthly hours from active subscriptions
+    // Formula: sum of (lesson_duration * weekly_lessons * 4.33) / 60 for each active subscription
+    const activeSubs = (subs || []).filter(s => s.status === 'active');
+    const totalMinutesPerMonth = activeSubs.reduce((sum, s) => {
+      const duration = s.lesson_duration || 60;
+      const weeklyLessons = s.weekly_lessons || 1;
+      return sum + (duration * weeklyLessons * 4.33);
+    }, 0);
+    const calcHours = Math.round((totalMinutesPerMonth / 60) * 10) / 10;
+    setRequiredMonthlyHours(calcHours);
+
     setLoading(false);
   };
 
@@ -165,17 +189,24 @@ const TeacherProfile = () => {
 
   // Calculations using real session_reports duration
   const actualLoggedHours = totalLoggedSeconds / 3600;
-  const requiredHours = teacher?.required_monthly_hours || 0;
-  const remainingHours = Math.max(0, requiredHours - actualLoggedHours);
+  const remainingHours = Math.max(0, requiredMonthlyHours - actualLoggedHours);
   const attendancePercentage = scheduledSessions > 0
     ? Math.round((completedSessions / scheduledSessions) * 100) : 0;
   const hourlyRate = teacher?.hourly_rate || 0;
-  const expectedSalary = hourlyRate * requiredHours;
+  const expectedSalary = hourlyRate * requiredMonthlyHours;
   const availableToPayout = hourlyRate * actualLoggedHours;
   const pendingPayouts = payoutRequests
     .filter(p => p.status === 'under_review' || p.status === 'approved')
     .reduce((sum, p) => sum + Number(p.requested_amount), 0);
   const netAvailable = Math.max(0, availableToPayout - pendingPayouts);
+
+  // Avatar change via ImagePickerField
+  const handleAvatarChange = async (url: string) => {
+    if (!teacher?.profiles?.id) return;
+    await supabase.from('profiles').update({ avatar_url: url }).eq('id', teacher.user_id);
+    setResolvedAvatar(url);
+    toast.success(isAr ? 'تم تحديث الصورة' : 'Avatar updated');
+  };
 
   // Edit handlers
   const handleSaveProfile = async () => {
@@ -187,7 +218,6 @@ const TeacherProfile = () => {
         specialization: editForm.specialization,
         bio: editForm.bio,
         hourly_rate: editForm.hourly_rate,
-        required_monthly_hours: editForm.required_monthly_hours,
       })
       .eq('id', id!);
 
@@ -315,15 +345,23 @@ const TeacherProfile = () => {
     }
   };
 
+  const subStatusBadge = (status: string) => {
+    switch (status) {
+      case 'active': return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 border">{isAr ? 'نشط' : 'Active'}</Badge>;
+      case 'paused': return <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30">{isAr ? 'متوقف' : 'Paused'}</Badge>;
+      case 'cancelled': return <Badge variant="destructive">{isAr ? 'ملغي' : 'Cancelled'}</Badge>;
+      default: return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
+
   const initials = (profile?.full_name || '?').charAt(0).toUpperCase();
 
-  // Available courses not yet assigned
   const availableCourses = allCourses.filter(
     c => !assignedCourses.some(ac => ac.course_id === c.id)
   );
 
   const statCards = [
-    { label: isAr ? 'الساعات المطلوبة (شهرياً)' : 'Required Hours (Monthly)', value: `${requiredHours}h`, icon: Clock, color: 'text-blue-600' },
+    { label: isAr ? 'الساعات المطلوبة (شهرياً)' : 'Required Hours (Monthly)', value: `${requiredMonthlyHours}h`, icon: Clock, color: 'text-blue-600' },
     { label: isAr ? 'الساعات المسجلة' : 'Actual Logged Hours', value: `${actualLoggedHours.toFixed(1)}h`, icon: TrendingUp, color: 'text-emerald-600' },
     { label: isAr ? 'الساعات المتبقية' : 'Remaining Hours', value: `${remainingHours.toFixed(1)}h`, icon: Clock, color: 'text-amber-600' },
     { label: isAr ? 'نسبة الحضور' : 'Attendance %', value: `${attendancePercentage}%`, icon: Percent, color: 'text-purple-600' },
@@ -365,45 +403,96 @@ const TeacherProfile = () => {
         <CardContent>
           {editing ? (
             /* ── Edit Mode ── */
-            <div className="space-y-5">
+            <div className="space-y-6">
+              {/* Avatar picker */}
+              <div className="flex items-start gap-6">
+                <div className="shrink-0">
+                  <Label className="mb-2 block text-xs text-muted-foreground">{isAr ? 'صورة الملف الشخصي' : 'Profile Picture'}</Label>
+                  <ImagePickerField
+                    value={resolvedAvatar}
+                    onChange={handleAvatarChange}
+                    bucket="media"
+                  />
+                </div>
+                <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">{isAr ? 'الاسم الكامل' : 'Full Name'}</Label>
+                    <Input value={editForm.full_name} onChange={e => setEditForm({ ...editForm, full_name: e.target.value })} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">{isAr ? 'المسمى الوظيفي' : 'Title'}</Label>
+                    <Input value={editForm.title} onChange={e => setEditForm({ ...editForm, title: e.target.value })} placeholder={isAr ? 'مثال: أستاذ مساعد' : 'e.g. Senior Instructor'} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">{isAr ? 'البريد الإلكتروني' : 'Email'}</Label>
+                    <Input value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">{isAr ? 'الهاتف' : 'Phone'}</Label>
+                    <Input value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} />
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <Label>{isAr ? 'الاسم الكامل' : 'Full Name'}</Label>
-                  <Input value={editForm.full_name} onChange={e => setEditForm({ ...editForm, full_name: e.target.value })} />
-                </div>
-                <div>
-                  <Label>{isAr ? 'المسمى الوظيفي' : 'Title'}</Label>
-                  <Input value={editForm.title} onChange={e => setEditForm({ ...editForm, title: e.target.value })} placeholder={isAr ? 'مثال: أستاذ مساعد' : 'e.g. Senior Instructor'} />
-                </div>
-                <div>
-                  <Label>{isAr ? 'البريد الإلكتروني' : 'Email'}</Label>
-                  <Input value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} />
-                </div>
-                <div>
-                  <Label>{isAr ? 'الهاتف' : 'Phone'}</Label>
-                  <Input value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} />
-                </div>
-                <div>
-                  <Label>{isAr ? 'التخصص' : 'Specialization'}</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">{isAr ? 'التخصص' : 'Specialization'}</Label>
                   <Input value={editForm.specialization} onChange={e => setEditForm({ ...editForm, specialization: e.target.value })} />
                 </div>
-                <div>
-                  <Label>{isAr ? 'سعر الساعة' : 'Hourly Rate ($)'}</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">{isAr ? 'سعر الساعة ($)' : 'Hourly Rate ($)'}</Label>
                   <Input type="number" min={0} step="0.01" value={editForm.hourly_rate} onChange={e => setEditForm({ ...editForm, hourly_rate: parseFloat(e.target.value) || 0 })} />
                 </div>
-                <div>
-                  <Label>{isAr ? 'الساعات الشهرية المطلوبة' : 'Required Monthly Hours'}</Label>
-                  <Input type="number" min={0} value={editForm.required_monthly_hours} onChange={e => setEditForm({ ...editForm, required_monthly_hours: parseFloat(e.target.value) || 0 })} />
+                <div className="sm:col-span-2 space-y-1.5">
+                  <Label className="text-xs">{isAr ? 'الساعات الشهرية المطلوبة' : 'Required Monthly Hours'}</Label>
+                  <div className="flex items-center gap-2">
+                    <Input disabled value={`${requiredMonthlyHours}h`} className="bg-muted" />
+                    <Badge variant="outline" className="shrink-0 text-[10px]">{isAr ? 'محسوبة تلقائياً' : 'Auto-calculated'}</Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">{isAr ? 'يتم حسابها تلقائياً من الاشتراكات النشطة المعينة' : 'Automatically calculated from assigned active subscriptions'}</p>
                 </div>
               </div>
-              <div>
-                <Label>{isAr ? 'السيرة الذاتية' : 'Bio'}</Label>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs">{isAr ? 'نبذة تعريفية' : 'Bio'}</Label>
                 <Textarea value={editForm.bio} onChange={e => setEditForm({ ...editForm, bio: e.target.value })} rows={3} />
               </div>
-              <div className="flex gap-2">
+
+              <Separator />
+
+              {/* Documents in edit mode */}
+              <div>
+                <Label className="text-xs text-muted-foreground uppercase tracking-wider mb-3 block">{isAr ? 'المستندات' : 'Documents'}</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <DocumentUploadCard
+                    label={isAr ? 'السيرة الذاتية (CV)' : 'CV / Resume'}
+                    uploaded={!!teacher?.cv_url}
+                    signedUrl={cvSignedUrl}
+                    uploading={cvUploading}
+                    isAr={isAr}
+                    icon={<FileUp className="h-4 w-4 text-blue-600" />}
+                    iconBg="bg-blue-500/10"
+                    onUpload={(f) => handleFileUpload(f, 'cv')}
+                  />
+                  <DocumentUploadCard
+                    label={isAr ? 'العقد' : 'Contract'}
+                    uploaded={!!teacher?.contract_url}
+                    signedUrl={contractSignedUrl}
+                    uploading={contractUploading}
+                    isAr={isAr}
+                    icon={<FileText className="h-4 w-4 text-emerald-600" />}
+                    iconBg="bg-emerald-500/10"
+                    onUpload={(f) => handleFileUpload(f, 'contract')}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-2">
                 <Button onClick={handleSaveProfile} disabled={saving}>
                   {saving ? <Loader2 className="h-4 w-4 me-2 animate-spin" /> : <Save className="h-4 w-4 me-2" />}
-                  {isAr ? 'حفظ' : 'Save'}
+                  {isAr ? 'حفظ التعديلات' : 'Save Changes'}
                 </Button>
                 <Button variant="outline" onClick={() => setEditing(false)}>
                   <X className="h-4 w-4 me-2" />
@@ -436,101 +525,99 @@ const TeacherProfile = () => {
               {/* Contact Details */}
               <div className="flex-1 space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
-                    <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{isAr ? 'البريد الإلكتروني' : 'Email'}</p>
-                      <p className="text-sm font-medium truncate">{profile?.email || '-'}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
-                    <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{isAr ? 'الهاتف' : 'Phone'}</p>
-                      <p className="text-sm font-medium">{profile?.phone || '-'}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
-                    <Briefcase className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{isAr ? 'التخصص' : 'Specialization'}</p>
-                      <p className="text-sm font-medium">{teacher?.specialization || '-'}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
-                    <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{isAr ? 'السيرة الذاتية' : 'Bio'}</p>
-                      <p className="text-sm font-medium line-clamp-2">{teacher?.bio || '-'}</p>
-                    </div>
-                  </div>
+                  <InfoCard icon={<Mail className="h-4 w-4" />} label={isAr ? 'البريد الإلكتروني' : 'Email'} value={profile?.email || '-'} />
+                  <InfoCard icon={<Phone className="h-4 w-4" />} label={isAr ? 'الهاتف' : 'Phone'} value={profile?.phone || '-'} />
+                  <InfoCard icon={<Briefcase className="h-4 w-4" />} label={isAr ? 'التخصص' : 'Specialization'} value={teacher?.specialization || '-'} />
+                  <InfoCard icon={<FileText className="h-4 w-4" />} label={isAr ? 'نبذة تعريفية' : 'Bio'} value={teacher?.bio || '-'} truncate />
                 </div>
 
-                {/* Documents Section */}
+                {/* Documents */}
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3 font-medium">
                     {isAr ? 'المستندات' : 'Documents'}
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* CV */}
-                    <div className="flex items-center justify-between p-3 rounded-lg border bg-card gap-3">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="p-2 rounded-lg bg-blue-500/10">
-                          <FileUp className="h-4 w-4 text-blue-600" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium">{isAr ? 'السيرة الذاتية (CV)' : 'CV / Resume'}</p>
-                          <p className="text-[11px] text-muted-foreground">
-                            {teacher?.cv_url ? (isAr ? 'تم الرفع' : 'Uploaded') : (isAr ? 'لم يتم الرفع' : 'Not uploaded')}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        {teacher?.cv_url && cvSignedUrl && (
-                          <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                            <a href={cvSignedUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-3.5 w-3.5" /></a>
-                          </Button>
-                        )}
-                        {canEdit && (
-                          <Button variant="ghost" size="icon" className="h-8 w-8 relative" disabled={cvUploading}>
-                            {cvUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-                            <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept=".pdf,.doc,.docx" disabled={cvUploading}
-                              onChange={e => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, 'cv'); e.target.value = ''; }} />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                    {/* Contract */}
-                    <div className="flex items-center justify-between p-3 rounded-lg border bg-card gap-3">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="p-2 rounded-lg bg-emerald-500/10">
-                          <FileText className="h-4 w-4 text-emerald-600" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium">{isAr ? 'العقد' : 'Contract'}</p>
-                          <p className="text-[11px] text-muted-foreground">
-                            {teacher?.contract_url ? (isAr ? 'تم الرفع' : 'Uploaded') : (isAr ? 'لم يتم الرفع' : 'Not uploaded')}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        {teacher?.contract_url && contractSignedUrl && (
-                          <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                            <a href={contractSignedUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-3.5 w-3.5" /></a>
-                          </Button>
-                        )}
-                        {canEdit && (
-                          <Button variant="ghost" size="icon" className="h-8 w-8 relative" disabled={contractUploading}>
-                            {contractUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-                            <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept=".pdf,.doc,.docx" disabled={contractUploading}
-                              onChange={e => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, 'contract'); e.target.value = ''; }} />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
+                    <DocumentUploadCard
+                      label={isAr ? 'السيرة الذاتية (CV)' : 'CV / Resume'}
+                      uploaded={!!teacher?.cv_url}
+                      signedUrl={cvSignedUrl}
+                      uploading={cvUploading}
+                      isAr={isAr}
+                      icon={<FileUp className="h-4 w-4 text-blue-600" />}
+                      iconBg="bg-blue-500/10"
+                      onUpload={canEdit ? (f) => handleFileUpload(f, 'cv') : undefined}
+                    />
+                    <DocumentUploadCard
+                      label={isAr ? 'العقد' : 'Contract'}
+                      uploaded={!!teacher?.contract_url}
+                      signedUrl={contractSignedUrl}
+                      uploading={contractUploading}
+                      isAr={isAr}
+                      icon={<FileText className="h-4 w-4 text-emerald-600" />}
+                      iconBg="bg-emerald-500/10"
+                      onUpload={canEdit ? (f) => handleFileUpload(f, 'contract') : undefined}
+                    />
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {statCards.map((stat, i) => (
+          <Card key={i} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4 flex items-start gap-3">
+              <div className={`rounded-lg p-2 bg-muted ${stat.color}`}>
+                <stat.icon className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground truncate">{stat.label}</p>
+                <p className="text-lg font-bold">{stat.value}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Assigned Subscriptions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <CalendarDays className="h-5 w-5 text-primary" />
+            {isAr ? 'الاشتراكات المعينة' : 'Assigned Subscriptions'}
+            <Badge variant="secondary" className="ms-auto">{subscriptions.length}</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {subscriptions.length === 0 ? (
+            <p className="text-center text-muted-foreground py-6">{isAr ? 'لا توجد اشتراكات' : 'No subscriptions assigned'}</p>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{isAr ? 'الطالب' : 'Student'}</TableHead>
+                    <TableHead>{isAr ? 'المقرر' : 'Course'}</TableHead>
+                    <TableHead>{isAr ? 'مدة الحصة' : 'Lesson Duration'}</TableHead>
+                    <TableHead>{isAr ? 'حصص أسبوعية' : 'Weekly Lessons'}</TableHead>
+                    <TableHead>{isAr ? 'الحالة' : 'Status'}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {subscriptions.map((sub) => (
+                    <TableRow key={sub.id}>
+                      <TableCell className="font-medium">{(sub.students as any)?.profiles?.full_name || '-'}</TableCell>
+                      <TableCell>{isAr ? ((sub.courses as any)?.title_ar || (sub.courses as any)?.title) : (sub.courses as any)?.title}</TableCell>
+                      <TableCell>{sub.lesson_duration || 60} {isAr ? 'دقيقة' : 'min'}</TableCell>
+                      <TableCell>{sub.weekly_lessons || 1}</TableCell>
+                      <TableCell>{subStatusBadge(sub.status)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           )}
         </CardContent>
@@ -578,23 +665,6 @@ const TeacherProfile = () => {
           )}
         </CardContent>
       </Card>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {statCards.map((stat, i) => (
-          <Card key={i} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-4 flex items-start gap-3">
-              <div className={`rounded-lg p-2 bg-muted ${stat.color}`}>
-                <stat.icon className="h-4 w-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs text-muted-foreground truncate">{stat.label}</p>
-                <p className="text-lg font-bold">{stat.value}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
 
       {/* Account Statement */}
       <Card>
@@ -700,5 +770,56 @@ const TeacherProfile = () => {
     </div>
   );
 };
+
+/* ── Reusable Sub-Components ── */
+
+const InfoCard = ({ icon, label, value, truncate }: { icon: React.ReactNode; label: string; value: string; truncate?: boolean }) => (
+  <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
+    <span className="text-muted-foreground shrink-0">{icon}</span>
+    <div className="min-w-0">
+      <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{label}</p>
+      <p className={`text-sm font-medium ${truncate ? 'line-clamp-2' : ''}`}>{value}</p>
+    </div>
+  </div>
+);
+
+interface DocumentUploadCardProps {
+  label: string;
+  uploaded: boolean;
+  signedUrl: string;
+  uploading: boolean;
+  isAr: boolean;
+  icon: React.ReactNode;
+  iconBg: string;
+  onUpload?: (file: File) => void;
+}
+
+const DocumentUploadCard = ({ label, uploaded, signedUrl, uploading, isAr, icon, iconBg, onUpload }: DocumentUploadCardProps) => (
+  <div className="flex items-center justify-between p-3 rounded-lg border bg-card gap-3">
+    <div className="flex items-center gap-2.5 min-w-0">
+      <div className={`p-2 rounded-lg ${iconBg}`}>{icon}</div>
+      <div className="min-w-0">
+        <p className="text-sm font-medium">{label}</p>
+        <p className="text-[11px] text-muted-foreground">
+          {uploaded ? (isAr ? 'تم الرفع' : 'Uploaded') : (isAr ? 'لم يتم الرفع' : 'Not uploaded')}
+        </p>
+      </div>
+    </div>
+    <div className="flex items-center gap-1 shrink-0">
+      {uploaded && signedUrl && (
+        <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+          <a href={signedUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-3.5 w-3.5" /></a>
+        </Button>
+      )}
+      {onUpload && (
+        <Button variant="ghost" size="icon" className="h-8 w-8 relative" disabled={uploading}>
+          {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+          <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept=".pdf,.doc,.docx" disabled={uploading}
+            onChange={e => { const f = e.target.files?.[0]; if (f) onUpload(f); e.target.value = ''; }} />
+        </Button>
+      )}
+    </div>
+  </div>
+);
 
 export default TeacherProfile;
