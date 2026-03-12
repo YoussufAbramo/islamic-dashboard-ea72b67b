@@ -100,6 +100,7 @@ const App = () => (
                       <Route path="settings" element={<RoleGuard allowed={['admin']}><Settings /></RoleGuard>} />
                       <Route path="certificates" element={<Certificates />} />
                       <Route path="reports" element={<RoleGuard allowed={['admin']}><Reports /></RoleGuard>} />
+                      <Route path="library" element={<Library />} />
                       <Route path="invoices" element={<RoleGuard allowed={['admin']}><Invoices /></RoleGuard>} />
                       <Route path="calculator" element={<RoleGuard allowed={['admin']}><CalculatorPage /></RoleGuard>} />
                       <Route path="announcements" element={<Announcements />} />
