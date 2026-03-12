@@ -158,7 +158,6 @@ const AttendLesson = () => {
 
   const handleAttendClick = (entry: LessonEntry) => {
     setSelectedEntry(entry);
-    setVconnctUrl('');
     setJoinOpen(true);
   };
 
