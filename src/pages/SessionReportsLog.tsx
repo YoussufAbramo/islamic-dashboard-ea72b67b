@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
+import ActionButton from '@/components/ui/action-button';
 import { FileText, Clock, Eye, User, BookOpen, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -217,9 +218,7 @@ const SessionReportsLog = () => {
                     <p className="text-xs text-muted-foreground truncate max-w-[180px]">{report.summary || '-'}</p>
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setDetailReport(report)}>
-                      <Eye className="h-3.5 w-3.5" />
-                    </Button>
+                    <ActionButton icon={Eye} label={isAr ? 'عرض التقرير' : 'View Report'} onClick={() => setDetailReport(report)} />
                   </TableCell>
                 </TableRow>
               ))}
