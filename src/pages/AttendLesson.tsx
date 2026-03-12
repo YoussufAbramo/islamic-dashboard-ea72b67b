@@ -110,27 +110,27 @@ const AttendLesson = () => {
 
   useEffect(() => { fetchEntries(); }, []);
 
-  const getLessonStatus = (entry: LessonEntry): { label: string; variant: string; isLive: boolean } => {
+  const getLessonStatus = (entry: LessonEntry): { label: string; variant: string; className: string; isLive: boolean } => {
     const scheduledTime = new Date(entry.scheduled_at);
     const endTime = new Date(scheduledTime.getTime() + entry.duration_minutes * 60000);
     const minutesUntil = differenceInMinutes(scheduledTime, now);
 
     if (entry.status === 'cancelled') {
-      return { label: isAr ? 'ملغي' : 'Cancelled', variant: 'destructive', isLive: false };
+      return { label: isAr ? 'ملغي' : 'Cancelled', variant: 'destructive', className: '', isLive: false };
     }
     if (entry.status === 'completed') {
-      return { label: isAr ? 'مكتمل' : 'Completed', variant: 'secondary', isLive: false };
+      return { label: isAr ? 'مكتمل' : 'Completed', variant: 'secondary', className: '', isLive: false };
     }
     if (now >= scheduledTime && now <= endTime) {
-      return { label: isAr ? '🔴 مباشر' : '🔴 Live', variant: 'default', isLive: true };
+      return { label: isAr ? '🔴 مباشر' : '🔴 Live', variant: 'default', className: 'bg-destructive text-destructive-foreground', isLive: true };
     }
     if (minutesUntil <= 15 && minutesUntil > 0) {
-      return { label: isAr ? 'يبدأ قريباً' : 'Starting Soon', variant: 'default', isLive: false };
+      return { label: isAr ? 'يبدأ قريباً' : 'Starting Soon', variant: 'outline', className: 'border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400', isLive: false };
     }
     if (now > endTime) {
-      return { label: isAr ? 'انتهى' : 'Ended', variant: 'secondary', isLive: false };
+      return { label: isAr ? 'انتهى' : 'Ended', variant: 'secondary', className: '', isLive: false };
     }
-    return { label: isAr ? 'قادم لاحقاً' : 'Coming Later', variant: 'outline', isLive: false };
+    return { label: isAr ? 'قادم لاحقاً' : 'Coming Later', variant: 'outline', className: 'border-primary/30 bg-primary/5 text-primary', isLive: false };
   };
 
   const isAttendEnabled = (entry: LessonEntry): boolean => {
