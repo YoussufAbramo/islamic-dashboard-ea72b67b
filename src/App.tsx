@@ -119,6 +119,7 @@ const App = () => (
                     <Route path="/page/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
                     <Route path="/policies/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
                     <Route path="/policy/:slug" element={<PublicRouteGuard><PublicPage /></PublicRouteGuard>} />
+                    <Route path="/contact" element={<PublicRouteGuard><PublicContact /></PublicRouteGuard>} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </BrowserRouter>
