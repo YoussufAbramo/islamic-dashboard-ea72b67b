@@ -132,8 +132,16 @@ const TopBar = () => {
   const handleEndSessionClick = () => {
     const result = endSession();
     if (result) {
-      // Dispatch a custom event so the AttendLesson page can open report dialog
-      window.dispatchEvent(new CustomEvent('session-end-request', { detail: result }));
+      const isOnAttendPage = window.location.pathname.includes('/attend-lesson');
+      if (isOnAttendPage) {
+        window.dispatchEvent(new CustomEvent('session-end-request', { detail: result }));
+      } else {
+        // Navigate to attend-lesson page first, then dispatch the event after mount
+        navigate('/dashboard/attend-lesson');
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('session-end-request', { detail: result }));
+        }, 500);
+      }
     }
   };
 
