@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { usePagination } from '@/hooks/use-pagination';
 import PaginationControls from '@/components/PaginationControls';
 import { useLanguage } from '@/contexts/LanguageContext';
