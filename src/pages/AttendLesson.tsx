@@ -313,8 +313,11 @@ const AttendLesson = () => {
   };
 
   const sortedEntries = useMemo(() => {
-    return entries;
-  }, [entries]);
+    if (!testMode || !testEntryId) return entries;
+    const testEntry = entries.find(e => e.id === testEntryId);
+    const rest = entries.filter(e => e.id !== testEntryId);
+    return testEntry ? [testEntry, ...rest] : entries;
+  }, [entries, testMode, testEntryId]);
 
   // Stats
   const liveCount = entries.filter(e => getLessonStatus(e).isLive).length;
