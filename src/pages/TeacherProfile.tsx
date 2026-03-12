@@ -517,29 +517,51 @@ const TeacherProfile = () => {
                     {isAr ? 'طلب صرف' : 'Request Payout'}
                   </Button>
                 </div>
+
+                {/* Payout Policy Note */}
+                <div className="w-full mt-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-2.5 flex items-start gap-2">
+                  <Info className="h-3.5 w-3.5 text-amber-600 mt-0.5 shrink-0" />
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    {isAr
+                      ? 'يتم صرف المستحقات وفقاً لسياسات الصرف الخاصة بنا. إذا كان طلبك مخالفاً لسياساتنا، سيتم رفض الطلب وإعادة المبلغ إلى رصيدك.'
+                      : 'Payouts are processed following our payout policies. If your request violates our policies, it will be rejected and the amount will be returned to your balance.'}
+                    {' '}
+                    <Link to="/policies/payout-policy" className="text-primary underline hover:no-underline font-medium">
+                      {isAr ? 'اطلع على سياسة الصرف' : 'View Payout Policy'}
+                    </Link>
+                  </p>
+                </div>
               </div>
 
               <Separator orientation="vertical" className="hidden md:block h-auto" />
 
               {/* Contact Details */}
-              <div className="flex-1 space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <InfoCard icon={<Mail className="h-4 w-4" />} label={isAr ? 'البريد الإلكتروني' : 'Email'} value={profile?.email || '-'} />
-                  <InfoCard icon={<Phone className="h-4 w-4" />} label={isAr ? 'الهاتف' : 'Phone'} value={profile?.phone || '-'} />
-                  <InfoCard icon={<Briefcase className="h-4 w-4" />} label={isAr ? 'التخصص' : 'Specialization'} value={teacher?.specialization || '-'} />
-                  <InfoCard icon={<User className="h-4 w-4" />} label={isAr ? 'الجنس' : 'Gender'} value={(teacher as any)?.gender ? ((teacher as any).gender === 'male' ? (isAr ? 'ذكر' : 'Male') : (isAr ? 'أنثى' : 'Female')) : '-'} />
-                  <InfoCard icon={<Cake className="h-4 w-4" />} label={isAr ? 'العمر' : 'Age'} value={(teacher as any)?.date_of_birth ? `${Math.floor((Date.now() - new Date((teacher as any).date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))} ${isAr ? 'سنة' : 'years'}` : '-'} />
-                  <InfoCard icon={<FileText className="h-4 w-4" />} label={isAr ? 'نبذة تعريفية' : 'Bio'} value={teacher?.bio || '-'} truncate />
-                  <InfoCard icon={<CalendarDays className="h-4 w-4" />} label={isAr ? 'تاريخ إنشاء الحساب' : 'Account Created'} value={authInfo?.created_at ? format(new Date(authInfo.created_at), 'dd/MM/yyyy HH:mm') : '-'} />
-                  <InfoCard icon={<Clock className="h-4 w-4" />} label={isAr ? 'آخر تسجيل دخول' : 'Last Login'} value={authInfo?.last_sign_in_at ? format(new Date(authInfo.last_sign_in_at), 'dd/MM/yyyy HH:mm') : '-'} />
+              <div className="flex-1 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <InfoCard icon={<Mail className="h-3.5 w-3.5" />} label={isAr ? 'البريد الإلكتروني' : 'Email'} value={profile?.email || '-'} small />
+                  <InfoCard icon={<Phone className="h-3.5 w-3.5" />} label={isAr ? 'الهاتف' : 'Phone'} value={profile?.phone || '-'} small />
+                  <InfoCard icon={<Briefcase className="h-3.5 w-3.5" />} label={isAr ? 'التخصص' : 'Specialization'} value={teacher?.specialization || '-'} small />
+                  <InfoCard icon={<User className="h-3.5 w-3.5" />} label={isAr ? 'الجنس' : 'Gender'} value={(teacher as any)?.gender ? ((teacher as any).gender === 'male' ? (isAr ? 'ذكر' : 'Male') : (isAr ? 'أنثى' : 'Female')) : '-'} small />
+                  <InfoCard icon={<Cake className="h-3.5 w-3.5" />} label={isAr ? 'العمر' : 'Age'} value={(teacher as any)?.date_of_birth ? `${Math.floor((Date.now() - new Date((teacher as any).date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))} ${isAr ? 'سنة' : 'years'}` : '-'} small />
+                  <InfoCard icon={<CalendarDays className="h-3.5 w-3.5" />} label={isAr ? 'تاريخ إنشاء الحساب' : 'Account Created'} value={authInfo?.created_at ? format(new Date(authInfo.created_at), 'dd/MM/yyyy HH:mm') : '-'} small />
+                  <InfoCard icon={<Clock className="h-3.5 w-3.5" />} label={isAr ? 'آخر تسجيل دخول' : 'Last Login'} value={authInfo?.last_sign_in_at ? format(new Date(authInfo.last_sign_in_at), 'dd/MM/yyyy HH:mm') : '-'} small />
+                </div>
+
+                {/* Bio - full width */}
+                <div className="rounded-lg border bg-muted/30 p-3">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                    <p className="text-[11px] text-muted-foreground font-medium">{isAr ? 'نبذة تعريفية' : 'Bio'}</p>
+                  </div>
+                  <p className="text-sm">{teacher?.bio || '-'}</p>
                 </div>
 
                 {/* Documents - View mode */}
                 <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3 font-medium">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2.5 font-medium">
                     {isAr ? 'المستندات' : 'Documents'}
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <DocumentViewCard
                       label={isAr ? 'السيرة الذاتية (CV)' : 'CV / Resume'}
                       uploaded={!!teacher?.cv_url}
@@ -557,20 +579,6 @@ const TeacherProfile = () => {
                       iconBg="bg-emerald-500/10"
                     />
                   </div>
-                </div>
-
-                {/* Payout Policy Note */}
-                <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 flex items-start gap-2">
-                  <Info className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                  <p className="text-xs text-muted-foreground">
-                    {isAr
-                      ? 'يتم صرف المستحقات وفقاً لسياسات الصرف الخاصة بنا. إذا كان طلبك مخالفاً لسياساتنا، سيتم رفض الطلب وإعادة المبلغ إلى رصيدك.'
-                      : 'Payouts are processed following our payout policies. If your request violates our policies, it will be rejected and the amount will be returned to your balance.'}
-                    {' '}
-                    <Link to="/policies/payout-policy" className="text-primary underline hover:no-underline font-medium">
-                      {isAr ? 'اطلع على سياسة الصرف' : 'View Payout Policy'}
-                    </Link>
-                  </p>
                 </div>
               </div>
             </div>
@@ -790,12 +798,12 @@ const TeacherProfile = () => {
 
 /* ── Reusable Sub-Components ── */
 
-const InfoCard = ({ icon, label, value, truncate }: { icon: React.ReactNode; label: string; value: string; truncate?: boolean }) => (
-  <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
+const InfoCard = ({ icon, label, value, truncate, small }: { icon: React.ReactNode; label: string; value: string; truncate?: boolean; small?: boolean }) => (
+  <div className={`flex items-center gap-2.5 rounded-lg border bg-muted/30 ${small ? 'p-2.5' : 'p-3'}`}>
     <span className="text-muted-foreground shrink-0">{icon}</span>
     <div className="min-w-0">
-      <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{label}</p>
-      <p className={`text-sm font-medium ${truncate ? 'line-clamp-2' : ''}`}>{value}</p>
+      <p className={`text-muted-foreground uppercase tracking-wider ${small ? 'text-[10px]' : 'text-[11px]'}`}>{label}</p>
+      <p className={`font-medium ${truncate ? 'line-clamp-2' : ''} ${small ? 'text-xs' : 'text-sm'}`}>{value}</p>
     </div>
   </div>
 );
