@@ -70,7 +70,7 @@ const Timetable = () => {
     { value: 'all', label: isAr ? 'الكل' : 'All' },
     { value: 'scheduled', label: getLabel(timetableStatusLabels, 'scheduled', isAr) },
     { value: 'completed', label: getLabel(timetableStatusLabels, 'completed', isAr) },
-    { value: 'not_attend', label: isAr ? 'لم يحضر' : 'Not Attend' },
+    { value: 'not_attend', label: isAr ? 'غياب' : 'Absence' },
     { value: 'postponed', label: getLabel(timetableStatusLabels, 'postponed', isAr) },
     { value: 'cancelled', label: isAr ? 'ملغي' : 'Cancelled' },
   ];

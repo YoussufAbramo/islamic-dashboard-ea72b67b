@@ -210,7 +210,7 @@ const AttendLesson = () => {
       return { label: isAr ? '🟢 جلسة نشطة' : '🟢 In Session', variant: 'default', className: 'bg-emerald-600 text-white', isLive: true };
     }
     if (entry.status === 'teacher_not_attend' || entry.status === 'student_not_attend' || entry.status === 'not_attend') {
-      return { label: isAr ? 'لم يحضر' : 'Not Attend', variant: 'outline', className: 'border-rose-500/40 bg-rose-500/10 text-rose-600 dark:text-rose-400', isLive: false };
+      return { label: isAr ? 'غياب' : 'Absence', variant: 'outline', className: 'border-rose-500/40 bg-rose-500/10 text-rose-600 dark:text-rose-400', isLive: false };
     }
     if (entry.status === 'postponed') {
       return { label: isAr ? 'مؤجل' : 'Postponed', variant: 'outline', className: 'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400', isLive: false };
@@ -425,8 +425,8 @@ const AttendLesson = () => {
           </p>
           <p>
             {isAr
-              ? 'خيار "عدم الحضور" متاح حتى 30 دقيقة قبل موعد الدرس. خلال آخر 30 دقيقة، لا يمكن إلغاء الحضور. لمزيد من التفاصيل، راجع '
-              : 'The "Not Attend" option is available up to 30 minutes before the lesson. Within the last 30 minutes, cancellation is not allowed. For more details, see the '}
+              ? 'خيار "الغياب" متاح حتى 30 دقيقة قبل موعد الجلسة. خلال آخر 30 دقيقة، لا يمكن إلغاء الحضور. لمزيد من التفاصيل، راجع '
+              : 'The "Absence" option is available up to 30 minutes before the session. Within the last 30 minutes, cancellation is not allowed. For more details, see the '}
             <a href="/policies/attendance-policy" target="_blank" className="text-primary underline underline-offset-2 hover:text-primary/80">
               {isAr ? 'سياسة الحضور' : 'Attendance Policy'}
             </a>.
