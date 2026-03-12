@@ -600,7 +600,17 @@ const Subscriptions = () => {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label>{t('subscriptions.startDate')}</Label><Input type="date" value={createForm.start_date} onChange={(e) => setCreateForm({ ...createForm, start_date: e.target.value })} /></div>
-              <div><Label>{t('subscriptions.renewalDate')}</Label><Input type="date" value={createForm.renewal_date} readOnly className="bg-muted" /></div>
+              <div>
+                <Label>{t('subscriptions.renewalDate')}</Label>
+                <Input type="date" value={createForm.renewal_date} readOnly className="bg-muted" />
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  {createForm.subscription_type === 'monthly'
+                    ? (isAr ? 'يتجدد كل 28 يومًا' : 'Renews every 28 days')
+                    : createForm.subscription_type === 'quarterly'
+                      ? (isAr ? 'يتجدد كل 84 يومًا (3 أشهر)' : 'Renews every 84 days (3 months)')
+                      : (isAr ? 'يتجدد كل 365 يومًا' : 'Renews every 365 days')}
+                </p>
+              </div>
             </div>
 
             {/* Schedule Picker */}
