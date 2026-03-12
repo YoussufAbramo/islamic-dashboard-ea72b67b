@@ -279,6 +279,25 @@ const TeacherProfile = () => {
       toast.success(isAr ? 'تم إرسال طلب الصرف' : 'Payout request submitted');
       setPayoutOpen(false);
       setPayoutAmount('');
+
+      // Push notifications to all admins
+      const { data: adminRoles } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'admin');
+      if (adminRoles && adminRoles.length > 0) {
+        const teacherName = profile?.full_name || 'Teacher';
+        const notifications = adminRoles.map(ar => ({
+          user_id: ar.user_id,
+          title: isAr ? 'طلب صرف جديد' : 'New Payout Request',
+          message: isAr
+            ? `${teacherName} طلب صرف مبلغ $${amount.toFixed(2)}`
+            : `${teacherName} requested a payout of $${amount.toFixed(2)}`,
+          link: '/dashboard/payout-requests',
+        }));
+        await supabase.from('notifications').insert(notifications);
+      }
+
       fetchData();
     }
   };
