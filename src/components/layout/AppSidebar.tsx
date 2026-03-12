@@ -103,65 +103,7 @@ const AppSidebar = () => {
       ],
     },
     {
-      label: 'Reports',
-      labelAr: 'التقارير',
-      items: [
-        { key: 'attendance', label: isAr ? 'تتبع الحضور' : 'Attendance Tracking', icon: ClipboardCheck, path: '/dashboard/attendance', roles: ['admin', 'teacher'], beta: true },
-        { key: 'reports', label: isAr ? 'التقارير والتحليلات' : 'Reports & Analytics', icon: BarChart3, path: '/dashboard/reports', roles: ['admin'] },
-      ],
-    },
-    {
       label: 'Website',
-      labelAr: 'الموقع',
-      requiresWebsiteMode: true,
-      items: [
-        { key: 'landing-page', label: isAr ? 'صفحة الهبوط' : 'Landing Page', icon: Globe, path: '/dashboard/landing-page', roles: ['admin'] },
-        { key: 'website-pages', label: isAr ? 'الصفحات الرئيسية' : 'Main Pages', icon: FileText, path: '/dashboard/website-pages', roles: ['admin'] },
-        { key: 'blog', label: isAr ? 'المدونة' : 'Blogs', icon: PenLine, path: '/dashboard/blog', roles: ['admin'] },
-        { key: 'policies', label: isAr ? 'السياسات' : 'Policies', icon: ScrollText, path: '/dashboard/policies', roles: ['admin'] },
-      ],
-    },
-    {
-      label: 'Media',
-      labelAr: 'الوسائط',
-      items: [
-        { key: 'media', label: isAr ? 'الوسائط' : 'Media', icon: HardDrive, path: '/dashboard/media', roles: ['admin'] },
-      ],
-    },
-    {
-      label: 'Messages',
-      labelAr: 'الرسائل',
-      items: [
-        { key: 'support', label: t('nav.support'), icon: HeadphonesIcon, path: '/dashboard/support', roles: ['admin'],
-          children: [
-            { key: 'support-departments', label: isAr ? 'الأقسام' : 'Departments', icon: Building2, path: '/dashboard/support/departments', roles: ['admin'] },
-            { key: 'support-priorities', label: isAr ? 'الأولويات' : 'Priorities', icon: Flag, path: '/dashboard/support/priorities', roles: ['admin'] },
-          ],
-        },
-        { key: 'chats', label: t('nav.chats'), icon: MessageSquare, path: '/dashboard/chats', roles: ['admin', 'teacher', 'student'], badgeKey: 'chats' },
-        { key: 'announcements', label: isAr ? 'الإعلانات' : 'Announcements', icon: Megaphone, path: '/dashboard/announcements', roles: ['admin', 'teacher', 'student'] },
-        { key: 'notifications', label: isAr ? 'الإشعارات' : 'Notifications', icon: Bell, path: '/dashboard/notifications', roles: ['admin', 'teacher', 'student'] },
-      ],
-    },
-    {
-      label: 'Users',
-      labelAr: 'المستخدمون',
-      items: [
-        { key: 'admins', label: isAr ? 'المشرفون' : 'Admins', icon: ShieldCheck, path: '/dashboard/admins', roles: ['admin'] },
-        { key: 'teachers', label: t('nav.teachers'), icon: Users, path: '/dashboard/teachers', roles: ['admin'] },
-        { key: 'students', label: t('nav.students'), icon: GraduationCap, path: '/dashboard/students', roles: ['admin', 'teacher'] },
-        { key: 'roles', label: isAr ? 'إدارة الأدوار' : 'Manage Roles', icon: Shield, path: '/dashboard/roles', roles: ['admin'], comingSoon: true },
-      ],
-    },
-    {
-      label: 'Finance',
-      labelAr: 'المالية',
-      items: [
-        { key: 'subscriptions', label: t('nav.subscriptions'), icon: CreditCard, path: '/dashboard/subscriptions', roles: ['admin'] },
-        { key: 'invoices', label: isAr ? 'الفواتير' : 'Invoices', icon: FileText, path: '/dashboard/invoices', roles: ['admin'] },
-        { key: 'calculator', label: isAr ? 'الحاسبة' : 'Calculator', icon: Calculator, path: '/dashboard/calculator', roles: ['admin'] },
-      ],
-    },
     {
       label: 'Developer',
       labelAr: 'المطور',
