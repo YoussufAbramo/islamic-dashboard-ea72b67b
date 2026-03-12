@@ -44,6 +44,7 @@ const AppSidebar = () => {
   const location = useLocation();
   const [resolvedAvatarUrl, setResolvedAvatarUrl] = useState('');
   const [unreadChats, setUnreadChats] = useState(0);
+  const [pendingPayouts, setPendingPayouts] = useState(0);
   const [hoveredMenus, setHoveredMenus] = useState<Set<string>>(new Set());
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
   const [lessonLed, setLessonLed] = useState<'live' | 'soon' | null>(null);
@@ -99,6 +100,20 @@ const AppSidebar = () => {
     return () => clearInterval(interval);
   }, [user]);
 
+  // Count pending payout requests (admin only)
+  useEffect(() => {
+    if (!user || role !== 'admin') return;
+    const checkPendingPayouts = async () => {
+      const { count } = await supabase
+        .from('payout_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'under_review');
+      setPendingPayouts(count || 0);
+    };
+    checkPendingPayouts();
+    const interval = setInterval(checkPendingPayouts, 30000);
+    return () => clearInterval(interval);
+  }, [user, role]);
   const handleLogout = async () => {
     await signOut();
     navigate('/login');
@@ -129,7 +144,7 @@ const AppSidebar = () => {
         },
         { key: 'attend-lesson', label: isAr ? 'حضور الجلسة' : 'Attend Session', icon: MonitorPlay, path: '/dashboard/attend-lesson', roles: ['admin', 'teacher', 'student'] },
         { key: 'timetable', label: t('nav.timetable'), icon: Calendar, path: '/dashboard/timetable', roles: ['admin', 'teacher', 'student'] },
-        { key: 'certificates', label: isAr ? 'الشهادات' : 'Certificates', icon: Award, path: '/dashboard/certificates', roles: ['admin', 'teacher', 'student'], beta: true },
+        { key: 'certificates', label: isAr ? 'الشهادات' : 'Certificates', icon: Award, path: '/dashboard/certificates', roles: ['admin', 'teacher', 'student'] },
         { key: 'library', label: isAr ? 'المكتبة' : 'Library', icon: Library, path: '/dashboard/library', roles: ['admin', 'teacher', 'student'] },
       ],
     },
@@ -188,7 +203,7 @@ const AppSidebar = () => {
           ],
         },
         { key: 'calculator', label: isAr ? 'الحاسبة' : 'Calculator', icon: Calculator, path: '/dashboard/calculator', roles: ['admin'] },
-        { key: 'payout-requests', label: isAr ? 'طلبات الصرف' : 'Payout Requests', icon: DollarSign, path: '/dashboard/payout-requests', roles: ['admin'] },
+        { key: 'payout-requests', label: isAr ? 'طلبات الصرف' : 'Payout Requests', icon: DollarSign, path: '/dashboard/payout-requests', roles: ['admin'], badgeKey: 'payouts' },
       ],
     },
     {
@@ -325,6 +340,11 @@ const AppSidebar = () => {
                           {item.badgeKey === 'chats' && unreadChats > 0 && (
                             <Badge variant="destructive" className="text-[9px] px-1.5 py-0 h-4 min-w-[18px] shrink-0 ms-auto">
                               {unreadChats > 99 ? '99+' : unreadChats}
+                            </Badge>
+                          )}
+                          {item.badgeKey === 'payouts' && pendingPayouts > 0 && (
+                            <Badge variant="destructive" className="text-[9px] px-1.5 py-0 h-4 min-w-[18px] shrink-0 ms-auto">
+                              {pendingPayouts > 99 ? '99+' : pendingPayouts}
                             </Badge>
                           )}
                         </SidebarMenuButton>

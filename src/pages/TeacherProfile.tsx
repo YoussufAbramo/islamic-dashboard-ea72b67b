@@ -20,7 +20,7 @@ import {
   Clock, DollarSign, TrendingUp, AlertTriangle, CheckCircle,
   Loader2, Percent, Mail, Phone, User, Briefcase, FileText,
   ExternalLink, FileUp, Pencil, X, Save,
-  CalendarDays, Wallet, Info,
+  CalendarDays, Wallet, Info, Eye, HeadphonesIcon,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { TableSkeleton } from '@/components/PageSkeleton';
@@ -40,6 +40,8 @@ const TeacherProfile = () => {
   const [payoutOpen, setPayoutOpen] = useState(false);
   const [payoutAmount, setPayoutAmount] = useState('');
   const [payoutLoading, setPayoutLoading] = useState(false);
+  const [quickViewReq, setQuickViewReq] = useState<any>(null);
+  const [adminProfiles, setAdminProfiles] = useState<Record<string, string>>({});
 
   // Avatar
   const [resolvedAvatar, setResolvedAvatar] = useState('');
@@ -103,6 +105,18 @@ const TeacherProfile = () => {
       .eq('teacher_id', id)
       .order('created_at', { ascending: false });
     setPayoutRequests(payouts || []);
+
+    // Fetch admin names for reviewed payouts
+    const adminIds = [...new Set((payouts || []).filter(p => p.admin_id).map(p => p.admin_id))];
+    if (adminIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', adminIds);
+      const map: Record<string, string> = {};
+      (profiles || []).forEach(p => { map[p.id] = p.full_name; });
+      setAdminProfiles(map);
+    }
 
     // Session stats (current month)
     const now = new Date();
@@ -265,6 +279,25 @@ const TeacherProfile = () => {
       toast.success(isAr ? 'تم إرسال طلب الصرف' : 'Payout request submitted');
       setPayoutOpen(false);
       setPayoutAmount('');
+
+      // Push notifications to all admins
+      const { data: adminRoles } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'admin');
+      if (adminRoles && adminRoles.length > 0) {
+        const teacherName = profile?.full_name || 'Teacher';
+        const notifications = adminRoles.map(ar => ({
+          user_id: ar.user_id,
+          title: isAr ? 'طلب صرف جديد' : 'New Payout Request',
+          message: isAr
+            ? `${teacherName} طلب صرف مبلغ $${amount.toFixed(2)}`
+            : `${teacherName} requested a payout of $${amount.toFixed(2)}`,
+          link: '/dashboard/payout-requests',
+        }));
+        await supabase.from('notifications').insert(notifications);
+      }
+
       fetchData();
     }
   };
@@ -582,7 +615,13 @@ const TeacherProfile = () => {
       {/* Account Statement */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">{isAr ? 'كشف الحساب' : 'Account Statement'}</CardTitle>
+          <CardTitle className="text-lg flex items-center justify-between">
+            <span>{isAr ? 'كشف الحساب' : 'Account Statement'}</span>
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate('/dashboard/support')}>
+              <HeadphonesIcon className="h-3.5 w-3.5" />
+              {isAr ? 'تقديم تذكرة' : 'Submit Ticket'}
+            </Button>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {payoutRequests.length === 0 ? (
@@ -593,32 +632,86 @@ const TeacherProfile = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>{isAr ? 'المرجع' : 'Ref ID'}</TableHead>
-                    <TableHead>{isAr ? 'التاريخ' : 'Date'}</TableHead>
+                    <TableHead>{isAr ? 'تاريخ الطلب' : 'Date of Request'}</TableHead>
                     <TableHead>{isAr ? 'المبلغ' : 'Amount'}</TableHead>
+                    <TableHead>{isAr ? 'الرصيد قبل' : 'Balance Before'}</TableHead>
+                    <TableHead>{isAr ? 'الرصيد بعد' : 'Balance After'}</TableHead>
                     <TableHead>{isAr ? 'الحالة' : 'Status'}</TableHead>
-                    <TableHead>{isAr ? 'تاريخ الصرف' : 'Payout Date'}</TableHead>
-                    <TableHead>{isAr ? 'ملاحظات' : 'Notes'}</TableHead>
+                    <TableHead>{isAr ? 'إجراءات' : 'Actions'}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {payoutRequests.map((req) => (
-                    <TableRow key={req.id}>
-                      <TableCell className="font-mono text-xs">{req.transaction_ref}</TableCell>
-                      <TableCell>{format(new Date(req.created_at), 'dd/MM/yyyy')}</TableCell>
-                      <TableCell className="font-semibold">${Number(req.requested_amount).toFixed(2)}</TableCell>
-                      <TableCell>{statusBadge(req.status)}</TableCell>
-                      <TableCell>{req.reviewed_at ? format(new Date(req.reviewed_at), 'dd/MM/yyyy') : '-'}</TableCell>
-                      <TableCell className="max-w-[200px] truncate text-xs text-muted-foreground">
-                        {req.decline_reason || req.admin_notes || '-'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {payoutRequests.map((req) => {
+                    const balanceBefore = Number(req.available_balance_at_request) + Number(req.requested_amount);
+                    const balanceAfter = Number(req.available_balance_at_request);
+                    return (
+                      <TableRow key={req.id}>
+                        <TableCell className="font-mono text-xs">{req.transaction_ref}</TableCell>
+                        <TableCell className="text-sm">{format(new Date(req.created_at), 'dd/MM/yyyy HH:mm')}</TableCell>
+                        <TableCell className="font-semibold">${Number(req.requested_amount).toFixed(2)}</TableCell>
+                        <TableCell className="text-muted-foreground">${balanceBefore.toFixed(2)}</TableCell>
+                        <TableCell className="text-muted-foreground">${balanceAfter.toFixed(2)}</TableCell>
+                        <TableCell>{statusBadge(req.status)}</TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setQuickViewReq(req)}>
+                            <Eye className="h-3.5 w-3.5" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Quick View Dialog */}
+      <Dialog open={!!quickViewReq} onOpenChange={(open) => !open && setQuickViewReq(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5 text-primary" />
+              {isAr ? 'تفاصيل الطلب' : 'Request Details'}
+            </DialogTitle>
+          </DialogHeader>
+          {quickViewReq && (() => {
+            const balanceBefore = Number(quickViewReq.available_balance_at_request) + Number(quickViewReq.requested_amount);
+            const balanceAfter = Number(quickViewReq.available_balance_at_request);
+            return (
+              <div className="space-y-3">
+                <div className="rounded-lg border bg-muted/50 p-4 space-y-2 text-sm">
+                  <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'المرجع' : 'Ref ID'}</span><span className="font-mono text-xs">{quickViewReq.transaction_ref}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'المبلغ المطلوب' : 'Requested Amount'}</span><span className="font-semibold">${Number(quickViewReq.requested_amount).toFixed(2)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'الرصيد قبل' : 'Balance Before'}</span><span>${balanceBefore.toFixed(2)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'الرصيد بعد' : 'Balance After'}</span><span>${balanceAfter.toFixed(2)}</span></div>
+                  <Separator />
+                  <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'تاريخ الطلب' : 'Date of Request'}</span><span>{format(new Date(quickViewReq.created_at), 'dd/MM/yyyy HH:mm')}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'الحالة' : 'Status'}</span>{statusBadge(quickViewReq.status)}</div>
+                  {quickViewReq.reviewed_at && (
+                    <>
+                      <Separator />
+                      <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'تاريخ المراجعة' : 'Reviewed At'}</span><span>{format(new Date(quickViewReq.reviewed_at), 'dd/MM/yyyy HH:mm')}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'بواسطة' : 'Reviewed By'}</span><span className="font-medium">{quickViewReq.admin_id ? (adminProfiles[quickViewReq.admin_id] || '-') : '-'}</span></div>
+                    </>
+                  )}
+                  {quickViewReq.decline_reason && (
+                    <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'سبب الرفض' : 'Decline Reason'}</span><span className="text-destructive text-xs max-w-[200px] text-end">{quickViewReq.decline_reason}</span></div>
+                  )}
+                  {quickViewReq.admin_notes && (
+                    <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'ملاحظات المشرف' : 'Admin Notes'}</span><span className="text-xs max-w-[200px] text-end">{quickViewReq.admin_notes}</span></div>
+                  )}
+                </div>
+                <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => { setQuickViewReq(null); navigate('/dashboard/support'); }}>
+                  <HeadphonesIcon className="h-3.5 w-3.5" />
+                  {isAr ? 'تقديم تذكرة دعم' : 'Submit Support Ticket'}
+                </Button>
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
 
       {/* Payout Request Dialog */}
       <Dialog open={payoutOpen} onOpenChange={setPayoutOpen}>

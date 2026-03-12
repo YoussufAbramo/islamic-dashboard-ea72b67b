@@ -74,7 +74,7 @@ const PayoutTable = ({ requests, loading, isAr, onApprove, onDecline }: Props) =
             </div>
             <div className="flex items-center justify-between">
               <p className="text-lg font-bold">${Number(req.requested_amount).toFixed(2)}</p>
-              <p className="text-xs text-muted-foreground">{format(new Date(req.created_at), 'MMM dd, yyyy')}</p>
+              <p className="text-xs text-muted-foreground">{format(new Date(req.created_at), 'MMM dd, yyyy HH:mm')}</p>
             </div>
             {req.status === 'under_review' && (
               <div className="flex gap-2 pt-1 border-t border-border">
@@ -131,7 +131,7 @@ const PayoutTable = ({ requests, loading, isAr, onApprove, onDecline }: Props) =
                   </TableCell>
                   <TableCell className="font-semibold">${Number(req.requested_amount).toFixed(2)}</TableCell>
                   <TableCell className="text-muted-foreground">${Number(req.available_balance_at_request).toFixed(2)}</TableCell>
-                  <TableCell className="text-sm">{format(new Date(req.created_at), 'MMM dd, yyyy')}</TableCell>
+                  <TableCell className="text-sm">{format(new Date(req.created_at), 'MMM dd, yyyy HH:mm')}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className={sc.bg}>{isAr ? sc.labelAr : sc.label}</Badge>
                   </TableCell>
@@ -147,7 +147,7 @@ const PayoutTable = ({ requests, loading, isAr, onApprove, onDecline }: Props) =
                       </div>
                     ) : (
                       <span className="text-xs text-muted-foreground">
-                        {req.reviewed_at ? format(new Date(req.reviewed_at), 'MMM dd, yyyy') : '-'}
+                        {req.reviewed_at ? format(new Date(req.reviewed_at), 'MMM dd, yyyy HH:mm') : '-'}
                       </span>
                     )}
                   </TableCell>
