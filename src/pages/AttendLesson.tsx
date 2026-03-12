@@ -520,9 +520,15 @@ const AttendLesson = () => {
                       <TableCell className="text-center">
                         <div className="flex items-center justify-center gap-1.5 flex-wrap">
                           {isActiveEntry ? (
-                            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                              {isAr ? 'جلسة نشطة...' : 'In session...'}
-                            </span>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleAttendClick(entry)}
+                              className="gap-1.5 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20"
+                            >
+                              <Video className="h-3.5 w-3.5" />
+                              {isAr ? 'فتح الاجتماع' : 'Open Meeting'}
+                            </Button>
                           ) : (
                             <>
                               <Button
