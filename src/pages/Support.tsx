@@ -39,6 +39,8 @@ const Support = () => {
   const isAr = language === 'ar';
   const isAdmin = role === 'admin';
   const [tickets, setTickets] = useState<any[]>([]);
+  const [departments, setDepartments] = useState<{ id: string; name: string; name_ar: string | null }[]>([]);
+  const [priorities, setPriorities] = useState<{ id: string; name: string; name_ar: string | null; color: string }[]>([]);
   const [search, setSearch] = useState('');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -52,8 +54,14 @@ const Support = () => {
 
   const fetchTickets = async () => {
     setLoading(true);
-    const { data } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
+    const [{ data }, { data: deptData }, { data: prioData }] = await Promise.all([
+      supabase.from('support_tickets').select('*').order('created_at', { ascending: false }),
+      supabase.from('support_departments').select('id, name, name_ar').eq('is_active', true).order('sort_order'),
+      supabase.from('support_priorities').select('id, name, name_ar, color').eq('is_active', true).order('sort_order'),
+    ]);
     setTickets(data || []);
+    if (deptData) setDepartments(deptData as any);
+    if (prioData) setPriorities(prioData as any);
     setLoading(false);
   };
 
@@ -172,10 +180,9 @@ const Support = () => {
                     <Select value={form.department} onValueChange={(v) => setForm({ ...form, department: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="general">{t('support.general')}</SelectItem>
-                        <SelectItem value="technical">{t('support.technical')}</SelectItem>
-                        <SelectItem value="billing">{t('support.billing')}</SelectItem>
-                        <SelectItem value="academic">{t('support.academic')}</SelectItem>
+                        {departments.map(d => (
+                          <SelectItem key={d.id} value={d.name.toLowerCase()}>{isAr ? (d.name_ar || d.name) : d.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -184,10 +191,9 @@ const Support = () => {
                     <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="low">{t('support.low')}</SelectItem>
-                        <SelectItem value="medium">{t('support.medium')}</SelectItem>
-                        <SelectItem value="high">{t('support.high')}</SelectItem>
-                        <SelectItem value="urgent">{t('support.urgent')}</SelectItem>
+                        {priorities.map(p => (
+                          <SelectItem key={p.id} value={p.name.toLowerCase()}>{isAr ? (p.name_ar || p.name) : p.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>

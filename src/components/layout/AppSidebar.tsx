@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText, LogOut, Calculator, ShieldCheck, Shield, Sparkles, AlertCircle, HardDrive, Globe, ScrollText, PenLine, Activity, Code, Webhook, Bug, ClipboardList, Route, FolderTree, Signal, ChevronDown } from 'lucide-react';
+import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText, LogOut, Calculator, ShieldCheck, Shield, Sparkles, AlertCircle, HardDrive, Globe, ScrollText, PenLine, Activity, Code, Webhook, Bug, ClipboardList, Route, FolderTree, Signal, ChevronDown, Building2, Flag } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -122,7 +122,12 @@ const AppSidebar = () => {
       label: 'Messages',
       labelAr: 'الرسائل',
       items: [
-        { key: 'support', label: t('nav.support'), icon: HeadphonesIcon, path: '/dashboard/support', roles: ['admin'] },
+        { key: 'support', label: t('nav.support'), icon: HeadphonesIcon, path: '/dashboard/support', roles: ['admin'],
+          children: [
+            { key: 'support-departments', label: isAr ? 'الأقسام' : 'Departments', icon: Building2, path: '/dashboard/support/departments', roles: ['admin'] },
+            { key: 'support-priorities', label: isAr ? 'الأولويات' : 'Priorities', icon: Flag, path: '/dashboard/support/priorities', roles: ['admin'] },
+          ],
+        },
         { key: 'chats', label: t('nav.chats'), icon: MessageSquare, path: '/dashboard/chats', roles: ['admin', 'teacher', 'student'], badgeKey: 'chats' },
         { key: 'announcements', label: isAr ? 'الإعلانات' : 'Announcements', icon: Megaphone, path: '/dashboard/announcements', roles: ['admin', 'teacher', 'student'] },
         { key: 'notifications', label: isAr ? 'الإشعارات' : 'Notifications', icon: Bell, path: '/dashboard/notifications', roles: ['admin', 'teacher', 'student'] },
