@@ -171,6 +171,8 @@ const Subscriptions = () => {
       lesson_duration: parseInt(createForm.lesson_duration) || 60,
       schedule_days: createForm.schedule_days,
       schedule_time: createForm.schedule_time || null,
+      google_meet_url: createForm.google_meet_url || '',
+      zoom_url: createForm.zoom_url || '',
     });
     setCreateLoading(false);
     if (error) {
@@ -178,7 +180,7 @@ const Subscriptions = () => {
     } else {
       toast.success(isAr ? 'تم إنشاء الاشتراك' : 'Subscription created');
       setCreateOpen(false);
-      setCreateForm({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', price_rate: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '', weekly_lessons: '1', lesson_duration: '60', schedule_days: [], schedule_time: '' });
+      setCreateForm({ student_id: '', course_id: '', teacher_id: '', subscription_type: 'monthly', price: '', price_rate: '', start_date: new Date().toISOString().split('T')[0], renewal_date: '', weekly_lessons: '1', lesson_duration: '60', schedule_days: [], schedule_time: '', google_meet_url: '', zoom_url: '' });
       fetchSubscriptions();
     }
   };
