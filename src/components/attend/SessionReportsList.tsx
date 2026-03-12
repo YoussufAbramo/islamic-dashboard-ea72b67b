@@ -95,7 +95,7 @@ const SessionReportsList = ({ isAr, studentId, teacherId, courseId, subscription
       setLoading(false);
     };
     fetchReports();
-  }, [studentId, teacherId, courseId, subscriptionId, limit]);
+  }, [studentId, teacherId, courseId, subscriptionId, timetableEntryId, limit]);
 
   if (loading) {
     return <p className="text-sm text-muted-foreground py-4 text-center">{isAr ? 'جاري التحميل...' : 'Loading...'}</p>;

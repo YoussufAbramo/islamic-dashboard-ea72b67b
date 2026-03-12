@@ -592,9 +592,7 @@ const AttendLesson = () => {
           {viewReportEntry && (
             <SessionReportsList
               isAr={isAr}
-              studentId={viewReportEntry.student_id || undefined}
-              teacherId={viewReportEntry.teacher_id || undefined}
-              courseId={viewReportEntry.course_id || undefined}
+              timetableEntryId={viewReportEntry.id}
               limit={1}
             />
           )}
