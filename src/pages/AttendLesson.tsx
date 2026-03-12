@@ -260,17 +260,23 @@ const AttendLesson = () => {
     return now < endTime;
   };
 
-  const handleNotAttend = async (entry: LessonEntry, who: 'teacher' | 'student') => {
-    const newStatus = who === 'teacher' ? 'teacher_not_attend' : 'student_not_attend';
-    const { error } = await supabase
-      .from('timetable_entries')
-      .update({ status: newStatus })
-      .eq('id', entry.id);
-    if (error) {
-      toast.error(isAr ? 'فشل تحديث الحالة' : 'Failed to update status');
+  const handleCancelSubmit = async () => {
+    if (!cancelEntry) return;
+    if (!cancelReason.trim()) {
+      toast.error(isAr ? 'يرجى كتابة سبب الإلغاء' : 'Please provide a cancellation reason');
       return;
     }
-    toast.success(isAr ? 'تم تسجيل عدم الحضور' : 'Marked as not attending');
+    const { error } = await supabase
+      .from('timetable_entries')
+      .update({ status: 'cancelled', cancellation_reason: cancelReason.trim() } as any)
+      .eq('id', cancelEntry.id);
+    if (error) {
+      toast.error(isAr ? 'فشل إلغاء الدرس' : 'Failed to cancel lesson');
+      return;
+    }
+    toast.success(isAr ? 'تم إلغاء الدرس' : 'Lesson cancelled');
+    setCancelEntry(null);
+    setCancelReason('');
     fetchEntries();
   };
 
