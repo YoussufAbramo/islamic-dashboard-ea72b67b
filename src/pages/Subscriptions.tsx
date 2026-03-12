@@ -17,13 +17,13 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Search, Eye, Plus, ArrowUp, ArrowDown, Trash2, Check, ChevronsUpDown, Video } from 'lucide-react';
+import { Search, Eye, Plus, ArrowUp, ArrowDown, Trash2, Check, ChevronsUpDown, Video, CalendarDays, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { subscriptionStatusLabels, subscriptionTypeLabels, getLabel } from '@/lib/statusLabels';
 import { addDays } from 'date-fns';
 import { cn } from '@/lib/utils';
-import SchedulePicker from '@/components/SchedulePicker';
+import SchedulePicker, { formatTime12, DAY_LABELS } from '@/components/SchedulePicker';
 import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Subscriptions = () => {
@@ -466,16 +466,33 @@ const Subscriptions = () => {
               </div>
               {/* Schedule info */}
               {(selected.schedule_days?.length > 0 || selected.schedule_time) && (
-                <div className="p-3 rounded-lg bg-muted/50 space-y-1">
-                  <Label className="text-xs">{isAr ? 'الجدول' : 'Schedule'}</Label>
-                  {selected.schedule_days?.length > 0 && (
-                    <div className="flex gap-1 flex-wrap">
-                      {selected.schedule_days.map((d: string) => (
-                        <Badge key={d} variant="outline" className="text-[10px]">{d}</Badge>
-                      ))}
-                    </div>
-                  )}
-                  {selected.schedule_time && <p className="text-sm">{selected.schedule_time}</p>}
+                <div className="rounded-xl border bg-card overflow-hidden">
+                  <div className="px-3.5 py-2.5 border-b bg-muted/40 flex items-center gap-2">
+                    <CalendarDays className="h-3.5 w-3.5 text-primary" />
+                    <Label className="text-xs font-semibold">{isAr ? 'الجدول الأسبوعي' : 'Weekly Schedule'}</Label>
+                  </div>
+                  <div className="p-3.5 space-y-3">
+                    {selected.schedule_days?.length > 0 && (
+                      <div className="flex gap-1.5 flex-wrap">
+                        {DAY_LABELS.filter(d => selected.schedule_days?.includes(d.key)).map(day => (
+                          <span key={day.key} className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary/10 text-primary text-[11px] font-semibold border border-primary/20">
+                            {isAr ? day.arFull : day.enFull}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {selected.schedule_time && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-accent">
+                          <Clock className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-muted-foreground leading-none mb-0.5">{isAr ? 'وقت الدرس' : 'Lesson Time'}</p>
+                          <p className="text-sm font-semibold">{formatTime12(selected.schedule_time)}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
               {isAdmin && (
