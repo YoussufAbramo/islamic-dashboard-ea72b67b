@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ExternalLink, X, Check, Link2, Plus, Video } from 'lucide-react';
+import { ExternalLink, X, Check, Link2, Plus, Video, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import DashboardMeeting from './DashboardMeeting';
+
+const DashboardMeeting = lazy(() => import('./DashboardMeeting'));
 
 type JoinMethod = 'vconnct' | 'google_meet' | 'zoom' | 'dashboard';
 
@@ -297,13 +298,15 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, entryId, isAr, onSession
       </Dialog>
 
       {/* Dashboard Meeting (WebRTC) */}
-      {entryId && (
-        <DashboardMeeting
-          open={dashboardMeetingOpen}
-          onOpenChange={setDashboardMeetingOpen}
-          entryId={entryId}
-          isAr={isAr}
-        />
+      {entryId && dashboardMeetingOpen && (
+        <Suspense fallback={null}>
+          <DashboardMeeting
+            open={dashboardMeetingOpen}
+            onOpenChange={setDashboardMeetingOpen}
+            entryId={entryId}
+            isAr={isAr}
+          />
+        </Suspense>
       )}
     </>
   );

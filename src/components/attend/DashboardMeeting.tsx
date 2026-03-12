@@ -1,3 +1,8 @@
+import { Buffer } from 'buffer';
+if (typeof globalThis.Buffer === 'undefined') {
+  (globalThis as any).Buffer = Buffer;
+}
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
