@@ -246,8 +246,8 @@ const AttendLesson = () => {
         </Card>
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-accent flex items-center justify-center">
-              <Users className="h-5 w-5 text-accent-foreground" />
+            <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center">
+              <CalendarDays className="h-5 w-5 text-secondary-foreground" />
             </div>
             <div>
               <p className="text-2xl font-bold">{weekTotal}</p>
