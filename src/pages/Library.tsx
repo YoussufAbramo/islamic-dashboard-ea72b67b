@@ -446,7 +446,7 @@ const Library = () => {
       </Dialog>
 
       {/* PDF Reader Dialog */}
-      <Dialog open={!!readerEbook} onOpenChange={(open) => { if (!open) { setReaderEbook(null); setReaderExpanded(false); } }}>
+      <Dialog open={!!readerEbook} onOpenChange={(open) => { if (!open) { setReaderEbook(null); setReaderPdfUrl(''); setReaderExpanded(false); } }}>
         <DialogContent className={readerExpanded ? 'max-w-[100vw] w-[100vw] h-[100vh] rounded-none flex flex-col p-0 gap-0' : 'max-w-5xl h-[90vh] flex flex-col p-0 gap-0'}>
           <DialogHeader className="px-6 py-4 border-b shrink-0">
             <DialogTitle className="flex items-center gap-2">
