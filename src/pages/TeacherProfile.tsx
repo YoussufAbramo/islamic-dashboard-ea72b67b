@@ -20,8 +20,8 @@ import ImagePickerField from '@/components/media/ImagePickerField';
 import {
   Clock, DollarSign, TrendingUp, AlertTriangle, CheckCircle,
   Loader2, Percent, Mail, Phone, User, Briefcase, FileText,
-  Upload, ExternalLink, FileUp, Pencil, X, Save, Plus, Trash2, BookOpen,
-  CalendarDays, Users,
+  Upload, ExternalLink, FileUp, Pencil, X, Save,
+  CalendarDays, Users, Wallet, Info,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { TableSkeleton } from '@/components/PageSkeleton';
