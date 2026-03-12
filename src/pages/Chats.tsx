@@ -25,7 +25,7 @@ type SortOrder = 'newest' | 'oldest';
 
 const Chats = () => {
   const { t, language } = useLanguage();
-  const { user, role } = useAuth();
+  const { user, role, profile } = useAuth();
   const isAr = language === 'ar';
   const [chats, setChats] = useState<any[]>([]);
   const [selectedChat, setSelectedChat] = useState<any>(null);
