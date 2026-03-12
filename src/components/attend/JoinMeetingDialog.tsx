@@ -204,6 +204,7 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr }: JoinMeetingDialo
                   )}
                 </button>
               );
+            })}
           </div>
 
           {/* Join button */}
