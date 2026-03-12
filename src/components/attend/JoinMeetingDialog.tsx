@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ExternalLink, X, Check, Link2 } from 'lucide-react';
+import { ExternalLink, X, Check, Link2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -157,16 +157,30 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr }: JoinMeetingDialo
                     </div>
                     {isSelected && (
                       <div className="px-3 pb-3" onClick={(e) => e.stopPropagation()}>
-                        <div className="relative">
-                          <Link2 className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                          <Input
-                            type="url"
-                            placeholder={isAr ? 'https://m2.vconnct.live/...' : 'https://m2.vconnct.live/...'}
-                            value={vconnctUrl}
-                            onChange={(e) => setVconnctUrl(e.target.value)}
-                            className="h-9 text-xs ps-8"
-                            autoFocus
-                          />
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <Link2 className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                            <Input
+                              type="url"
+                              placeholder={isAr ? 'https://vconnct.us/...' : 'https://vconnct.us/...'}
+                              value={vconnctUrl}
+                              onChange={(e) => setVconnctUrl(e.target.value)}
+                              className="h-9 text-xs ps-8"
+                              autoFocus
+                            />
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-9 w-9 p-0 shrink-0"
+                            title={isAr ? 'إنشاء رابط اجتماع جديد' : 'Create a new meeting URL'}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.open('https://dashboard.vconnct.me/', '_blank', 'noopener,noreferrer');
+                            }}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     )}
