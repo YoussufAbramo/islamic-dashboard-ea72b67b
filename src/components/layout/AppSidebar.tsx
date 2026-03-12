@@ -45,6 +45,36 @@ const AppSidebar = () => {
   const [unreadChats, setUnreadChats] = useState(0);
   const [hoveredMenus, setHoveredMenus] = useState<Set<string>>(new Set());
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
+  const [lessonLed, setLessonLed] = useState<'live' | 'soon' | null>(null);
+
+  // Check if any lesson is live or starting soon (within 15 min)
+  useEffect(() => {
+    if (!user) return;
+    const checkLessons = async () => {
+      const now = new Date();
+      const soonThreshold = new Date(now.getTime() + 15 * 60 * 1000);
+      const { data } = await supabase
+        .from('timetable_entries')
+        .select('scheduled_at, duration_minutes, status')
+        .in('status', ['scheduled', 'in_progress'])
+        .lte('scheduled_at', soonThreshold.toISOString())
+        .gte('scheduled_at', new Date(now.getTime() - 120 * 60 * 1000).toISOString())
+        .limit(20);
+      if (!data || data.length === 0) { setLessonLed(null); return; }
+      let isLive = false;
+      let isSoon = false;
+      for (const e of data) {
+        const start = new Date(e.scheduled_at);
+        const end = new Date(start.getTime() + (e.duration_minutes || 30) * 60 * 1000);
+        if (now >= start && now <= end) { isLive = true; break; }
+        if (start > now && start <= soonThreshold) { isSoon = true; }
+      }
+      setLessonLed(isLive ? 'live' : isSoon ? 'soon' : null);
+    };
+    checkLessons();
+    const interval = setInterval(checkLessons, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   useEffect(() => {
     if (profile?.avatar_url) {
