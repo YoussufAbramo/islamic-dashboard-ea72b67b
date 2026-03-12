@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ExternalLink, X, Check } from 'lucide-react';
+import { ExternalLink, X, Check, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -129,6 +129,51 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr }: JoinMeetingDialo
               const isSelected = selected === p.id;
               const url = getPlatformUrl(p.id);
 
+              if (p.id === 'vconnct') {
+                return (
+                  <div
+                    key={p.id}
+                    onClick={() => setSelected('vconnct')}
+                    className={cn(
+                      'w-full rounded-xl border transition-all cursor-pointer',
+                      isSelected
+                        ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
+                        : 'bg-card hover:bg-accent/50 border-border'
+                    )}
+                  >
+                    <div className="flex items-center gap-3 p-3">
+                      <img src={p.icon} alt={p.label} className="h-7 w-7 shrink-0 rounded" />
+                      <div className="text-start flex-1 min-w-0">
+                        <p className="text-sm font-semibold">{p.label}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {isAr ? 'حضور داخل المنصة' : 'Attend in-platform'}
+                        </p>
+                      </div>
+                      {isSelected && (
+                        <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center shrink-0">
+                          <Check className="h-3 w-3 text-primary-foreground" />
+                        </div>
+                      )}
+                    </div>
+                    {isSelected && (
+                      <div className="px-3 pb-3" onClick={(e) => e.stopPropagation()}>
+                        <div className="relative">
+                          <Link2 className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                          <Input
+                            type="url"
+                            placeholder={isAr ? 'https://m2.vconnct.live/...' : 'https://m2.vconnct.live/...'}
+                            value={vconnctUrl}
+                            onChange={(e) => setVconnctUrl(e.target.value)}
+                            className="h-9 text-xs ps-8"
+                            autoFocus
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
               return (
                 <button
                   key={p.id}
@@ -146,18 +191,11 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr }: JoinMeetingDialo
                   <img src={p.icon} alt={p.label} className="h-7 w-7 shrink-0 rounded" />
                   <div className="text-start flex-1 min-w-0">
                     <p className="text-sm font-semibold">{p.label}</p>
-                    {p.id !== 'vconnct' && (
-                      <p className="text-[10px] text-muted-foreground truncate">
-                        {url
-                          ? maskUrl(url)
-                          : (isAr ? 'لم يتم الإعداد' : 'Not configured')}
-                      </p>
-                    )}
-                    {p.id === 'vconnct' && (
-                      <p className="text-[10px] text-muted-foreground">
-                        {isAr ? 'حضور داخل المنصة' : 'Attend in-platform'}
-                      </p>
-                    )}
+                    <p className="text-[10px] text-muted-foreground truncate">
+                      {url
+                        ? maskUrl(url)
+                        : (isAr ? 'لم يتم الإعداد' : 'Not configured')}
+                    </p>
                   </div>
                   {isSelected && (
                     <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center shrink-0">
@@ -167,20 +205,6 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr }: JoinMeetingDialo
                 </button>
               );
             })}
-
-            {/* Vconnct URL input - shown only when Vconnct is selected */}
-            {selected === 'vconnct' && (
-              <div className="pt-1">
-                <Input
-                  type="url"
-                  placeholder={isAr ? 'https://m2.vconnct.live/...' : 'https://m2.vconnct.live/...'}
-                  value={vconnctUrl}
-                  onChange={(e) => setVconnctUrl(e.target.value)}
-                  className="h-9 text-xs"
-                  autoFocus
-                />
-              </div>
-            )}
           </div>
 
           {/* Join button */}
