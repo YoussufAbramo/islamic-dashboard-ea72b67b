@@ -13,7 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, Ban, CheckCircle, Trash2, Plus, Search, ArrowDown, ArrowUp, Users, UserPlus, MoreVertical } from 'lucide-react';
+import { Send, Ban, CheckCircle, Trash2, Plus, Search, ArrowDown, ArrowUp, Users, UserPlus, MoreVertical, LogIn } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
@@ -25,7 +25,7 @@ type SortOrder = 'newest' | 'oldest';
 
 const Chats = () => {
   const { t, language } = useLanguage();
-  const { user, role } = useAuth();
+  const { user, role, profile } = useAuth();
   const isAr = language === 'ar';
   const [chats, setChats] = useState<any[]>([]);
   const [selectedChat, setSelectedChat] = useState<any>(null);
@@ -34,6 +34,7 @@ const Chats = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const [loading, setLoading] = useState(true);
+  const [adminJoinedChats, setAdminJoinedChats] = useState<Set<string>>(new Set());
 
   const [createOpen, setCreateOpen] = useState(false);
   const [chatType, setChatType] = useState<'direct' | 'group'>('direct');
@@ -66,6 +67,14 @@ const Chats = () => {
       .eq('chat_id', chatId)
       .order('created_at', { ascending: true });
     setMessages(data || []);
+
+    // Check if admin already joined this chat (has a [SYSTEM] join message)
+    if (role === 'admin' && user) {
+      const hasJoined = (data || []).some((m: any) => m.sender_id === user.id && m.message.startsWith('[SYSTEM]'));
+      if (hasJoined) {
+        setAdminJoinedChats(prev => new Set(prev).add(chatId));
+      }
+    }
 
     // Fetch roles for all unique senders
     const senderIds = [...new Set((data || []).map((m: any) => m.sender_id))];
@@ -118,6 +127,18 @@ const Chats = () => {
     await supabase.from('chat_messages').insert({ chat_id: selectedChat.id, sender_id: user.id, message: newMessage });
     setNewMessage('');
     fetchMessages(selectedChat.id);
+  };
+
+  const joinConversation = async () => {
+    if (!selectedChat || !user || !profile) return;
+    const adminName = profile.full_name || 'Admin';
+    const systemMsg = isAr
+      ? `[SYSTEM] المشرف ${adminName} انضم إلى المحادثة.`
+      : `[SYSTEM] Admin ${adminName} has joined the conversation.`;
+    await supabase.from('chat_messages').insert({ chat_id: selectedChat.id, sender_id: user.id, message: systemMsg });
+    setAdminJoinedChats(prev => new Set(prev).add(selectedChat.id));
+    fetchMessages(selectedChat.id);
+    toast.success(isAr ? 'انضممت إلى المحادثة' : 'Joined conversation');
   };
 
   const deleteMessage = async (messageId: string) => {
@@ -473,6 +494,7 @@ const Chats = () => {
                         : msgDate.toDateString() === yesterday.toDateString()
                           ? (isAr ? 'أمس' : 'Yesterday')
                           : format(msgDate, 'dd MMM yyyy');
+                      const isSystemMsg = msg.message.startsWith('[SYSTEM]');
                       return (
                         <div key={msg.id}>
                           {showDateSep && (
@@ -482,6 +504,13 @@ const Chats = () => {
                               <div className="flex-1 h-px bg-border" />
                             </div>
                           )}
+                          {isSystemMsg ? (
+                            <div className="flex justify-center my-2">
+                              <span className="text-[10px] text-muted-foreground bg-muted/70 border border-border/50 px-3 py-1 rounded-full italic">
+                                {msg.message.replace('[SYSTEM] ', '')}
+                              </span>
+                            </div>
+                          ) : (
                           <div className={`group flex items-end gap-1.5 ${isOwn ? 'justify-end' : 'justify-start'}`}>
                             {!isOwn && (
                               <Avatar className="h-6 w-6 shrink-0 ring-1 ring-background">
@@ -525,6 +554,7 @@ const Chats = () => {
                               </Avatar>
                             )}
                           </div>
+                          )}
                         </div>
                       );
                     })}
@@ -532,10 +562,19 @@ const Chats = () => {
                   </div>
                 </ScrollArea>
                 {!selectedChat.is_suspended && (
-                  <div className="p-3 border-t flex gap-2">
-                    <Input placeholder={t('chats.typeMessage')} value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendMessage()} />
-                    <Button size="icon" onClick={sendMessage}><Send className="h-4 w-4" /></Button>
-                  </div>
+                  role === 'admin' && !adminJoinedChats.has(selectedChat.id) ? (
+                    <div className="p-3 border-t flex justify-center">
+                      <Button variant="outline" className="gap-2" onClick={joinConversation}>
+                        <LogIn className="h-4 w-4" />
+                        {isAr ? 'انضم إلى المحادثة' : 'Join Conversation'}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="p-3 border-t flex gap-2">
+                      <Input placeholder={t('chats.typeMessage')} value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendMessage()} />
+                      <Button size="icon" onClick={sendMessage}><Send className="h-4 w-4" /></Button>
+                    </div>
+                  )
                 )}
               </div>
             </>
