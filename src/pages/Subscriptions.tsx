@@ -340,111 +340,166 @@ const Subscriptions = () => {
         <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{t('subscriptions.title')}</DialogTitle></DialogHeader>
           {selected && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-0">
               {/* Left Column - Core Info */}
-              <div className="space-y-3">
+              <div className="space-y-2.5 pe-6">
+                {/* Student & Start Date */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>{t('subscriptions.student')}</Label>
-                    <p className="text-sm">{selected.students?.profiles?.full_name || '-'}</p>
+                  <div className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-card">
+                    <div className="flex items-center justify-center h-7 w-7 rounded-md bg-primary/10 shrink-0 mt-0.5">
+                      <GraduationCap className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-muted-foreground">{t('subscriptions.student')}</p>
+                      <p className="text-sm font-medium truncate">{selected.students?.profiles?.full_name || '-'}</p>
+                    </div>
                   </div>
-                  <div>
-                    <Label>{t('subscriptions.startDate')}</Label>
-                    <p className="text-sm">{selected.start_date}</p>
+                  <div className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-card">
+                    <div className="flex items-center justify-center h-7 w-7 rounded-md bg-primary/10 shrink-0 mt-0.5">
+                      <CalendarCheck className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-muted-foreground">{t('subscriptions.startDate')}</p>
+                      <p className="text-sm font-medium">{selected.start_date}</p>
+                    </div>
                   </div>
                 </div>
+                {/* Course & Teacher */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>{t('subscriptions.course')}</Label>
-                    {editing ? (
-                      <Select value={editForm.course_id} onValueChange={(v) => setEditForm({ ...editForm, course_id: v })}>
-                        <SelectTrigger><SelectValue placeholder={isAr ? 'اختر دورة' : 'Select course'} /></SelectTrigger>
-                        <SelectContent>{courses.map((c) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}</SelectContent>
-                      </Select>
-                    ) : (
-                      <p className="text-sm">{selected.courses?.title || '-'}</p>
-                    )}
+                  <div className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-card">
+                    <div className="flex items-center justify-center h-7 w-7 rounded-md bg-primary/10 shrink-0 mt-0.5">
+                      <BookOpen className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] text-muted-foreground">{t('subscriptions.course')}</p>
+                      {editing ? (
+                        <Select value={editForm.course_id} onValueChange={(v) => setEditForm({ ...editForm, course_id: v })}>
+                          <SelectTrigger className="h-7 text-xs mt-0.5"><SelectValue placeholder={isAr ? 'اختر دورة' : 'Select course'} /></SelectTrigger>
+                          <SelectContent>{courses.map((c) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}</SelectContent>
+                        </Select>
+                      ) : (
+                        <p className="text-sm font-medium truncate">{selected.courses?.title || '-'}</p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <Label>{t('subscriptions.teacher')}</Label>
-                    {editing ? (
-                      <Select value={editForm.teacher_id} onValueChange={(v) => setEditForm({ ...editForm, teacher_id: v })}>
-                        <SelectTrigger><SelectValue placeholder={isAr ? 'اختر معلم' : 'Select teacher'} /></SelectTrigger>
-                        <SelectContent>{teachers.map((te) => <SelectItem key={te.id} value={te.id}>{te.profiles?.full_name || te.id}</SelectItem>)}</SelectContent>
-                      </Select>
-                    ) : (
-                      <p className="text-sm">{selected.teachers_rel?.profiles?.full_name || '-'}</p>
-                    )}
+                  <div className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-card">
+                    <div className="flex items-center justify-center h-7 w-7 rounded-md bg-primary/10 shrink-0 mt-0.5">
+                      <UserCheck className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] text-muted-foreground">{t('subscriptions.teacher')}</p>
+                      {editing ? (
+                        <Select value={editForm.teacher_id} onValueChange={(v) => setEditForm({ ...editForm, teacher_id: v })}>
+                          <SelectTrigger className="h-7 text-xs mt-0.5"><SelectValue placeholder={isAr ? 'اختر معلم' : 'Select teacher'} /></SelectTrigger>
+                          <SelectContent>{teachers.map((te) => <SelectItem key={te.id} value={te.id}>{te.profiles?.full_name || te.id}</SelectItem>)}</SelectContent>
+                        </Select>
+                      ) : (
+                        <p className="text-sm font-medium truncate">{selected.teachers_rel?.profiles?.full_name || '-'}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
+                {/* Billing Cycle & Status */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>{t('subscriptions.type')}</Label>
-                    {editing ? (
-                      <Select value={editForm.subscription_type} onValueChange={(v) => setEditForm({ ...editForm, subscription_type: v })}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="monthly">{isAr ? 'شهري' : 'Monthly'}</SelectItem>
-                          <SelectItem value="quarterly">{isAr ? '3 أشهر' : '3-Month'}</SelectItem>
-                          <SelectItem value="yearly">{isAr ? 'سنوي' : 'Yearly'}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <p className="text-sm">{getLabel(subscriptionTypeLabels, selected.subscription_type, isAr)}</p>
-                    )}
+                  <div className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-card">
+                    <div className="flex items-center justify-center h-7 w-7 rounded-md bg-primary/10 shrink-0 mt-0.5">
+                      <Repeat className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] text-muted-foreground">{t('subscriptions.type')}</p>
+                      {editing ? (
+                        <Select value={editForm.subscription_type} onValueChange={(v) => setEditForm({ ...editForm, subscription_type: v })}>
+                          <SelectTrigger className="h-7 text-xs mt-0.5"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="monthly">{isAr ? 'شهري' : 'Monthly'}</SelectItem>
+                            <SelectItem value="quarterly">{isAr ? '3 أشهر' : '3-Month'}</SelectItem>
+                            <SelectItem value="yearly">{isAr ? 'سنوي' : 'Yearly'}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <p className="text-sm font-medium">{getLabel(subscriptionTypeLabels, selected.subscription_type, isAr)}</p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <Label>{t('subscriptions.status')}</Label>
-                    {editing ? (
-                      <Select value={editForm.status} onValueChange={(v) => setEditForm({ ...editForm, status: v })}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">{isAr ? 'نشط' : 'Active'}</SelectItem>
-                          <SelectItem value="expired">{isAr ? 'منتهي' : 'Expired'}</SelectItem>
-                          <SelectItem value="cancelled">{isAr ? 'ملغي' : 'Cancelled'}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <div className="mt-1">
-                        <Badge variant={statusColors[selected.status] as any}>{getLabel(subscriptionStatusLabels, selected.status, isAr)}</Badge>
-                      </div>
-                    )}
+                  <div className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-card">
+                    <div className="flex items-center justify-center h-7 w-7 rounded-md bg-primary/10 shrink-0 mt-0.5">
+                      <Activity className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] text-muted-foreground">{t('subscriptions.status')}</p>
+                      {editing ? (
+                        <Select value={editForm.status} onValueChange={(v) => setEditForm({ ...editForm, status: v })}>
+                          <SelectTrigger className="h-7 text-xs mt-0.5"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">{isAr ? 'نشط' : 'Active'}</SelectItem>
+                            <SelectItem value="expired">{isAr ? 'منتهي' : 'Expired'}</SelectItem>
+                            <SelectItem value="cancelled">{isAr ? 'ملغي' : 'Cancelled'}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <div className="mt-0.5">
+                          <Badge variant={statusColors[selected.status] as any}>{getLabel(subscriptionStatusLabels, selected.status, isAr)}</Badge>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
+                {/* Renewal Date & Price */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>{t('subscriptions.renewalDate')}</Label>
-                    {editing ? (
-                      <Input type="date" value={editForm.renewal_date} onChange={(e) => setEditForm({ ...editForm, renewal_date: e.target.value })} />
-                    ) : (
-                      <p className="text-sm">{selected.renewal_date || '-'}</p>
-                    )}
+                  <div className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-card">
+                    <div className="flex items-center justify-center h-7 w-7 rounded-md bg-primary/10 shrink-0 mt-0.5">
+                      <CalendarDays className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] text-muted-foreground">{t('subscriptions.renewalDate')}</p>
+                      {editing ? (
+                        <Input type="date" value={editForm.renewal_date} onChange={(e) => setEditForm({ ...editForm, renewal_date: e.target.value })} className="h-7 text-xs mt-0.5" />
+                      ) : (
+                        <p className="text-sm font-medium">{selected.renewal_date || '-'}</p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <Label>{isAr ? 'السعر' : 'Price'}</Label>
-                    {editing ? (
-                      <Input type="number" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} />
-                    ) : (
-                      <p className="text-sm">{currency.symbol}{selected.price}</p>
-                    )}
+                  <div className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-card">
+                    <div className="flex items-center justify-center h-7 w-7 rounded-md bg-primary/10 shrink-0 mt-0.5">
+                      <DollarSign className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] text-muted-foreground">{isAr ? 'السعر' : 'Price'}</p>
+                      {editing ? (
+                        <Input type="number" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: e.target.value })} className="h-7 text-xs mt-0.5" />
+                      ) : (
+                        <p className="text-sm font-semibold">{currency.symbol}{selected.price}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
+                {/* Weekly Lessons & Duration */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>{isAr ? 'الدروس الأسبوعية' : 'Weekly Lessons'}</Label>
-                    {editing ? (
-                      <Input type="number" min="1" value={editForm.weekly_lessons} onChange={(e) => setEditForm({ ...editForm, weekly_lessons: e.target.value })} />
-                    ) : (
-                      <p className="text-sm">{selected.weekly_lessons || 1}</p>
-                    )}
+                  <div className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-card">
+                    <div className="flex items-center justify-center h-7 w-7 rounded-md bg-primary/10 shrink-0 mt-0.5">
+                      <Hash className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] text-muted-foreground">{isAr ? 'الدروس الأسبوعية' : 'Weekly Lessons'}</p>
+                      {editing ? (
+                        <Input type="number" min="1" value={editForm.weekly_lessons} onChange={(e) => setEditForm({ ...editForm, weekly_lessons: e.target.value })} className="h-7 text-xs mt-0.5" />
+                      ) : (
+                        <p className="text-sm font-medium">{selected.weekly_lessons || 1}</p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <Label>{isAr ? 'مدة الدرس (دقيقة)' : 'Lesson Duration (min)'}</Label>
-                    {editing ? (
-                      <Input type="number" min="15" step="15" value={editForm.lesson_duration} onChange={(e) => setEditForm({ ...editForm, lesson_duration: e.target.value })} />
-                    ) : (
-                      <p className="text-sm">{selected.lesson_duration || 60}</p>
-                    )}
+                  <div className="flex items-start gap-2.5 p-2.5 rounded-lg border bg-card">
+                    <div className="flex items-center justify-center h-7 w-7 rounded-md bg-primary/10 shrink-0 mt-0.5">
+                      <Timer className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] text-muted-foreground">{isAr ? 'مدة الدرس (دقيقة)' : 'Lesson Duration (min)'}</p>
+                      {editing ? (
+                        <Input type="number" min="15" step="15" value={editForm.lesson_duration} onChange={(e) => setEditForm({ ...editForm, lesson_duration: e.target.value })} className="h-7 text-xs mt-0.5" />
+                      ) : (
+                        <p className="text-sm font-medium">{selected.lesson_duration || 60}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
                 {/* Live Session URLs */}
@@ -486,6 +541,9 @@ const Subscriptions = () => {
                   </div>
                 )}
               </div>
+
+              {/* Vertical Divider */}
+              <div className="hidden md:block w-px bg-border" />
 
               {/* Right Column - Schedule, Auto Renewal & Reports */}
               <div className="space-y-3">
