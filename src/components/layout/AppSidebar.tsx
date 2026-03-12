@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText, LogOut, Calculator, ShieldCheck, Shield, Sparkles, AlertCircle, HardDrive, Globe, ScrollText, PenLine, Activity, Code, Webhook, Bug, ClipboardList, Route, FolderTree, Signal, ChevronDown, Building2, Flag, Library, MonitorPlay } from 'lucide-react';
+import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText, LogOut, Calculator, ShieldCheck, Shield, Sparkles, AlertCircle, HardDrive, Globe, ScrollText, PenLine, Activity, Code, Webhook, Bug, ClipboardList, Route, FolderTree, Signal, ChevronDown, Building2, Flag, Library, MonitorPlay, Receipt } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -103,32 +103,6 @@ const AppSidebar = () => {
       ],
     },
     {
-      label: 'Reports',
-      labelAr: 'التقارير',
-      items: [
-        { key: 'attendance', label: isAr ? 'تتبع الحضور' : 'Attendance Tracking', icon: ClipboardCheck, path: '/dashboard/attendance', roles: ['admin', 'teacher'], beta: true },
-        { key: 'reports', label: isAr ? 'التقارير والتحليلات' : 'Reports & Analytics', icon: BarChart3, path: '/dashboard/reports', roles: ['admin'] },
-      ],
-    },
-    {
-      label: 'Website',
-      labelAr: 'الموقع',
-      requiresWebsiteMode: true,
-      items: [
-        { key: 'landing-page', label: isAr ? 'صفحة الهبوط' : 'Landing Page', icon: Globe, path: '/dashboard/landing-page', roles: ['admin'] },
-        { key: 'website-pages', label: isAr ? 'الصفحات الرئيسية' : 'Main Pages', icon: FileText, path: '/dashboard/website-pages', roles: ['admin'] },
-        { key: 'blog', label: isAr ? 'المدونة' : 'Blogs', icon: PenLine, path: '/dashboard/blog', roles: ['admin'] },
-        { key: 'policies', label: isAr ? 'السياسات' : 'Policies', icon: ScrollText, path: '/dashboard/policies', roles: ['admin'] },
-      ],
-    },
-    {
-      label: 'Media',
-      labelAr: 'الوسائط',
-      items: [
-        { key: 'media', label: isAr ? 'الوسائط' : 'Media', icon: HardDrive, path: '/dashboard/media', roles: ['admin'] },
-      ],
-    },
-    {
       label: 'Messages',
       labelAr: 'الرسائل',
       items: [
@@ -159,7 +133,38 @@ const AppSidebar = () => {
       items: [
         { key: 'subscriptions', label: t('nav.subscriptions'), icon: CreditCard, path: '/dashboard/subscriptions', roles: ['admin'] },
         { key: 'invoices', label: isAr ? 'الفواتير' : 'Invoices', icon: FileText, path: '/dashboard/invoices', roles: ['admin'] },
+        { key: 'expenses', label: isAr ? 'المصروفات' : 'Expenses', icon: Receipt, path: '/dashboard/expenses', roles: ['admin'],
+          children: [
+            { key: 'expense-categories', label: isAr ? 'التصنيفات' : 'Categories', icon: FolderTree, path: '/dashboard/expenses/categories', roles: ['admin'] },
+          ],
+        },
         { key: 'calculator', label: isAr ? 'الحاسبة' : 'Calculator', icon: Calculator, path: '/dashboard/calculator', roles: ['admin'] },
+      ],
+    },
+    {
+      label: 'Reports',
+      labelAr: 'التقارير',
+      items: [
+        { key: 'attendance', label: isAr ? 'تتبع الحضور' : 'Attendance Tracking', icon: ClipboardCheck, path: '/dashboard/attendance', roles: ['admin', 'teacher'], beta: true },
+        { key: 'reports', label: isAr ? 'التقارير والتحليلات' : 'Reports & Analytics', icon: BarChart3, path: '/dashboard/reports', roles: ['admin'] },
+      ],
+    },
+    {
+      label: 'Website',
+      labelAr: 'الموقع',
+      requiresWebsiteMode: true,
+      items: [
+        { key: 'landing-page', label: isAr ? 'صفحة الهبوط' : 'Landing Page', icon: Globe, path: '/dashboard/landing-page', roles: ['admin'] },
+        { key: 'website-pages', label: isAr ? 'الصفحات الرئيسية' : 'Main Pages', icon: FileText, path: '/dashboard/website-pages', roles: ['admin'] },
+        { key: 'blog', label: isAr ? 'المدونة' : 'Blogs', icon: PenLine, path: '/dashboard/blog', roles: ['admin'] },
+        { key: 'policies', label: isAr ? 'السياسات' : 'Policies', icon: ScrollText, path: '/dashboard/policies', roles: ['admin'] },
+      ],
+    },
+    {
+      label: 'Media',
+      labelAr: 'الوسائط',
+      items: [
+        { key: 'media', label: isAr ? 'الوسائط' : 'Media', icon: HardDrive, path: '/dashboard/media', roles: ['admin'] },
       ],
     },
     {
