@@ -836,14 +836,6 @@ const LandingContentSettings = () => {
           </CardHeader>
           <CardContent>{renderFooterTab()}</CardContent>
         </Card>
-      ) : activeTab === 'seo' ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>{isAr ? 'إعدادات SEO' : 'SEO Settings'}</CardTitle>
-            <CardDescription>{isAr ? 'إعدادات محركات البحث والمشاركة' : 'Search engine and social sharing settings'}</CardDescription>
-          </CardHeader>
-          <CardContent>{renderSEO()}</CardContent>
-        </Card>
       ) : (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
