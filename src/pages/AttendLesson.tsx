@@ -488,7 +488,7 @@ const AttendLesson = () => {
                         )}
                       </TableCell>
                       <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1.5">
+                        <div className="flex items-center justify-center gap-1.5 flex-wrap">
                           {isActiveEntry ? (
                             <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                               {isAr ? 'جلسة نشطة...' : 'In session...'}
@@ -497,20 +497,20 @@ const AttendLesson = () => {
                             <>
                               <Button
                                 size="sm"
-                                disabled={!canAttend}
+                                disabled={!canAttend && !isTestEntry}
                                 onClick={() => handleAttendClick(entry)}
                                 className="gap-1.5"
                               >
                                 <Video className="h-3.5 w-3.5" />
                                 {isAr ? 'حضور' : 'Attend'}
                               </Button>
-                              {showNotAttend && (
+                              {(showNotAttend || isTestEntry) && (
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                     <Button
                                       size="sm"
                                       variant="outline"
-                                      disabled={!canNotAttend}
+                                      disabled={!canNotAttend && !isTestEntry}
                                       className="gap-1 text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/5"
                                     >
                                       <XCircle className="h-3.5 w-3.5" />
