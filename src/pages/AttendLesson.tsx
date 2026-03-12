@@ -5,7 +5,6 @@ import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import JoinMeetingDialog from '@/components/attend/JoinMeetingDialog';
 import SessionReportDialog from '@/components/attend/SessionReportDialog';
