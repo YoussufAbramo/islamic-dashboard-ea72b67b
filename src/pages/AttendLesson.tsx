@@ -160,26 +160,7 @@ const AttendLesson = () => {
       };
     });
 
-    // Mock test entry
-    const testTime = new Date();
-    testTime.setMinutes(testTime.getMinutes() + 10);
-    const mockEntry: LessonEntry = {
-      id: 'mock-test-entry',
-      scheduled_at: testTime.toISOString(),
-      duration_minutes: 45,
-      status: 'scheduled',
-      course_id: null,
-      student_id: null,
-      teacher_id: null,
-      course_title: 'Test Course',
-      student_name: 'Test Student',
-      teacher_name: 'Test Teacher',
-      google_meet_url: 'https://meet.google.com/test-session',
-      zoom_url: 'https://zoom.us/j/123456789',
-      has_report: false,
-    };
-
-    setEntries([mockEntry, ...mapped]);
+    setEntries(mapped);
     setLoading(false);
   };
 
