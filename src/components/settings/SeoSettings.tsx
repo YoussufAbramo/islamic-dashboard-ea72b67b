@@ -100,7 +100,7 @@ const SeoSettings = () => {
   const isAr = language === 'ar';
   const [seo, setSeo] = useState<SeoConfig>(defaultSeo);
   const [landing, setLanding] = useState<Record<string, any>>({ ...defaultGeneralContent });
-  const [saving, setSaving] = useState(false);
+  const [blogSeo, setBlogSeo] = useState<Record<string, any>>({});
   const [savingLanding, setSavingLanding] = useState(false);
 
   useEffect(() => {
