@@ -41,7 +41,7 @@ const platforms: { id: JoinMethod; label: string; icon: string; iconType: 'img' 
   { id: 'vconnct', label: 'Vconnct', icon: '/icons/vconnct.ico', iconType: 'img' },
 ];
 
-const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr }: JoinMeetingDialogProps) => {
+const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr, onSessionStart }: JoinMeetingDialogProps) => {
   const [selected, setSelected] = useState<JoinMethod | null>(null);
   const [vconnctUrl, setVconnctUrl] = useState('');
   const [iframeOpen, setIframeOpen] = useState(false);
