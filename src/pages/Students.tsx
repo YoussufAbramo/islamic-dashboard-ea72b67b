@@ -142,6 +142,7 @@ const Students = () => {
                 <TableCell>{student.lesson_duration} {t('common.minutes')}</TableCell>
                 <TableCell className="flex gap-1">
                   <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => viewDetails(student)}><Eye className={ACTION_ICON} /></Button>
+                  <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => { viewDetails(student); setTimeout(() => setEditing(true), 100); }}><Pencil className={ACTION_ICON} /></Button>
                   {role === 'admin' && <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteTarget(student.id)}><Trash2 className={ACTION_ICON} /></Button>}
                 </TableCell>
               </TableRow>
