@@ -64,15 +64,22 @@ const CopyrightSettingsEditor = ({ config, onChange, policies, websitePages }: P
       updateSlot('links', links);
     };
 
+    const systemPages = [
+      { slug: '/', title: 'Home', title_ar: 'الرئيسية' },
+      { slug: '/contact', title: 'Contact', title_ar: 'اتصل بنا' },
+      { slug: '/blog', title: 'Blog', title_ar: 'المدونة' },
+    ];
+
     const selectPageOrPolicy = (idx: number, combined: string) => {
-      // combined = "policy:slug" or "page:slug"
-      const [type, slug] = combined.split(':');
-      const source = type === 'policy' ? policies : websitePages;
+      // combined = "policy:slug" or "page:slug" or "system:slug"
+      const [type, ...rest] = combined.split(':');
+      const slug = rest.join(':');
+      const source = type === 'policy' ? policies : type === 'system' ? systemPages : websitePages;
       const found = source.find(p => p.slug === slug);
       const links = [...(slot.links || [])];
       links[idx] = {
         ...links[idx],
-        type: type as 'policy' | 'page',
+        type: type as 'policy' | 'page' | 'system',
         slug,
         label: found?.title || slug,
         label_ar: found?.title_ar || found?.title || slug,
