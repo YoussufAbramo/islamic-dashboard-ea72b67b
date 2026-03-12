@@ -605,29 +605,7 @@ const LandingContentSettings = () => {
     </div>
   );
 
-  // ─── SEO / General settings ───
-  const renderSEO = () => (
-    <div className="space-y-6">
-      <div className="rounded-lg border border-border p-4 space-y-4">
-        <h3 className="font-medium flex items-center gap-2"><Search className="h-4 w-4" />{isAr ? 'بيانات SEO' : 'SEO Meta Data'}</h3>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div><Label>Meta Title (EN)</Label><Input value={general.meta_title || ''} onChange={e => updateGeneralField('meta_title', e.target.value)} placeholder="Islamic Education Platform" /></div>
-          <div><Label>Meta Title (AR)</Label><Input dir="rtl" value={general.meta_title_ar || ''} onChange={e => updateGeneralField('meta_title_ar', e.target.value)} placeholder="منصة التعليم الإسلامي" /></div>
-        </div>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div><Label>Meta Description (EN)</Label><Textarea value={general.meta_description || ''} onChange={e => updateGeneralField('meta_description', e.target.value)} rows={2} /></div>
-          <div><Label>Meta Description (AR)</Label><Textarea dir="rtl" value={general.meta_description_ar || ''} onChange={e => updateGeneralField('meta_description_ar', e.target.value)} rows={2} /></div>
-        </div>
-        <div><Label>{isAr ? 'الكلمات المفتاحية' : 'Keywords'}</Label><Input value={general.meta_keywords || ''} onChange={e => updateGeneralField('meta_keywords', e.target.value)} placeholder="islamic, education, quran" /></div>
-      </div>
-      <div className="rounded-lg border border-border p-4 space-y-4">
-        <h3 className="font-medium flex items-center gap-2"><Globe className="h-4 w-4" />{isAr ? 'بيانات المشاركة' : 'Open Graph'}</h3>
-        <div><Label>OG Title</Label><Input value={general.og_title || ''} onChange={e => updateGeneralField('og_title', e.target.value)} /></div>
-        <div><Label>OG Description</Label><Textarea value={general.og_description || ''} onChange={e => updateGeneralField('og_description', e.target.value)} rows={2} /></div>
-        <ImagePickerField label={isAr ? 'صورة OG' : 'OG Image'} value={general.og_image || ''} onChange={(url) => updateGeneralField('og_image', url)} />
-      </div>
-    </div>
-  );
+
 
   // ─── Footer editor ───
   const footer = general.footer || defaultFooterContent;
