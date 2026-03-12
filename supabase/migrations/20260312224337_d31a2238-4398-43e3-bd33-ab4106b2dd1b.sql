@@ -1,0 +1,1 @@
+UPDATE public.policies SET slug = 'payout-policy', title = 'Payout Policy', title_ar = 'سياسة الصرف' WHERE slug = 'payout-policies';
