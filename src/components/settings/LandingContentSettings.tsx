@@ -780,8 +780,8 @@ const LandingContentSettings = () => {
                         <div key={linkIdx} className="rounded-md border border-border bg-muted/30 p-2 space-y-1 group relative">
                           <div className="flex items-center justify-between mb-0.5">
                             <span className="text-[10px] font-medium text-muted-foreground">{isAr ? `رابط ${linkIdx + 1}` : `Link ${linkIdx + 1}`}</span>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-all" onClick={() => removeFooterColumnItem(colIdx, linkIdx)}>
-                              <Trash2 className="h-3 w-3" />
+                            <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => removeFooterColumnItem(colIdx, linkIdx)}>
+                              <Trash2 className={ACTION_ICON} />
                             </Button>
                           </div>
                           <Input value={link.label || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'label', e.target.value)} className="h-7 text-xs" placeholder="Label EN" />
