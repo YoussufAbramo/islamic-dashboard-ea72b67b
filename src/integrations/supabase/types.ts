@@ -1094,6 +1094,7 @@ export type Database = {
         Row: {
           course_id: string
           created_at: string
+          google_meet_url: string | null
           id: string
           lesson_duration: number | null
           price: number | null
@@ -1107,10 +1108,12 @@ export type Database = {
           teacher_id: string | null
           updated_at: string
           weekly_lessons: number | null
+          zoom_url: string | null
         }
         Insert: {
           course_id: string
           created_at?: string
+          google_meet_url?: string | null
           id?: string
           lesson_duration?: number | null
           price?: number | null
@@ -1124,10 +1127,12 @@ export type Database = {
           teacher_id?: string | null
           updated_at?: string
           weekly_lessons?: number | null
+          zoom_url?: string | null
         }
         Update: {
           course_id?: string
           created_at?: string
+          google_meet_url?: string | null
           id?: string
           lesson_duration?: number | null
           price?: number | null
@@ -1141,6 +1146,7 @@ export type Database = {
           teacher_id?: string | null
           updated_at?: string
           weekly_lessons?: number | null
+          zoom_url?: string | null
         }
         Relationships: [
           {
