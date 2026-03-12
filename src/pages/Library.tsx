@@ -214,10 +214,11 @@ const Library = () => {
             {paginatedItems.map((ebook) => {
               const title = isAr ? ebook.title_ar || ebook.title : ebook.title;
               const desc = isAr ? ebook.description_ar || ebook.description : ebook.description;
+              const stats = ebookStats[ebook.id] || { views: 0, downloads: 0 };
               return (
                 <div key={ebook.id} className="group flex flex-col rounded-xl border bg-card overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-200">
                   {/* Cover */}
-                  <div className="relative aspect-[3/4] bg-muted overflow-hidden">
+                  <div className="relative aspect-[3/4] bg-muted overflow-hidden cursor-pointer" onClick={() => { trackView(ebook.id); setReaderEbook(ebook); }}>
                     {ebook.cover_url ? (
                       <img src={ebook.cover_url} alt={title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                     ) : (
@@ -227,31 +228,52 @@ const Library = () => {
                     )}
                   </div>
 
-                  {/* Info + Actions */}
+                  {/* Info */}
                   <div className="flex-1 flex flex-col p-3 gap-1.5">
                     <h3 className="text-sm font-semibold truncate" title={title}>{title}</h3>
                     {desc && (
                       <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">{desc}</p>
                     )}
 
-                    {/* Always-visible action bar */}
-                    <div className="flex items-center gap-1 mt-auto pt-2 border-t border-border/50">
-                      <ActionButton
-                        icon={ExternalLink}
-                        label={isAr ? 'فتح' : 'Open'}
-                        onClick={() => { trackView(ebook.id); trackDownload(ebook.id); window.open(ebook.pdf_url, '_blank'); }}
-                      />
-                      <ActionButton
-                        icon={Download}
-                        label={isAr ? 'تحميل' : 'Download'}
-                        onClick={() => { trackDownload(ebook.id); window.open(ebook.pdf_url, '_blank'); }}
-                      />
+                    {/* Stats row */}
+                    <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-1">
+                      <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{stats.views}</span>
+                      <span className="flex items-center gap-1"><Download className="h-3 w-3" />{stats.downloads}</span>
+                    </div>
+
+                    {/* Action bar */}
+                    <div className="flex items-center gap-1.5 mt-auto pt-2 border-t border-border/50">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2 text-xs gap-1 text-primary hover:text-primary hover:bg-primary/10"
+                        onClick={() => { trackView(ebook.id); setReaderEbook(ebook); }}
+                      >
+                        <BookOpen className="h-3.5 w-3.5" />
+                        {isAr ? 'قراءة' : 'Read'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2 text-xs gap-1 hover:bg-muted"
+                        onClick={() => {
+                          trackDownload(ebook.id);
+                          const a = document.createElement('a');
+                          a.href = ebook.pdf_url;
+                          a.download = `${ebook.title}.pdf`;
+                          a.target = '_blank';
+                          a.click();
+                        }}
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        {isAr ? 'تحميل' : 'Download'}
+                      </Button>
                       {isAdmin && (
                         <ActionButton
                           icon={Trash2}
                           label={isAr ? 'حذف' : 'Delete'}
                           destructive
-                          className="ms-auto"
+                          className="ms-auto h-7 w-7"
                           onClick={() => setDeleteTarget(ebook.id)}
                         />
                       )}
