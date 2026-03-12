@@ -12,7 +12,7 @@ interface ImagePickerFieldProps {
   className?: string;
 }
 
-const ImagePickerField = ({ label, value, onChange, bucket = 'course-images', className = '' }: ImagePickerFieldProps) => {
+const ImagePickerField = ({ label, value, onChange, bucket = 'media', className = '' }: ImagePickerFieldProps) => {
   const { language } = useLanguage();
   const isAr = language === 'ar';
   const [pickerOpen, setPickerOpen] = useState(false);

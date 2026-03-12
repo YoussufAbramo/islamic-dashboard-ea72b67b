@@ -114,7 +114,7 @@ const Profile = () => {
             label={isAr ? 'تغيير الصورة الشخصية' : 'Change Avatar'}
             value={avatarUrl}
             onChange={handleAvatarChange}
-            bucket="avatars"
+            bucket="media"
           />
 
           {/* Cartoon avatar picker */}

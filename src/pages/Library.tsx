@@ -147,15 +147,15 @@ const Library = () => {
     setUploading(true);
     try {
       const timestamp = Date.now();
-      const pdfPath = `pdfs/${timestamp}-${pdfFile.name}`;
-      const { error: pdfError } = await supabase.storage.from('ebooks').upload(pdfPath, pdfFile);
+      const pdfPath = `${MEDIA_PATHS.ebooks.pdf}/${timestamp}-${pdfFile.name}`;
+      const { error: pdfError } = await supabase.storage.from(MEDIA_BUCKET).upload(pdfPath, pdfFile);
       if (pdfError) throw pdfError;
 
-      // Store paths, not public URLs (bucket is now private)
+      // Store paths, not public URLs (bucket is private)
       let coverPath = '';
       if (coverFile) {
-        coverPath = `covers/${timestamp}-${coverFile.name}`;
-        const { error: coverError } = await supabase.storage.from('ebooks').upload(coverPath, coverFile);
+        coverPath = `${MEDIA_PATHS.ebooks.covers}/${timestamp}-${coverFile.name}`;
+        const { error: coverError } = await supabase.storage.from(MEDIA_BUCKET).upload(coverPath, coverFile);
         if (coverError) throw coverError;
       }
 

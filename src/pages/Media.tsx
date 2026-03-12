@@ -31,8 +31,9 @@ interface FileObject {
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
 
 const KNOWN_BUCKETS: BucketInfo[] = [
-  { id: 'avatars', name: 'avatars', public: false, description: 'User profile pictures', descriptionAr: 'صور المستخدمين الشخصية' },
-  { id: 'course-images', name: 'course-images', public: true, description: 'Course thumbnails and images', descriptionAr: 'صور الدورات والمحتوى التعليمي' },
+  { id: 'media', name: 'media', public: false, description: 'All platform media (avatars, ebooks, courses, website)', descriptionAr: 'جميع وسائط المنصة (صور، كتب، دورات، موقع)' },
+  { id: 'avatars', name: 'avatars', public: false, description: 'Legacy: User profile pictures', descriptionAr: 'قديم: صور المستخدمين الشخصية' },
+  { id: 'course-images', name: 'course-images', public: true, description: 'Legacy: Course thumbnails', descriptionAr: 'قديم: صور الدورات' },
   { id: 'backups', name: 'backups', public: false, description: 'System backups', descriptionAr: 'النسخ الاحتياطية للنظام' },
 ];
 
