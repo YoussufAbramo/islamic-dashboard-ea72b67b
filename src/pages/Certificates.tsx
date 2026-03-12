@@ -324,13 +324,16 @@ const Certificates = () => {
                 <div className="space-y-3">
                   <div>
                     <Label>{isAr ? 'نوع المستلم' : 'Recipient Type'}</Label>
-                    <Select value={form.recipient_type} onValueChange={(v) => setForm({ ...form, recipient_type: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="student">{isAr ? 'طالب' : 'Student'}</SelectItem>
-                        <SelectItem value="teacher">{isAr ? 'معلم' : 'Teacher'}</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <RadioGroup value={form.recipient_type} onValueChange={(v) => setForm({ ...form, recipient_type: v })} className="flex gap-4 mt-2">
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem value="student" id="type-student" />
+                        <Label htmlFor="type-student" className="font-normal cursor-pointer">{isAr ? 'طالب' : 'Student'}</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem value="teacher" id="type-teacher" />
+                        <Label htmlFor="type-teacher" className="font-normal cursor-pointer">{isAr ? 'معلم' : 'Teacher'}</Label>
+                      </div>
+                    </RadioGroup>
                   </div>
                   <div>
                     <Label>{isAr ? 'المستلم' : 'Recipient'}</Label>
