@@ -325,7 +325,7 @@ const Chats = () => {
           )}
         </div>
 
-        <Card className="md:col-span-2 flex flex-col">
+        <div className="md:col-span-2 flex flex-col">
           {selectedChat ? (
             <>
               <CardHeader className="pb-2 flex-row items-center justify-between border-b bg-muted/30">
