@@ -18,6 +18,7 @@ interface JoinMeetingDialogProps {
   onOpenChange: (open: boolean) => void;
   entry: MeetingEntry | null;
   isAr: boolean;
+  onSessionStart?: () => void;
 }
 
 const maskUrl = (url: string): string => {
