@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { MEDIA_BUCKET, MEDIA_PATHS, resolveMediaUrl, uploadAndReplaceMedia, getMediaSignedUrl } from '@/lib/mediaStorage';
 import avatar1 from '@/assets/avatars/avatar-1.png';
 import avatar2 from '@/assets/avatars/avatar-2.png';
 import avatar3 from '@/assets/avatars/avatar-3.png';
@@ -12,6 +13,7 @@ export const CARTOON_AVATARS: Record<string, string> = {
 /**
  * Resolve any avatar_url value to a displayable URL.
  * Handles cartoon IDs, full URLs, and storage paths.
+ * Now uses the unified 'media' bucket with fallback to legacy 'avatars' bucket.
  */
 export async function resolveAvatarUrl(avatarUrl: string): Promise<string> {
   if (!avatarUrl) return '';
@@ -21,25 +23,32 @@ export async function resolveAvatarUrl(avatarUrl: string): Promise<string> {
     return CARTOON_AVATARS[avatarUrl];
   }
 
-  // Full URL — return as-is
+  // Full URL — return as-is or re-resolve
   if (avatarUrl.startsWith('http')) {
-    return avatarUrl;
+    return resolveMediaUrl(avatarUrl);
   }
 
-  // Storage path — get signed URL
+  // If path doesn't start with avatars/, prefix it
+  const mediaPath = avatarUrl.startsWith(`${MEDIA_PATHS.avatars}/`)
+    ? avatarUrl
+    : `${MEDIA_PATHS.avatars}/${avatarUrl}`;
+
+  // Try media bucket first
+  const signedUrl = await getMediaSignedUrl(mediaPath);
+  if (signedUrl) return signedUrl;
+
+  // Fallback: try legacy avatars bucket
   return getAvatarSignedUrl(avatarUrl);
 }
 
 /**
- * Create a signed URL for a file in the avatars bucket.
+ * Create a signed URL for a file in the legacy avatars bucket.
  * Falls back to empty string on error.
- * @param path - The storage path (e.g. "user-id/avatar.png" or "branding/logo.png")
- * @param expiresIn - Seconds until the URL expires (default 3600 = 1 hour)
+ * @deprecated Use getMediaSignedUrl with MEDIA_PATHS.avatars prefix instead
  */
 export async function getAvatarSignedUrl(path: string, expiresIn = 3600): Promise<string> {
   if (!path) return '';
   
-  // If it's already a full URL, extract the path after /avatars/
   const bucketPrefix = '/object/public/avatars/';
   const signedPrefix = '/object/sign/avatars/';
   let storagePath = path;
@@ -49,7 +58,6 @@ export async function getAvatarSignedUrl(path: string, expiresIn = 3600): Promis
   } else if (path.includes(signedPrefix)) {
     storagePath = path.split(signedPrefix)[1]?.split('?')[0] || '';
   } else if (path.startsWith('http')) {
-    // Unknown URL format, return as-is
     return path;
   }
   
@@ -64,19 +72,18 @@ export async function getAvatarSignedUrl(path: string, expiresIn = 3600): Promis
 }
 
 /**
- * Upload a file and return a signed URL (not a public URL).
+ * Upload an avatar file and return a signed URL.
+ * Now uploads to the unified 'media' bucket under avatars/.
  */
 export async function uploadAndGetSignedUrl(
   filePath: string,
   file: File,
   expiresIn = 3600
 ): Promise<{ signedUrl: string; error: string | null }> {
-  const { error } = await supabase.storage
-    .from('avatars')
-    .upload(filePath, file, { upsert: true });
+  // Ensure the path is in the media bucket's avatars directory
+  const mediaPath = filePath.startsWith(`${MEDIA_PATHS.avatars}/`)
+    ? filePath
+    : `${MEDIA_PATHS.avatars}/${filePath}`;
 
-  if (error) return { signedUrl: '', error: error.message };
-
-  const signedUrl = await getAvatarSignedUrl(filePath, expiresIn);
-  return { signedUrl, error: null };
+  return uploadAndReplaceMedia(mediaPath, file, expiresIn);
 }
