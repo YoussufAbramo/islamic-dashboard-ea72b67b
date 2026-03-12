@@ -187,6 +187,7 @@ const AppSidebar = () => {
           ],
         },
         { key: 'calculator', label: isAr ? 'الحاسبة' : 'Calculator', icon: Calculator, path: '/dashboard/calculator', roles: ['admin'] },
+        { key: 'payout-requests', label: isAr ? 'طلبات الصرف' : 'Payout Requests', icon: DollarSign, path: '/dashboard/payout-requests', roles: ['admin'] },
       ],
     },
     {
