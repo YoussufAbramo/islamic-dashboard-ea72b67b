@@ -231,7 +231,25 @@ const AppSidebar = () => {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        {categories.map((cat) => {
+        {!role ? (
+          /* Skeleton loading state */
+          <div className="p-3 space-y-5 animate-fade-in">
+            {[1, 2, 3, 4].map((group) => (
+              <div key={group} className="space-y-2">
+                <Skeleton className="h-3 w-16 rounded" />
+                <div className="space-y-1">
+                  {Array.from({ length: group === 1 ? 1 : group === 2 ? 5 : group === 3 ? 3 : 2 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-3 px-2 py-1.5">
+                      <Skeleton className="h-4 w-4 rounded shrink-0" />
+                      <Skeleton className="h-3.5 rounded flex-1" style={{ width: `${55 + Math.random() * 30}%` }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+        categories.map((cat) => {
           if (cat.requiresDeveloperMode && !developerMode) return null;
           if (cat.requiresWebsiteMode && !websiteMode) return null;
           const visibleItems = cat.items.filter((item) => role && item.roles.includes(role));
@@ -341,7 +359,8 @@ const AppSidebar = () => {
               </SidebarGroupContent>
             </SidebarGroup>
           );
-        })}
+        })
+        )}
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border">
         <div className="p-3 space-y-2">
