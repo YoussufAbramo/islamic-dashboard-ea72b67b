@@ -68,6 +68,14 @@ const Chats = () => {
       .order('created_at', { ascending: true });
     setMessages(data || []);
 
+    // Check if admin already joined this chat (has a [SYSTEM] join message)
+    if (role === 'admin' && user) {
+      const hasJoined = (data || []).some((m: any) => m.sender_id === user.id && m.message.startsWith('[SYSTEM]'));
+      if (hasJoined) {
+        setAdminJoinedChats(prev => new Set(prev).add(chatId));
+      }
+    }
+
     // Fetch roles for all unique senders
     const senderIds = [...new Set((data || []).map((m: any) => m.sender_id))];
     if (senderIds.length > 0) {
