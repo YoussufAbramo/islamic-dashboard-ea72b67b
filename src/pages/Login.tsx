@@ -121,9 +121,6 @@ const Login = () => {
           
 
           
-          <p className="text-sm text-muted-foreground mt-1 font-amiri">
-            {appDescription || (language === 'ar' ? 'بسم الله الرحمن الرحيم' : 'In the Name of Allah, the Most Gracious')}
-          </p>
           <div className="flex items-center justify-center gap-2 mt-3">
             <div className="w-12 h-[1px] bg-gradient-to-r from-transparent to-[hsl(var(--gold))]/60" />
             <div className="w-1.5 h-1.5 rounded-full bg-gold" />
