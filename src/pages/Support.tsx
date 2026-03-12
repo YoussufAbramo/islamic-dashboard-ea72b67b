@@ -179,10 +179,9 @@ const Support = () => {
                     <Select value={form.department} onValueChange={(v) => setForm({ ...form, department: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="general">{t('support.general')}</SelectItem>
-                        <SelectItem value="technical">{t('support.technical')}</SelectItem>
-                        <SelectItem value="billing">{t('support.billing')}</SelectItem>
-                        <SelectItem value="academic">{t('support.academic')}</SelectItem>
+                        {departments.map(d => (
+                          <SelectItem key={d.id} value={d.name.toLowerCase()}>{isAr ? (d.name_ar || d.name) : d.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -191,10 +190,9 @@ const Support = () => {
                     <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="low">{t('support.low')}</SelectItem>
-                        <SelectItem value="medium">{t('support.medium')}</SelectItem>
-                        <SelectItem value="high">{t('support.high')}</SelectItem>
-                        <SelectItem value="urgent">{t('support.urgent')}</SelectItem>
+                        {priorities.map(p => (
+                          <SelectItem key={p.id} value={p.name.toLowerCase()}>{isAr ? (p.name_ar || p.name) : p.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
