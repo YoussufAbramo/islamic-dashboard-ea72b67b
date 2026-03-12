@@ -315,6 +315,7 @@ const Calculator = () => {
                 onDaysChange={(days) => setSubForm(f => ({ ...f, schedule_days: days }))}
                 time={subForm.schedule_time}
                 onTimeChange={(time) => setSubForm(f => ({ ...f, schedule_time: time }))}
+                maxDays={parseInt(form.weekly_lessons, 10) || undefined}
               />
             </div>
           </div>
