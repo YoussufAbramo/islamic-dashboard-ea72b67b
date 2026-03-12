@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { resolveAvatarUrl } from '@/lib/storage';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -230,7 +231,25 @@ const AppSidebar = () => {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        {categories.map((cat) => {
+        {!role ? (
+          /* Skeleton loading state */
+          <div className="p-3 space-y-5 animate-fade-in">
+            {[1, 2, 3, 4].map((group) => (
+              <div key={group} className="space-y-2">
+                <Skeleton className="h-3 w-16 rounded" />
+                <div className="space-y-1">
+                  {Array.from({ length: group === 1 ? 1 : group === 2 ? 5 : group === 3 ? 3 : 2 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-3 px-2 py-1.5">
+                      <Skeleton className="h-4 w-4 rounded shrink-0" />
+                      <Skeleton className="h-3.5 rounded flex-1" style={{ width: `${55 + Math.random() * 30}%` }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+        categories.map((cat) => {
           if (cat.requiresDeveloperMode && !developerMode) return null;
           if (cat.requiresWebsiteMode && !websiteMode) return null;
           const visibleItems = cat.items.filter((item) => role && item.roles.includes(role));
@@ -340,9 +359,25 @@ const AppSidebar = () => {
               </SidebarGroupContent>
             </SidebarGroup>
           );
-        })}
+        })
+        )}
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border">
+        {!role ? (
+          <div className="p-3 space-y-2 animate-fade-in">
+            <div className="flex items-center gap-3 p-2">
+              <Skeleton className="h-5 w-5 rounded" />
+              <Skeleton className="h-3.5 w-24 rounded" />
+            </div>
+            <div className="flex items-center gap-3 p-2">
+              <Skeleton className="h-9 w-9 rounded-full shrink-0" />
+              <div className="flex-1 space-y-1.5">
+                <Skeleton className="h-3.5 w-20 rounded" />
+                <Skeleton className="h-2.5 w-12 rounded" />
+              </div>
+            </div>
+          </div>
+        ) : (
         <div className="p-3 space-y-2">
           <div
             className="flex items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent cursor-pointer transition-colors"
@@ -385,6 +420,7 @@ const AppSidebar = () => {
             </TooltipProvider>
           </div>
         </div>
+        )}
       </SidebarFooter>
     </Sidebar>
   );
