@@ -209,11 +209,8 @@ const AttendLesson = () => {
     if (activeSessionId === entry.id) {
       return { label: isAr ? '🟢 جلسة نشطة' : '🟢 In Session', variant: 'default', className: 'bg-emerald-600 text-white', isLive: true };
     }
-    if (entry.status === 'teacher_not_attend') {
-      return { label: isAr ? 'لم يحضر المعلم' : 'Teacher Not Attend', variant: 'outline', className: 'border-rose-500/40 bg-rose-500/10 text-rose-600 dark:text-rose-400', isLive: false };
-    }
-    if (entry.status === 'student_not_attend') {
-      return { label: isAr ? 'لم يحضر الطالب' : 'Student Not Attend', variant: 'outline', className: 'border-orange-500/40 bg-orange-500/10 text-orange-600 dark:text-orange-400', isLive: false };
+    if (entry.status === 'teacher_not_attend' || entry.status === 'student_not_attend' || entry.status === 'not_attend') {
+      return { label: isAr ? 'لم يحضر' : 'Not Attend', variant: 'outline', className: 'border-rose-500/40 bg-rose-500/10 text-rose-600 dark:text-rose-400', isLive: false };
     }
     if (entry.status === 'postponed') {
       return { label: isAr ? 'مؤجل' : 'Postponed', variant: 'outline', className: 'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400', isLive: false };
