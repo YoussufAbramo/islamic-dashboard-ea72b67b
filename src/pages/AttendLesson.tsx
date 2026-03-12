@@ -223,10 +223,12 @@ const AttendLesson = () => {
   // In test mode, the first non-completed/cancelled entry has all restrictions lifted
   const testEntryId = testMode ? entries.find(e => e.status !== 'cancelled' && e.status !== 'completed' && !e.has_report && !reportedEntryIds.has(e.id))?.id : null;
 
+  const terminalStatuses = ['teacher_not_attend', 'student_not_attend', 'postponed', 'completed'];
+
   const isAttendEnabled = (entry: LessonEntry): boolean => {
     if (activeSessionId) return false;
     if (entry.has_report || reportedEntryIds.has(entry.id)) return false;
-    if (entry.status === 'cancelled' || entry.status === 'completed') return false;
+    if (terminalStatuses.includes(entry.status)) return false;
     if (testMode && entry.id === testEntryId) return true;
     const scheduledTime = new Date(entry.scheduled_at);
     const endTime = new Date(scheduledTime.getTime() + entry.duration_minutes * 60000);
