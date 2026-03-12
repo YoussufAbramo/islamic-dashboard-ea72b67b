@@ -49,7 +49,7 @@ const PayoutRequests = () => {
       const { data: profiles } = await supabase.from('profiles').select('id, full_name').in('id', adminIds);
       const nameMap: Record<string, string> = {};
       (profiles || []).forEach(p => { nameMap[p.id] = p.full_name; });
-      rows.forEach(r => { if (r.admin_id) r.admin_profile_name = nameMap[r.admin_id] || '-'; });
+      rows.forEach((r: any) => { if (r.admin_id) r.admin_profile_name = nameMap[r.admin_id] || '-'; });
     }
     setRequests(rows);
     setLoading(false);
