@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ACTION_BTN_DESTRUCTIVE, ACTION_ICON } from '@/lib/actionBtnClass';
+import { ACTION_BTN, ACTION_BTN_DESTRUCTIVE, ACTION_ICON } from '@/lib/actionBtnClass';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { FileText, Plus, Save, Trash2, Search, ExternalLink, ChevronDown, Image, BookOpen, ArrowRight } from 'lucide-react';
+import { FileText, Plus, Save, Trash2, Search, ExternalLink, ChevronDown, Image, BookOpen, ArrowRight, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
@@ -211,21 +211,21 @@ const WebsitePages = () => {
                       <p className="text-xs text-muted-foreground">/pages/{page.slug}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <Badge variant={page.status === 'published' ? 'default' : 'secondary'} className="text-xs">
                       {page.status === 'published' ? (isAr ? 'منشور' : 'Published') : (isAr ? 'مسودة' : 'Draft')}
                     </Badge>
                     {page.status === 'published' && (
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => window.open(`/pages/${page.slug}`, '_blank')}>
-                        <ExternalLink className="h-3.5 w-3.5" />
+                      <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => window.open(`/pages/${page.slug}`, '_blank')} title={isAr ? 'عرض' : 'View'}>
+                        <ExternalLink className={ACTION_ICON} />
                       </Button>
                     )}
-                    <Button variant="outline" size="sm" onClick={() => handleEdit(page)}>
-                      {isAr ? 'تعديل' : 'Edit'}
+                    <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => handleEdit(page)} title={isAr ? 'تعديل' : 'Edit'}>
+                      <Pencil className={ACTION_ICON} />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE}><Trash2 className={ACTION_ICON} /></Button>
+                        <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} title={isAr ? 'حذف' : 'Delete'}><Trash2 className={ACTION_ICON} /></Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
