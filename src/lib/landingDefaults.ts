@@ -168,11 +168,12 @@ export interface FooterColumn {
 }
 
 export const defaultFooterContent: Record<string, any> = {
-  logo: '',
+  logo_source: 'dark' as 'dark' | 'light' | 'favicon',
   title: '',
   title_ar: '',
   description: '',
   description_ar: '',
+  branding_column: 0,
   columns_count: 3,
   columns: [
     { title: 'Quick Links', title_ar: 'روابط سريعة', items: [
@@ -181,7 +182,7 @@ export const defaultFooterContent: Record<string, any> = {
       { label: 'Pricing', label_ar: 'الأسعار', url: '#pricing' },
     ]},
     { title: 'Resources', title_ar: 'الموارد', items: [
-      { label: 'Blog', label_ar: 'المدونة', url: '/blog' },
+      { label: 'Blog', label_ar: 'المدونة', url: '/blogs' },
       { label: 'FAQ', label_ar: 'الأسئلة الشائعة', url: '#faq' },
     ]},
     { title: 'Legal', title_ar: 'قانوني', items: [

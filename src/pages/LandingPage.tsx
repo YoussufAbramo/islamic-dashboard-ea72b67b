@@ -168,60 +168,69 @@ const LandingPage = () => {
       {/* Dynamic Footer */}
       {(() => {
         const ft = general.footer || defaultFooterContent;
-        const cols: FooterColumn[] = (ft.columns || []).slice(0, ft.columns_count || 3);
+        const colsCount = ft.columns_count || 3;
+        const allCols: FooterColumn[] = (ft.columns || []).slice(0, colsCount);
         const ftTitle = isAr ? (ft.title_ar || ft.title) : ft.title;
         const ftDesc = isAr ? (ft.description_ar || ft.description) : ft.description;
-        const gridCols = ft.columns_count === 1 ? 'grid-cols-1' : ft.columns_count === 2 ? 'sm:grid-cols-2' : ft.columns_count === 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3';
+        const darkLogo = pending.darkLogo || localStorage.getItem('app_dark_logo') || '';
+        const logoSource = ft.logo_source || 'dark';
+        const footerLogo = logoSource === 'light' ? appLogo : logoSource === 'favicon' ? favicon : darkLogo;
+        const brandingCol: number = ft.branding_column ?? 0;
+        const hasBranding = !!(footerLogo || ftTitle || ftDesc);
+
+        const gridCols = colsCount === 1 ? 'grid-cols-1' : colsCount === 2 ? 'sm:grid-cols-2' : colsCount === 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-3';
+
+        const renderBranding = () => (
+          <div className="space-y-4">
+            {footerLogo && <img src={footerLogo} alt={ftTitle || appName} className="h-10 max-w-[180px] object-contain" />}
+            {ftTitle && <h3 className="text-lg font-bold text-foreground">{ftTitle}</h3>}
+            {ftDesc && <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">{ftDesc}</p>}
+          </div>
+        );
+
+        const renderColumn = (col: FooterColumn, ci: number) => (
+          <div key={ci}>
+            {(isAr ? (col.title_ar || col.title) : col.title) && (
+              <h4 className="text-sm font-semibold text-foreground mb-3">{isAr ? (col.title_ar || col.title) : col.title}</h4>
+            )}
+            <ul className="space-y-2">
+              {col.items.map((link, li) => (
+                <li key={li}>
+                  <a
+                    href={link.url}
+                    onClick={e => {
+                      if (link.url.startsWith('#')) {
+                        e.preventDefault();
+                        scrollTo(link.url.slice(1));
+                      } else if (link.url.startsWith('/')) {
+                        e.preventDefault();
+                        navigate(link.url);
+                      }
+                    }}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {isAr ? (link.label_ar || link.label) : link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
 
         return (
           <footer className="py-12 border-t border-border bg-muted/30">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <div className={`grid gap-8 ${cols.length > 0 ? 'lg:grid-cols-[1.5fr_2fr]' : ''}`}>
-                {/* Branding column */}
-                {(ft.logo || ftTitle || ftDesc) && (
-                  <div className="space-y-4">
-                    {ft.logo && <img src={ft.logo} alt={ftTitle || appName} className="h-10 max-w-[180px] object-contain" />}
-                    {ftTitle && <h3 className="text-lg font-bold text-foreground">{ftTitle}</h3>}
-                    {ftDesc && <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">{ftDesc}</p>}
-                  </div>
-                )}
-
-                {/* Link columns */}
-                {cols.length > 0 && (
-                  <div className={`grid gap-8 ${gridCols}`}>
-                    {cols.map((col, ci) => (
-                      <div key={ci}>
-                        {(isAr ? (col.title_ar || col.title) : col.title) && (
-                          <h4 className="text-sm font-semibold text-foreground mb-3">{isAr ? (col.title_ar || col.title) : col.title}</h4>
-                        )}
-                        <ul className="space-y-2">
-                          {col.items.map((link, li) => (
-                            <li key={li}>
-                              <a
-                                href={link.url}
-                                onClick={e => {
-                                  if (link.url.startsWith('#')) {
-                                    e.preventDefault();
-                                    scrollTo(link.url.slice(1));
-                                  } else if (link.url.startsWith('/')) {
-                                    e.preventDefault();
-                                    navigate(link.url);
-                                  }
-                                }}
-                                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                              >
-                                {isAr ? (link.label_ar || link.label) : link.label}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div className={`grid gap-8 ${gridCols}`}>
+                {allCols.map((col, ci) => (
+                  ci === brandingCol && hasBranding ? (
+                    <div key={ci} className="space-y-6">
+                      {renderBranding()}
+                      {col.items.length > 0 && renderColumn(col, ci)}
+                    </div>
+                  ) : renderColumn(col, ci)
+                ))}
               </div>
 
-              {/* Copyright */}
               <div className="mt-10 pt-6 border-t border-border/50 text-center">
                 <CopyrightText />
               </div>
