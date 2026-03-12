@@ -317,8 +317,9 @@ const AttendLesson = () => {
                         <span className="text-sm">{entry.duration_minutes} {isAr ? 'د' : 'min'}</span>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={status.variant as any} className={status.isLive ? 'animate-pulse' : ''}>
+                        <Badge variant={status.variant as any} className={`${status.className} ${status.isLive ? 'animate-pulse' : ''}`}>
                           {status.label}
+                        </Badge>
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center">
