@@ -424,28 +424,63 @@ const Chats = () => {
                     {messages.map((msg) => {
                       const isOwn = msg.sender_id === user?.id;
                       const initials = (msg.profiles?.full_name || '?').charAt(0).toUpperCase();
+                      const senderRole = senderRoles[msg.sender_id] || '';
+                      const roleColors: Record<string, string> = {
+                        admin: 'bg-destructive/15 text-destructive border-destructive/20',
+                        teacher: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/20',
+                        student: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+                      };
+                      const roleLabels: Record<string, string> = {
+                        admin: isAr ? 'مشرف' : 'Admin',
+                        teacher: isAr ? 'معلم' : 'Teacher',
+                        student: isAr ? 'طالب' : 'Student',
+                      };
+                      const avatarColors: Record<string, string> = {
+                        admin: 'bg-destructive/10 text-destructive',
+                        teacher: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+                        student: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+                      };
                       return (
                         <div key={msg.id} className={`flex items-end gap-2 ${isOwn ? 'justify-end' : 'justify-start'}`}>
                           {!isOwn && (
-                            <Avatar className="h-7 w-7 shrink-0">
-                              <AvatarFallback className="text-xs bg-primary/10 text-primary">{initials}</AvatarFallback>
+                            <Avatar className="h-8 w-8 shrink-0 ring-2 ring-background shadow-sm">
+                              <AvatarFallback className={`text-xs font-semibold ${avatarColors[senderRole] || 'bg-primary/10 text-primary'}`}>{initials}</AvatarFallback>
                             </Avatar>
                           )}
-                          <div className={`max-w-[70%] p-2 rounded-lg text-sm ${msg.is_deleted ? 'bg-muted/60 italic text-muted-foreground' : isOwn ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                            <p className="text-xs font-medium mb-1">{msg.profiles?.full_name}</p>
-                            <p>{msg.message}</p>
-                            <div className="flex items-center justify-between mt-1 gap-2">
-                              <span className="text-[10px] opacity-70">{format(new Date(msg.created_at), 'HH:mm')}</span>
+                          <div className={`max-w-[70%] rounded-2xl text-sm shadow-sm ${msg.is_deleted ? 'bg-muted/60 italic text-muted-foreground p-3' : isOwn ? 'bg-primary text-primary-foreground p-3' : 'bg-card border border-border p-3'}`}>
+                            {!isOwn && (
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <span className="text-xs font-semibold">{msg.profiles?.full_name}</span>
+                                {senderRole && (
+                                  <span className={`text-[9px] px-1.5 py-0 rounded-full border font-medium leading-4 ${roleColors[senderRole] || ''}`}>
+                                    {roleLabels[senderRole] || senderRole}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            {isOwn && !msg.is_deleted && (
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <span className="text-xs font-semibold opacity-90">{msg.profiles?.full_name}</span>
+                                {senderRole && (
+                                  <span className="text-[9px] px-1.5 py-0 rounded-full border border-primary-foreground/20 font-medium leading-4 opacity-80">
+                                    {roleLabels[senderRole] || senderRole}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            <p className="leading-relaxed">{msg.message}</p>
+                            <div className="flex items-center justify-between mt-1.5 gap-2">
+                              <span className="text-[10px] opacity-60">{format(new Date(msg.created_at), 'HH:mm')}</span>
                               {(role === 'admin' || role === 'teacher') && !msg.is_deleted && (
-                                <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => deleteMessage(msg.id)}>
-                                  <Trash2 className="h-2 w-2" />
+                                <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-100 hover:opacity-100 transition-opacity" onClick={() => deleteMessage(msg.id)}>
+                                  <Trash2 className="h-2.5 w-2.5" />
                                 </Button>
                               )}
                             </div>
                           </div>
                           {isOwn && (
-                            <Avatar className="h-7 w-7 shrink-0">
-                              <AvatarFallback className="text-xs bg-primary/10 text-primary">{initials}</AvatarFallback>
+                            <Avatar className="h-8 w-8 shrink-0 ring-2 ring-background shadow-sm">
+                              <AvatarFallback className={`text-xs font-semibold ${avatarColors[senderRole] || 'bg-primary/10 text-primary'}`}>{initials}</AvatarFallback>
                             </Avatar>
                           )}
                         </div>
