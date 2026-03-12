@@ -606,6 +606,7 @@ const Subscriptions = () => {
                 onDaysChange={(days) => setCreateForm(prev => ({ ...prev, schedule_days: days }))}
                 time={createForm.schedule_time}
                 onTimeChange={(time) => setCreateForm(prev => ({ ...prev, schedule_time: time }))}
+                maxDays={parseInt(createForm.weekly_lessons, 10) || undefined}
               />
             </div>
 
