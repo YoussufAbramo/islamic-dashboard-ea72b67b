@@ -62,7 +62,7 @@ const TeacherProfile = () => {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     full_name: '', email: '', phone: '', title: '', specialization: '', bio: '',
-    hourly_rate: 0,
+    hourly_rate: 0, gender: '', date_of_birth: '',
   });
   const [saving, setSaving] = useState(false);
 
