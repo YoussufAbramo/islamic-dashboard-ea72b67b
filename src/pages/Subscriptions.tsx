@@ -131,6 +131,8 @@ const Subscriptions = () => {
       price: sub.price?.toString() || '',
       weekly_lessons: sub.weekly_lessons?.toString() || '1',
       lesson_duration: sub.lesson_duration?.toString() || '60',
+      google_meet_url: sub.google_meet_url || '',
+      zoom_url: sub.zoom_url || '',
     });
     setDetailOpen(true);
     setEditing(false);
