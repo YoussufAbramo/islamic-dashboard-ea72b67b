@@ -20,7 +20,7 @@ import {
   Clock, DollarSign, TrendingUp, AlertTriangle, CheckCircle,
   Loader2, Percent, Mail, Phone, User, Briefcase, FileText,
   ExternalLink, FileUp, Pencil, X, Save,
-  CalendarDays, Wallet, Info, Eye, HeadphonesIcon,
+  CalendarDays, Wallet, Info, Eye, HeadphonesIcon, Receipt, Cake,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ACTION_BTN, ACTION_ICON } from '@/lib/actionBtnClass';
