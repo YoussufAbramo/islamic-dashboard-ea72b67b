@@ -121,10 +121,6 @@ const Policies = () => {
                 <div><Label>Title (EN)</Label><Input value={editPolicy.title} onChange={e => setEditPolicy({ ...editPolicy, title: e.target.value })} /></div>
                 <div><Label>Title (AR)</Label><Input dir="rtl" value={editPolicy.title_ar} onChange={e => setEditPolicy({ ...editPolicy, title_ar: e.target.value })} /></div>
               </div>
-              <div className="flex items-center gap-2">
-                <Switch checked={editPolicy.is_published} onCheckedChange={v => setEditPolicy({ ...editPolicy, is_published: v })} />
-                <Label>{isAr ? 'منشور' : 'Published'}</Label>
-              </div>
               <div>
                 <Label className="mb-2 block">Content (EN)</Label>
                 <ContentEditor value={editPolicy.content} onChange={v => setEditPolicy({ ...editPolicy, content: v })} />
