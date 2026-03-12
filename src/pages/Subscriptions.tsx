@@ -21,7 +21,7 @@ import { Search, Eye, Plus, ArrowUp, ArrowDown, Trash2, Check, ChevronsUpDown, V
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { subscriptionStatusLabels, subscriptionTypeLabels, getLabel } from '@/lib/statusLabels';
-import { addDays, addYears } from 'date-fns';
+import { addDays } from 'date-fns';
 import { cn } from '@/lib/utils';
 import SchedulePicker from '@/components/SchedulePicker';
 import { TableSkeleton } from '@/components/PageSkeleton';
@@ -77,17 +77,20 @@ const Subscriptions = () => {
 
   useEffect(() => { fetchSubscriptions(); }, []);
 
+  const RENEWAL_DAYS: Record<string, number> = { monthly: 28, quarterly: 84, yearly: 365 };
+
   const calcTotalHours = (weeklyLessons: string, lessonDuration: string, subType: string) => {
     const wl = parseInt(weeklyLessons) || 1;
     const ld = parseInt(lessonDuration) || 60;
-    const weeks = subType === 'yearly' ? 52 : 4;
+    const weeks = subType === 'yearly' ? 52 : subType === 'quarterly' ? 12 : 4;
     return (wl * ld * weeks) / 60;
   };
 
   useEffect(() => {
     if (createForm.start_date && createForm.subscription_type) {
       const start = new Date(createForm.start_date);
-      const renewal = createForm.subscription_type === 'yearly' ? addYears(start, 1) : addDays(start, 30);
+      const days = RENEWAL_DAYS[createForm.subscription_type] || 28;
+      const renewal = addDays(start, days);
       setCreateForm(prev => ({ ...prev, renewal_date: renewal.toISOString().split('T')[0] }));
     }
   }, [createForm.start_date, createForm.subscription_type]);
@@ -375,6 +378,7 @@ const Subscriptions = () => {
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="monthly">{isAr ? 'شهري' : 'Monthly'}</SelectItem>
+                        <SelectItem value="quarterly">{isAr ? '3 أشهر' : '3-Month'}</SelectItem>
                         <SelectItem value="yearly">{isAr ? 'سنوي' : 'Yearly'}</SelectItem>
                       </SelectContent>
                     </Select>
@@ -582,6 +586,7 @@ const Subscriptions = () => {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="monthly">{isAr ? 'شهري' : 'Monthly'}</SelectItem>
+                  <SelectItem value="quarterly">{isAr ? '3 أشهر' : '3-Month'}</SelectItem>
                   <SelectItem value="yearly">{isAr ? 'سنوي' : 'Yearly'}</SelectItem>
                 </SelectContent>
               </Select>
@@ -596,7 +601,17 @@ const Subscriptions = () => {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label>{t('subscriptions.startDate')}</Label><Input type="date" value={createForm.start_date} onChange={(e) => setCreateForm({ ...createForm, start_date: e.target.value })} /></div>
-              <div><Label>{t('subscriptions.renewalDate')}</Label><Input type="date" value={createForm.renewal_date} readOnly className="bg-muted" /></div>
+              <div>
+                <Label>{t('subscriptions.renewalDate')}</Label>
+                <Input type="date" value={createForm.renewal_date} readOnly className="bg-muted" />
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  {createForm.subscription_type === 'monthly'
+                    ? (isAr ? 'يتجدد كل 28 يومًا' : 'Renews every 28 days')
+                    : createForm.subscription_type === 'quarterly'
+                      ? (isAr ? 'يتجدد كل 84 يومًا (3 أشهر)' : 'Renews every 84 days (3 months)')
+                      : (isAr ? 'يتجدد كل 365 يومًا' : 'Renews every 365 days')}
+                </p>
+              </div>
             </div>
 
             {/* Schedule Picker */}

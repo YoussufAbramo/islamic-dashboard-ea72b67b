@@ -43,7 +43,7 @@ const Calculator = () => {
   const calcTotalHours = (weeklyLessons: string, lessonDuration: string, subType: string) => {
     const wl = parseInt(weeklyLessons) || 1;
     const ld = parseInt(lessonDuration) || 60;
-    const weeks = subType === 'yearly' ? 52 : 4;
+    const weeks = subType === 'yearly' ? 52 : subType === 'quarterly' ? 12 : 4;
     return (wl * ld * weeks) / 60;
   };
 
@@ -148,6 +148,7 @@ const Calculator = () => {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="monthly">{isAr ? 'شهري' : 'Monthly'}</SelectItem>
+                    <SelectItem value="quarterly">{isAr ? '3 أشهر' : '3-Month'}</SelectItem>
                     <SelectItem value="yearly">{isAr ? 'سنوي' : 'Yearly'}</SelectItem>
                   </SelectContent>
                 </Select>
