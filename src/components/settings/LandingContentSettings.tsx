@@ -774,17 +774,18 @@ const LandingContentSettings = () => {
                   </div>
 
                   {col.items.length > 0 && (
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       {col.items.map((link, linkIdx) => (
-                        <div key={linkIdx} className="space-y-1 group relative">
-                          <Input value={link.label || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'label', e.target.value)} className="h-7 text-xs" placeholder="Label EN" />
-                          <Input dir="rtl" value={link.label_ar || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'label_ar', e.target.value)} className="h-7 text-xs" placeholder="Label AR" />
-                          <div className="flex items-center gap-1">
-                            <Input value={link.url || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'url', e.target.value)} className="h-7 text-xs flex-1 font-mono" placeholder="/path or #id" />
-                            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-all" onClick={() => removeFooterColumnItem(colIdx, linkIdx)}>
+                        <div key={linkIdx} className="rounded-md border border-border bg-muted/30 p-2 space-y-1 group relative">
+                          <div className="flex items-center justify-between mb-0.5">
+                            <span className="text-[10px] font-medium text-muted-foreground">{isAr ? `رابط ${linkIdx + 1}` : `Link ${linkIdx + 1}`}</span>
+                            <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-all" onClick={() => removeFooterColumnItem(colIdx, linkIdx)}>
                               <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
+                          <Input value={link.label || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'label', e.target.value)} className="h-7 text-xs" placeholder="Label EN" />
+                          <Input dir="rtl" value={link.label_ar || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'label_ar', e.target.value)} className="h-7 text-xs" placeholder="Label AR" />
+                          <Input value={link.url || ''} onChange={e => updateFooterColumnItem(colIdx, linkIdx, 'url', e.target.value)} className="h-7 text-xs font-mono" placeholder="/path or #id" />
                         </div>
                       ))}
                     </div>
