@@ -62,12 +62,6 @@ const Policies = () => {
     fetchPolicies();
   };
 
-  const togglePublish = async (policy: Policy) => {
-    const { error } = await supabase.from('policies').update({ is_published: !policy.is_published, updated_at: new Date().toISOString() }).eq('id', policy.id);
-    if (error) { notifyError({ error, isAr, rawMessage: error.message }); return; }
-    toast.success(isAr ? 'تم التحديث' : 'Updated');
-    fetchPolicies();
-  };
 
   if (loading) return <TableSkeleton rows={4} cols={4} />;
 
