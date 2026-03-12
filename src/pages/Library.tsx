@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { usePagination } from '@/hooks/use-pagination';
 import PaginationControls from '@/components/PaginationControls';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -31,9 +31,19 @@ interface Ebook {
 
 const Library = () => {
   const { language } = useLanguage();
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const isAr = language === 'ar';
   const isAdmin = role === 'admin';
+
+  const trackView = useCallback(async (ebookId: string) => {
+    if (!user?.id) return;
+    await supabase.from('ebook_views').insert({ ebook_id: ebookId, user_id: user.id });
+  }, [user]);
+
+  const trackDownload = useCallback(async (ebookId: string) => {
+    if (!user?.id) return;
+    await supabase.from('ebook_downloads').insert({ ebook_id: ebookId, user_id: user.id });
+  }, [user]);
 
   const [ebooks, setEbooks] = useState<Ebook[]>([]);
   const [loading, setLoading] = useState(true);
@@ -198,7 +208,7 @@ const Library = () => {
                   )}
                   {/* Hover overlay */}
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <Button size="sm" variant="secondary" className="h-8 text-xs" onClick={() => window.open(ebook.pdf_url, '_blank')}>
+                    <Button size="sm" variant="secondary" className="h-8 text-xs" onClick={() => { trackView(ebook.id); trackDownload(ebook.id); window.open(ebook.pdf_url, '_blank'); }}>
                       <ExternalLink className="h-3 w-3 me-1" />
                       {isAr ? 'فتح' : 'Open'}
                     </Button>
