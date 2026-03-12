@@ -544,7 +544,7 @@ const Chats = () => {
               <p className="text-muted-foreground">{t('chats.noMessages')}</p>
             </div>
           )}
-        </Card>
+        </div>
       </div>
 
       {/* Create Chat Dialog */}
