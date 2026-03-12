@@ -15,8 +15,8 @@ const FAQSection = ({ content, isAr }: FAQSectionProps) => {
   if (items.length === 0) return null;
 
   return (
-    <section id="faq" className="py-20 md:py-28 bg-muted/30">
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+    <section id="faq" className="py-20 md:py-28">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 bg-muted/30 rounded-3xl p-8 md:p-12 border border-border/50">
         <div className="text-center mb-16">
           <Badge variant="secondary" className="mb-4">{t('FAQ', 'الأسئلة الشائعة')}</Badge>
           <h2 className="text-3xl md:text-4xl font-bold font-amiri text-foreground mb-4">{getField(content, 'title', isAr)}</h2>
