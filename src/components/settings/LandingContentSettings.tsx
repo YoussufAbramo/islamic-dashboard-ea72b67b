@@ -847,6 +847,21 @@ const LandingContentSettings = () => {
           </CardHeader>
           <CardContent>{renderFooterTab()}</CardContent>
         </Card>
+      ) : activeTab === 'copyright' ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>{isAr ? 'شريط حقوق النشر' : 'Copyright Bar'}</CardTitle>
+            <CardDescription>{isAr ? 'تخصيص شريط حقوق النشر أسفل الصفحة' : 'Customize the copyright bar at the bottom of the page'}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <CopyrightSettingsEditor
+              config={(footer.copyright as CopyrightConfig) || defaultCopyrightConfig}
+              onChange={(copyrightConfig) => updateFooterField('copyright', copyrightConfig)}
+              policies={policies}
+              websitePages={websitePages}
+            />
+          </CardContent>
+        </Card>
       ) : (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
