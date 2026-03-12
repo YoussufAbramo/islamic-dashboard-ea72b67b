@@ -24,6 +24,9 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { DEFAULT_SECTION_ORDER, defaultSectionContent, defaultGeneralContent, defaultNavItems, defaultFooterContent, sectionMeta, type SectionKey, type NavItem, type FooterColumn } from '@/lib/landingDefaults';
+import CopyrightSettingsEditor from '@/components/settings/CopyrightSettingsEditor';
+import type { CopyrightConfig } from '@/components/landing/CopyrightBar';
+import { defaultCopyrightConfig } from '@/components/landing/CopyrightBar';
 
 const iconMap: Record<string, any> = {
   Star, Sparkles, Shield, Megaphone, BookOpen, Users, BarChart3, HelpCircle, Mail, Layers, CreditCard, Quote, Handshake,
