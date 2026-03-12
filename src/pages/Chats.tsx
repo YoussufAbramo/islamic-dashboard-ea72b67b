@@ -566,7 +566,7 @@ const Chats = () => {
               <>
                 <div>
                   <Label>{isAr ? 'اسم المجموعة' : 'Group Name'} *</Label>
-                  <Input value={createForm.name} onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })} />
+                  <Input value={createForm.name} onChange={(e) => setCreateForm(prev => ({ ...prev, name: e.target.value }))} />
                 </div>
                 <div>
                   <Label>{isAr ? 'الاشتراك المرتبط (اختياري)' : 'Linked Subscription (optional)'}</Label>
