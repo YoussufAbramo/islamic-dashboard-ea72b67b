@@ -336,7 +336,7 @@ const Library = () => {
                         size="sm"
                         variant="ghost"
                         className="h-7 px-2 text-xs gap-1 text-primary hover:text-primary hover:bg-primary/10"
-                        onClick={() => { trackView(ebook.id); setReaderEbook(ebook); }}
+                        onClick={() => openReader(ebook)}
                       >
                         <BookOpen className="h-3.5 w-3.5" />
                         {isAr ? 'قراءة' : 'Read'}
@@ -345,14 +345,7 @@ const Library = () => {
                         size="sm"
                         variant="ghost"
                         className="h-7 px-2 text-xs gap-1 hover:bg-muted"
-                        onClick={() => {
-                          trackDownload(ebook.id);
-                          const a = document.createElement('a');
-                          a.href = ebook.pdf_url;
-                          a.download = `${ebook.title}.pdf`;
-                          a.target = '_blank';
-                          a.click();
-                        }}
+                        onClick={() => handleDownload(ebook)}
                       >
                         <Download className="h-3.5 w-3.5" />
                         {isAr ? 'تحميل' : 'Download'}
