@@ -442,22 +442,16 @@ const Chats = () => {
                         student: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
                       };
                       return (
-                        <div key={msg.id} className={`flex items-center gap-1.5 ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                        <div key={msg.id} className={`group flex items-end gap-1.5 ${isOwn ? 'justify-end' : 'justify-start'}`}>
                           {!isOwn && (
                             <Avatar className="h-6 w-6 shrink-0 ring-1 ring-background">
                               <AvatarFallback className={`text-[9px] font-semibold ${avatarColors[senderRole] || 'bg-primary/10 text-primary'}`}>{initials}</AvatarFallback>
                             </Avatar>
                           )}
-                          {isOwn && (role === 'admin' || role === 'teacher') && !msg.is_deleted && (
-                            <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity shrink-0" onClick={() => deleteMessage(msg.id)}>
-                              <Trash2 className="h-2.5 w-2.5" />
-                            </Button>
-                          )}
                           <div className={`max-w-[75%] rounded-xl text-xs ${msg.is_deleted ? 'bg-muted/60 italic text-muted-foreground px-2.5 py-1.5' : isOwn ? 'bg-primary text-primary-foreground px-2.5 py-1.5' : 'bg-card border border-border px-2.5 py-1.5'}`}>
                             {!isOwn && (
                               <div className="flex items-center gap-1 mb-0.5">
                                 <span className="text-[10px] font-semibold">{msg.profiles?.full_name}</span>
-                                <span className="text-[8px] text-muted-foreground/70">{format(new Date(msg.created_at), 'hh:mm a')}</span>
                                 {senderRole && (
                                   <span className={`text-[8px] px-1 rounded-full border font-medium leading-3 ${roleColors[senderRole] || ''}`}>
                                     {roleLabels[senderRole] || senderRole}
@@ -466,14 +460,22 @@ const Chats = () => {
                               </div>
                             )}
                             <p className="leading-snug">{msg.message}</p>
-                            {isOwn && !msg.is_deleted && (
-                              <span className="text-[8px] opacity-70 mt-0.5 block text-end">{format(new Date(msg.created_at), 'hh:mm a')}</span>
-                            )}
                           </div>
-                          {!isOwn && (role === 'admin' || role === 'teacher') && !msg.is_deleted && (
-                            <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity shrink-0" onClick={() => deleteMessage(msg.id)}>
-                              <Trash2 className="h-2.5 w-2.5" />
-                            </Button>
+                          <span className="text-[8px] text-muted-foreground/60 shrink-0 pb-0.5">{format(new Date(msg.created_at), 'hh:mm a')}</span>
+                          {(role === 'admin' || role === 'teacher') && !msg.is_deleted && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity shrink-0">
+                                  <MoreVertical className="h-3 w-3" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align={isOwn ? 'end' : 'start'} className="min-w-[120px]">
+                                <DropdownMenuItem className="text-destructive focus:text-destructive gap-2 text-xs" onClick={() => deleteMessage(msg.id)}>
+                                  <Trash2 className="h-3 w-3" />
+                                  {isAr ? 'حذف' : 'Delete'}
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           )}
                           {isOwn && (
                             <Avatar className="h-6 w-6 shrink-0 ring-1 ring-background">
