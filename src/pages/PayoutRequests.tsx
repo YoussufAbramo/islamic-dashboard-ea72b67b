@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,24 +9,24 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle, XCircle, Search, Eye, DollarSign } from 'lucide-react';
+import { Search, ArrowUp, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { TableSkeleton } from '@/components/PageSkeleton';
-import { format } from 'date-fns';
-import { useNavigate } from 'react-router-dom';
+import PayoutStatsCards from '@/components/payouts/PayoutStatsCards';
+import PayoutTable from '@/components/payouts/PayoutTable';
+import PayoutEmptyState from '@/components/payouts/PayoutEmptyState';
 
 const PayoutRequests = () => {
   const { language } = useLanguage();
   const { user } = useAuth();
-  const navigate = useNavigate();
   const isAr = language === 'ar';
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
 
   // Review dialog
   const [reviewOpen, setReviewOpen] = useState(false);
@@ -48,14 +48,38 @@ const PayoutRequests = () => {
 
   useEffect(() => { fetchRequests(); }, []);
 
-  const filtered = requests.filter((r) => {
-    const name = r.teachers?.profiles?.full_name || '';
-    const matchSearch = name.toLowerCase().includes(search.toLowerCase()) || r.transaction_ref?.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === 'all' || r.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  const statusCounts = {
+    all: requests.length,
+    under_review: requests.filter(r => r.status === 'under_review').length,
+    approved: requests.filter(r => r.status === 'approved').length,
+    declined: requests.filter(r => r.status === 'declined').length,
+  };
+
+  const statusTabs = [
+    { value: 'all', label: isAr ? 'الكل' : 'All' },
+    { value: 'under_review', label: isAr ? 'قيد المراجعة' : 'Under Review' },
+    { value: 'approved', label: isAr ? 'مقبول' : 'Approved' },
+    { value: 'declined', label: isAr ? 'مرفوض' : 'Declined' },
+  ];
+
+  const filtered = useMemo(() => {
+    let result = requests.filter((r) => {
+      const name = r.teachers?.profiles?.full_name || '';
+      const matchSearch = name.toLowerCase().includes(search.toLowerCase()) || r.transaction_ref?.toLowerCase().includes(search.toLowerCase());
+      const matchStatus = statusFilter === 'all' || r.status === statusFilter;
+      return matchSearch && matchStatus;
+    });
+    result.sort((a, b) => {
+      const da = new Date(a.created_at).getTime();
+      const db = new Date(b.created_at).getTime();
+      return sortOrder === 'newest' ? db - da : da - db;
+    });
+    return result;
+  }, [requests, statusFilter, search, sortOrder]);
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
+
+  const showEmptyState = !loading && requests.length === 0;
 
   const openReview = (req: any, action: 'approve' | 'decline') => {
     setSelected(req);
@@ -102,33 +126,18 @@ const PayoutRequests = () => {
     }
   };
 
-  const statusBadge = (status: string) => {
-    switch (status) {
-      case 'under_review': return <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30">{isAr ? 'قيد المراجعة' : 'Under Review'}</Badge>;
-      case 'approved': return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 border">{isAr ? 'مقبول' : 'Approved'}</Badge>;
-      case 'declined': return <Badge variant="destructive">{isAr ? 'مرفوض' : 'Declined'}</Badge>;
-      default: return <Badge variant="secondary">{status}</Badge>;
-    }
-  };
-
   if (loading) return <TableSkeleton />;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold shrink-0">{isAr ? 'طلبات الصرف' : 'Payout Requests'}</h1>
         <div className="flex items-center gap-2 ms-auto">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-36">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{isAr ? 'الكل' : 'All'}</SelectItem>
-              <SelectItem value="under_review">{isAr ? 'قيد المراجعة' : 'Under Review'}</SelectItem>
-              <SelectItem value="approved">{isAr ? 'مقبول' : 'Approved'}</SelectItem>
-              <SelectItem value="declined">{isAr ? 'مرفوض' : 'Declined'}</SelectItem>
-            </SelectContent>
-          </Select>
+          <Button variant="outline" size="sm" onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')} className="gap-1 h-9">
+            {sortOrder === 'newest' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}
+            {sortOrder === 'newest' ? (isAr ? 'الأحدث' : 'Newest') : (isAr ? 'الأقدم' : 'Oldest')}
+          </Button>
           <div className="relative">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder={isAr ? 'بحث...' : 'Search...'} value={search} onChange={(e) => setSearch(e.target.value)} className="ps-9 w-48 sm:w-64" />
@@ -136,64 +145,37 @@ const PayoutRequests = () => {
         </div>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{isAr ? 'المرجع' : 'Ref'}</TableHead>
-              <TableHead>{isAr ? 'المعلم' : 'Teacher'}</TableHead>
-              <TableHead>{isAr ? 'المبلغ' : 'Amount'}</TableHead>
-              <TableHead>{isAr ? 'الرصيد عند الطلب' : 'Balance at Request'}</TableHead>
-              <TableHead>{isAr ? 'التاريخ' : 'Date'}</TableHead>
-              <TableHead>{isAr ? 'الحالة' : 'Status'}</TableHead>
-              <TableHead>{isAr ? 'إجراءات' : 'Actions'}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedItems.map((req) => (
-              <TableRow key={req.id}>
-                <TableCell className="font-mono text-xs">{req.transaction_ref}</TableCell>
-                <TableCell>
-                  <button
-                    className="text-start hover:underline text-primary font-medium"
-                    onClick={() => navigate(`/dashboard/teacher-profile/${req.teacher_id}`)}
-                  >
-                    {req.teachers?.profiles?.full_name || '-'}
-                  </button>
-                </TableCell>
-                <TableCell className="font-semibold">${Number(req.requested_amount).toFixed(2)}</TableCell>
-                <TableCell className="text-muted-foreground">${Number(req.available_balance_at_request).toFixed(2)}</TableCell>
-                <TableCell>{format(new Date(req.created_at), 'dd/MM/yyyy')}</TableCell>
-                <TableCell>{statusBadge(req.status)}</TableCell>
-                <TableCell>
-                  {req.status === 'under_review' ? (
-                    <div className="flex gap-1">
-                      <Button size="sm" variant="outline" className="h-7 text-xs text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10" onClick={() => openReview(req, 'approve')}>
-                        <CheckCircle className="h-3.5 w-3.5 me-1" />{isAr ? 'قبول' : 'Approve'}
-                      </Button>
-                      <Button size="sm" variant="outline" className="h-7 text-xs text-red-600 border-red-500/30 hover:bg-red-500/10" onClick={() => openReview(req, 'decline')}>
-                        <XCircle className="h-3.5 w-3.5 me-1" />{isAr ? 'رفض' : 'Decline'}
-                      </Button>
-                    </div>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">
-                      {req.reviewed_at ? format(new Date(req.reviewed_at), 'dd/MM/yyyy') : '-'}
-                    </span>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-            {filtered.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
-                  {isAr ? 'لا توجد طلبات' : 'No payout requests'}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
+      <PayoutStatsCards requests={requests} loading={loading} isAr={isAr} />
+
+      {showEmptyState ? (
+        <PayoutEmptyState isAr={isAr} />
+      ) : (
+        <>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full sm:w-auto">
+              <TabsList>
+                {statusTabs.map(tab => (
+                  <TabsTrigger key={tab.value} value={tab.value} className="text-xs gap-1.5">
+                    {tab.label}
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 min-w-[18px]">
+                      {statusCounts[tab.value as keyof typeof statusCounts]}
+                    </Badge>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          </div>
+
+          <PayoutTable
+            requests={paginatedItems}
+            loading={loading}
+            isAr={isAr}
+            onApprove={(req) => openReview(req, 'approve')}
+            onDecline={(req) => openReview(req, 'decline')}
+          />
+          <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
+        </>
+      )}
 
       {/* Review Dialog */}
       <Dialog open={reviewOpen} onOpenChange={setReviewOpen}>
@@ -250,7 +232,7 @@ const PayoutRequests = () => {
             <Button
               onClick={handleReview}
               disabled={reviewLoading}
-              className={reviewAction === 'approve' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-destructive hover:bg-destructive/90'}
+              variant={reviewAction === 'decline' ? 'destructive' : 'default'}
             >
               {reviewAction === 'approve' ? (isAr ? 'تأكيد الموافقة' : 'Confirm Approve') : (isAr ? 'تأكيد الرفض' : 'Confirm Decline')}
             </Button>
