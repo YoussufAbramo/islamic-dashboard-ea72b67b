@@ -638,6 +638,64 @@ export type Database = {
           },
         ]
       }
+      ebook_downloads: {
+        Row: {
+          created_at: string
+          ebook_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          ebook_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          ebook_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ebook_downloads_ebook_id_fkey"
+            columns: ["ebook_id"]
+            isOneToOne: false
+            referencedRelation: "ebooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ebook_views: {
+        Row: {
+          created_at: string
+          ebook_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          ebook_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          ebook_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ebook_views_ebook_id_fkey"
+            columns: ["ebook_id"]
+            isOneToOne: false
+            referencedRelation: "ebooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ebooks: {
         Row: {
           cover_url: string | null
