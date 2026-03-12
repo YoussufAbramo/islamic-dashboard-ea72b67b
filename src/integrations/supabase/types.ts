@@ -1683,6 +1683,8 @@ export type Database = {
           contract_url: string | null
           created_at: string
           cv_url: string | null
+          date_of_birth: string | null
+          gender: string | null
           hourly_rate: number
           id: string
           required_monthly_hours: number
@@ -1696,6 +1698,8 @@ export type Database = {
           contract_url?: string | null
           created_at?: string
           cv_url?: string | null
+          date_of_birth?: string | null
+          gender?: string | null
           hourly_rate?: number
           id?: string
           required_monthly_hours?: number
@@ -1709,6 +1713,8 @@ export type Database = {
           contract_url?: string | null
           created_at?: string
           cv_url?: string | null
+          date_of_birth?: string | null
+          gender?: string | null
           hourly_rate?: number
           id?: string
           required_monthly_hours?: number

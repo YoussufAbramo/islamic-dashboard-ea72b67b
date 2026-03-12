@@ -8,6 +8,7 @@ import { uploadMedia, getMediaSignedUrl, MEDIA_PATHS } from '@/lib/mediaStorage'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -20,7 +21,7 @@ import {
   Clock, DollarSign, TrendingUp, AlertTriangle, CheckCircle,
   Loader2, Percent, Mail, Phone, User, Briefcase, FileText,
   ExternalLink, FileUp, Pencil, X, Save,
-  CalendarDays, Wallet, Info, Eye, HeadphonesIcon,
+  CalendarDays, Wallet, Info, Eye, HeadphonesIcon, Receipt, Cake,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ACTION_BTN, ACTION_ICON } from '@/lib/actionBtnClass';
@@ -62,7 +63,7 @@ const TeacherProfile = () => {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     full_name: '', email: '', phone: '', title: '', specialization: '', bio: '',
-    hourly_rate: 0,
+    hourly_rate: 0, gender: '', date_of_birth: '',
   });
   const [saving, setSaving] = useState(false);
 
@@ -92,6 +93,8 @@ const TeacherProfile = () => {
       specialization: teacherData.specialization || '',
       bio: teacherData.bio || '',
       hourly_rate: teacherData.hourly_rate || 0,
+      gender: (teacherData as any).gender || '',
+      date_of_birth: (teacherData as any).date_of_birth || '',
     });
 
     if (teacherData.profiles?.avatar_url) {
@@ -220,6 +223,8 @@ const TeacherProfile = () => {
         specialization: editForm.specialization,
         bio: editForm.bio,
         hourly_rate: editForm.hourly_rate,
+        gender: editForm.gender || null,
+        date_of_birth: editForm.date_of_birth || null,
       })
       .eq('id', id!);
 
@@ -396,6 +401,20 @@ const TeacherProfile = () => {
                     <Label className="text-xs">{isAr ? 'الهاتف' : 'Phone'}</Label>
                     <Input value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} />
                   </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">{isAr ? 'الجنس' : 'Gender'}</Label>
+                    <Select value={editForm.gender} onValueChange={v => setEditForm({ ...editForm, gender: v })}>
+                      <SelectTrigger><SelectValue placeholder={isAr ? 'اختر...' : 'Select...'} /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">{isAr ? 'ذكر' : 'Male'}</SelectItem>
+                        <SelectItem value="female">{isAr ? 'أنثى' : 'Female'}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">{isAr ? 'تاريخ الميلاد' : 'Date of Birth'}</Label>
+                    <Input type="date" value={editForm.date_of_birth} onChange={e => setEditForm({ ...editForm, date_of_birth: e.target.value })} />
+                  </div>
                 </div>
               </div>
 
@@ -508,6 +527,8 @@ const TeacherProfile = () => {
                   <InfoCard icon={<Mail className="h-4 w-4" />} label={isAr ? 'البريد الإلكتروني' : 'Email'} value={profile?.email || '-'} />
                   <InfoCard icon={<Phone className="h-4 w-4" />} label={isAr ? 'الهاتف' : 'Phone'} value={profile?.phone || '-'} />
                   <InfoCard icon={<Briefcase className="h-4 w-4" />} label={isAr ? 'التخصص' : 'Specialization'} value={teacher?.specialization || '-'} />
+                  <InfoCard icon={<User className="h-4 w-4" />} label={isAr ? 'الجنس' : 'Gender'} value={(teacher as any)?.gender ? ((teacher as any).gender === 'male' ? (isAr ? 'ذكر' : 'Male') : (isAr ? 'أنثى' : 'Female')) : '-'} />
+                  <InfoCard icon={<Cake className="h-4 w-4" />} label={isAr ? 'العمر' : 'Age'} value={(teacher as any)?.date_of_birth ? `${Math.floor((Date.now() - new Date((teacher as any).date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))} ${isAr ? 'سنة' : 'years'}` : '-'} />
                   <InfoCard icon={<FileText className="h-4 w-4" />} label={isAr ? 'نبذة تعريفية' : 'Bio'} value={teacher?.bio || '-'} truncate />
                   <InfoCard icon={<CalendarDays className="h-4 w-4" />} label={isAr ? 'تاريخ إنشاء الحساب' : 'Account Created'} value={authInfo?.created_at ? format(new Date(authInfo.created_at), 'dd/MM/yyyy HH:mm') : '-'} />
                   <InfoCard icon={<Clock className="h-4 w-4" />} label={isAr ? 'آخر تسجيل دخول' : 'Last Login'} value={authInfo?.last_sign_in_at ? format(new Date(authInfo.last_sign_in_at), 'dd/MM/yyyy HH:mm') : '-'} />
@@ -626,7 +647,8 @@ const TeacherProfile = () => {
       {/* Account Statement */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Receipt className="h-5 w-5 text-primary" />
             {isAr ? 'كشف الحساب' : 'Account Statement'}
           </CardTitle>
         </CardHeader>
