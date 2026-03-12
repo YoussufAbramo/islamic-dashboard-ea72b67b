@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   FolderOpen, Image, FileText, Upload, Search, HardDrive, Lock, RefreshCw,
-  Trash2, Download, CheckSquare, X, ChevronRight, ChevronDown, FolderPlus,
+  Trash2, Download, CheckSquare, X, ChevronRight, ChevronDown,
   Maximize2, Loader2, ExternalLink, Info, Music, Video, File as FileIcon, Play
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -18,8 +18,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 // ─── Types ──────────────────────────────────────────────────
 interface FileObject {
@@ -209,8 +208,6 @@ const Media = () => {
   const [selectedNames, setSelectedNames] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [bulkDownloading, setBulkDownloading] = useState(false);
-  const [newFolderOpen, setNewFolderOpen] = useState(false);
-  const [newFolderName, setNewFolderName] = useState('');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
@@ -393,19 +390,6 @@ const Media = () => {
     toast.success(isAr ? `تم تحميل ${selectedNames.size} ملف` : `${selectedNames.size} file(s) downloaded`);
   };
 
-  // ─── New folder ────────────────────────────────────────
-  const createFolder = async () => {
-    if (!newFolderName.trim() || !currentPath) return;
-    const sanitized = newFolderName.trim().replace(/[^a-zA-Z0-9_-]/g, '_');
-    const folderPath = `${currentPath}/${sanitized}/.emptyFolderPlaceholder`;
-    if (!isValidPath(folderPath)) { toast.error('Invalid folder name'); return; }
-    const { error } = await supabase.storage.from(MEDIA_BUCKET).upload(folderPath, new Blob(['']), { cacheControl: '3600', upsert: true });
-    if (error) toast.error(isAr ? 'خطأ في إنشاء المجلد' : 'Error creating folder');
-    else { toast.success(isAr ? 'تم إنشاء المجلد' : 'Folder created'); fetchFiles(currentPath); }
-    setNewFolderName('');
-    setNewFolderOpen(false);
-  };
-
   // ─── Computed ──────────────────────────────────────────
   const filteredFiles = files.filter(f => f.name.toLowerCase().includes(search.toLowerCase()));
   const filteredFolders = useMemo(() => {
@@ -416,6 +400,9 @@ const Media = () => {
     const allFolders = [...new Set([...knownChildren, ...folders])];
     return allFolders.filter(f => f.toLowerCase().includes(s));
   }, [currentNode, folders, search]);
+
+  // Upload is only allowed in leaf folders (no children) or when inside a subfolder
+  const canUpload = !!currentPath && (!currentNode || currentNode.children.length === 0);
 
   const hasSelection = selectedNames.size > 0;
   const allSelected = filteredFiles.length > 0 && selectedNames.size === filteredFiles.length;
@@ -508,14 +495,12 @@ const Media = () => {
                   <Input placeholder={isAr ? 'بحث...' : 'Search files...'} value={search} onChange={e => setSearch(e.target.value)} className="ps-9 h-9" />
                 </div>
                 <input ref={fileInputRef} type="file" multiple accept={getAcceptedTypes()} className="hidden" onChange={handleUpload} />
-                <Button size="sm" className="h-9 gap-1.5" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
-                  <Upload className="h-3.5 w-3.5" />
-                  {uploading ? (isAr ? 'جاري الرفع...' : 'Uploading...') : (isAr ? 'رفع ملف' : 'Upload')}
-                </Button>
-                <Button variant="outline" size="sm" className="h-9 gap-1.5" onClick={() => setNewFolderOpen(true)}>
-                  <FolderPlus className="h-3.5 w-3.5" />
-                  {isAr ? 'مجلد جديد' : 'New Folder'}
-                </Button>
+                {canUpload && (
+                  <Button size="sm" className="h-9 gap-1.5" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="h-3.5 w-3.5" />
+                    {uploading ? (isAr ? 'جاري الرفع...' : 'Uploading...') : (isAr ? 'رفع ملف' : 'Upload')}
+                  </Button>
+                )}
                 <Button variant="outline" size="sm" className="h-9" onClick={() => fetchFiles(currentPath)}>
                   <RefreshCw className="h-3.5 w-3.5" />
                 </Button>
@@ -803,36 +788,6 @@ const Media = () => {
         </Dialog>
       )}
 
-      {/* New Folder Dialog */}
-      <Dialog open={newFolderOpen} onOpenChange={setNewFolderOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FolderPlus className="h-5 w-5 text-primary" />
-              {isAr ? 'مجلد جديد' : 'New Folder'}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-2">
-            <Label>{isAr ? 'اسم المجلد' : 'Folder Name'}</Label>
-            <Input
-              value={newFolderName}
-              onChange={e => setNewFolderName(e.target.value)}
-              placeholder={isAr ? 'أدخل اسم المجلد...' : 'Enter folder name...'}
-              onKeyDown={e => { if (e.key === 'Enter') createFolder(); }}
-            />
-            <p className="text-xs text-muted-foreground">
-              {isAr ? 'سيتم إنشاء المجلد داخل:' : 'Will be created inside:'} <code className="bg-muted px-1 rounded">{currentPath}/</code>
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setNewFolderOpen(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
-            <Button onClick={createFolder} disabled={!newFolderName.trim()}>
-              <FolderPlus className="h-4 w-4 me-1" />
-              {isAr ? 'إنشاء' : 'Create'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
