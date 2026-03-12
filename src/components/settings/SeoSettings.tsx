@@ -99,14 +99,20 @@ const SeoSettings = () => {
   const { language } = useLanguage();
   const isAr = language === 'ar';
   const [seo, setSeo] = useState<SeoConfig>(defaultSeo);
+  const [landing, setLanding] = useState<Record<string, any>>({ ...defaultGeneralContent });
   const [saving, setSaving] = useState(false);
+  const [savingLanding, setSavingLanding] = useState(false);
 
   useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase.from('landing_content').select('content').eq('section_key', 'seo_global_config').maybeSingle();
-      if (data?.content) setSeo({ ...defaultSeo, ...(data.content as any) });
+    const fetchAll = async () => {
+      const [seoRes, landingRes] = await Promise.all([
+        supabase.from('landing_content').select('content').eq('section_key', 'seo_global_config').maybeSingle(),
+        supabase.from('landing_content').select('content').eq('section_key', 'general').maybeSingle(),
+      ]);
+      if (seoRes.data?.content) setSeo({ ...defaultSeo, ...(seoRes.data.content as any) });
+      if (landingRes.data?.content) setLanding({ ...defaultGeneralContent, ...(landingRes.data.content as any) });
     };
-    fetch();
+    fetchAll();
   }, []);
 
   const handleSave = async () => {
@@ -120,6 +126,20 @@ const SeoSettings = () => {
     if (error) { notifyError({ error: 'GENERAL_SAVE_FAILED', isAr }); return; }
     toast.success(isAr ? 'تم حفظ إعدادات SEO' : 'SEO settings saved');
   };
+
+  const handleSaveLanding = async () => {
+    setSavingLanding(true);
+    const { error } = await supabase.from('landing_content').upsert({
+      section_key: 'general',
+      content: landing as any,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'section_key' });
+    setSavingLanding(false);
+    if (error) { notifyError({ error: 'GENERAL_SAVE_FAILED', isAr }); return; }
+    toast.success(isAr ? 'تم حفظ بيانات SEO للصفحة الرئيسية' : 'Landing page SEO saved');
+  };
+
+  const setLandingField = (key: string, val: string) => setLanding(p => ({ ...p, [key]: val }));
 
   const set = (key: keyof SeoConfig) => (val: string | boolean) => setSeo(p => ({ ...p, [key]: val }));
 
