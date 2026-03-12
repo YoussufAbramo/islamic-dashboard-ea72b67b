@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   FolderOpen, Image, FileText, Upload, Search, HardDrive, Lock, RefreshCw,
-  Trash2, Download, CheckSquare, X, ChevronRight, ChevronDown, FolderPlus,
+  Trash2, Download, CheckSquare, X, ChevronRight, ChevronDown,
   Maximize2, Loader2, ExternalLink, Info, Music, Video, File as FileIcon, Play
 } from 'lucide-react';
 import { toast } from 'sonner';
