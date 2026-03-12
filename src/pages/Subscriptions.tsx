@@ -149,6 +149,8 @@ const Subscriptions = () => {
       price: parseFloat(editForm.price) || 0,
       weekly_lessons: parseInt(editForm.weekly_lessons) || 1,
       lesson_duration: parseInt(editForm.lesson_duration) || 60,
+      google_meet_url: editForm.google_meet_url || '',
+      zoom_url: editForm.zoom_url || '',
     }).eq('id', selected.id);
     toast.success(isAr ? 'تم تحديث الاشتراك' : 'Subscription updated');
     setEditing(false);
