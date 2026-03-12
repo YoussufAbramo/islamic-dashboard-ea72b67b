@@ -278,11 +278,18 @@ const PublicContact = () => {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {content.departments.map(d => (
-                                <SelectItem key={d.value} value={d.value}>
-                                  {isAr ? d.label_ar : d.label}
-                                </SelectItem>
-                              ))}
+                              {dbDepartments.length > 0
+                                ? dbDepartments.map(d => (
+                                    <SelectItem key={d.name} value={d.name.toLowerCase()}>
+                                      {isAr ? (d.name_ar || d.name) : d.name}
+                                    </SelectItem>
+                                  ))
+                                : content.departments.map(d => (
+                                    <SelectItem key={d.value} value={d.value}>
+                                      {isAr ? d.label_ar : d.label}
+                                    </SelectItem>
+                                  ))
+                              }
                             </SelectContent>
                           </Select>
                         </div>
