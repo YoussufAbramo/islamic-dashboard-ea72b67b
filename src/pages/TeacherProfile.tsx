@@ -615,7 +615,13 @@ const TeacherProfile = () => {
       {/* Account Statement */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">{isAr ? 'كشف الحساب' : 'Account Statement'}</CardTitle>
+          <CardTitle className="text-lg flex items-center justify-between">
+            <span>{isAr ? 'كشف الحساب' : 'Account Statement'}</span>
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate('/dashboard/support')}>
+              <HeadphonesIcon className="h-3.5 w-3.5" />
+              {isAr ? 'تقديم تذكرة' : 'Submit Ticket'}
+            </Button>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {payoutRequests.length === 0 ? (
@@ -626,26 +632,34 @@ const TeacherProfile = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>{isAr ? 'المرجع' : 'Ref ID'}</TableHead>
-                    <TableHead>{isAr ? 'التاريخ' : 'Date'}</TableHead>
+                    <TableHead>{isAr ? 'تاريخ الطلب' : 'Date of Request'}</TableHead>
                     <TableHead>{isAr ? 'المبلغ' : 'Amount'}</TableHead>
+                    <TableHead>{isAr ? 'الرصيد قبل' : 'Balance Before'}</TableHead>
+                    <TableHead>{isAr ? 'الرصيد بعد' : 'Balance After'}</TableHead>
                     <TableHead>{isAr ? 'الحالة' : 'Status'}</TableHead>
-                    <TableHead>{isAr ? 'تاريخ الصرف' : 'Payout Date'}</TableHead>
-                    <TableHead>{isAr ? 'ملاحظات' : 'Notes'}</TableHead>
+                    <TableHead>{isAr ? 'إجراءات' : 'Actions'}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {payoutRequests.map((req) => (
-                    <TableRow key={req.id}>
-                      <TableCell className="font-mono text-xs">{req.transaction_ref}</TableCell>
-                      <TableCell>{format(new Date(req.created_at), 'dd/MM/yyyy')}</TableCell>
-                      <TableCell className="font-semibold">${Number(req.requested_amount).toFixed(2)}</TableCell>
-                      <TableCell>{statusBadge(req.status)}</TableCell>
-                      <TableCell>{req.reviewed_at ? format(new Date(req.reviewed_at), 'dd/MM/yyyy') : '-'}</TableCell>
-                      <TableCell className="max-w-[200px] truncate text-xs text-muted-foreground">
-                        {req.decline_reason || req.admin_notes || '-'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {payoutRequests.map((req) => {
+                    const balanceBefore = Number(req.available_balance_at_request) + Number(req.requested_amount);
+                    const balanceAfter = Number(req.available_balance_at_request);
+                    return (
+                      <TableRow key={req.id}>
+                        <TableCell className="font-mono text-xs">{req.transaction_ref}</TableCell>
+                        <TableCell className="text-sm">{format(new Date(req.created_at), 'dd/MM/yyyy HH:mm')}</TableCell>
+                        <TableCell className="font-semibold">${Number(req.requested_amount).toFixed(2)}</TableCell>
+                        <TableCell className="text-muted-foreground">${balanceBefore.toFixed(2)}</TableCell>
+                        <TableCell className="text-muted-foreground">${balanceAfter.toFixed(2)}</TableCell>
+                        <TableCell>{statusBadge(req.status)}</TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setQuickViewReq(req)}>
+                            <Eye className="h-3.5 w-3.5" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
