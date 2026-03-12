@@ -292,7 +292,7 @@ const Dashboard = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">{t('dashboard.welcome')}, {profile?.full_name || 'User'}</h1>
         {isAdmin && (
-          <Button variant={editMode ? 'default' : 'outline'} size="sm" onClick={() => setEditMode(!editMode)}>
+          <Button variant={editMode ? 'default' : 'outline'} size="sm" className={!editMode ? 'hover:bg-primary hover:text-primary-foreground transition-colors' : ''} onClick={() => setEditMode(!editMode)}>
             <Pencil className="h-4 w-4 me-1" />
             {editMode ? (isAr ? 'تم' : 'Done') : (isAr ? 'إدارة لوحة التحكم' : 'Manage Dashboard')}
           </Button>
