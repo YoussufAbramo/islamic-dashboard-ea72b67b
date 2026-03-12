@@ -57,6 +57,7 @@ import ActivityLog from "./pages/ActivityLog";
 import WebhookLog from "./pages/WebhookLog";
 import ErrorLog from "./pages/ErrorLog";
 import AuditTrail from "./pages/AuditTrail";
+import StudentReports from "./pages/StudentReports";
 import PublicBlogPost from "./pages/PublicBlogPost";
 import PublicBlogArchive from "./pages/PublicBlogArchive";
 import PublicPage from "./pages/PublicPage";
@@ -106,6 +107,7 @@ const App = () => (
                         <Route path="settings" element={<RoleGuard allowed={['admin']}><Settings /></RoleGuard>} />
                         <Route path="certificates" element={<Certificates />} />
                         <Route path="reports" element={<RoleGuard allowed={['admin']}><Reports /></RoleGuard>} />
+                        <Route path="student-reports" element={<RoleGuard allowed={['admin']}><StudentReports /></RoleGuard>} />
                         <Route path="library" element={<Library />} />
                         <Route path="invoices" element={<RoleGuard allowed={['admin']}><Invoices /></RoleGuard>} />
                         <Route path="expenses" element={<RoleGuard allowed={['admin']}><Expenses /></RoleGuard>} />
