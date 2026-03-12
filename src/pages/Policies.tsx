@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import ContentEditor from '@/components/ContentEditor';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollText, Save, ExternalLink, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
@@ -116,11 +116,11 @@ const Policies = () => {
               </div>
               <div>
                 <Label className="mb-2 block">Content (EN)</Label>
-                <Textarea value={editPolicy.content} onChange={e => setEditPolicy({ ...editPolicy, content: e.target.value })} rows={10} />
+                <ContentEditor value={editPolicy.content} onChange={(v) => setEditPolicy({ ...editPolicy, content: v })} minHeight="200px" />
               </div>
               <div>
                 <Label className="mb-2 block">Content (AR)</Label>
-                <Textarea dir="rtl" value={editPolicy.content_ar} onChange={e => setEditPolicy({ ...editPolicy, content_ar: e.target.value })} rows={10} />
+                <ContentEditor value={editPolicy.content_ar} onChange={(v) => setEditPolicy({ ...editPolicy, content_ar: v })} minHeight="200px" />
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setEditPolicy(null)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
