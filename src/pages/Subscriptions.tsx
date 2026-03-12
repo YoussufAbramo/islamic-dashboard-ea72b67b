@@ -21,7 +21,7 @@ import { Search, Eye, Plus, ArrowUp, ArrowDown, Trash2, Check, ChevronsUpDown, V
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { subscriptionStatusLabels, subscriptionTypeLabels, getLabel } from '@/lib/statusLabels';
-import { addDays, addYears } from 'date-fns';
+import { addDays } from 'date-fns';
 import { cn } from '@/lib/utils';
 import SchedulePicker from '@/components/SchedulePicker';
 import { TableSkeleton } from '@/components/PageSkeleton';
