@@ -537,7 +537,7 @@ const Chats = () => {
                     <Button size="icon" onClick={sendMessage}><Send className="h-4 w-4" /></Button>
                   </div>
                 )}
-              </CardContent>
+              </div>
             </>
           ) : (
             <CardContent className="flex-1 flex items-center justify-center">
