@@ -173,9 +173,9 @@ const SessionReportsLog = () => {
                 <TableHead>{isAr ? 'التاريخ والوقت' : 'Date & Time'}</TableHead>
                 {role !== 'student' && <TableHead>{isAr ? 'الطالب' : 'Student'}</TableHead>}
                 {role !== 'teacher' && <TableHead>{isAr ? 'المعلم' : 'Teacher'}</TableHead>}
-                <TableHead>{isAr ? 'الدورة' : 'Course'}</TableHead>
-                <TableHead>{isAr ? 'المدة' : 'Duration'}</TableHead>
                 <TableHead>{isAr ? 'الملخص' : 'Summary'}</TableHead>
+                <TableHead>{isAr ? 'الملاحظات' : 'Observations'}</TableHead>
+                <TableHead>{isAr ? 'ملاحظات الأداء' : 'Performance'}</TableHead>
                 <TableHead className="w-[60px]">{isAr ? 'عرض' : 'View'}</TableHead>
               </TableRow>
             </TableHeader>
