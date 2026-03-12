@@ -42,6 +42,7 @@ const TeacherProfile = () => {
   const [payoutLoading, setPayoutLoading] = useState(false);
   const [quickViewReq, setQuickViewReq] = useState<any>(null);
   const [adminProfiles, setAdminProfiles] = useState<Record<string, string>>({});
+  const [authInfo, setAuthInfo] = useState<{ created_at?: string; last_sign_in_at?: string } | null>(null);
 
   // Avatar
   const [resolvedAvatar, setResolvedAvatar] = useState('');
@@ -98,6 +99,13 @@ const TeacherProfile = () => {
 
     if (teacherData.cv_url) getMediaSignedUrl(teacherData.cv_url).then(setCvSignedUrl);
     if (teacherData.contract_url) getMediaSignedUrl(teacherData.contract_url).then(setContractSignedUrl);
+
+    // Fetch auth info (created_at, last_sign_in_at) via edge function
+    supabase.functions.invoke('manage-users', {
+      body: { action: 'get-user-info', user_id: teacherData.user_id },
+    }).then(({ data }) => {
+      if (data) setAuthInfo(data);
+    });
 
     const { data: payouts } = await supabase
       .from('payout_requests')
@@ -500,6 +508,8 @@ const TeacherProfile = () => {
                   <InfoCard icon={<Phone className="h-4 w-4" />} label={isAr ? 'الهاتف' : 'Phone'} value={profile?.phone || '-'} />
                   <InfoCard icon={<Briefcase className="h-4 w-4" />} label={isAr ? 'التخصص' : 'Specialization'} value={teacher?.specialization || '-'} />
                   <InfoCard icon={<FileText className="h-4 w-4" />} label={isAr ? 'نبذة تعريفية' : 'Bio'} value={teacher?.bio || '-'} truncate />
+                  <InfoCard icon={<CalendarDays className="h-4 w-4" />} label={isAr ? 'تاريخ إنشاء الحساب' : 'Account Created'} value={authInfo?.created_at ? format(new Date(authInfo.created_at), 'dd/MM/yyyy HH:mm') : '-'} />
+                  <InfoCard icon={<Clock className="h-4 w-4" />} label={isAr ? 'آخر تسجيل دخول' : 'Last Login'} value={authInfo?.last_sign_in_at ? format(new Date(authInfo.last_sign_in_at), 'dd/MM/yyyy HH:mm') : '-'} />
                 </div>
 
                 {/* Documents - View mode */}
