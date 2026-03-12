@@ -107,12 +107,14 @@ const SeoSettings = () => {
 
   useEffect(() => {
     const fetchAll = async () => {
-      const [seoRes, landingRes] = await Promise.all([
+      const [seoRes, landingRes, blogRes] = await Promise.all([
         supabase.from('landing_content').select('content').eq('section_key', 'seo_global_config').maybeSingle(),
         supabase.from('landing_content').select('content').eq('section_key', 'general').maybeSingle(),
+        supabase.from('landing_content').select('content').eq('section_key', 'blog_seo').maybeSingle(),
       ]);
       if (seoRes.data?.content) setSeo({ ...defaultSeo, ...(seoRes.data.content as any) });
       if (landingRes.data?.content) setLanding({ ...defaultGeneralContent, ...(landingRes.data.content as any) });
+      if (blogRes.data?.content) setBlogSeo(blogRes.data.content as any);
     };
     fetchAll();
   }, []);
