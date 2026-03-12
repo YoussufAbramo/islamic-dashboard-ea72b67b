@@ -25,7 +25,6 @@ import { addDays } from 'date-fns';
 import { cn } from '@/lib/utils';
 import SchedulePicker, { formatTime12, DAY_LABELS } from '@/components/SchedulePicker';
 import { TableSkeleton } from '@/components/PageSkeleton';
-import { TableSkeleton } from '@/components/PageSkeleton';
 
 const Subscriptions = () => {
   const { t, language } = useLanguage();
