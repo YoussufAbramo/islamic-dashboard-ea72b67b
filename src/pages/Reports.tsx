@@ -82,60 +82,8 @@ const Reports = () => {
     return result;
   }, [subscriptions, subStatusFilter]);
 
-  const sortedAttendance = useMemo(() => {
-    return [...attendance].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  }, [attendance]);
 
   const totalRevenue = subscriptions.reduce((s, sub) => s + (Number(sub.price) || 0), 0);
-  const activeSubs = subscriptions.filter(s => s.status === 'active').length;
-
-  // === Subscription chart data ===
-  const subStatusPieData = useMemo(() => [
-    { name: isAr ? 'نشط' : 'Active', value: subStatusCounts.active },
-    { name: isAr ? 'منتهي' : 'Expired', value: subStatusCounts.expired },
-    { name: isAr ? 'ملغي' : 'Cancelled', value: subStatusCounts.cancelled },
-  ].filter(d => d.value > 0), [subscriptions, isAr]);
-
-  const subMonthlyData = useMemo(() => {
-    const map: Record<string, number> = {};
-    subscriptions.forEach(s => {
-      const month = format(new Date(s.created_at), 'yyyy-MM');
-      map[month] = (map[month] || 0) + 1;
-    });
-    return Object.entries(map)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .slice(-12)
-      .map(([month, count]) => ({ month: format(new Date(month + '-01'), 'MMM yyyy'), count }));
-  }, [subscriptions]);
-
-  // === Attendance chart data ===
-  const attStatusPieData = useMemo(() => {
-    const present = attendance.filter(a => a.status === 'present').length;
-    const absent = attendance.filter(a => a.status === 'absent').length;
-    const late = attendance.filter(a => a.status === 'late').length;
-    const excused = attendance.filter(a => a.status === 'excused').length;
-    return [
-      { name: isAr ? 'حاضر' : 'Present', value: present },
-      { name: isAr ? 'غائب' : 'Absent', value: absent },
-      { name: isAr ? 'متأخر' : 'Late', value: late },
-      { name: isAr ? 'معذور' : 'Excused', value: excused },
-    ].filter(d => d.value > 0);
-  }, [attendance, isAr]);
-
-  const attMonthlyData = useMemo(() => {
-    const map: Record<string, { present: number; absent: number; late: number }> = {};
-    attendance.forEach(a => {
-      const month = format(new Date(a.created_at), 'yyyy-MM');
-      if (!map[month]) map[month] = { present: 0, absent: 0, late: 0 };
-      if (a.status === 'present') map[month].present++;
-      else if (a.status === 'absent') map[month].absent++;
-      else map[month].late++;
-    });
-    return Object.entries(map)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .slice(-12)
-      .map(([month, data]) => ({ month: format(new Date(month + '-01'), 'MMM yyyy'), ...data }));
-  }, [attendance]);
 
   // === Finance chart data ===
   const revenueMonthlyData = useMemo(() => {
