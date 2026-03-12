@@ -276,7 +276,15 @@ const AppSidebar = () => {
                           onClick={() => navigate(item.path)}
                           tooltip={item.label}
                         >
-                          <item.icon className="h-4 w-4" />
+                          <span className="relative">
+                            <item.icon className="h-4 w-4" />
+                            {item.key === 'attend-lesson' && lessonLed && (
+                              <span className={`absolute -top-0.5 -end-0.5 flex h-2 w-2 ${lessonLed === 'live' ? '' : 'opacity-80'}`}>
+                                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${lessonLed === 'live' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                                <span className={`relative inline-flex rounded-full h-2 w-2 ${lessonLed === 'live' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                              </span>
+                            )}
+                          </span>
                           <span className="flex-1 text-start">{item.label}</span>
                           {item.comingSoon && (
                             <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 shrink-0 ms-auto">
