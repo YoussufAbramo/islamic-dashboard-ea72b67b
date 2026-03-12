@@ -8,10 +8,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Save, Search, Globe, FileText, Code, Share2, ShieldCheck, Type } from 'lucide-react';
+import { Save, Search, Globe, FileText, Code, Share2, ShieldCheck, Type, LayoutTemplate } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import ImagePickerField from '@/components/media/ImagePickerField';
+import { defaultGeneralContent } from '@/lib/landingDefaults';
 
 interface SeoConfig {
   // Basic SEO
