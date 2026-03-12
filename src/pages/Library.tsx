@@ -31,20 +31,19 @@ interface Ebook {
 
 const Library = () => {
   const { language } = useLanguage();
-  const { role, userId } = useAuth();
+  const { role, user } = useAuth();
   const isAr = language === 'ar';
   const isAdmin = role === 'admin';
 
   const trackView = useCallback(async (ebookId: string) => {
-    if (!userId) return;
-    await supabase.from('ebook_views').insert({ ebook_id: ebookId, user_id: userId });
-  }, [userId]);
+    if (!user?.id) return;
+    await supabase.from('ebook_views').insert({ ebook_id: ebookId, user_id: user.id });
+  }, [user]);
 
   const trackDownload = useCallback(async (ebookId: string) => {
-    if (!userId) return;
-    await supabase.from('ebook_downloads').insert({ ebook_id: ebookId, user_id: userId });
-  }, [userId]);
-  const isAdmin = role === 'admin';
+    if (!user?.id) return;
+    await supabase.from('ebook_downloads').insert({ ebook_id: ebookId, user_id: user.id });
+  }, [user]);
 
   const [ebooks, setEbooks] = useState<Ebook[]>([]);
   const [loading, setLoading] = useState(true);
