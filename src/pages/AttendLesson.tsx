@@ -503,16 +503,27 @@ const AttendLesson = () => {
                                 {isAr ? 'حضور' : 'Attend'}
                               </Button>
                               {showNotAttend && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  disabled={!canNotAttend}
-                                  onClick={() => handleNotAttend(entry)}
-                                  className="gap-1 text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/5"
-                                >
-                                  <XCircle className="h-3.5 w-3.5" />
-                                  {isAr ? 'عدم الحضور' : 'Not Attend'}
-                                </Button>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      disabled={!canNotAttend}
+                                      className="gap-1 text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/5"
+                                    >
+                                      <XCircle className="h-3.5 w-3.5" />
+                                      {isAr ? 'عدم الحضور' : 'Not Attend'}
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleNotAttend(entry, 'teacher')} className="text-destructive focus:text-destructive">
+                                      {isAr ? 'لم يحضر المعلم' : 'Teacher Not Attend'}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleNotAttend(entry, 'student')} className="text-destructive focus:text-destructive">
+                                      {isAr ? 'لم يحضر الطالب' : 'Student Not Attend'}
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               )}
                             </>
                           )}
