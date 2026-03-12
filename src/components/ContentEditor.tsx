@@ -79,50 +79,18 @@ const ContentEditor = ({ value, onChange, placeholder, minHeight = '300px' }: Co
             </Button>
           );
         })}
-        <div className="ms-auto flex gap-1">
-          <Button
-            type="button"
-            variant={mode === 'visual' ? 'secondary' : 'ghost'}
-            size="sm"
-            className="h-7 text-xs gap-1"
-            onClick={() => setMode('visual')}
-          >
-            <Eye className="h-3 w-3" />
-            {isAr ? 'مرئي' : 'Visual'}
-          </Button>
-          <Button
-            type="button"
-            variant={mode === 'html' ? 'secondary' : 'ghost'}
-            size="sm"
-            className="h-7 text-xs gap-1"
-            onClick={() => setMode('html')}
-          >
-            <FileText className="h-3 w-3" />
-            HTML
-          </Button>
-        </div>
       </div>
 
       {/* Editor */}
-      {mode === 'visual' ? (
-        <div
-          ref={editorRef}
-          contentEditable
-          suppressContentEditableWarning
-          className="p-4 outline-none prose prose-sm max-w-none dark:prose-invert overflow-auto"
-          style={{ minHeight }}
-          onInput={handleInput}
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(value) }}
-        />
-      ) : (
-        <Textarea
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="border-0 rounded-none focus-visible:ring-0 font-mono text-xs"
-          style={{ minHeight }}
-        />
-      )}
+      <div
+        ref={editorRef}
+        contentEditable
+        suppressContentEditableWarning
+        className="p-4 outline-none prose prose-sm max-w-none dark:prose-invert overflow-auto"
+        style={{ minHeight }}
+        onInput={handleInput}
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(value) }}
+      />
     </div>
   );
 };
