@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
 import ContentEditor from '@/components/ContentEditor';
+import ContactPageEditor from '@/components/settings/ContactPageEditor';
 
 interface WebPage {
   id: string;
