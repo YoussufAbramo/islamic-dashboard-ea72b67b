@@ -90,6 +90,23 @@ const Chats = () => {
     }
   };
 
+  const fetchReadReceipts = async (chatId: string) => {
+    const { data } = await supabase
+      .from('chat_read_receipts')
+      .select('user_id, last_read_at')
+      .eq('chat_id', chatId);
+    setReadReceipts(data || []);
+  };
+
+  const upsertReadReceipt = async (chatId: string) => {
+    if (!user) return;
+    const now = new Date().toISOString();
+    await supabase.from('chat_read_receipts').upsert(
+      { chat_id: chatId, user_id: user.id, last_read_at: now },
+      { onConflict: 'chat_id,user_id' }
+    );
+  };
+
   const fetchGroupMembers = async (chatId: string) => {
     const { data } = await supabase
       .from('chat_members')
