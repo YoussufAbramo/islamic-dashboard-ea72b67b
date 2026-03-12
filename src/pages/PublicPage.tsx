@@ -75,7 +75,7 @@ const PublicPage = () => {
       </header>
       <main className="max-w-4xl mx-auto px-6 py-12">
         <h1 className="text-3xl md:text-4xl font-bold mb-8">{title}</h1>
-        <div className="prose prose-lg max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: content || '' }} />
+        <div className="prose prose-lg max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content || '') }} />
       </main>
       <footer className="border-t border-border py-6 text-center">
         <CopyrightText />

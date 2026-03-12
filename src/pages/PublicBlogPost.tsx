@@ -73,7 +73,7 @@ const PublicBlogPost = () => {
           )}
         </div>
         {post.excerpt && <p className="text-lg text-muted-foreground mb-8 leading-relaxed">{isAr ? (post.excerpt_ar || post.excerpt) : post.excerpt}</p>}
-        <div className="prose prose-lg max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: content || '' }} />
+        <div className="prose prose-lg max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content || '') }} />
       </main>
       <footer className="border-t border-border py-6 text-center">
         <CopyrightText />
