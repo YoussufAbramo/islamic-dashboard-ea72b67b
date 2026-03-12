@@ -106,6 +106,18 @@ const TeacherProfile = () => {
       .order('created_at', { ascending: false });
     setPayoutRequests(payouts || []);
 
+    // Fetch admin names for reviewed payouts
+    const adminIds = [...new Set((payouts || []).filter(p => p.admin_id).map(p => p.admin_id))];
+    if (adminIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', adminIds);
+      const map: Record<string, string> = {};
+      (profiles || []).forEach(p => { map[p.id] = p.full_name; });
+      setAdminProfiles(map);
+    }
+
     // Session stats (current month)
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
