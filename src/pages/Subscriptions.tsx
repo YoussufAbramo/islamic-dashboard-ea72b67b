@@ -587,7 +587,7 @@ const Subscriptions = () => {
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>{isAr ? 'الدروس الأسبوعية' : 'Weekly Lessons'}</Label><Input type="number" min="1" value={createForm.weekly_lessons} onChange={(e) => setCreateForm({ ...createForm, weekly_lessons: e.target.value })} /></div>
+              <div><Label>{isAr ? 'الدروس الأسبوعية' : 'Weekly Lessons'}</Label><Input type="number" min="1" max="7" value={createForm.weekly_lessons} onChange={(e) => { const v = e.target.value; const n = parseInt(v, 10) || 0; setCreateForm(prev => ({ ...prev, weekly_lessons: v, schedule_days: prev.schedule_days.slice(0, Math.max(n, 0)) })); }} /></div>
               <div><Label>{isAr ? 'مدة الدرس (دقيقة)' : 'Lesson Duration (min)'}</Label><Input type="number" min="15" step="15" value={createForm.lesson_duration} onChange={(e) => setCreateForm({ ...createForm, lesson_duration: e.target.value })} /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -606,6 +606,7 @@ const Subscriptions = () => {
                 onDaysChange={(days) => setCreateForm(prev => ({ ...prev, schedule_days: days }))}
                 time={createForm.schedule_time}
                 onTimeChange={(time) => setCreateForm(prev => ({ ...prev, schedule_time: time }))}
+                maxDays={parseInt(createForm.weekly_lessons, 10) || undefined}
               />
             </div>
 
