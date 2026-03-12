@@ -769,7 +769,7 @@ const LandingContentSettings = () => {
       </div>
 
       {/* Column editors */}
-      <div className="space-y-3">
+      <div className={`grid gap-3 ${footerColumnsCount === 1 ? 'grid-cols-1' : footerColumnsCount === 2 ? 'grid-cols-1 sm:grid-cols-2' : footerColumnsCount === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'}`}>
         {footerColumns.slice(0, footerColumnsCount).map((col, colIdx) => (
           <Collapsible key={colIdx} defaultOpen={colIdx === 0}>
             <div className="rounded-lg border border-border overflow-hidden">
