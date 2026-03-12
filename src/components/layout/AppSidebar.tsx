@@ -195,6 +195,7 @@ const AppSidebar = () => {
       items: [
         { key: 'attendance', label: isAr ? 'تتبع الحضور' : 'Attendance Tracking', icon: ClipboardCheck, path: '/dashboard/attendance', roles: ['admin', 'teacher'], beta: true },
         { key: 'student-reports', label: isAr ? 'تقارير الطلاب' : 'Students Reports', icon: GraduationCap, path: '/dashboard/student-reports', roles: ['admin'] },
+        { key: 'session-reports', label: isAr ? 'سجل تقارير الجلسات' : 'Session Reports', icon: FileText, path: '/dashboard/session-reports', roles: ['admin', 'teacher', 'student'] },
         { key: 'reports', label: isAr ? 'التقارير والتحليلات' : 'Reports & Analytics', icon: BarChart3, path: '/dashboard/reports', roles: ['admin'] },
       ],
     },
