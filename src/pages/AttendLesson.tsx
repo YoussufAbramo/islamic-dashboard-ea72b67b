@@ -192,33 +192,28 @@ const AttendLesson = () => {
     const scheduledTime = new Date(entry.scheduled_at);
     const endTime = new Date(scheduledTime.getTime() + entry.duration_minutes * 60000);
 
-    // Active session
     if (activeSessionId === entry.id) {
       return { label: isAr ? '🟢 جلسة نشطة' : '🟢 In Session', variant: 'default', className: 'bg-emerald-600 text-white', isLive: true };
     }
-    // DB-driven statuses
     if (entry.status === 'teacher_not_attend') {
-      return { label: isAr ? 'لم يحضر المعلم' : 'Teacher Not Attend', variant: 'destructive', className: '', isLive: false };
+      return { label: isAr ? 'لم يحضر المعلم' : 'Teacher Not Attend', variant: 'outline', className: 'border-rose-500/40 bg-rose-500/10 text-rose-600 dark:text-rose-400', isLive: false };
     }
     if (entry.status === 'student_not_attend') {
-      return { label: isAr ? 'لم يحضر الطالب' : 'Student Not Attend', variant: 'destructive', className: '', isLive: false };
+      return { label: isAr ? 'لم يحضر الطالب' : 'Student Not Attend', variant: 'outline', className: 'border-orange-500/40 bg-orange-500/10 text-orange-600 dark:text-orange-400', isLive: false };
     }
     if (entry.status === 'postponed') {
-      return { label: isAr ? 'مؤجل' : 'Postponed', variant: 'outline', className: 'border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400', isLive: false };
+      return { label: isAr ? 'مؤجل' : 'Postponed', variant: 'outline', className: 'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400', isLive: false };
     }
-    // Ended: completed, has report, or time passed
     if (entry.status === 'completed' || entry.has_report) {
-      return { label: isAr ? 'انتهى' : 'Ended', variant: 'secondary', className: '', isLive: false };
+      return { label: isAr ? 'انتهى' : 'Ended', variant: 'outline', className: 'border-muted-foreground/30 bg-muted text-muted-foreground', isLive: false };
     }
     if (now > endTime) {
-      return { label: isAr ? 'انتهى' : 'Ended', variant: 'secondary', className: '', isLive: false };
+      return { label: isAr ? 'انتهى' : 'Ended', variant: 'outline', className: 'border-muted-foreground/30 bg-muted text-muted-foreground', isLive: false };
     }
-    // In Session (live window)
     if (now >= scheduledTime && now <= endTime) {
       return { label: isAr ? '🔴 جلسة جارية' : '🔴 In Session', variant: 'default', className: 'bg-destructive text-destructive-foreground', isLive: true };
     }
-    // Upcoming
-    return { label: isAr ? 'قادم' : 'Upcoming', variant: 'outline', className: 'border-primary/30 bg-primary/5 text-primary', isLive: false };
+    return { label: isAr ? 'قادم' : 'Upcoming', variant: 'outline', className: 'border-sky-500/40 bg-sky-500/10 text-sky-600 dark:text-sky-400', isLive: false };
   };
 
   // In test mode, the first non-completed/cancelled entry has all restrictions lifted
