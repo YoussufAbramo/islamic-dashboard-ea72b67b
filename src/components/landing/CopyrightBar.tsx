@@ -5,7 +5,7 @@ export interface CopyrightSlotContent {
   text?: string;
   text_ar?: string;
   image_url?: string;
-  links?: { type: 'policy' | 'page'; slug: string; label: string; label_ar: string }[];
+  links?: { type: 'policy' | 'page' | 'system'; slug: string; label: string; label_ar: string }[];
 }
 
 export interface CopyrightConfig {
@@ -48,7 +48,7 @@ const SlotRenderer = ({ slot, isAr }: { slot?: CopyrightSlotContent; isAr: boole
       return (
         <div className="flex items-center gap-3 flex-wrap">
           {(slot.links || []).map((link, i) => {
-            const url = link.type === 'policy' ? `/policies/${link.slug}` : `/pages/${link.slug}`;
+            const url = link.type === 'policy' ? `/policies/${link.slug}` : link.type === 'system' ? link.slug : `/pages/${link.slug}`;
             return (
               <a
                 key={i}
