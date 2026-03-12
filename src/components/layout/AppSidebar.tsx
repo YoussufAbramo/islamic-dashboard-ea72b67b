@@ -295,7 +295,7 @@ const AppSidebar = () => {
                   {visibleItems.map((item) => {
                     const hasChildren = item.children && item.children.length > 0;
                     const isParentActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
-                    const visibleChildren = hasChildren ? item.children!.filter(c => role && c.roles.includes(role)) : [];
+                    const visibleChildren = hasChildren ? item.children!.filter(c => activeRole && c.roles.includes(activeRole)) : [];
                     const isExpanded = hoveredMenus.has(item.key) || expandedMenus.has(item.key) || isParentActive;
                     return (
                       <SidebarMenuItem

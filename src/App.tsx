@@ -149,6 +149,7 @@ const App = () => (
                   </BrowserRouter>
                 </TooltipProvider>
               </SessionProvider>
+              </ImpersonationProvider>
             </AppSettingsProvider>
           </AuthProvider>
         </LanguageProvider>

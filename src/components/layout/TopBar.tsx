@@ -230,6 +230,9 @@ const TopBar = () => {
           </Tooltip>
 
           <DropdownMenu>
+          <ImpersonationSwitcher />
+
+          <DropdownMenu>
             <Tooltip>
               <TooltipTrigger asChild>
                 <DropdownMenuTrigger asChild>
