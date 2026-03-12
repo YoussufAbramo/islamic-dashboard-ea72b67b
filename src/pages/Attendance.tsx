@@ -177,9 +177,9 @@ const Attendance = () => {
 
       <Tabs defaultValue="overview">
         <TabsList>
+          <TabsTrigger value="overview">{isAr ? 'نظرة عامة' : 'Overview'}</TabsTrigger>
           <TabsTrigger value="students">{isAr ? 'حسب الطالب' : 'Per Student'}</TabsTrigger>
           <TabsTrigger value="teachers">{isAr ? 'حسب المعلم' : 'Per Teacher'}</TabsTrigger>
-          <TabsTrigger value="overview">{isAr ? 'نظرة عامة' : 'Overview'}</TabsTrigger>
           <TabsTrigger value="reports">{isAr ? 'التقارير' : 'Reports'}</TabsTrigger>
         </TabsList>
 
