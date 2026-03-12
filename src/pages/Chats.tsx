@@ -59,6 +59,7 @@ const Chats = () => {
   };
 
   const [senderRoles, setSenderRoles] = useState<Record<string, string>>({});
+  const [readReceipts, setReadReceipts] = useState<{ user_id: string; last_read_at: string }[]>([]);
 
   const fetchMessages = async (chatId: string) => {
     const { data } = await supabase
