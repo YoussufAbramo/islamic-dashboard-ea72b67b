@@ -5,7 +5,7 @@ export interface CopyrightSlotContent {
   text?: string;
   text_ar?: string;
   image_url?: string;
-  links?: { type: 'policy' | 'page'; slug: string; label: string; label_ar: string }[];
+  links?: { type: 'policy' | 'page' | 'system'; slug: string; label: string; label_ar: string }[];
 }
 
 export interface CopyrightConfig {
