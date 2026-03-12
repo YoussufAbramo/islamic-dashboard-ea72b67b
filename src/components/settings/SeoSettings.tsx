@@ -200,7 +200,43 @@ const SeoSettings = () => {
         </CardContent>
       </Card>
 
-      {/* 1. Meta Defaults */}
+      {/* 0.5. Blog SEO */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <FileText className="h-5 w-5 text-primary" />
+            {isAr ? 'SEO المدونة' : 'Blog SEO'}
+          </CardTitle>
+          <CardDescription>{isAr ? 'بيانات SEO الخاصة بصفحة أرشيف المدونة' : 'SEO metadata for the blog archive page'}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="rounded-lg border border-border p-4 space-y-4">
+            <h4 className="text-sm font-medium flex items-center gap-2"><Search className="h-3.5 w-3.5" />{isAr ? 'بيانات SEO' : 'SEO Meta Data'}</h4>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div><Label>Meta Title (EN)</Label><Input value={blogSeo.meta_title || ''} onChange={e => setBlogSeoField('meta_title', e.target.value)} placeholder="Blog - Our Latest Articles" /></div>
+              <div><Label>Meta Title (AR)</Label><Input dir="rtl" value={blogSeo.meta_title_ar || ''} onChange={e => setBlogSeoField('meta_title_ar', e.target.value)} placeholder="المدونة - أحدث المقالات" /></div>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div><Label>Meta Description (EN)</Label><Textarea value={blogSeo.meta_description || ''} onChange={e => setBlogSeoField('meta_description', e.target.value)} rows={2} placeholder="Read our latest articles and insights..." /></div>
+              <div><Label>Meta Description (AR)</Label><Textarea dir="rtl" value={blogSeo.meta_description_ar || ''} onChange={e => setBlogSeoField('meta_description_ar', e.target.value)} rows={2} placeholder="اقرأ أحدث مقالاتنا..." /></div>
+            </div>
+            <div><Label>{isAr ? 'الكلمات المفتاحية' : 'Keywords'}</Label><Input value={blogSeo.meta_keywords || ''} onChange={e => setBlogSeoField('meta_keywords', e.target.value)} placeholder="blog, articles, islamic education" /></div>
+          </div>
+          <div className="rounded-lg border border-border p-4 space-y-4">
+            <h4 className="text-sm font-medium flex items-center gap-2"><Globe className="h-3.5 w-3.5" />{isAr ? 'بيانات المشاركة' : 'Open Graph'}</h4>
+            <div><Label>OG Title</Label><Input value={blogSeo.og_title || ''} onChange={e => setBlogSeoField('og_title', e.target.value)} placeholder="Blog" /></div>
+            <div><Label>OG Description</Label><Textarea value={blogSeo.og_description || ''} onChange={e => setBlogSeoField('og_description', e.target.value)} rows={2} /></div>
+            <ImagePickerField label={isAr ? 'صورة OG' : 'OG Image'} value={blogSeo.og_image || ''} onChange={(url) => setBlogSeoField('og_image', url)} />
+          </div>
+          <div className="flex justify-end">
+            <Button onClick={handleSaveBlog} disabled={savingBlog} size="sm">
+              <Save className="h-4 w-4 me-1" />
+              {savingBlog ? '...' : (isAr ? 'حفظ' : 'Save')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
