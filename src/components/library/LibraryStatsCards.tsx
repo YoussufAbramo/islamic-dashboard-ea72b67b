@@ -1,7 +1,8 @@
+import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { BookOpen, FileText, Calendar } from 'lucide-react';
+import { BookOpen, Users, Download, Newspaper } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Props {
   ebooks: { id: string; created_at: string }[];
@@ -10,26 +11,38 @@ interface Props {
 }
 
 const LibraryStatsCards = ({ ebooks, loading, isAr }: Props) => {
+  const [totalReaders, setTotalReaders] = useState(0);
+  const [totalDownloads, setTotalDownloads] = useState(0);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      setStatsLoading(true);
+      const [viewsRes, downloadsRes] = await Promise.all([
+        supabase.from('ebook_views').select('id', { count: 'exact', head: true }),
+        supabase.from('ebook_downloads').select('id', { count: 'exact', head: true }),
+      ]);
+      setTotalReaders(viewsRes.count ?? 0);
+      setTotalDownloads(downloadsRes.count ?? 0);
+      setStatsLoading(false);
+    };
+    fetchStats();
+  }, [ebooks]);
+
   const totalCount = ebooks.length;
-  const thisMonth = ebooks.filter(e => {
-    const d = new Date(e.created_at);
-    const now = new Date();
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  }).length;
-  const latest = ebooks.length > 0
-    ? format(new Date(ebooks.reduce((a, b) => new Date(a.created_at) > new Date(b.created_at) ? a : b).created_at), 'PP')
-    : '—';
+  const isLoading = loading || statsLoading;
 
   const stats = [
     { label: isAr ? 'إجمالي الكتب' : 'Total E-books', value: String(totalCount), icon: BookOpen, accent: 'text-primary' },
-    { label: isAr ? 'أضيفت هذا الشهر' : 'Added This Month', value: String(thisMonth), icon: FileText, accent: 'text-green-500' },
-    { label: isAr ? 'آخر إضافة' : 'Last Added', value: latest, icon: Calendar, accent: 'text-blue-500' },
+    { label: isAr ? 'إجمالي القراء' : 'Total Readers', value: String(totalReaders), icon: Users, accent: 'text-green-600 dark:text-green-400' },
+    { label: isAr ? 'إجمالي التحميلات' : 'Total Downloads', value: String(totalDownloads), icon: Download, accent: 'text-blue-600 dark:text-blue-400' },
+    { label: isAr ? 'الكتب المدونة' : 'Total Blogged E-books', value: '—', icon: Newspaper, accent: 'text-muted-foreground', disabled: true },
   ];
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        {Array.from({ length: 3 }).map((_, i) => (
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i}>
             <CardContent className="p-4 space-y-2">
               <Skeleton className="h-4 w-24" />
@@ -42,9 +55,9 @@ const LibraryStatsCards = ({ ebooks, loading, isAr }: Props) => {
   }
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((s, i) => (
-        <Card key={i} className="hover:shadow-md transition-shadow">
+        <Card key={i} className={`hover:shadow-md transition-shadow ${s.disabled ? 'opacity-60' : ''}`}>
           <CardContent className="p-4 flex items-center gap-3">
             <div className={`p-2 rounded-lg bg-muted ${s.accent}`}>
               <s.icon className="h-5 w-5" />
