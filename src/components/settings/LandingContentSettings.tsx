@@ -678,44 +678,97 @@ const LandingContentSettings = () => {
     });
   };
 
+  const logoSourceOptions = [
+    { value: 'light', label: isAr ? 'الشعار الفاتح' : 'Light Logo', icon: Sun, preview: appLogo },
+    { value: 'dark', label: isAr ? 'الشعار الداكن' : 'Dark Logo', icon: Moon, preview: darkLogo },
+    { value: 'favicon', label: isAr ? 'أيقونة الموقع' : 'Favicon', icon: ImageIcon, preview: favicon },
+  ];
+  const currentLogoSource = footer.logo_source || 'dark';
+  const brandingColumn: number = footer.branding_column ?? 0;
+
   const renderFooterTab = () => (
     <div className="space-y-5">
-      {/* Branding row */}
-      <div className="space-y-3">
-        <ImagePickerField label={isAr ? 'شعار الفوتر' : 'Footer Logo'} value={footer.logo || ''} onChange={(url) => updateFooterField('logo', url)} />
-        <div className="grid sm:grid-cols-2 gap-3">
-          <div><Label className="text-xs">Title (EN)</Label><Input value={footer.title || ''} onChange={e => updateFooterField('title', e.target.value)} placeholder="App Name" className="h-9" /></div>
-          <div><Label className="text-xs">Title (AR)</Label><Input dir="rtl" value={footer.title_ar || ''} onChange={e => updateFooterField('title_ar', e.target.value)} className="h-9" /></div>
-        </div>
-        <div className="grid sm:grid-cols-2 gap-3">
-          <div><Label className="text-xs">Description (EN)</Label><Textarea value={footer.description || ''} onChange={e => updateFooterField('description', e.target.value)} rows={2} className="text-sm" /></div>
-          <div><Label className="text-xs">Description (AR)</Label><Textarea dir="rtl" value={footer.description_ar || ''} onChange={e => updateFooterField('description_ar', e.target.value)} rows={2} className="text-sm" /></div>
-        </div>
-      </div>
-
-      <hr className="border-border" />
-
-      {/* Columns count picker */}
-      <div className="flex items-center gap-3">
-        <Label className="text-sm font-medium shrink-0">{isAr ? 'عدد الأعمدة' : 'Columns'}</Label>
-        <div className="flex gap-1.5">
-          {[1, 2, 3, 4].map(n => (
+      {/* Logo source picker */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">{isAr ? 'شعار الفوتر' : 'Footer Logo'}</Label>
+        <div className="flex gap-2">
+          {logoSourceOptions.map(opt => (
             <button
-              key={n}
-              onClick={() => handleColumnsCountChange(n)}
-              className={`h-8 w-8 rounded-md border text-xs font-bold transition-all ${
-                footerColumnsCount === n
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border text-muted-foreground hover:border-primary/40 hover:bg-muted'
+              key={opt.value}
+              onClick={() => updateFooterField('logo_source', opt.value)}
+              className={`flex-1 flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                currentLogoSource === opt.value
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border hover:border-primary/30 hover:bg-muted/50'
               }`}
             >
-              {n}
+              {opt.preview ? (
+                <img src={opt.preview} alt={opt.label} className="h-8 max-w-[80px] object-contain" />
+              ) : (
+                <opt.icon className={`h-6 w-6 ${currentLogoSource === opt.value ? 'text-primary' : 'text-muted-foreground'}`} />
+              )}
+              <span className={`text-xs font-medium ${currentLogoSource === opt.value ? 'text-primary' : 'text-muted-foreground'}`}>{opt.label}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Column editors — compact accordion style */}
+      {/* Title & Description */}
+      <div className="grid sm:grid-cols-2 gap-3">
+        <div><Label className="text-xs">Title (EN)</Label><Input value={footer.title || ''} onChange={e => updateFooterField('title', e.target.value)} placeholder="App Name" className="h-9" /></div>
+        <div><Label className="text-xs">Title (AR)</Label><Input dir="rtl" value={footer.title_ar || ''} onChange={e => updateFooterField('title_ar', e.target.value)} className="h-9" /></div>
+      </div>
+      <div className="grid sm:grid-cols-2 gap-3">
+        <div><Label className="text-xs">Description (EN)</Label><Textarea value={footer.description || ''} onChange={e => updateFooterField('description', e.target.value)} rows={2} className="text-sm" /></div>
+        <div><Label className="text-xs">Description (AR)</Label><Textarea dir="rtl" value={footer.description_ar || ''} onChange={e => updateFooterField('description_ar', e.target.value)} rows={2} className="text-sm" /></div>
+      </div>
+
+      <hr className="border-border" />
+
+      {/* Layout controls row */}
+      <div className="flex flex-wrap items-end gap-4">
+        {/* Columns count */}
+        <div className="space-y-1.5">
+          <Label className="text-xs font-medium">{isAr ? 'عدد الأعمدة' : 'Columns'}</Label>
+          <div className="flex gap-1.5">
+            {[1, 2, 3, 4].map(n => (
+              <button
+                key={n}
+                onClick={() => handleColumnsCountChange(n)}
+                className={`h-9 w-9 rounded-lg border-2 text-sm font-bold transition-all ${
+                  footerColumnsCount === n
+                    ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                    : 'border-border text-muted-foreground hover:border-primary/40 hover:bg-muted'
+                }`}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Branding column picker */}
+        <div className="space-y-1.5">
+          <Label className="text-xs font-medium">{isAr ? 'عمود الهوية' : 'Branding in'}</Label>
+          <div className="flex gap-1.5">
+            {Array.from({ length: footerColumnsCount }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => updateFooterField('branding_column', i)}
+                className={`h-9 px-3 rounded-lg border-2 text-xs font-medium transition-all ${
+                  brandingColumn === i
+                    ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                    : 'border-border text-muted-foreground hover:border-primary/40 hover:bg-muted'
+                }`}
+              >
+                {isAr ? `عمود ${i + 1}` : `Col ${i + 1}`}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Column editors */}
       <div className="space-y-3">
         {footerColumns.slice(0, footerColumnsCount).map((col, colIdx) => (
           <Collapsible key={colIdx} defaultOpen={colIdx === 0}>
@@ -725,6 +778,9 @@ const LandingContentSettings = () => {
                   <span className="flex items-center gap-2">
                     <Columns3 className="h-3.5 w-3.5 text-muted-foreground" />
                     {col.title || col.title_ar || (isAr ? `العمود ${colIdx + 1}` : `Column ${colIdx + 1}`)}
+                    {brandingColumn === colIdx && (
+                      <Badge variant="default" className="text-[10px] px-1.5 py-0">{isAr ? 'هوية' : 'Branding'}</Badge>
+                    )}
                   </span>
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{col.items.length} {isAr ? 'رابط' : 'links'}</Badge>
