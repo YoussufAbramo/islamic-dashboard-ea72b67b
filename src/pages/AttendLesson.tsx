@@ -323,84 +323,13 @@ const AttendLesson = () => {
       )}
 
 
-      {/* Join Method Dialog */}
-      <Dialog open={joinOpen} onOpenChange={setJoinOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{isAr ? 'اختر طريقة الحضور' : 'Choose Attendance Method'}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 pt-2">
-            {/* Google Meet */}
-            <button
-              type="button"
-              onClick={() => handleJoin('google_meet')}
-              disabled={!selectedEntry?.google_meet_url}
-              className="w-full flex items-center gap-3 p-3.5 rounded-xl border bg-card hover:bg-accent/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <img src="/icons/google-meet.png" alt="Google Meet" className="h-8 w-8 shrink-0" />
-              <div className="text-start flex-1 min-w-0">
-                <p className="text-sm font-semibold">Google Meet</p>
-                <p className="text-[10px] text-muted-foreground truncate">
-                  {selectedEntry?.google_meet_url
-                    ? selectedEntry.google_meet_url
-                    : (isAr ? 'لم يتم الإعداد' : 'Not configured')}
-                </p>
-              </div>
-              <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
-            </button>
-
-            {/* Zoom */}
-            <button
-              type="button"
-              onClick={() => handleJoin('zoom')}
-              disabled={!selectedEntry?.zoom_url}
-              className="w-full flex items-center gap-3 p-3.5 rounded-xl border bg-card hover:bg-accent/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <img src="/icons/zoom.png" alt="Zoom" className="h-8 w-8 shrink-0" />
-              <div className="text-start flex-1 min-w-0">
-                <p className="text-sm font-semibold">Zoom</p>
-                <p className="text-[10px] text-muted-foreground truncate">
-                  {selectedEntry?.zoom_url
-                    ? selectedEntry.zoom_url
-                    : (isAr ? 'لم يتم الإعداد' : 'Not configured')}
-                </p>
-              </div>
-              <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
-            </button>
-
-            {/* Vconnect */}
-            <div className="rounded-xl border bg-card p-3.5 space-y-2.5">
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <MonitorPlay className="h-4.5 w-4.5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold">Vconnect</p>
-                  <p className="text-[10px] text-muted-foreground">{isAr ? 'أدخل رابط الجلسة يدوياً' : 'Enter session URL manually'}</p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  type="url"
-                  placeholder={isAr ? 'https://رابط-الجلسة...' : 'https://session-url...'}
-                  value={vconnectUrl}
-                  onChange={(e) => setVconnectUrl(e.target.value)}
-                  className="h-9 text-xs flex-1"
-                />
-                <Button
-                  size="sm"
-                  className="h-9 px-4 gap-1.5"
-                  onClick={() => handleJoin('vconnect')}
-                  disabled={!vconnectUrl.trim()}
-                >
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  {isAr ? 'انضم' : 'Join'}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Join Meeting Dialog */}
+      <JoinMeetingDialog
+        open={joinOpen}
+        onOpenChange={setJoinOpen}
+        entry={selectedEntry}
+        isAr={isAr}
+      />
     </div>
   );
 };
