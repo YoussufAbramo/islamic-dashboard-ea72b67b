@@ -180,6 +180,7 @@ const Attendance = () => {
           <TabsTrigger value="students">{isAr ? 'حسب الطالب' : 'Per Student'}</TabsTrigger>
           <TabsTrigger value="teachers">{isAr ? 'حسب المعلم' : 'Per Teacher'}</TabsTrigger>
           <TabsTrigger value="overview">{isAr ? 'نظرة عامة' : 'Overview'}</TabsTrigger>
+          <TabsTrigger value="reports">{isAr ? 'التقارير' : 'Reports'}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="students" className="space-y-6">
