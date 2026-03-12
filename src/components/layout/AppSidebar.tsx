@@ -269,7 +269,8 @@ const AppSidebar = () => {
         categories.map((cat) => {
           if (cat.requiresDeveloperMode && !developerMode) return null;
           if (cat.requiresWebsiteMode && !websiteMode) return null;
-          const visibleItems = cat.items.filter((item) => role && item.roles.includes(role));
+          const activeRole = effectiveRole || role;
+          const visibleItems = cat.items.filter((item) => activeRole && item.roles.includes(activeRole));
           if (visibleItems.length === 0) return null;
           return (
             <SidebarGroup key={cat.label}>
