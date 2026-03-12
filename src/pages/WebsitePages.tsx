@@ -15,11 +15,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { FileText, Plus, Save, Trash2, Search, ExternalLink, ChevronDown, Image, BookOpen, ArrowRight, Pencil } from 'lucide-react';
+import { FileText, Plus, Save, Trash2, Search, ExternalLink, ChevronDown, Image, BookOpen, ArrowRight, Pencil, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
 import ContentEditor from '@/components/ContentEditor';
+import ContactPageEditor from '@/components/settings/ContactPageEditor';
 
 interface WebPage {
   id: string;
@@ -72,6 +73,40 @@ const SystemPageCard = ({ isAr }: { isAr: boolean }) => {
         </div>
       </CardContent>
     </Card>
+  );
+};
+
+/* ─── System page card (Contact) ─── */
+const ContactPageCard = ({ isAr }: { isAr: boolean }) => {
+  const [editorOpen, setEditorOpen] = useState(false);
+  return (
+    <>
+      <Card className="border-primary/20 bg-primary/[0.02]">
+        <CardContent className="p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <MessageSquare className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="font-medium">{isAr ? 'تواصل معنا' : 'Contact'}</p>
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0">{isAr ? 'نظام' : 'System'}</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground">/contact</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => window.open('/contact', '_blank')}>
+              <ExternalLink className={ACTION_ICON} />
+            </Button>
+            <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => setEditorOpen(true)}>
+              <Pencil className={ACTION_ICON} />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+      <ContactPageEditor open={editorOpen} onOpenChange={setEditorOpen} />
+    </>
   );
 };
 
@@ -186,6 +221,7 @@ const WebsitePages = () => {
       <div className="space-y-2">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{isAr ? 'صفحات النظام' : 'System Pages'}</p>
         <SystemPageCard isAr={isAr} />
+        <ContactPageCard isAr={isAr} />
       </div>
 
       {/* Custom Pages */}
