@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Search, Eye, Plus, Trash2 } from 'lucide-react';
+import { Search, Eye, Plus, Trash2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
@@ -132,6 +132,7 @@ const Teachers = () => {
                 <TableCell>{teacher.specialization}</TableCell>
                 <TableCell className="flex gap-1">
                   <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => viewDetails(teacher)}><Eye className={ACTION_ICON} /></Button>
+                  <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => { viewDetails(teacher); setTimeout(() => setEditing(true), 100); }}><Pencil className={ACTION_ICON} /></Button>
                   {role === 'admin' && <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteTarget(teacher.id)}><Trash2 className={ACTION_ICON} /></Button>}
                 </TableCell>
               </TableRow>

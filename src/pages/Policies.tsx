@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ACTION_BTN, ACTION_ICON } from '@/lib/actionBtnClass';
+import { ACTION_BTN, ACTION_BTN_DESTRUCTIVE, ACTION_ICON } from '@/lib/actionBtnClass';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ScrollText, Save, ExternalLink, Eye, EyeOff } from 'lucide-react';
+import { ScrollText, Save, ExternalLink, Eye, EyeOff, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
@@ -101,15 +101,15 @@ const Policies = () => {
                   {policy.is_published ? (isAr ? 'منشور' : 'Published') : (isAr ? 'مسودة' : 'Draft')}
                 </Badge>
                 {policy.is_published && (
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => window.open(`/policies/${policy.slug}`, '_blank')}>
-                    <ExternalLink className="h-3.5 w-3.5" />
+                  <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => window.open(`/policies/${policy.slug}`, '_blank')}>
+                    <ExternalLink className={ACTION_ICON} />
                   </Button>
                 )}
                 <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => togglePublish(policy)}>
                   {policy.is_published ? <Eye className={ACTION_ICON} /> : <EyeOff className={ACTION_ICON} />}
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setEditPolicy({ ...policy })}>
-                  {isAr ? 'تعديل' : 'Edit'}
+                <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => setEditPolicy({ ...policy })}>
+                  <Pencil className={ACTION_ICON} />
                 </Button>
               </div>
             </CardContent>

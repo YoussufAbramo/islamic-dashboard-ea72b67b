@@ -11,8 +11,9 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Search, Eye, Plus, Trash2 } from 'lucide-react';
+import { Search, Eye, Plus, Trash2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
@@ -30,6 +31,7 @@ const Students = () => {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [allTeachers, setAllTeachers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [addOpen, setAddOpen] = useState(false);
@@ -38,8 +40,12 @@ const Students = () => {
 
   const fetchStudents = async () => {
     setLoading(true);
-    const { data } = await supabase.from('students').select('*, profiles:students_user_id_profiles_fkey(full_name, phone, email)');
-    setStudents(data || []);
+    const [studentsRes, teachersRes] = await Promise.all([
+      supabase.from('students').select('*, profiles:students_user_id_profiles_fkey(full_name, phone, email)'),
+      supabase.from('teachers').select('id, profiles:teachers_user_id_profiles_fkey(full_name)'),
+    ]);
+    setStudents(studentsRes.data || []);
+    setAllTeachers(teachersRes.data || []);
     setLoading(false);
   };
 
@@ -48,7 +54,7 @@ const Students = () => {
   const viewDetails = async (student: any) => {
     setSelected(student);
     setProfile(student.profiles);
-    setEditForm({ lesson_duration: student.lesson_duration, weekly_repeat: student.weekly_repeat, full_name: student.profiles?.full_name || '', phone: student.profiles?.phone || '', email: student.profiles?.email || '' });
+    setEditForm({ lesson_duration: student.lesson_duration, weekly_repeat: student.weekly_repeat, assigned_teacher_id: student.assigned_teacher_id || '', full_name: student.profiles?.full_name || '', phone: student.profiles?.phone || '', email: student.profiles?.email || '' });
     const { data } = await supabase.from('subscriptions').select('*, courses:course_id(title)').eq('student_id', student.id);
     setSubscriptions(data || []);
     setDetailOpen(true);
@@ -56,7 +62,7 @@ const Students = () => {
   };
 
   const saveEdit = async () => {
-    await supabase.from('students').update({ lesson_duration: editForm.lesson_duration, weekly_repeat: editForm.weekly_repeat }).eq('id', selected.id);
+    await supabase.from('students').update({ lesson_duration: editForm.lesson_duration, weekly_repeat: editForm.weekly_repeat, assigned_teacher_id: editForm.assigned_teacher_id || null }).eq('id', selected.id);
     await supabase.from('profiles').update({ full_name: editForm.full_name, phone: editForm.phone, email: editForm.email }).eq('id', selected.user_id);
     toast.success(isAr ? 'تم تحديث الطالب' : 'Student updated');
     setEditing(false);
@@ -136,6 +142,7 @@ const Students = () => {
                 <TableCell>{student.lesson_duration} {t('common.minutes')}</TableCell>
                 <TableCell className="flex gap-1">
                   <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => viewDetails(student)}><Eye className={ACTION_ICON} /></Button>
+                  <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => { viewDetails(student); setTimeout(() => setEditing(true), 100); }}><Pencil className={ACTION_ICON} /></Button>
                   {role === 'admin' && <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteTarget(student.id)}><Trash2 className={ACTION_ICON} /></Button>}
                 </TableCell>
               </TableRow>
@@ -157,13 +164,25 @@ const Students = () => {
                     <div><Label>{t('students.name')}</Label><Input value={editForm.full_name} onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })} /></div>
                     <div><Label>{t('students.email')}</Label><Input value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} /></div>
                     <div><Label>{t('students.phone')}</Label><Input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} /></div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div><Label>{t('students.lessonDuration')} ({t('common.minutes')})</Label>
-                      <Input type="number" value={editForm.lesson_duration} onChange={(e) => setEditForm({ ...editForm, lesson_duration: parseInt(e.target.value) })} /></div>
-                    <div><Label>{t('students.weeklyRepeat')}</Label>
-                      <Input type="number" value={editForm.weekly_repeat} onChange={(e) => setEditForm({ ...editForm, weekly_repeat: parseInt(e.target.value) })} /></div>
-                  </div>
+                   </div>
+                   <div className="grid grid-cols-2 gap-4">
+                     <div><Label>{t('students.lessonDuration')} ({t('common.minutes')})</Label>
+                       <Input type="number" value={editForm.lesson_duration} onChange={(e) => setEditForm({ ...editForm, lesson_duration: parseInt(e.target.value) })} /></div>
+                     <div><Label>{t('students.weeklyRepeat')}</Label>
+                       <Input type="number" value={editForm.weekly_repeat} onChange={(e) => setEditForm({ ...editForm, weekly_repeat: parseInt(e.target.value) })} /></div>
+                   </div>
+                   <div>
+                     <Label>{isAr ? 'المعلم المعيّن' : 'Assigned Teacher'}</Label>
+                     <Select value={editForm.assigned_teacher_id || 'none'} onValueChange={(v) => setEditForm({ ...editForm, assigned_teacher_id: v === 'none' ? '' : v })}>
+                       <SelectTrigger><SelectValue placeholder={isAr ? 'اختر معلم' : 'Select teacher'} /></SelectTrigger>
+                       <SelectContent>
+                         <SelectItem value="none">{isAr ? 'بدون معلم' : 'No teacher'}</SelectItem>
+                         {allTeachers.map(t => (
+                           <SelectItem key={t.id} value={t.id}>{t.profiles?.full_name || t.id}</SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
+                   </div>
                   <div className="flex gap-2">
                     <Button onClick={saveEdit}>{t('common.save')}</Button>
                     <Button variant="outline" onClick={() => setEditing(false)}>{t('common.cancel')}</Button>
@@ -177,6 +196,7 @@ const Students = () => {
                     <div><Label>{t('students.phone')}</Label><p>{profile.phone}</p></div>
                     <div><Label>{t('students.lessonDuration')}</Label><p>{selected.lesson_duration} {t('common.minutes')}</p></div>
                     <div><Label>{t('students.weeklyRepeat')}</Label><p>{selected.weekly_repeat}x</p></div>
+                    <div><Label>{isAr ? 'المعلم المعيّن' : 'Assigned Teacher'}</Label><p>{allTeachers.find(t => t.id === selected.assigned_teacher_id)?.profiles?.full_name || (isAr ? 'غير محدد' : 'Not assigned')}</p></div>
                   </div>
                   <Button variant="outline" size="sm" onClick={() => setEditing(true)}>{t('common.edit')}</Button>
                 </>

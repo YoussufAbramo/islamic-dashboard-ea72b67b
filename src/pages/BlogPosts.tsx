@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ACTION_BTN_DESTRUCTIVE, ACTION_ICON } from '@/lib/actionBtnClass';
+import { ACTION_BTN, ACTION_BTN_DESTRUCTIVE, ACTION_ICON } from '@/lib/actionBtnClass';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { PenLine, Plus, Save, Trash2, Search, ExternalLink, ChevronDown } from 'lucide-react';
+import { PenLine, Plus, Save, Trash2, Search, ExternalLink, ChevronDown, Pencil } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
@@ -194,12 +194,12 @@ const BlogPosts = () => {
                     {post.status === 'published' ? (isAr ? 'منشور' : 'Published') : (isAr ? 'مسودة' : 'Draft')}
                   </Badge>
                   {post.status === 'published' && (
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => window.open(`/blogs/${post.slug}`, '_blank')}>
-                      <ExternalLink className="h-3.5 w-3.5" />
+                    <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => window.open(`/blogs/${post.slug}`, '_blank')}>
+                      <ExternalLink className={ACTION_ICON} />
                     </Button>
                   )}
-                  <Button variant="outline" size="sm" onClick={() => handleEdit(post)}>
-                    {isAr ? 'تعديل' : 'Edit'}
+                  <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => handleEdit(post)}>
+                    <Pencil className={ACTION_ICON} />
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
