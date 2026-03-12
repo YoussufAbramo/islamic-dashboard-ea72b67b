@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import JoinMeetingDialog from '@/components/attend/JoinMeetingDialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { format, differenceInMinutes, isToday, isTomorrow, addDays, startOfWeek, endOfWeek } from 'date-fns';
-import { Video, ExternalLink, Clock, Users, MonitorPlay, AlertCircle, CalendarDays } from 'lucide-react';
+import { Video, Clock, MonitorPlay, AlertCircle, CalendarDays } from 'lucide-react';
 import { toast } from 'sonner';
 import { TableSkeleton } from '@/components/PageSkeleton';
 import EmptyState from '@/components/EmptyState';
