@@ -77,17 +77,20 @@ const Subscriptions = () => {
 
   useEffect(() => { fetchSubscriptions(); }, []);
 
+  const RENEWAL_DAYS: Record<string, number> = { monthly: 28, quarterly: 84, yearly: 365 };
+
   const calcTotalHours = (weeklyLessons: string, lessonDuration: string, subType: string) => {
     const wl = parseInt(weeklyLessons) || 1;
     const ld = parseInt(lessonDuration) || 60;
-    const weeks = subType === 'yearly' ? 52 : 4;
+    const weeks = subType === 'yearly' ? 52 : subType === 'quarterly' ? 12 : 4;
     return (wl * ld * weeks) / 60;
   };
 
   useEffect(() => {
     if (createForm.start_date && createForm.subscription_type) {
       const start = new Date(createForm.start_date);
-      const renewal = createForm.subscription_type === 'yearly' ? addYears(start, 1) : addDays(start, 30);
+      const days = RENEWAL_DAYS[createForm.subscription_type] || 28;
+      const renewal = addDays(start, days);
       setCreateForm(prev => ({ ...prev, renewal_date: renewal.toISOString().split('T')[0] }));
     }
   }, [createForm.start_date, createForm.subscription_type]);
