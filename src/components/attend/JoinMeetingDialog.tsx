@@ -1,12 +1,11 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ExternalLink, X, Check, Link2, Plus, Video, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-
-const DashboardMeeting = lazy(() => import('./DashboardMeeting'));
+import type { ComponentType } from 'react';
 
 type JoinMethod = 'vconnct' | 'google_meet' | 'zoom' | 'dashboard';
 
@@ -51,6 +50,14 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, entryId, isAr, onSession
   const [iframeOpen, setIframeOpen] = useState(false);
   const [iframeSrc, setIframeSrc] = useState('');
   const [dashboardMeetingOpen, setDashboardMeetingOpen] = useState(false);
+  const [MeetingComponent, setMeetingComponent] = useState<ComponentType<any> | null>(null);
+
+  // Dynamically load DashboardMeeting when needed
+  useEffect(() => {
+    if (dashboardMeetingOpen && !MeetingComponent) {
+      import('./DashboardMeeting').then(mod => setMeetingComponent(() => mod.default));
+    }
+  }, [dashboardMeetingOpen, MeetingComponent]);
 
   const handleClose = (val: boolean) => {
     if (!val) {
@@ -298,15 +305,13 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, entryId, isAr, onSession
       </Dialog>
 
       {/* Dashboard Meeting (WebRTC) */}
-      {entryId && dashboardMeetingOpen && (
-        <Suspense fallback={null}>
-          <DashboardMeeting
-            open={dashboardMeetingOpen}
-            onOpenChange={setDashboardMeetingOpen}
-            entryId={entryId}
-            isAr={isAr}
-          />
-        </Suspense>
+      {entryId && dashboardMeetingOpen && MeetingComponent && (
+        <MeetingComponent
+          open={dashboardMeetingOpen}
+          onOpenChange={setDashboardMeetingOpen}
+          entryId={entryId}
+          isAr={isAr}
+        />
       )}
     </>
   );
