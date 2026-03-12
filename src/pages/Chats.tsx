@@ -56,6 +56,8 @@ const Chats = () => {
     setLoading(false);
   };
 
+  const [senderRoles, setSenderRoles] = useState<Record<string, string>>({});
+
   const fetchMessages = async (chatId: string) => {
     const { data } = await supabase
       .from('chat_messages')
@@ -63,6 +65,18 @@ const Chats = () => {
       .eq('chat_id', chatId)
       .order('created_at', { ascending: true });
     setMessages(data || []);
+
+    // Fetch roles for all unique senders
+    const senderIds = [...new Set((data || []).map((m: any) => m.sender_id))];
+    if (senderIds.length > 0) {
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('user_id', senderIds);
+      const roleMap: Record<string, string> = {};
+      (roles || []).forEach((r: any) => { roleMap[r.user_id] = r.role; });
+      setSenderRoles(roleMap);
+    }
   };
 
   const fetchGroupMembers = async (chatId: string) => {
