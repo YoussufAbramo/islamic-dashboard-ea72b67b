@@ -100,6 +100,20 @@ const AppSidebar = () => {
     return () => clearInterval(interval);
   }, [user]);
 
+  // Count pending payout requests (admin only)
+  useEffect(() => {
+    if (!user || role !== 'admin') return;
+    const checkPendingPayouts = async () => {
+      const { count } = await supabase
+        .from('payout_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'under_review');
+      setPendingPayouts(count || 0);
+    };
+    checkPendingPayouts();
+    const interval = setInterval(checkPendingPayouts, 30000);
+    return () => clearInterval(interval);
+  }, [user, role]);
   const handleLogout = async () => {
     await signOut();
     navigate('/login');
