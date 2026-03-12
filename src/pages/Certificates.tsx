@@ -447,6 +447,7 @@ const Certificates = () => {
                   <TableHead>{isAr ? 'الرقم' : 'Number'}</TableHead>
                   <TableHead>{isAr ? 'العنوان' : 'Title'}</TableHead>
                   <TableHead>{isAr ? 'المستلم' : 'Recipient'}</TableHead>
+                  <TableHead>{isAr ? 'النوع' : 'Type'}</TableHead>
                   <TableHead>{isAr ? 'الدورة' : 'Course'}</TableHead>
                   <TableHead>{isAr ? 'الحالة' : 'Status'}</TableHead>
                   <TableHead>{isAr ? 'التاريخ' : 'Date'}</TableHead>
@@ -459,6 +460,7 @@ const Certificates = () => {
                     <TableCell><Badge variant="outline">{cert.certificate_number}</Badge></TableCell>
                     <TableCell>{isAr && cert.title_ar ? cert.title_ar : cert.title}</TableCell>
                     <TableCell>{getProfileName(cert.recipient_id)}</TableCell>
+                    <TableCell><Badge variant="outline">{cert.recipient_type === 'teacher' ? (isAr ? 'معلم' : 'Teacher') : (isAr ? 'طالب' : 'Student')}</Badge></TableCell>
                     <TableCell>{cert.course_id ? getCourseName(cert.course_id) : '—'}</TableCell>
                     <TableCell><Badge variant={statusColors[cert.status] as any}>{getLabel(certificateStatusLabels, cert.status, isAr)}</Badge></TableCell>
                     <TableCell>{format(new Date(cert.issued_at), 'PP')}</TableCell>
