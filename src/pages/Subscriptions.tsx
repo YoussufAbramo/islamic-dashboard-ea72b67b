@@ -137,6 +137,7 @@ const Subscriptions = () => {
       lesson_duration: sub.lesson_duration?.toString() || '60',
       google_meet_url: sub.google_meet_url || '',
       zoom_url: sub.zoom_url || '',
+      auto_renew: sub.auto_renew || false,
     });
     setDetailOpen(true);
     setEditing(false);
