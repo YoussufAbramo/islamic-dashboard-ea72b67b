@@ -84,6 +84,25 @@ const Reports = () => {
 
 
   const totalRevenue = subscriptions.reduce((s, sub) => s + (Number(sub.price) || 0), 0);
+  const activeSubs = subscriptions.filter(s => s.status === 'active').length;
+
+  const subStatusPieData = useMemo(() => [
+    { name: isAr ? 'نشط' : 'Active', value: subStatusCounts.active },
+    { name: isAr ? 'منتهي' : 'Expired', value: subStatusCounts.expired },
+    { name: isAr ? 'ملغي' : 'Cancelled', value: subStatusCounts.cancelled },
+  ].filter(d => d.value > 0), [subscriptions, isAr]);
+
+  const subMonthlyData = useMemo(() => {
+    const map: Record<string, number> = {};
+    subscriptions.forEach(s => {
+      const month = format(new Date(s.created_at), 'yyyy-MM');
+      map[month] = (map[month] || 0) + 1;
+    });
+    return Object.entries(map)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-12)
+      .map(([month, count]) => ({ month: format(new Date(month + '-01'), 'MMM yyyy'), count }));
+  }, [subscriptions]);
 
   // === Finance chart data ===
   const revenueMonthlyData = useMemo(() => {
