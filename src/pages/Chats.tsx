@@ -244,37 +244,45 @@ const Chats = () => {
       return;
     }
 
-    // For group chats, add selected members to chat_members
-    if (chatType === 'group' && newChat) {
+    // Build members list for chat_members table
+    if (newChat) {
       const members: { chat_id: string; user_id: string; role: string }[] = [];
-      
-      // Add the admin creator as a member
-      if (user) {
-        members.push({ chat_id: newChat.id, user_id: user.id, role: 'admin' });
+
+      if (chatType === 'direct') {
+        // Add admin creator
+        if (user) {
+          members.push({ chat_id: newChat.id, user_id: user.id, role: 'admin' });
+        }
+        // Add student participant
+        if (createForm.student_id) {
+          const student = studentsList.find(s => s.id === createForm.student_id);
+          if (student) members.push({ chat_id: newChat.id, user_id: student.user_id, role: 'student' });
+        }
+        // Add teacher participant
+        if (createForm.teacher_id) {
+          const teacher = teachersList.find(t => t.id === createForm.teacher_id);
+          if (teacher) members.push({ chat_id: newChat.id, user_id: teacher.user_id, role: 'teacher' });
+        }
+      } else {
+        // Group chat: add admin creator
+        if (user) {
+          members.push({ chat_id: newChat.id, user_id: user.id, role: 'admin' });
+        }
+        createForm.group_students.forEach(sid => {
+          const student = studentsList.find(s => s.id === sid);
+          if (student) members.push({ chat_id: newChat.id, user_id: student.user_id, role: 'student' });
+        });
+        createForm.group_teachers.forEach(tid => {
+          const teacher = teachersList.find(t => t.id === tid);
+          if (teacher) members.push({ chat_id: newChat.id, user_id: teacher.user_id, role: 'teacher' });
+        });
       }
-      
-      createForm.group_students.forEach(sid => {
-        const student = studentsList.find(s => s.id === sid);
-        if (student) members.push({ chat_id: newChat.id, user_id: student.user_id, role: 'student' });
-      });
-      createForm.group_teachers.forEach(tid => {
-        const teacher = teachersList.find(t => t.id === tid);
-        if (teacher) members.push({ chat_id: newChat.id, user_id: teacher.user_id, role: 'teacher' });
-      });
-      
-      console.log('Inserting group members:', members);
-      
+
       if (members.length > 0) {
-        const { data: insertedMembers, error: membersError } = await supabase
-          .from('chat_members')
-          .insert(members)
-          .select();
-        
+        const { error: membersError } = await supabase.from('chat_members').insert(members).select();
         if (membersError) {
-          console.error('Failed to add group members:', membersError);
+          console.error('Failed to add chat members:', membersError);
           notifyError({ error: membersError, isAr, rawMessage: membersError.message });
-        } else {
-          console.log('Successfully inserted members:', insertedMembers);
         }
       }
     }
