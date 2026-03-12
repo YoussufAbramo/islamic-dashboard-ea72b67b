@@ -398,7 +398,9 @@ const Subscriptions = () => {
                       </SelectContent>
                     </Select>
                   ) : (
-                    <Badge variant={statusColors[selected.status] as any}>{getLabel(subscriptionStatusLabels, selected.status, isAr)}</Badge>
+                    <div className="mt-1">
+                      <Badge variant={statusColors[selected.status] as any}>{getLabel(subscriptionStatusLabels, selected.status, isAr)}</Badge>
+                    </div>
                   )}
                 </div>
               </div>
