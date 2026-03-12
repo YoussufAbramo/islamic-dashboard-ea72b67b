@@ -562,6 +562,21 @@ const Chats = () => {
                                 <AvatarFallback className={`text-[9px] font-semibold ${avatarColors[senderRole] || 'bg-primary/10 text-primary'}`}>{initials}</AvatarFallback>
                               </Avatar>
                             )}
+                            {isOwn && (role === 'admin' || role === 'teacher') && !msg.is_deleted && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity shrink-0">
+                                    <MoreVertical className="h-3 w-3" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="min-w-[120px]">
+                                  <DropdownMenuItem className="text-destructive focus:text-destructive gap-2 text-xs" onClick={() => deleteMessage(msg.id)}>
+                                    <Trash2 className="h-3 w-3" />
+                                    {isAr ? 'حذف' : 'Delete'}
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
                             <div className={`max-w-[75%] rounded-xl text-xs ${msg.is_deleted ? 'bg-muted/60 italic text-muted-foreground px-2.5 py-1.5' : isOwn ? 'bg-primary text-primary-foreground px-2.5 py-1.5' : 'bg-card border border-border px-2.5 py-1.5'}`}>
                               {!isOwn && (
                                 <div className="flex items-center gap-1 mb-0.5">
@@ -588,14 +603,14 @@ const Chats = () => {
                                 </span>
                               </div>
                             </div>
-                            {(role === 'admin' || role === 'teacher') && !msg.is_deleted && (
+                            {!isOwn && (role === 'admin' || role === 'teacher') && !msg.is_deleted && (
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity shrink-0">
                                     <MoreVertical className="h-3 w-3" />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align={isOwn ? 'end' : 'start'} className="min-w-[120px]">
+                                <DropdownMenuContent align="start" className="min-w-[120px]">
                                   <DropdownMenuItem className="text-destructive focus:text-destructive gap-2 text-xs" onClick={() => deleteMessage(msg.id)}>
                                     <Trash2 className="h-3 w-3" />
                                     {isAr ? 'حذف' : 'Delete'}
