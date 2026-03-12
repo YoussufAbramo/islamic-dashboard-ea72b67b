@@ -12,7 +12,7 @@ import SessionReportsList from '@/components/attend/SessionReportsList';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format, differenceInMinutes, isToday, isTomorrow, addDays, startOfWeek, endOfWeek } from 'date-fns';
-import { Video, Clock, MonitorPlay, AlertCircle, CalendarDays, FileText, CheckCircle2, XCircle, FlaskConical } from 'lucide-react';
+import { Video, Clock, MonitorPlay, AlertCircle, CalendarDays, FileText, CheckCircle2, XCircle, FlaskConical, Timer } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { TableSkeleton } from '@/components/PageSkeleton';
@@ -61,6 +61,7 @@ const AttendLesson = () => {
 
   // Set of entry IDs that already have reports
   const [reportedEntryIds, setReportedEntryIds] = useState<Set<string>>(new Set());
+  const [reportDurations, setReportDurations] = useState<Map<string, number>>(new Map());
   const [viewReportEntry, setViewReportEntry] = useState<LessonEntry | null>(null);
   const [cancelEntry, setCancelEntry] = useState<LessonEntry | null>(null);
   const [cancelReason, setCancelReason] = useState('');
@@ -135,16 +136,23 @@ const AttendLesson = () => {
     // Get existing session reports for these entries
     const entryIds = (timetableData || []).map((e: any) => e.id);
     let reportedIds = new Set<string>();
+    const durationsMap = new Map<string, number>();
     if (entryIds.length > 0) {
       const { data: reports } = await supabase
         .from('session_reports' as any)
-        .select('timetable_entry_id')
+        .select('timetable_entry_id, session_duration_seconds')
         .in('timetable_entry_id', entryIds);
       if (reports) {
-        reportedIds = new Set((reports as any[]).map((r: any) => r.timetable_entry_id));
+        (reports as any[]).forEach((r: any) => {
+          reportedIds.add(r.timetable_entry_id);
+          if (r.session_duration_seconds) {
+            durationsMap.set(r.timetable_entry_id, Math.round(r.session_duration_seconds / 60));
+          }
+        });
       }
     }
     setReportedEntryIds(reportedIds);
+    setReportDurations(durationsMap);
 
     const mapped: LessonEntry[] = (timetableData || []).map((e: any) => {
       const fullKey = `${e.student_id}|${e.teacher_id}|${e.course_id}`;
@@ -500,8 +508,10 @@ const AttendLesson = () => {
                             className="gap-1 px-2 h-auto py-1 border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] hover:bg-emerald-500/20"
                             onClick={() => setViewReportEntry(entry)}
                           >
-                            <CheckCircle2 className="h-3 w-3" />
-                            {isAr ? 'عرض التقرير' : 'View Report'}
+                            <Timer className="h-3 w-3" />
+                            {reportDurations.get(entry.id) != null
+                              ? `${reportDurations.get(entry.id)} ${isAr ? 'د' : 'min'}`
+                              : (isAr ? 'عرض التقرير' : 'View Report')}
                           </Button>
                         ) : (
                           <span className="text-[10px] text-muted-foreground">{isAr ? 'لا يوجد' : 'None'}</span>
