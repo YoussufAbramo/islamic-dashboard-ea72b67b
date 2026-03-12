@@ -401,6 +401,20 @@ const TeacherProfile = () => {
                     <Label className="text-xs">{isAr ? 'الهاتف' : 'Phone'}</Label>
                     <Input value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} />
                   </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">{isAr ? 'الجنس' : 'Gender'}</Label>
+                    <Select value={editForm.gender} onValueChange={v => setEditForm({ ...editForm, gender: v })}>
+                      <SelectTrigger><SelectValue placeholder={isAr ? 'اختر...' : 'Select...'} /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">{isAr ? 'ذكر' : 'Male'}</SelectItem>
+                        <SelectItem value="female">{isAr ? 'أنثى' : 'Female'}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">{isAr ? 'تاريخ الميلاد' : 'Date of Birth'}</Label>
+                    <Input type="date" value={editForm.date_of_birth} onChange={e => setEditForm({ ...editForm, date_of_birth: e.target.value })} />
+                  </div>
                 </div>
               </div>
 
