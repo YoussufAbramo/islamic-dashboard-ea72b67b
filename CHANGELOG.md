@@ -2,6 +2,26 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.16.0] - 2026-03-12
+
+### Added
+- **Session Timer** — real-time session duration tracking (MM:SS / HH:MM:SS) starts when joining a meeting and persists until ended
+- **End Session flow** — "End Session" button in header triggers a structured report dialog
+- **Session Report Dialog** — teachers/admins submit session summary, observations, and student performance remarks upon ending
+- **`session_reports` database table** — stores duration, summary, observations, performance remarks, and links to timetable entries, students, teachers, courses, and subscriptions
+- **Report column in Attend Lesson table** — shows ✅ Done badge for reported sessions
+- **Active Session Banner** — prominent emerald-themed banner with course/student info during active sessions
+- **Session Reports in Subscription details** — last 5 session reports visible in the subscription view dialog
+- **`SessionReportsList` reusable component** — filterable by student, teacher, course, or subscription with detail dialog
+- **RLS policies** — admins manage all reports; teachers insert/view own; students view their session reports
+
+### Improved
+- **Attend button state** — disabled during active sessions and for already-reported entries to prevent duplicate sessions
+- **JoinMeetingDialog** — now triggers `onSessionStart` callback upon successful join across all platforms (Google Meet, Zoom, Vconnct)
+- **Lesson status badges** — new "🟢 In Session" status for actively tracked sessions
+
+---
+
 ## [4.15.0] - 2026-03-12
 
 ### Added
