@@ -328,7 +328,7 @@ const Chats = () => {
         <div className="md:col-span-2 flex flex-col">
           {selectedChat ? (
             <>
-              <CardHeader className="pb-2 flex-row items-center justify-between border-b bg-muted/30">
+              <div className="pb-2 px-4 pt-3 flex-row flex items-center justify-between border-b bg-muted/30">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-9 w-9">
                     <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
