@@ -34,6 +34,7 @@ import Attendance from "./pages/Attendance";
 import Settings from "./pages/Settings";
 import Certificates from "./pages/Certificates";
 import Reports from "./pages/Reports";
+import Library from "./pages/Library";
 import Announcements from "./pages/Announcements";
 import Notifications from "./pages/Notifications";
 import Invoices from "./pages/Invoices";
