@@ -11,7 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Card } from '@/components/ui/card';
-import { Plus, Search, Trash2, FileText, Upload, ExternalLink, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Search, Trash2, FileText, Upload, ExternalLink, ArrowUp, ArrowDown, BookOpen, Download } from 'lucide-react';
+import ActionButton from '@/components/ui/action-button';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
@@ -193,40 +194,56 @@ const Library = () => {
         <LibraryEmptyState isAr={isAr} isAdmin={isAdmin} onCreateClick={() => { resetForm(); setCreateOpen(true); }} />
       ) : (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-            {paginatedItems.map((ebook) => (
-              <Card key={ebook.id} className="group relative overflow-hidden border rounded-lg hover:shadow-md transition-shadow">
-                {/* Book cover with 3:4 ratio */}
-                <div className="relative aspect-[3/4] bg-muted overflow-hidden">
-                  {ebook.cover_url ? (
-                    <img src={ebook.cover_url} alt={isAr ? ebook.title_ar || ebook.title : ebook.title} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-primary/10 to-primary/5">
-                      <FileText className="h-10 w-10 text-primary/40" />
-                      <span className="text-[10px] text-muted-foreground px-2 text-center line-clamp-2">{isAr ? ebook.title_ar || ebook.title : ebook.title}</span>
-                    </div>
-                  )}
-                  {/* Hover overlay */}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <Button size="sm" variant="secondary" className="h-8 text-xs" onClick={() => { trackView(ebook.id); trackDownload(ebook.id); window.open(ebook.pdf_url, '_blank'); }}>
-                      <ExternalLink className="h-3 w-3 me-1" />
-                      {isAr ? 'فتح' : 'Open'}
-                    </Button>
-                    {isAdmin && (
-                      <Button size="sm" variant="destructive" className="h-8 text-xs" onClick={() => setDeleteTarget(ebook.id)}>
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
+            {paginatedItems.map((ebook) => {
+              const title = isAr ? ebook.title_ar || ebook.title : ebook.title;
+              const desc = isAr ? ebook.description_ar || ebook.description : ebook.description;
+              return (
+                <div key={ebook.id} className="group flex flex-col rounded-xl border bg-card overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-200">
+                  {/* Cover */}
+                  <div className="relative aspect-[3/4] bg-muted overflow-hidden">
+                    {ebook.cover_url ? (
+                      <img src={ebook.cover_url} alt={title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
+                        <BookOpen className="h-10 w-10 text-primary/30" />
+                      </div>
                     )}
                   </div>
+
+                  {/* Info + Actions */}
+                  <div className="flex-1 flex flex-col p-3 gap-1.5">
+                    <h3 className="text-sm font-semibold truncate" title={title}>{title}</h3>
+                    {desc && (
+                      <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">{desc}</p>
+                    )}
+
+                    {/* Always-visible action bar */}
+                    <div className="flex items-center gap-1 mt-auto pt-2 border-t border-border/50">
+                      <ActionButton
+                        icon={ExternalLink}
+                        label={isAr ? 'فتح' : 'Open'}
+                        onClick={() => { trackView(ebook.id); trackDownload(ebook.id); window.open(ebook.pdf_url, '_blank'); }}
+                      />
+                      <ActionButton
+                        icon={Download}
+                        label={isAr ? 'تحميل' : 'Download'}
+                        onClick={() => { trackDownload(ebook.id); window.open(ebook.pdf_url, '_blank'); }}
+                      />
+                      {isAdmin && (
+                        <ActionButton
+                          icon={Trash2}
+                          label={isAr ? 'حذف' : 'Delete'}
+                          destructive
+                          className="ms-auto"
+                          onClick={() => setDeleteTarget(ebook.id)}
+                        />
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className="p-2.5">
-                  <h3 className="text-sm font-medium truncate">{isAr ? ebook.title_ar || ebook.title : ebook.title}</h3>
-                  {(isAr ? ebook.description_ar || ebook.description : ebook.description) && (
-                    <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">{isAr ? ebook.description_ar || ebook.description : ebook.description}</p>
-                  )}
-                </div>
-              </Card>
-            ))}
+              );
+            })}
           </div>
           <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
         </>
