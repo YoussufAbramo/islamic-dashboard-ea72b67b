@@ -226,7 +226,7 @@ const AttendLesson = () => {
   // In test mode, the first non-completed/cancelled entry has all restrictions lifted
   const testEntryId = testMode ? entries.find(e => e.status !== 'cancelled' && e.status !== 'completed' && !e.has_report && !reportedEntryIds.has(e.id))?.id : null;
 
-  const terminalStatuses = ['teacher_not_attend', 'student_not_attend', 'postponed', 'completed'];
+  const terminalStatuses = ['teacher_not_attend', 'student_not_attend', 'postponed', 'completed', 'cancelled'];
 
   const isAttendEnabled = (entry: LessonEntry): boolean => {
     if (activeSessionId) return false;
