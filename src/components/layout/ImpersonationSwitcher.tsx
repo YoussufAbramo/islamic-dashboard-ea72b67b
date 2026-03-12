@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Users, Search, X, UserCog } from 'lucide-react';
+import { Search, X, UserCog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -56,19 +56,14 @@ const ImpersonationSwitcher = () => {
   const [recentUsers, setRecentUsers] = useState<UserEntry[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // SECURITY: Only render for admins
-  if (role !== 'admin') return null;
-
   const fetchUsers = useCallback(async (query: string) => {
     setLoading(true);
     try {
-      // Fetch teachers
       const { data: teachers } = await supabase
         .from('teachers')
         .select('user_id, profiles:user_id(id, full_name, email, avatar_url)')
         .limit(50);
 
-      // Fetch students
       const { data: students } = await supabase
         .from('students')
         .select('user_id, profiles:user_id(id, full_name, email, avatar_url)')
@@ -90,7 +85,6 @@ const ImpersonationSwitcher = () => {
       students?.forEach((s: any) => {
         const p = s.profiles;
         if (p) {
-          // Don't add duplicates (a user could be in both tables)
           if (!allUsers.find(u => u.userId === p.id)) {
             allUsers.push({
               userId: p.id,
@@ -103,7 +97,6 @@ const ImpersonationSwitcher = () => {
         }
       });
 
-      // Filter by search
       if (query.trim()) {
         const q = query.toLowerCase();
         setUsers(allUsers.filter(u =>
@@ -122,14 +115,14 @@ const ImpersonationSwitcher = () => {
   }, []);
 
   useEffect(() => {
-    if (open) {
+    if (open && role === 'admin') {
       setRecentUsers(getRecentUsers());
       fetchUsers('');
     } else {
       setSearch('');
       setUsers([]);
     }
-  }, [open, fetchUsers]);
+  }, [open, fetchUsers, role]);
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
@@ -153,6 +146,9 @@ const ImpersonationSwitcher = () => {
       : `Now viewing as: ${user.fullName}`
     );
   };
+
+  // SECURITY: Only render for admins
+  if (role !== 'admin') return null;
 
   const teacherUsers = users.filter(u => u.role === 'teacher');
   const studentUsers = users.filter(u => u.role === 'student');
@@ -263,7 +259,7 @@ const ImpersonationSwitcher = () => {
   );
 };
 
-const UserRow = ({ user, onClick, isAr }: { user: UserEntry; onClick: () => void; isAr: boolean }) => {
+const UserRow = ({ user, onClick, isAr }: { user: { userId: string; fullName: string; email: string | null; avatarUrl: string | null; role: 'teacher' | 'student' }; onClick: () => void; isAr: boolean }) => {
   const [avatarSrc, setAvatarSrc] = useState('');
 
   useEffect(() => {
