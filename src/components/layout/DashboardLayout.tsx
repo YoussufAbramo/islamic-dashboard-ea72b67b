@@ -5,6 +5,7 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import CopyrightText from '@/components/CopyrightText';
 import AppSidebar from './AppSidebar';
 import TopBar from './TopBar';
+import ImpersonationBanner from './ImpersonationBanner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Bug } from 'lucide-react';
 import { useState } from 'react';
