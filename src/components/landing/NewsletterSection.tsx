@@ -22,26 +22,30 @@ const NewsletterSection = ({ content, isAr }: NewsletterSectionProps) => {
   };
 
   return (
-    <section id="newsletter" className="py-16 md:py-20">
-      <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 text-center">
-        <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
-          <Mail className="h-7 w-7 text-primary" />
+    <section id="newsletter" className="py-8">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row items-center gap-4 rounded-xl border border-border/50 bg-muted/30 px-6 py-4">
+          <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <Mail className="h-4 w-4 text-primary" />
+          </div>
+          <div className="flex-1 text-center sm:text-start">
+            <h2 className="text-sm font-bold text-foreground">{getField(content, 'title', isAr)}</h2>
+            <p className="text-xs text-muted-foreground">{getField(content, 'subtitle', isAr)}</p>
+          </div>
+          <form onSubmit={handleSubmit} className="flex gap-2 shrink-0">
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t('Enter your email', 'أدخل بريدك الإلكتروني')}
+              className="h-8 text-xs w-48"
+              required
+            />
+            <Button type="submit" size="sm" className="h-8 text-xs px-4">
+              {getField(content, 'button_text', isAr) || t('Subscribe', 'اشترك')}
+            </Button>
+          </form>
         </div>
-        <h2 className="text-2xl md:text-3xl font-bold font-amiri text-foreground mb-3">{getField(content, 'title', isAr)}</h2>
-        <p className="text-muted-foreground mb-8">{getField(content, 'subtitle', isAr)}</p>
-        <form onSubmit={handleSubmit} className="flex gap-3 max-w-md mx-auto">
-          <Input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder={t('Enter your email', 'أدخل بريدك الإلكتروني')}
-            className="flex-1"
-            required
-          />
-          <Button type="submit">
-            {getField(content, 'button_text', isAr) || t('Subscribe', 'اشترك')}
-          </Button>
-        </form>
       </div>
     </section>
   );
