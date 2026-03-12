@@ -132,6 +132,7 @@ const Teachers = () => {
                 <TableCell>{teacher.specialization}</TableCell>
                 <TableCell className="flex gap-1">
                   <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => viewDetails(teacher)}><Eye className={ACTION_ICON} /></Button>
+                  <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => { viewDetails(teacher); setTimeout(() => setEditing(true), 100); }}><Pencil className={ACTION_ICON} /></Button>
                   {role === 'admin' && <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteTarget(teacher.id)}><Trash2 className={ACTION_ICON} /></Button>}
                 </TableCell>
               </TableRow>
