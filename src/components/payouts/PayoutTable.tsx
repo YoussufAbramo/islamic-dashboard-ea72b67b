@@ -131,7 +131,7 @@ const PayoutTable = ({ requests, loading, isAr, onApprove, onDecline }: Props) =
                   </TableCell>
                   <TableCell className="font-semibold">${Number(req.requested_amount).toFixed(2)}</TableCell>
                   <TableCell className="text-muted-foreground">${Number(req.available_balance_at_request).toFixed(2)}</TableCell>
-                  <TableCell className="text-sm">{format(new Date(req.created_at), 'MMM dd, yyyy')}</TableCell>
+                  <TableCell className="text-sm">{format(new Date(req.created_at), 'MMM dd, yyyy HH:mm')}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className={sc.bg}>{isAr ? sc.labelAr : sc.label}</Badge>
                   </TableCell>
