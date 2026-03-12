@@ -19,7 +19,7 @@ import ImagePickerField from '@/components/media/ImagePickerField';
 import {
   Clock, DollarSign, TrendingUp, AlertTriangle, CheckCircle,
   Loader2, Percent, Mail, Phone, User, Briefcase, FileText,
-  Upload, ExternalLink, FileUp, Pencil, X, Save,
+  ExternalLink, FileUp, Pencil, X, Save,
   CalendarDays, Wallet, Info,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -44,9 +44,7 @@ const TeacherProfile = () => {
   // Avatar
   const [resolvedAvatar, setResolvedAvatar] = useState('');
 
-  // File uploads
-  const [cvUploading, setCvUploading] = useState(false);
-  const [contractUploading, setContractUploading] = useState(false);
+  // File uploads - signed URLs for viewing
   const [cvSignedUrl, setCvSignedUrl] = useState('');
   const [contractSignedUrl, setContractSignedUrl] = useState('');
 
@@ -173,6 +171,16 @@ const TeacherProfile = () => {
     .reduce((sum, p) => sum + Number(p.requested_amount), 0);
   const netAvailable = Math.max(0, availableToPayout - pendingPayouts);
 
+  // Calculate per-subscription monthly hours & salary
+  const getSubMonthlyHours = (sub: any) => {
+    const duration = sub.lesson_duration || 60;
+    const weeklyLessons = sub.weekly_lessons || 1;
+    return Math.round((duration * weeklyLessons * 4.33 / 60) * 10) / 10;
+  };
+  const getSubMonthlySalary = (sub: any) => {
+    return getSubMonthlyHours(sub) * hourlyRate;
+  };
+
   const handleAvatarChange = async (url: string) => {
     if (!teacher?.profiles?.id) return;
     await supabase.from('profiles').update({ avatar_url: url }).eq('id', teacher.user_id);
@@ -211,38 +219,24 @@ const TeacherProfile = () => {
     }
   };
 
-  const handleFileUpload = async (file: File, type: 'cv' | 'contract') => {
-    const setUploading = type === 'cv' ? setCvUploading : setContractUploading;
-    const directory = type === 'cv' ? MEDIA_PATHS.cv : MEDIA_PATHS.contracts;
+  // Handle document URL change from ImagePickerField
+  const handleDocumentChange = async (url: string, type: 'cv' | 'contract') => {
     const column = type === 'cv' ? 'cv_url' : 'contract_url';
-
-    setUploading(true);
-    const { path, signedUrl, error } = await uploadMedia(directory, file, {
-      fileName: `${id}-${file.name}`,
-    });
-
-    if (error) {
-      toast.error(isAr ? 'فشل رفع الملف' : 'File upload failed');
-      setUploading(false);
-      return;
-    }
-
-    const { error: updateError } = await supabase
+    const { error } = await supabase
       .from('teachers')
-      .update({ [column]: path })
+      .update({ [column]: url })
       .eq('id', id!);
 
-    setUploading(false);
-    if (updateError) {
+    if (error) {
       toast.error(isAr ? 'فشل في حفظ المسار' : 'Failed to save file path');
     } else {
       toast.success(
         type === 'cv'
-          ? (isAr ? 'تم رفع السيرة الذاتية' : 'CV uploaded successfully')
-          : (isAr ? 'تم رفع العقد' : 'Contract uploaded successfully')
+          ? (isAr ? 'تم تحديث السيرة الذاتية' : 'CV updated successfully')
+          : (isAr ? 'تم تحديث العقد' : 'Contract updated successfully')
       );
-      if (type === 'cv') setCvSignedUrl(signedUrl);
-      else setContractSignedUrl(signedUrl);
+      if (type === 'cv') setCvSignedUrl(url);
+      else setContractSignedUrl(url);
       fetchData();
     }
   };
@@ -281,8 +275,8 @@ const TeacherProfile = () => {
 
   const statusBadge = (status: string) => {
     switch (status) {
-      case 'under_review': return <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30">{isAr ? 'قيد المراجعة' : 'Under Review'}</Badge>;
-      case 'approved': return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 border">{isAr ? 'مقبول' : 'Approved'}</Badge>;
+      case 'under_review': return <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20">{isAr ? 'قيد المراجعة' : 'Under Review'}</Badge>;
+      case 'approved': return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/20">{isAr ? 'مقبول' : 'Approved'}</Badge>;
       case 'declined': return <Badge variant="destructive">{isAr ? 'مرفوض' : 'Declined'}</Badge>;
       default: return <Badge variant="secondary">{status}</Badge>;
     }
@@ -290,8 +284,8 @@ const TeacherProfile = () => {
 
   const subStatusBadge = (status: string) => {
     switch (status) {
-      case 'active': return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 border">{isAr ? 'نشط' : 'Active'}</Badge>;
-      case 'paused': return <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30">{isAr ? 'متوقف' : 'Paused'}</Badge>;
+      case 'active': return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/20">{isAr ? 'نشط' : 'Active'}</Badge>;
+      case 'paused': return <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/20">{isAr ? 'متوقف' : 'Paused'}</Badge>;
       case 'cancelled': return <Badge variant="destructive">{isAr ? 'ملغي' : 'Cancelled'}</Badge>;
       default: return <Badge variant="secondary">{status}</Badge>;
     }
@@ -391,29 +385,28 @@ const TeacherProfile = () => {
 
               <Separator />
 
+              {/* Documents - using ImagePickerField */}
               <div>
                 <Label className="text-xs text-muted-foreground uppercase tracking-wider mb-3 block">{isAr ? 'المستندات' : 'Documents'}</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <DocumentUploadCard
-                    label={isAr ? 'السيرة الذاتية (CV)' : 'CV / Resume'}
-                    uploaded={!!teacher?.cv_url}
-                    signedUrl={cvSignedUrl}
-                    uploading={cvUploading}
-                    isAr={isAr}
-                    icon={<FileUp className="h-4 w-4 text-blue-600" />}
-                    iconBg="bg-blue-500/10"
-                    onUpload={(f) => handleFileUpload(f, 'cv')}
-                  />
-                  <DocumentUploadCard
-                    label={isAr ? 'العقد' : 'Contract'}
-                    uploaded={!!teacher?.contract_url}
-                    signedUrl={contractSignedUrl}
-                    uploading={contractUploading}
-                    isAr={isAr}
-                    icon={<FileText className="h-4 w-4 text-emerald-600" />}
-                    iconBg="bg-emerald-500/10"
-                    onUpload={(f) => handleFileUpload(f, 'contract')}
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">{isAr ? 'السيرة الذاتية (PDF, DOC)' : 'CV / Resume (PDF, DOC)'}</p>
+                    <ImagePickerField
+                      label={isAr ? 'السيرة الذاتية (CV)' : 'CV / Resume'}
+                      value={teacher?.cv_url || ''}
+                      onChange={(url) => handleDocumentChange(url, 'cv')}
+                      bucket="media"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">{isAr ? 'العقد (PDF, DOC)' : 'Contract (PDF, DOC)'}</p>
+                    <ImagePickerField
+                      label={isAr ? 'العقد' : 'Contract'}
+                      value={teacher?.contract_url || ''}
+                      onChange={(url) => handleDocumentChange(url, 'contract')}
+                      bucket="media"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -476,31 +469,27 @@ const TeacherProfile = () => {
                   <InfoCard icon={<FileText className="h-4 w-4" />} label={isAr ? 'نبذة تعريفية' : 'Bio'} value={teacher?.bio || '-'} truncate />
                 </div>
 
-                {/* Documents */}
+                {/* Documents - View mode */}
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3 font-medium">
                     {isAr ? 'المستندات' : 'Documents'}
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <DocumentUploadCard
+                    <DocumentViewCard
                       label={isAr ? 'السيرة الذاتية (CV)' : 'CV / Resume'}
                       uploaded={!!teacher?.cv_url}
                       signedUrl={cvSignedUrl}
-                      uploading={cvUploading}
                       isAr={isAr}
                       icon={<FileUp className="h-4 w-4 text-blue-600" />}
                       iconBg="bg-blue-500/10"
-                      onUpload={canEdit ? (f) => handleFileUpload(f, 'cv') : undefined}
                     />
-                    <DocumentUploadCard
+                    <DocumentViewCard
                       label={isAr ? 'العقد' : 'Contract'}
                       uploaded={!!teacher?.contract_url}
                       signedUrl={contractSignedUrl}
-                      uploading={contractUploading}
                       isAr={isAr}
                       icon={<FileText className="h-4 w-4 text-emerald-600" />}
                       iconBg="bg-emerald-500/10"
-                      onUpload={canEdit ? (f) => handleFileUpload(f, 'contract') : undefined}
                     />
                   </div>
                 </div>
@@ -513,7 +502,7 @@ const TeacherProfile = () => {
                       ? 'يتم صرف المستحقات وفقاً لسياسات الصرف الخاصة بنا. إذا كان طلبك مخالفاً لسياساتنا، سيتم رفض الطلب وإعادة المبلغ إلى رصيدك.'
                       : 'Payouts are processed following our payout policies. If your request violates our policies, it will be rejected and the amount will be returned to your balance.'}
                     {' '}
-                    <Link to="/policies/payout-policies" className="text-primary underline hover:no-underline font-medium">
+                    <Link to="/policies/payout-policy" className="text-primary underline hover:no-underline font-medium">
                       {isAr ? 'اطلع على سياسة الصرف' : 'View Payout Policy'}
                     </Link>
                   </p>
@@ -560,21 +549,29 @@ const TeacherProfile = () => {
                   <TableRow>
                     <TableHead>{isAr ? 'الطالب' : 'Student'}</TableHead>
                     <TableHead>{isAr ? 'المقرر' : 'Course'}</TableHead>
-                    <TableHead>{isAr ? 'مدة الحصة' : 'Lesson Duration'}</TableHead>
-                    <TableHead>{isAr ? 'حصص أسبوعية' : 'Weekly Lessons'}</TableHead>
+                    <TableHead>{isAr ? 'مدة الحصة' : 'Duration'}</TableHead>
+                    <TableHead>{isAr ? 'حصص أسبوعية' : 'Weekly'}</TableHead>
+                    <TableHead>{isAr ? 'ساعات/شهر' : 'Hours/Mo'}</TableHead>
+                    <TableHead>{isAr ? 'الراتب/شهر' : 'Salary/Mo'}</TableHead>
                     <TableHead>{isAr ? 'الحالة' : 'Status'}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {subscriptions.map((sub) => (
-                    <TableRow key={sub.id}>
-                      <TableCell className="font-medium">{(sub.students as any)?.profiles?.full_name || '-'}</TableCell>
-                      <TableCell>{isAr ? ((sub.courses as any)?.title_ar || (sub.courses as any)?.title) : (sub.courses as any)?.title}</TableCell>
-                      <TableCell>{sub.lesson_duration || 60} {isAr ? 'دقيقة' : 'min'}</TableCell>
-                      <TableCell>{sub.weekly_lessons || 1}</TableCell>
-                      <TableCell>{subStatusBadge(sub.status)}</TableCell>
-                    </TableRow>
-                  ))}
+                  {subscriptions.map((sub) => {
+                    const subHours = getSubMonthlyHours(sub);
+                    const subSalary = getSubMonthlySalary(sub);
+                    return (
+                      <TableRow key={sub.id}>
+                        <TableCell className="font-medium">{(sub.students as any)?.profiles?.full_name || '-'}</TableCell>
+                        <TableCell>{isAr ? ((sub.courses as any)?.title_ar || (sub.courses as any)?.title) : (sub.courses as any)?.title}</TableCell>
+                        <TableCell>{sub.lesson_duration || 60} {isAr ? 'د' : 'min'}</TableCell>
+                        <TableCell>{sub.weekly_lessons || 1}</TableCell>
+                        <TableCell className="font-medium">{subHours}h</TableCell>
+                        <TableCell className="font-semibold text-emerald-600">${subSalary.toFixed(2)}</TableCell>
+                        <TableCell>{subStatusBadge(sub.status)}</TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
@@ -648,7 +645,7 @@ const TeacherProfile = () => {
                   ? 'بتقديم هذا الطلب، فإنك توافق على سياسات الصرف الخاصة بنا.'
                   : 'By submitting this request, you agree to our payout policies.'}
                 {' '}
-                <Link to="/policies/payout-policies" className="text-primary underline hover:no-underline font-medium">
+                <Link to="/policies/payout-policy" className="text-primary underline hover:no-underline font-medium">
                   {isAr ? 'اطلع على السياسة' : 'View Policy'}
                 </Link>
               </p>
@@ -679,18 +676,16 @@ const InfoCard = ({ icon, label, value, truncate }: { icon: React.ReactNode; lab
   </div>
 );
 
-interface DocumentUploadCardProps {
+interface DocumentViewCardProps {
   label: string;
   uploaded: boolean;
   signedUrl: string;
-  uploading: boolean;
   isAr: boolean;
   icon: React.ReactNode;
   iconBg: string;
-  onUpload?: (file: File) => void;
 }
 
-const DocumentUploadCard = ({ label, uploaded, signedUrl, uploading, isAr, icon, iconBg, onUpload }: DocumentUploadCardProps) => (
+const DocumentViewCard = ({ label, uploaded, signedUrl, isAr, icon, iconBg }: DocumentViewCardProps) => (
   <div className="flex items-center justify-between p-3 rounded-lg border bg-card gap-3">
     <div className="flex items-center gap-2.5 min-w-0">
       <div className={`p-2 rounded-lg ${iconBg}`}>{icon}</div>
@@ -701,20 +696,11 @@ const DocumentUploadCard = ({ label, uploaded, signedUrl, uploading, isAr, icon,
         </p>
       </div>
     </div>
-    <div className="flex items-center gap-1 shrink-0">
-      {uploaded && signedUrl && (
-        <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-          <a href={signedUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-3.5 w-3.5" /></a>
-        </Button>
-      )}
-      {onUpload && (
-        <Button variant="ghost" size="icon" className="h-8 w-8 relative" disabled={uploading}>
-          {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-          <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept=".pdf,.doc,.docx" disabled={uploading}
-            onChange={e => { const f = e.target.files?.[0]; if (f) onUpload(f); e.target.value = ''; }} />
-        </Button>
-      )}
-    </div>
+    {uploaded && signedUrl && (
+      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" asChild>
+        <a href={signedUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-3.5 w-3.5" /></a>
+      </Button>
+    )}
   </div>
 );
 
