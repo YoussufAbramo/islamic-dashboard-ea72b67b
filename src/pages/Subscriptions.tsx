@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import SessionReportsList from '@/components/attend/SessionReportsList';
 import { ACTION_BTN, ACTION_BTN_DESTRUCTIVE, ACTION_ICON } from '@/lib/actionBtnClass';
 import { usePagination } from '@/hooks/use-pagination';
 import PaginationControls from '@/components/PaginationControls';
