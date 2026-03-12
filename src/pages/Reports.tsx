@@ -175,7 +175,6 @@ const Reports = () => {
       <Tabs defaultValue="subscriptions">
         <TabsList>
           <TabsTrigger value="subscriptions">{isAr ? 'الاشتراكات' : 'Subscriptions'}</TabsTrigger>
-          <TabsTrigger value="attendance">{isAr ? 'الحضور' : 'Attendance'}</TabsTrigger>
           <TabsTrigger value="finances">{isAr ? 'المالية' : 'Finances'}</TabsTrigger>
         </TabsList>
 
