@@ -21,6 +21,7 @@ import { TableSkeleton } from '@/components/PageSkeleton';
 const Teachers = () => {
   const { t, language } = useLanguage();
   const { role } = useAuth();
+  const navigate = useNavigate();
   const isAr = language === 'ar';
   const [teachers, setTeachers] = useState<any[]>([]);
   const [search, setSearch] = useState('');
