@@ -201,7 +201,7 @@ const StudentReports = () => {
 
   const getStatusBadge = (status: string) => {
     if (status === 'completed') return <Badge variant="default" className="bg-emerald-600">{isAr ? 'انتهى' : 'Attended'}</Badge>;
-    if (isNotAttend(status)) return <Badge variant="outline" className="border-rose-500/40 bg-rose-500/10 text-rose-600">{isAr ? 'لم يحضر' : 'Not Attend'}</Badge>;
+    if (isNotAttend(status)) return <Badge variant="outline" className="border-rose-500/40 bg-rose-500/10 text-rose-600">{isAr ? 'غياب' : 'Absence'}</Badge>;
     if (status === 'cancelled') return <Badge variant="destructive">{isAr ? 'ملغي' : 'Cancelled'}</Badge>;
     if (status === 'postponed') return <Badge variant="secondary">{isAr ? 'مؤجل' : 'Postponed'}</Badge>;
     if (status === 'scheduled') return <Badge variant="outline">{isAr ? 'قادم' : 'Upcoming'}</Badge>;
