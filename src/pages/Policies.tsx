@@ -116,11 +116,11 @@ const Policies = () => {
               </div>
               <div>
                 <Label className="mb-2 block">Content (EN)</Label>
-                <ContentEditor value={editPolicy.content} onChange={v => setEditPolicy({ ...editPolicy, content: v })} />
+                <Textarea value={editPolicy.content} onChange={e => setEditPolicy({ ...editPolicy, content: e.target.value })} rows={10} />
               </div>
               <div>
                 <Label className="mb-2 block">Content (AR)</Label>
-                <ContentEditor value={editPolicy.content_ar} onChange={v => setEditPolicy({ ...editPolicy, content_ar: v })} />
+                <Textarea dir="rtl" value={editPolicy.content_ar} onChange={e => setEditPolicy({ ...editPolicy, content_ar: e.target.value })} rows={10} />
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setEditPolicy(null)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
