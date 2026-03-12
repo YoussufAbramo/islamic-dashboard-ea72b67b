@@ -54,7 +54,7 @@ const Students = () => {
   const viewDetails = async (student: any) => {
     setSelected(student);
     setProfile(student.profiles);
-    setEditForm({ lesson_duration: student.lesson_duration, weekly_repeat: student.weekly_repeat, full_name: student.profiles?.full_name || '', phone: student.profiles?.phone || '', email: student.profiles?.email || '' });
+    setEditForm({ lesson_duration: student.lesson_duration, weekly_repeat: student.weekly_repeat, assigned_teacher_id: student.assigned_teacher_id || '', full_name: student.profiles?.full_name || '', phone: student.profiles?.phone || '', email: student.profiles?.email || '' });
     const { data } = await supabase.from('subscriptions').select('*, courses:course_id(title)').eq('student_id', student.id);
     setSubscriptions(data || []);
     setDetailOpen(true);
