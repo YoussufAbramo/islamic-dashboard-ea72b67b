@@ -193,7 +193,7 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr }: JoinMeetingDialo
                     <p className="text-sm font-semibold">{p.label}</p>
                     <p className="text-[10px] text-muted-foreground truncate">
                       {url
-                        ? maskUrl(url)
+                        ? (isAr ? `سيتم التوجيه إلى ${p.label}` : `You will be redirected to ${p.label}`)
                         : (isAr ? 'لم يتم الإعداد' : 'Not configured')}
                     </p>
                   </div>
