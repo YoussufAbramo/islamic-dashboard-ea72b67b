@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, MessageSquare, LayoutDashboard, Settings, ClipboardCheck, Award, BarChart3, Bell, Megaphone, FileText, LogOut, Calculator, ShieldCheck, Shield, Sparkles, AlertCircle, HardDrive, Globe, ScrollText, PenLine, Activity, Code, Webhook, Bug, ClipboardList, Route, FolderTree, Signal, ChevronDown, Building2, Flag, Library, MonitorPlay, Receipt } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -45,6 +45,36 @@ const AppSidebar = () => {
   const [unreadChats, setUnreadChats] = useState(0);
   const [hoveredMenus, setHoveredMenus] = useState<Set<string>>(new Set());
   const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
+  const [lessonLed, setLessonLed] = useState<'live' | 'soon' | null>(null);
+
+  // Check if any lesson is live or starting soon (within 15 min)
+  useEffect(() => {
+    if (!user) return;
+    const checkLessons = async () => {
+      const now = new Date();
+      const soonThreshold = new Date(now.getTime() + 15 * 60 * 1000);
+      const { data } = await supabase
+        .from('timetable_entries')
+        .select('scheduled_at, duration_minutes, status')
+        .in('status', ['scheduled', 'in_progress'])
+        .lte('scheduled_at', soonThreshold.toISOString())
+        .gte('scheduled_at', new Date(now.getTime() - 120 * 60 * 1000).toISOString())
+        .limit(20);
+      if (!data || data.length === 0) { setLessonLed(null); return; }
+      let isLive = false;
+      let isSoon = false;
+      for (const e of data) {
+        const start = new Date(e.scheduled_at);
+        const end = new Date(start.getTime() + (e.duration_minutes || 30) * 60 * 1000);
+        if (now >= start && now <= end) { isLive = true; break; }
+        if (start > now && start <= soonThreshold) { isSoon = true; }
+      }
+      setLessonLed(isLive ? 'live' : isSoon ? 'soon' : null);
+    };
+    checkLessons();
+    const interval = setInterval(checkLessons, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   useEffect(() => {
     if (profile?.avatar_url) {
@@ -246,7 +276,15 @@ const AppSidebar = () => {
                           onClick={() => navigate(item.path)}
                           tooltip={item.label}
                         >
-                          <item.icon className="h-4 w-4" />
+                          <span className="relative">
+                            <item.icon className="h-4 w-4" />
+                            {item.key === 'attend-lesson' && lessonLed && (
+                              <span className={`absolute -top-0.5 -end-0.5 flex h-2 w-2 ${lessonLed === 'live' ? '' : 'opacity-80'}`}>
+                                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${lessonLed === 'live' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                                <span className={`relative inline-flex rounded-full h-2 w-2 ${lessonLed === 'live' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                              </span>
+                            )}
+                          </span>
                           <span className="flex-1 text-start">{item.label}</span>
                           {item.comingSoon && (
                             <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 shrink-0 ms-auto">
