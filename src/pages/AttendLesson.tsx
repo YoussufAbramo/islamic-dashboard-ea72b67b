@@ -28,7 +28,6 @@ interface LessonEntry {
   zoom_url: string;
 }
 
-type JoinMethod = 'vconnct' | 'google_meet' | 'zoom';
 
 const AttendLesson = () => {
   const { language } = useLanguage();
@@ -39,7 +38,6 @@ const AttendLesson = () => {
   const [now, setNow] = useState(new Date());
   const [joinOpen, setJoinOpen] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<LessonEntry | null>(null);
-  const [vconnctUrl, setVconnctUrl] = useState('');
 
   // Update "now" every 30 seconds for live status updates
   useEffect(() => {
