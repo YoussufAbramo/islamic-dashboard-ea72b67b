@@ -306,6 +306,77 @@ const Attendance = () => {
             </Card>
           </div>
         </TabsContent>
+
+        <TabsContent value="reports" className="space-y-4">
+          <div className="flex items-center justify-end">
+            <Button variant="outline" size="sm" onClick={() => exportCSV(
+              ['Student', 'Status', 'Date', 'Notes'],
+              sortedAttendance.map(a => [getStudentName(a.student_id), a.status, format(new Date(a.created_at), 'PP'), a.notes || '']),
+              'attendance-report'
+            )}>
+              <Download className="h-4 w-4 me-2" />CSV
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader><CardTitle className="text-base">{isAr ? 'الحضور الشهري' : 'Monthly Attendance'}</CardTitle></CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={attMonthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="month" className="text-muted-foreground" tick={{ fontSize: 11 }} />
+                    <YAxis className="text-muted-foreground" allowDecimals={false} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend />
+                    <Bar dataKey="present" name={isAr ? 'حاضر' : 'Present'} stackId="a" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="absent" name={isAr ? 'غائب' : 'Absent'} stackId="a" fill="hsl(var(--destructive))" />
+                    <Bar dataKey="late" name={isAr ? 'متأخر' : 'Late'} stackId="a" fill="hsl(var(--chart-3))" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle className="text-base">{isAr ? 'توزيع الحضور' : 'Attendance Distribution'}</CardTitle></CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={280}>
+                  <PieChart>
+                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={55} outerRadius={95} paddingAngle={4} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                      {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{isAr ? 'الطالب' : 'Student'}</TableHead>
+                    <TableHead>{isAr ? 'الحالة' : 'Status'}</TableHead>
+                    <TableHead>{isAr ? 'التاريخ' : 'Date'}</TableHead>
+                    <TableHead>{isAr ? 'ملاحظات' : 'Notes'}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sortedAttendance.map(a => (
+                    <TableRow key={a.id}>
+                      <TableCell>{getStudentName(a.student_id)}</TableCell>
+                      <TableCell><Badge variant={a.status === 'present' ? 'default' : a.status === 'absent' ? 'destructive' : 'secondary'}>{a.status}</Badge></TableCell>
+                      <TableCell>{format(new Date(a.created_at), 'PP')}</TableCell>
+                      <TableCell className="text-muted-foreground">{a.notes || '—'}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
