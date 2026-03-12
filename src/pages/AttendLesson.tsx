@@ -232,9 +232,9 @@ const AttendLesson = () => {
     if (activeSessionId === entry.id) return false;
     if (entry.has_report || reportedEntryIds.has(entry.id)) return false;
     if (entry.status === 'cancelled' || entry.status === 'completed') return false;
+    if (testMode && entry.id === testEntryId) return true;
     const scheduledTime = new Date(entry.scheduled_at);
     const minutesUntil = differenceInMinutes(scheduledTime, now);
-    // Available when more than 30 mins before lesson
     return minutesUntil > 30;
   };
 
