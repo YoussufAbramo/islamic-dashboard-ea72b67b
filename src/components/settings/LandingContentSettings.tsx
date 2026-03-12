@@ -98,7 +98,7 @@ const LandingContentSettings = () => {
   const [general, setGeneral] = useState<Record<string, any>>({ ...defaultGeneralContent });
   const [sectionsOrder, setSectionsOrder] = useState<SectionKey[]>([...DEFAULT_SECTION_ORDER]);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'header' | 'sections' | 'footer'>('header');
+  const [activeTab, setActiveTab] = useState<'header' | 'sections' | 'footer' | 'copyright'>('header');
   const [saving, setSaving] = useState(false);
   const [websitePages, setWebsitePages] = useState<{ slug: string; title: string; title_ar: string | null }[]>([]);
   const [policies, setPolicies] = useState<{ slug: string; title: string; title_ar: string | null }[]>([]);
@@ -806,13 +806,6 @@ const LandingContentSettings = () => {
         ))}
       </div>
 
-      {/* Copyright bar settings */}
-      <CopyrightSettingsEditor
-        config={(footer.copyright as CopyrightConfig) || defaultCopyrightConfig}
-        onChange={(copyrightConfig) => updateFooterField('copyright', copyrightConfig)}
-        policies={policies}
-        websitePages={websitePages}
-      />
     </div>
   );
 
@@ -832,6 +825,10 @@ const LandingContentSettings = () => {
           <PanelBottom className="h-4 w-4" />
           {isAr ? 'الفوتر' : 'Footer'}
         </button>
+        <button onClick={() => setActiveTab('copyright')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'copyright' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+          <Shield className="h-4 w-4" />
+          {isAr ? 'حقوق النشر' : 'Copyright'}
+        </button>
       </div>
 
       {activeTab === 'header' ? (
@@ -849,6 +846,21 @@ const LandingContentSettings = () => {
             <CardDescription>{isAr ? 'صمم تذييل صفحة الهبوط بسهولة' : 'Design your landing page footer with ease'}</CardDescription>
           </CardHeader>
           <CardContent>{renderFooterTab()}</CardContent>
+        </Card>
+      ) : activeTab === 'copyright' ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>{isAr ? 'شريط حقوق النشر' : 'Copyright Bar'}</CardTitle>
+            <CardDescription>{isAr ? 'تخصيص شريط حقوق النشر أسفل الصفحة' : 'Customize the copyright bar at the bottom of the page'}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <CopyrightSettingsEditor
+              config={(footer.copyright as CopyrightConfig) || defaultCopyrightConfig}
+              onChange={(copyrightConfig) => updateFooterField('copyright', copyrightConfig)}
+              policies={policies}
+              websitePages={websitePages}
+            />
+          </CardContent>
         </Card>
       ) : (
         <div className="space-y-3">
