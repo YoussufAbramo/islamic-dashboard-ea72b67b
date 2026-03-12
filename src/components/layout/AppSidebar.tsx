@@ -342,6 +342,11 @@ const AppSidebar = () => {
                               {unreadChats > 99 ? '99+' : unreadChats}
                             </Badge>
                           )}
+                          {item.badgeKey === 'payouts' && pendingPayouts > 0 && (
+                            <Badge variant="destructive" className="text-[9px] px-1.5 py-0 h-4 min-w-[18px] shrink-0 ms-auto">
+                              {pendingPayouts > 99 ? '99+' : pendingPayouts}
+                            </Badge>
+                          )}
                         </SidebarMenuButton>
                         {visibleChildren.length > 0 && (
                           <div
