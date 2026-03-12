@@ -71,6 +71,19 @@ const Library = () => {
     setLoading(false);
   };
 
+  const fetchEbookStats = useCallback(async (ebookIds: string[]) => {
+    if (ebookIds.length === 0) return;
+    const [viewsRes, downloadsRes] = await Promise.all([
+      supabase.from('ebook_views').select('ebook_id'),
+      supabase.from('ebook_downloads').select('ebook_id'),
+    ]);
+    const stats: Record<string, { views: number; downloads: number }> = {};
+    ebookIds.forEach(id => { stats[id] = { views: 0, downloads: 0 }; });
+    (viewsRes.data || []).forEach((v: any) => { if (stats[v.ebook_id]) stats[v.ebook_id].views++; });
+    (downloadsRes.data || []).forEach((d: any) => { if (stats[d.ebook_id]) stats[d.ebook_id].downloads++; });
+    setEbookStats(stats);
+  }, []);
+
   useEffect(() => { fetchEbooks(); }, []);
 
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
