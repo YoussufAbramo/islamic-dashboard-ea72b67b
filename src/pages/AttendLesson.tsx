@@ -257,10 +257,11 @@ const AttendLesson = () => {
     return now < endTime;
   };
 
-  const handleNotAttend = async (entry: LessonEntry) => {
+  const handleNotAttend = async (entry: LessonEntry, who: 'teacher' | 'student') => {
+    const newStatus = who === 'teacher' ? 'teacher_not_attend' : 'student_not_attend';
     const { error } = await supabase
       .from('timetable_entries')
-      .update({ status: 'cancelled' })
+      .update({ status: newStatus })
       .eq('id', entry.id);
     if (error) {
       toast.error(isAr ? 'فشل تحديث الحالة' : 'Failed to update status');
