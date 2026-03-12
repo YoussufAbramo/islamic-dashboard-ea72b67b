@@ -65,11 +65,6 @@ const TeacherProfile = () => {
   });
   const [saving, setSaving] = useState(false);
 
-  // Course assignment
-  const [assignedCourses, setAssignedCourses] = useState<any[]>([]);
-  const [allCourses, setAllCourses] = useState<any[]>([]);
-  const [courseDialogOpen, setCourseDialogOpen] = useState(false);
-  const [selectedCourseId, setSelectedCourseId] = useState('');
 
   // Subscriptions
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
