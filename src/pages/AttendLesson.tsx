@@ -482,10 +482,15 @@ const AttendLesson = () => {
                       </TableCell>
                       <TableCell>
                         {hasReport ? (
-                          <Badge variant="outline" className="gap-1 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px]">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="gap-1 px-2 h-auto py-1 border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] hover:bg-emerald-500/20"
+                            onClick={() => setViewReportEntry(entry)}
+                          >
                             <CheckCircle2 className="h-3 w-3" />
-                            {isAr ? 'مكتمل' : 'Done'}
-                          </Badge>
+                            {isAr ? 'عرض التقرير' : 'View Report'}
+                          </Button>
                         ) : (
                           <span className="text-[10px] text-muted-foreground">{isAr ? 'لا يوجد' : 'None'}</span>
                         )}
