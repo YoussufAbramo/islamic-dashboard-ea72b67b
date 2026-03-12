@@ -74,7 +74,7 @@ const PayoutTable = ({ requests, loading, isAr, onApprove, onDecline }: Props) =
             </div>
             <div className="flex items-center justify-between">
               <p className="text-lg font-bold">${Number(req.requested_amount).toFixed(2)}</p>
-              <p className="text-xs text-muted-foreground">{format(new Date(req.created_at), 'MMM dd, yyyy')}</p>
+              <p className="text-xs text-muted-foreground">{format(new Date(req.created_at), 'MMM dd, yyyy HH:mm')}</p>
             </div>
             {req.status === 'under_review' && (
               <div className="flex gap-2 pt-1 border-t border-border">
