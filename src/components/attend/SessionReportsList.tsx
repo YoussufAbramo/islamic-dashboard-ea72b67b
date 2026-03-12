@@ -29,6 +29,7 @@ interface SessionReportsListProps {
   teacherId?: string;
   courseId?: string;
   subscriptionId?: string;
+  timetableEntryId?: string;
   /** Maximum rows to show (default: all) */
   limit?: number;
 }
