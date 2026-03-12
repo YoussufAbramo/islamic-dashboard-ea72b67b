@@ -33,9 +33,11 @@ export const courseStatusLabels: Record<string, { en: string; ar: string }> = {
 };
 
 export const timetableStatusLabels: Record<string, { en: string; ar: string }> = {
-  scheduled: { en: 'Scheduled', ar: 'مجدول' },
-  completed: { en: 'Completed', ar: 'مكتمل' },
-  cancelled: { en: 'Cancelled', ar: 'ملغي' },
+  scheduled: { en: 'Upcoming', ar: 'قادم' },
+  completed: { en: 'Ended', ar: 'انتهى' },
+  teacher_not_attend: { en: 'Teacher Not Attend', ar: 'لم يحضر المعلم' },
+  student_not_attend: { en: 'Student Not Attend', ar: 'لم يحضر الطالب' },
+  postponed: { en: 'Postponed', ar: 'مؤجل' },
 };
 
 export const certificateStatusLabels: Record<string, { en: string; ar: string }> = {

@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import JoinMeetingDialog from '@/components/attend/JoinMeetingDialog';
@@ -190,36 +191,45 @@ const AttendLesson = () => {
   const getLessonStatus = (entry: LessonEntry): { label: string; variant: string; className: string; isLive: boolean } => {
     const scheduledTime = new Date(entry.scheduled_at);
     const endTime = new Date(scheduledTime.getTime() + entry.duration_minutes * 60000);
-    const minutesUntil = differenceInMinutes(scheduledTime, now);
 
+    // Active session
     if (activeSessionId === entry.id) {
       return { label: isAr ? '🟢 جلسة نشطة' : '🟢 In Session', variant: 'default', className: 'bg-emerald-600 text-white', isLive: true };
     }
-    if (entry.status === 'cancelled') {
-      return { label: isAr ? 'ملغي' : 'Cancelled', variant: 'destructive', className: '', isLive: false };
+    // DB-driven statuses
+    if (entry.status === 'teacher_not_attend') {
+      return { label: isAr ? 'لم يحضر المعلم' : 'Teacher Not Attend', variant: 'destructive', className: '', isLive: false };
     }
+    if (entry.status === 'student_not_attend') {
+      return { label: isAr ? 'لم يحضر الطالب' : 'Student Not Attend', variant: 'destructive', className: '', isLive: false };
+    }
+    if (entry.status === 'postponed') {
+      return { label: isAr ? 'مؤجل' : 'Postponed', variant: 'outline', className: 'border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400', isLive: false };
+    }
+    // Ended: completed, has report, or time passed
     if (entry.status === 'completed' || entry.has_report) {
-      return { label: isAr ? 'مكتمل' : 'Completed', variant: 'secondary', className: '', isLive: false };
-    }
-    if (now >= scheduledTime && now <= endTime) {
-      return { label: isAr ? '🔴 مباشر' : '🔴 Live', variant: 'default', className: 'bg-destructive text-destructive-foreground', isLive: true };
-    }
-    if (minutesUntil <= 15 && minutesUntil > 0) {
-      return { label: isAr ? 'يبدأ قريباً' : 'Starting Soon', variant: 'outline', className: 'border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400', isLive: false };
+      return { label: isAr ? 'انتهى' : 'Ended', variant: 'secondary', className: '', isLive: false };
     }
     if (now > endTime) {
       return { label: isAr ? 'انتهى' : 'Ended', variant: 'secondary', className: '', isLive: false };
     }
-    return { label: isAr ? 'قادم لاحقاً' : 'Coming Later', variant: 'outline', className: 'border-primary/30 bg-primary/5 text-primary', isLive: false };
+    // In Session (live window)
+    if (now >= scheduledTime && now <= endTime) {
+      return { label: isAr ? '🔴 جلسة جارية' : '🔴 In Session', variant: 'default', className: 'bg-destructive text-destructive-foreground', isLive: true };
+    }
+    // Upcoming
+    return { label: isAr ? 'قادم' : 'Upcoming', variant: 'outline', className: 'border-primary/30 bg-primary/5 text-primary', isLive: false };
   };
 
   // In test mode, the first non-completed/cancelled entry has all restrictions lifted
   const testEntryId = testMode ? entries.find(e => e.status !== 'cancelled' && e.status !== 'completed' && !e.has_report && !reportedEntryIds.has(e.id))?.id : null;
 
+  const terminalStatuses = ['teacher_not_attend', 'student_not_attend', 'postponed', 'completed'];
+
   const isAttendEnabled = (entry: LessonEntry): boolean => {
     if (activeSessionId) return false;
     if (entry.has_report || reportedEntryIds.has(entry.id)) return false;
-    if (entry.status === 'cancelled' || entry.status === 'completed') return false;
+    if (terminalStatuses.includes(entry.status)) return false;
     if (testMode && entry.id === testEntryId) return true;
     const scheduledTime = new Date(entry.scheduled_at);
     const endTime = new Date(scheduledTime.getTime() + entry.duration_minutes * 60000);
@@ -231,7 +241,7 @@ const AttendLesson = () => {
   const isNotAttendEnabled = (entry: LessonEntry): boolean => {
     if (activeSessionId === entry.id) return false;
     if (entry.has_report || reportedEntryIds.has(entry.id)) return false;
-    if (entry.status === 'cancelled' || entry.status === 'completed') return false;
+    if (terminalStatuses.includes(entry.status)) return false;
     if (testMode && entry.id === testEntryId) return true;
     const scheduledTime = new Date(entry.scheduled_at);
     const minutesUntil = differenceInMinutes(scheduledTime, now);
@@ -241,17 +251,18 @@ const AttendLesson = () => {
   const isNotAttendVisible = (entry: LessonEntry): boolean => {
     if (activeSessionId === entry.id) return false;
     if (entry.has_report || reportedEntryIds.has(entry.id)) return false;
-    if (entry.status === 'cancelled' || entry.status === 'completed') return false;
+    if (terminalStatuses.includes(entry.status)) return false;
     const scheduledTime = new Date(entry.scheduled_at);
     const endTime = new Date(scheduledTime.getTime() + entry.duration_minutes * 60000);
     // Show only for future entries
     return now < endTime;
   };
 
-  const handleNotAttend = async (entry: LessonEntry) => {
+  const handleNotAttend = async (entry: LessonEntry, who: 'teacher' | 'student') => {
+    const newStatus = who === 'teacher' ? 'teacher_not_attend' : 'student_not_attend';
     const { error } = await supabase
       .from('timetable_entries')
-      .update({ status: 'cancelled' })
+      .update({ status: newStatus })
       .eq('id', entry.id);
     if (error) {
       toast.error(isAr ? 'فشل تحديث الحالة' : 'Failed to update status');
@@ -302,7 +313,7 @@ const AttendLesson = () => {
   };
 
   const sortedEntries = useMemo(() => {
-    return entries.filter(e => e.status !== 'cancelled');
+    return entries;
   }, [entries]);
 
   // Stats
@@ -492,16 +503,27 @@ const AttendLesson = () => {
                                 {isAr ? 'حضور' : 'Attend'}
                               </Button>
                               {showNotAttend && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  disabled={!canNotAttend}
-                                  onClick={() => handleNotAttend(entry)}
-                                  className="gap-1 text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/5"
-                                >
-                                  <XCircle className="h-3.5 w-3.5" />
-                                  {isAr ? 'عدم الحضور' : 'Not Attend'}
-                                </Button>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      disabled={!canNotAttend}
+                                      className="gap-1 text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/5"
+                                    >
+                                      <XCircle className="h-3.5 w-3.5" />
+                                      {isAr ? 'عدم الحضور' : 'Not Attend'}
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleNotAttend(entry, 'teacher')} className="text-destructive focus:text-destructive">
+                                      {isAr ? 'لم يحضر المعلم' : 'Teacher Not Attend'}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleNotAttend(entry, 'student')} className="text-destructive focus:text-destructive">
+                                      {isAr ? 'لم يحضر الطالب' : 'Student Not Attend'}
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               )}
                             </>
                           )}
