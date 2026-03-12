@@ -667,6 +667,52 @@ const TeacherProfile = () => {
         </CardContent>
       </Card>
 
+      {/* Quick View Dialog */}
+      <Dialog open={!!quickViewReq} onOpenChange={(open) => !open && setQuickViewReq(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5 text-primary" />
+              {isAr ? 'تفاصيل الطلب' : 'Request Details'}
+            </DialogTitle>
+          </DialogHeader>
+          {quickViewReq && (() => {
+            const balanceBefore = Number(quickViewReq.available_balance_at_request) + Number(quickViewReq.requested_amount);
+            const balanceAfter = Number(quickViewReq.available_balance_at_request);
+            return (
+              <div className="space-y-3">
+                <div className="rounded-lg border bg-muted/50 p-4 space-y-2 text-sm">
+                  <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'المرجع' : 'Ref ID'}</span><span className="font-mono text-xs">{quickViewReq.transaction_ref}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'المبلغ المطلوب' : 'Requested Amount'}</span><span className="font-semibold">${Number(quickViewReq.requested_amount).toFixed(2)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'الرصيد قبل' : 'Balance Before'}</span><span>${balanceBefore.toFixed(2)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'الرصيد بعد' : 'Balance After'}</span><span>${balanceAfter.toFixed(2)}</span></div>
+                  <Separator />
+                  <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'تاريخ الطلب' : 'Date of Request'}</span><span>{format(new Date(quickViewReq.created_at), 'dd/MM/yyyy HH:mm')}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'الحالة' : 'Status'}</span>{statusBadge(quickViewReq.status)}</div>
+                  {quickViewReq.reviewed_at && (
+                    <>
+                      <Separator />
+                      <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'تاريخ المراجعة' : 'Reviewed At'}</span><span>{format(new Date(quickViewReq.reviewed_at), 'dd/MM/yyyy HH:mm')}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'بواسطة' : 'Reviewed By'}</span><span className="font-medium">{quickViewReq.admin_id ? (adminProfiles[quickViewReq.admin_id] || '-') : '-'}</span></div>
+                    </>
+                  )}
+                  {quickViewReq.decline_reason && (
+                    <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'سبب الرفض' : 'Decline Reason'}</span><span className="text-destructive text-xs max-w-[200px] text-end">{quickViewReq.decline_reason}</span></div>
+                  )}
+                  {quickViewReq.admin_notes && (
+                    <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'ملاحظات المشرف' : 'Admin Notes'}</span><span className="text-xs max-w-[200px] text-end">{quickViewReq.admin_notes}</span></div>
+                  )}
+                </div>
+                <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => { setQuickViewReq(null); navigate('/dashboard/support'); }}>
+                  <HeadphonesIcon className="h-3.5 w-3.5" />
+                  {isAr ? 'تقديم تذكرة دعم' : 'Submit Support Ticket'}
+                </Button>
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
+
       {/* Payout Request Dialog */}
       <Dialog open={payoutOpen} onOpenChange={setPayoutOpen}>
         <DialogContent className="max-w-md">
