@@ -97,16 +97,8 @@ const Policies = () => {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant={policy.is_published ? 'default' : 'secondary'} className="text-xs">
-                  {policy.is_published ? (isAr ? 'منشور' : 'Published') : (isAr ? 'مسودة' : 'Draft')}
-                </Badge>
-                {policy.is_published && (
-                  <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => window.open(`/policies/${policy.slug}`, '_blank')}>
-                    <ExternalLink className={ACTION_ICON} />
-                  </Button>
-                )}
-                <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => togglePublish(policy)}>
-                  {policy.is_published ? <Eye className={ACTION_ICON} /> : <EyeOff className={ACTION_ICON} />}
+                <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => window.open(`/policies/${policy.slug}`, '_blank')}>
+                  <ExternalLink className={ACTION_ICON} />
                 </Button>
                 <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => setEditPolicy({ ...policy })}>
                   <Pencil className={ACTION_ICON} />
