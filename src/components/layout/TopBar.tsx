@@ -1,4 +1,5 @@
 import { Moon, Sun, Bell, Megaphone, Globe, Plus, CheckCheck, ExternalLink, Eye, Languages, Search, StopCircle, Timer, Video } from 'lucide-react';
+import ImpersonationSwitcher from './ImpersonationSwitcher';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -227,6 +228,9 @@ const TopBar = () => {
             </TooltipTrigger>
             <TooltipContent>{darkMode ? (isAr ? 'الوضع الفاتح' : 'Light Mode') : (isAr ? 'الوضع الداكن' : 'Dark Mode')}</TooltipContent>
           </Tooltip>
+
+          <ImpersonationSwitcher />
+
 
           <DropdownMenu>
             <Tooltip>

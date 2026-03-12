@@ -5,6 +5,7 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import CopyrightText from '@/components/CopyrightText';
 import AppSidebar from './AppSidebar';
 import TopBar from './TopBar';
+import ImpersonationBanner from './ImpersonationBanner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Bug } from 'lucide-react';
 import { useState } from 'react';
@@ -150,6 +151,7 @@ const DashboardLayout = () => {
         <AppSidebar />
         <SidebarInset className="flex flex-col">
           <TopBar />
+          <ImpersonationBanner />
           <main className="flex-1 p-4 md:p-6 overflow-auto">
             <Outlet />
           </main>

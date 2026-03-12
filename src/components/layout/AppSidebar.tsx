@@ -3,6 +3,7 @@ import { BookOpen, Users, GraduationCap, HeadphonesIcon, Calendar, CreditCard, M
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useImpersonation } from '@/contexts/ImpersonationContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -37,6 +38,7 @@ interface MenuCategory {
 
 const AppSidebar = () => {
   const { role, profile, signOut, user } = useAuth();
+  const { effectiveRole } = useImpersonation();
   const { t, language } = useLanguage();
   const { appLogo, appName, sidebarMode, darkLogo, developerMode, websiteMode } = useAppSettings();
   const navigate = useNavigate();
@@ -267,7 +269,8 @@ const AppSidebar = () => {
         categories.map((cat) => {
           if (cat.requiresDeveloperMode && !developerMode) return null;
           if (cat.requiresWebsiteMode && !websiteMode) return null;
-          const visibleItems = cat.items.filter((item) => role && item.roles.includes(role));
+          const activeRole = effectiveRole || role;
+          const visibleItems = cat.items.filter((item) => activeRole && item.roles.includes(activeRole));
           if (visibleItems.length === 0) return null;
           return (
             <SidebarGroup key={cat.label}>
@@ -292,7 +295,7 @@ const AppSidebar = () => {
                   {visibleItems.map((item) => {
                     const hasChildren = item.children && item.children.length > 0;
                     const isParentActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
-                    const visibleChildren = hasChildren ? item.children!.filter(c => role && c.roles.includes(role)) : [];
+                    const visibleChildren = hasChildren ? item.children!.filter(c => activeRole && c.roles.includes(activeRole)) : [];
                     const isExpanded = hoveredMenus.has(item.key) || expandedMenus.has(item.key) || isParentActive;
                     return (
                       <SidebarMenuItem
