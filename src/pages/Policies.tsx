@@ -3,13 +3,11 @@ import { ACTION_BTN, ACTION_BTN_DESTRUCTIVE, ACTION_ICON } from '@/lib/actionBtn
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ScrollText, Save, ExternalLink, Eye, EyeOff, Pencil } from 'lucide-react';
+import { ScrollText, Save, ExternalLink, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
@@ -62,12 +60,6 @@ const Policies = () => {
     fetchPolicies();
   };
 
-  const togglePublish = async (policy: Policy) => {
-    const { error } = await supabase.from('policies').update({ is_published: !policy.is_published, updated_at: new Date().toISOString() }).eq('id', policy.id);
-    if (error) { notifyError({ error, isAr, rawMessage: error.message }); return; }
-    toast.success(isAr ? 'تم التحديث' : 'Updated');
-    fetchPolicies();
-  };
 
   if (loading) return <TableSkeleton rows={4} cols={4} />;
 
@@ -97,16 +89,8 @@ const Policies = () => {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant={policy.is_published ? 'default' : 'secondary'} className="text-xs">
-                  {policy.is_published ? (isAr ? 'منشور' : 'Published') : (isAr ? 'مسودة' : 'Draft')}
-                </Badge>
-                {policy.is_published && (
-                  <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => window.open(`/policies/${policy.slug}`, '_blank')}>
-                    <ExternalLink className={ACTION_ICON} />
-                  </Button>
-                )}
-                <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => togglePublish(policy)}>
-                  {policy.is_published ? <Eye className={ACTION_ICON} /> : <EyeOff className={ACTION_ICON} />}
+                <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => window.open(`/policies/${policy.slug}`, '_blank')}>
+                  <ExternalLink className={ACTION_ICON} />
                 </Button>
                 <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => setEditPolicy({ ...policy })}>
                   <Pencil className={ACTION_ICON} />
@@ -128,10 +112,6 @@ const Policies = () => {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div><Label>Title (EN)</Label><Input value={editPolicy.title} onChange={e => setEditPolicy({ ...editPolicy, title: e.target.value })} /></div>
                 <div><Label>Title (AR)</Label><Input dir="rtl" value={editPolicy.title_ar} onChange={e => setEditPolicy({ ...editPolicy, title_ar: e.target.value })} /></div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Switch checked={editPolicy.is_published} onCheckedChange={v => setEditPolicy({ ...editPolicy, is_published: v })} />
-                <Label>{isAr ? 'منشور' : 'Published'}</Label>
               </div>
               <div>
                 <Label className="mb-2 block">Content (EN)</Label>
