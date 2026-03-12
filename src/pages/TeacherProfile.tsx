@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Navigate, useNavigate } from 'react-router-dom';
+import { useParams, Navigate, useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,15 +13,14 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import ImagePickerField from '@/components/media/ImagePickerField';
 import {
   Clock, DollarSign, TrendingUp, AlertTriangle, CheckCircle,
   Loader2, Percent, Mail, Phone, User, Briefcase, FileText,
-  Upload, ExternalLink, FileUp, Pencil, X, Save, Plus, Trash2, BookOpen,
-  CalendarDays, Users,
+  Upload, ExternalLink, FileUp, Pencil, X, Save,
+  CalendarDays, Wallet, Info,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { TableSkeleton } from '@/components/PageSkeleton';
@@ -51,7 +50,7 @@ const TeacherProfile = () => {
   const [cvSignedUrl, setCvSignedUrl] = useState('');
   const [contractSignedUrl, setContractSignedUrl] = useState('');
 
-  // Session stats from session_reports
+  // Session stats
   const [completedSessions, setCompletedSessions] = useState(0);
   const [scheduledSessions, setScheduledSessions] = useState(0);
   const [absentSessions, setAbsentSessions] = useState(0);
@@ -64,12 +63,6 @@ const TeacherProfile = () => {
     hourly_rate: 0,
   });
   const [saving, setSaving] = useState(false);
-
-  // Course assignment
-  const [assignedCourses, setAssignedCourses] = useState<any[]>([]);
-  const [allCourses, setAllCourses] = useState<any[]>([]);
-  const [courseDialogOpen, setCourseDialogOpen] = useState(false);
-  const [selectedCourseId, setSelectedCourseId] = useState('');
 
   // Subscriptions
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
@@ -89,7 +82,6 @@ const TeacherProfile = () => {
     setTeacher(teacherData);
     setProfile(teacherData.profiles);
 
-    // Populate edit form
     setEditForm({
       full_name: teacherData.profiles?.full_name || '',
       email: teacherData.profiles?.email || '',
@@ -100,16 +92,13 @@ const TeacherProfile = () => {
       hourly_rate: teacherData.hourly_rate || 0,
     });
 
-    // Resolve avatar
     if (teacherData.profiles?.avatar_url) {
       resolveAvatarUrl(teacherData.profiles.avatar_url).then(setResolvedAvatar);
     }
 
-    // Resolve CV / Contract signed URLs
     if (teacherData.cv_url) getMediaSignedUrl(teacherData.cv_url).then(setCvSignedUrl);
     if (teacherData.contract_url) getMediaSignedUrl(teacherData.contract_url).then(setContractSignedUrl);
 
-    // Fetch payout requests
     const { data: payouts } = await supabase
       .from('payout_requests')
       .select('*')
@@ -117,7 +106,7 @@ const TeacherProfile = () => {
       .order('created_at', { ascending: false });
     setPayoutRequests(payouts || []);
 
-    // Fetch session stats from real session_reports (current month)
+    // Session stats (current month)
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
     const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
@@ -133,7 +122,6 @@ const TeacherProfile = () => {
       setTotalLoggedSeconds(reports.reduce((sum, r) => sum + (r.session_duration_seconds || 0), 0));
     }
 
-    // Timetable entries for attendance stats
     const { data: sessions } = await supabase
       .from('timetable_entries')
       .select('status')
@@ -142,23 +130,13 @@ const TeacherProfile = () => {
       .lte('scheduled_at', monthEnd);
 
     if (sessions) {
+      const absenceStatuses = ['teacher_not_attend', 'student_not_attend', 'not_attend'];
       setCompletedSessions(sessions.filter(s => s.status === 'completed').length);
       setScheduledSessions(sessions.length);
-      setAbsentSessions(sessions.filter(s => s.status === 'cancelled').length);
+      setAbsentSessions(sessions.filter(s => absenceStatuses.includes(s.status)).length);
     }
 
-    // Fetch assigned courses
-    const { data: tc } = await supabase
-      .from('teacher_courses')
-      .select('id, course_id, courses:course_id(id, title, title_ar, status)')
-      .eq('teacher_id', id);
-    setAssignedCourses(tc || []);
-
-    // Fetch all courses for assignment dropdown
-    const { data: courses } = await supabase.from('courses').select('id, title, title_ar').order('title');
-    setAllCourses(courses || []);
-
-    // Fetch subscriptions assigned to this teacher
+    // Subscriptions
     const { data: subs } = await supabase
       .from('subscriptions')
       .select('*, courses:course_id(title, title_ar), students:student_id(id, user_id, profiles:students_user_id_profiles_fkey(full_name))')
@@ -166,28 +144,23 @@ const TeacherProfile = () => {
       .order('created_at', { ascending: false });
     setSubscriptions(subs || []);
 
-    // Calculate required monthly hours from active subscriptions
-    // Formula: sum of (lesson_duration * weekly_lessons * 4.33) / 60 for each active subscription
     const activeSubs = (subs || []).filter(s => s.status === 'active');
     const totalMinutesPerMonth = activeSubs.reduce((sum, s) => {
       const duration = s.lesson_duration || 60;
       const weeklyLessons = s.weekly_lessons || 1;
       return sum + (duration * weeklyLessons * 4.33);
     }, 0);
-    const calcHours = Math.round((totalMinutesPerMonth / 60) * 10) / 10;
-    setRequiredMonthlyHours(calcHours);
+    setRequiredMonthlyHours(Math.round((totalMinutesPerMonth / 60) * 10) / 10);
 
     setLoading(false);
   };
 
   useEffect(() => { fetchData(); }, [id]);
 
-  // Access control
   const isOwner = teacher && user && teacher.user_id === user.id;
   const canAccess = role === 'admin' || isOwner;
   const canEdit = role === 'admin';
 
-  // Calculations using real session_reports duration
   const actualLoggedHours = totalLoggedSeconds / 3600;
   const remainingHours = Math.max(0, requiredMonthlyHours - actualLoggedHours);
   const attendancePercentage = scheduledSessions > 0
@@ -200,7 +173,6 @@ const TeacherProfile = () => {
     .reduce((sum, p) => sum + Number(p.requested_amount), 0);
   const netAvailable = Math.max(0, availableToPayout - pendingPayouts);
 
-  // Avatar change via ImagePickerField
   const handleAvatarChange = async (url: string) => {
     if (!teacher?.profiles?.id) return;
     await supabase.from('profiles').update({ avatar_url: url }).eq('id', teacher.user_id);
@@ -208,7 +180,6 @@ const TeacherProfile = () => {
     toast.success(isAr ? 'تم تحديث الصورة' : 'Avatar updated');
   };
 
-  // Edit handlers
   const handleSaveProfile = async () => {
     setSaving(true);
     const { error: teacherError } = await supabase
@@ -240,7 +211,6 @@ const TeacherProfile = () => {
     }
   };
 
-  // File upload handlers
   const handleFileUpload = async (file: File, type: 'cv' | 'contract') => {
     const setUploading = type === 'cv' ? setCvUploading : setContractUploading;
     const directory = type === 'cv' ? MEDIA_PATHS.cv : MEDIA_PATHS.contracts;
@@ -273,33 +243,6 @@ const TeacherProfile = () => {
       );
       if (type === 'cv') setCvSignedUrl(signedUrl);
       else setContractSignedUrl(signedUrl);
-      fetchData();
-    }
-  };
-
-  // Course assignment
-  const handleAssignCourse = async () => {
-    if (!selectedCourseId) return;
-    const { error } = await supabase.from('teacher_courses').insert({
-      teacher_id: id!,
-      course_id: selectedCourseId,
-    });
-    if (error) {
-      toast.error(isAr ? 'فشل في تعيين المقرر' : 'Failed to assign course');
-    } else {
-      toast.success(isAr ? 'تم تعيين المقرر' : 'Course assigned');
-      setSelectedCourseId('');
-      setCourseDialogOpen(false);
-      fetchData();
-    }
-  };
-
-  const handleRemoveCourse = async (tcId: string) => {
-    const { error } = await supabase.from('teacher_courses').delete().eq('id', tcId);
-    if (error) {
-      toast.error(isAr ? 'فشل في إزالة المقرر' : 'Failed to remove course');
-    } else {
-      toast.success(isAr ? 'تم إزالة المقرر' : 'Course removed');
       fetchData();
     }
   };
@@ -356,19 +299,15 @@ const TeacherProfile = () => {
 
   const initials = (profile?.full_name || '?').charAt(0).toUpperCase();
 
-  const availableCourses = allCourses.filter(
-    c => !assignedCourses.some(ac => ac.course_id === c.id)
-  );
-
   const statCards = [
     { label: isAr ? 'الساعات المطلوبة (شهرياً)' : 'Required Hours (Monthly)', value: `${requiredMonthlyHours}h`, icon: Clock, color: 'text-blue-600' },
     { label: isAr ? 'الساعات المسجلة' : 'Actual Logged Hours', value: `${actualLoggedHours.toFixed(1)}h`, icon: TrendingUp, color: 'text-emerald-600' },
     { label: isAr ? 'الساعات المتبقية' : 'Remaining Hours', value: `${remainingHours.toFixed(1)}h`, icon: Clock, color: 'text-amber-600' },
+    { label: isAr ? 'الحصص المكتملة' : 'Completed Sessions', value: completedSessions.toString(), icon: CheckCircle, color: 'text-emerald-600' },
     { label: isAr ? 'نسبة الحضور' : 'Attendance %', value: `${attendancePercentage}%`, icon: Percent, color: 'text-purple-600' },
-    { label: isAr ? 'عدد الغيابات' : 'Absences', value: absentSessions.toString(), icon: AlertTriangle, color: 'text-red-600' },
+    { label: isAr ? 'حصص الغياب' : 'Absence Sessions', value: absentSessions.toString(), icon: AlertTriangle, color: 'text-red-600' },
     { label: isAr ? 'سعر الساعة' : 'Hourly Rate', value: `$${hourlyRate}`, icon: DollarSign, color: 'text-primary' },
     { label: isAr ? 'الراتب المتوقع' : 'Expected Salary', value: `$${expectedSalary.toFixed(2)}`, icon: DollarSign, color: 'text-blue-600' },
-    { label: isAr ? 'متاح للصرف' : 'Available to Payout', value: `$${netAvailable.toFixed(2)}`, icon: CheckCircle, color: 'text-emerald-600' },
   ];
 
   return (
@@ -376,20 +315,12 @@ const TeacherProfile = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{isAr ? 'الملف الشخصي للمعلم' : 'Teacher Profile'}</h1>
-        <div className="flex items-center gap-2">
-          {canEdit && !editing && (
-            <Button variant="outline" onClick={() => setEditing(true)}>
-              <Pencil className="h-4 w-4 me-2" />
-              {isAr ? 'تعديل' : 'Edit Profile'}
-            </Button>
-          )}
-          {(role === 'teacher' && isOwner) && (
-            <Button onClick={() => { setPayoutAmount(netAvailable.toFixed(2)); setPayoutOpen(true); }} disabled={netAvailable <= 0}>
-              <DollarSign className="h-4 w-4 me-2" />
-              {isAr ? 'طلب صرف' : 'Request Payout'}
-            </Button>
-          )}
-        </div>
+        {canEdit && !editing && (
+          <Button variant="outline" onClick={() => setEditing(true)}>
+            <Pencil className="h-4 w-4 me-2" />
+            {isAr ? 'تعديل' : 'Edit Profile'}
+          </Button>
+        )}
       </div>
 
       {/* Personal Information */}
@@ -402,9 +333,7 @@ const TeacherProfile = () => {
         </CardHeader>
         <CardContent>
           {editing ? (
-            /* ── Edit Mode ── */
             <div className="space-y-6">
-              {/* Avatar picker */}
               <div className="flex items-start gap-6">
                 <div className="shrink-0">
                   <Label className="mb-2 block text-xs text-muted-foreground">{isAr ? 'صورة الملف الشخصي' : 'Profile Picture'}</Label>
@@ -462,7 +391,6 @@ const TeacherProfile = () => {
 
               <Separator />
 
-              {/* Documents in edit mode */}
               <div>
                 <Label className="text-xs text-muted-foreground uppercase tracking-wider mb-3 block">{isAr ? 'المستندات' : 'Documents'}</Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -501,10 +429,9 @@ const TeacherProfile = () => {
               </div>
             </div>
           ) : (
-            /* ── View Mode ── */
             <div className="flex flex-col md:flex-row gap-6">
-              {/* Avatar & Name */}
-              <div className="flex flex-col items-center gap-3 md:min-w-[160px]">
+              {/* Avatar & Name & Payout */}
+              <div className="flex flex-col items-center gap-3 md:min-w-[180px]">
                 <Avatar className="h-24 w-24 border-2 border-border">
                   <AvatarImage src={resolvedAvatar} alt={profile?.full_name} />
                   <AvatarFallback className="text-2xl bg-primary/10 text-primary">{initials}</AvatarFallback>
@@ -517,6 +444,24 @@ const TeacherProfile = () => {
                   {teacher?.specialization && (
                     <p className="text-xs text-muted-foreground">{teacher.specialization}</p>
                   )}
+                </div>
+
+                {/* Available to Payout Card */}
+                <div className="w-full mt-2 rounded-xl border bg-emerald-500/5 p-3 text-center space-y-2">
+                  <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+                    <Wallet className="h-3.5 w-3.5" />
+                    {isAr ? 'متاح للصرف' : 'Available to Payout'}
+                  </div>
+                  <p className="text-xl font-bold text-emerald-600">${netAvailable.toFixed(2)}</p>
+                  <Button
+                    size="sm"
+                    className="w-full"
+                    onClick={() => { setPayoutAmount(netAvailable.toFixed(2)); setPayoutOpen(true); }}
+                    disabled={netAvailable <= 0}
+                  >
+                    <DollarSign className="h-3.5 w-3.5 me-1" />
+                    {isAr ? 'طلب صرف' : 'Request Payout'}
+                  </Button>
                 </div>
               </div>
 
@@ -558,6 +503,20 @@ const TeacherProfile = () => {
                       onUpload={canEdit ? (f) => handleFileUpload(f, 'contract') : undefined}
                     />
                   </div>
+                </div>
+
+                {/* Payout Policy Note */}
+                <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 flex items-start gap-2">
+                  <Info className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                  <p className="text-xs text-muted-foreground">
+                    {isAr
+                      ? 'يتم صرف المستحقات وفقاً لسياسات الصرف الخاصة بنا. إذا كان طلبك مخالفاً لسياساتنا، سيتم رفض الطلب وإعادة المبلغ إلى رصيدك.'
+                      : 'Payouts are processed following our payout policies. If your request violates our policies, it will be rejected and the amount will be returned to your balance.'}
+                    {' '}
+                    <Link to="/policies/payout-policies" className="text-primary underline hover:no-underline font-medium">
+                      {isAr ? 'اطلع على سياسة الصرف' : 'View Payout Policy'}
+                    </Link>
+                  </p>
                 </div>
               </div>
             </div>
@@ -623,49 +582,6 @@ const TeacherProfile = () => {
         </CardContent>
       </Card>
 
-      {/* Assigned Courses */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-primary" />
-              {isAr ? 'المقررات المعينة' : 'Assigned Courses'}
-            </CardTitle>
-            {canEdit && (
-              <Button size="sm" variant="outline" onClick={() => setCourseDialogOpen(true)}>
-                <Plus className="h-4 w-4 me-2" />
-                {isAr ? 'تعيين مقرر' : 'Assign Course'}
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          {assignedCourses.length === 0 ? (
-            <p className="text-center text-muted-foreground py-6">{isAr ? 'لا توجد مقررات معينة' : 'No courses assigned yet'}</p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {assignedCourses.map(ac => (
-                <div key={ac.id} className="flex items-center justify-between p-3 rounded-lg border bg-card">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {isAr ? (ac.courses?.title_ar || ac.courses?.title) : ac.courses?.title}
-                    </p>
-                    <Badge variant="outline" className="text-[10px] mt-1">
-                      {ac.courses?.status === 'published' ? (isAr ? 'منشور' : 'Published') : (isAr ? 'مسودة' : 'Draft')}
-                    </Badge>
-                  </div>
-                  {canEdit && (
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleRemoveCourse(ac.id)}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
       {/* Account Statement */}
       <Card>
         <CardHeader>
@@ -707,38 +623,6 @@ const TeacherProfile = () => {
         </CardContent>
       </Card>
 
-      {/* Assign Course Dialog */}
-      <Dialog open={courseDialogOpen} onOpenChange={setCourseDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{isAr ? 'تعيين مقرر' : 'Assign Course'}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>{isAr ? 'المقرر' : 'Course'}</Label>
-              <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
-                <SelectTrigger>
-                  <SelectValue placeholder={isAr ? 'اختر مقرراً' : 'Select a course'} />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableCourses.map(c => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {isAr ? (c.title_ar || c.title) : c.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCourseDialogOpen(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
-            <Button onClick={handleAssignCourse} disabled={!selectedCourseId}>
-              {isAr ? 'تعيين' : 'Assign'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {/* Payout Request Dialog */}
       <Dialog open={payoutOpen} onOpenChange={setPayoutOpen}>
         <DialogContent className="max-w-md">
@@ -756,6 +640,18 @@ const TeacherProfile = () => {
               <Label>{isAr ? 'المبلغ المطلوب' : 'Requested Amount'}</Label>
               <Input type="number" step="0.01" min="0.01" max={netAvailable} value={payoutAmount}
                 onChange={e => setPayoutAmount(e.target.value)} placeholder="0.00" />
+            </div>
+            <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 flex items-start gap-2">
+              <Info className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+              <p className="text-xs text-muted-foreground">
+                {isAr
+                  ? 'بتقديم هذا الطلب، فإنك توافق على سياسات الصرف الخاصة بنا.'
+                  : 'By submitting this request, you agree to our payout policies.'}
+                {' '}
+                <Link to="/policies/payout-policies" className="text-primary underline hover:no-underline font-medium">
+                  {isAr ? 'اطلع على السياسة' : 'View Policy'}
+                </Link>
+              </p>
             </div>
           </div>
           <DialogFooter>
