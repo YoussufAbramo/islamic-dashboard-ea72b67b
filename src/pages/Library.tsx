@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Card } from '@/components/ui/card';
-import { Plus, Search, Trash2, FileText, Upload, ExternalLink, ArrowUp, ArrowDown, BookOpen, Download } from 'lucide-react';
+import { Plus, Search, Trash2, FileText, Upload, ArrowUp, ArrowDown, BookOpen, Download, Eye, Users } from 'lucide-react';
 import ActionButton from '@/components/ui/action-button';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
@@ -53,6 +53,8 @@ const Library = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [readerEbook, setReaderEbook] = useState<Ebook | null>(null);
+  const [ebookStats, setEbookStats] = useState<Record<string, { views: number; downloads: number }>>({});
 
   const [form, setForm] = useState({ title: '', title_ar: '', description: '', description_ar: '' });
   const [pdfFile, setPdfFile] = useState<File | null>(null);
@@ -69,7 +71,21 @@ const Library = () => {
     setLoading(false);
   };
 
+  const fetchEbookStats = useCallback(async (ebookIds: string[]) => {
+    if (ebookIds.length === 0) return;
+    const [viewsRes, downloadsRes] = await Promise.all([
+      supabase.from('ebook_views').select('ebook_id'),
+      supabase.from('ebook_downloads').select('ebook_id'),
+    ]);
+    const stats: Record<string, { views: number; downloads: number }> = {};
+    ebookIds.forEach(id => { stats[id] = { views: 0, downloads: 0 }; });
+    (viewsRes.data || []).forEach((v: any) => { if (stats[v.ebook_id]) stats[v.ebook_id].views++; });
+    (downloadsRes.data || []).forEach((d: any) => { if (stats[d.ebook_id]) stats[d.ebook_id].downloads++; });
+    setEbookStats(stats);
+  }, []);
+
   useEffect(() => { fetchEbooks(); }, []);
+  useEffect(() => { if (ebooks.length > 0) fetchEbookStats(ebooks.map(e => e.id)); }, [ebooks, fetchEbookStats]);
 
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -198,10 +214,11 @@ const Library = () => {
             {paginatedItems.map((ebook) => {
               const title = isAr ? ebook.title_ar || ebook.title : ebook.title;
               const desc = isAr ? ebook.description_ar || ebook.description : ebook.description;
+              const stats = ebookStats[ebook.id] || { views: 0, downloads: 0 };
               return (
                 <div key={ebook.id} className="group flex flex-col rounded-xl border bg-card overflow-hidden hover:shadow-lg hover:border-primary/20 transition-all duration-200">
                   {/* Cover */}
-                  <div className="relative aspect-[3/4] bg-muted overflow-hidden">
+                  <div className="relative aspect-[3/4] bg-muted overflow-hidden cursor-pointer" onClick={() => { trackView(ebook.id); setReaderEbook(ebook); }}>
                     {ebook.cover_url ? (
                       <img src={ebook.cover_url} alt={title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                     ) : (
@@ -211,31 +228,52 @@ const Library = () => {
                     )}
                   </div>
 
-                  {/* Info + Actions */}
+                  {/* Info */}
                   <div className="flex-1 flex flex-col p-3 gap-1.5">
                     <h3 className="text-sm font-semibold truncate" title={title}>{title}</h3>
                     {desc && (
                       <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">{desc}</p>
                     )}
 
-                    {/* Always-visible action bar */}
-                    <div className="flex items-center gap-1 mt-auto pt-2 border-t border-border/50">
-                      <ActionButton
-                        icon={ExternalLink}
-                        label={isAr ? 'فتح' : 'Open'}
-                        onClick={() => { trackView(ebook.id); trackDownload(ebook.id); window.open(ebook.pdf_url, '_blank'); }}
-                      />
-                      <ActionButton
-                        icon={Download}
-                        label={isAr ? 'تحميل' : 'Download'}
-                        onClick={() => { trackDownload(ebook.id); window.open(ebook.pdf_url, '_blank'); }}
-                      />
+                    {/* Stats row */}
+                    <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-1">
+                      <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{stats.views}</span>
+                      <span className="flex items-center gap-1"><Download className="h-3 w-3" />{stats.downloads}</span>
+                    </div>
+
+                    {/* Action bar */}
+                    <div className="flex items-center gap-1.5 mt-auto pt-2 border-t border-border/50">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2 text-xs gap-1 text-primary hover:text-primary hover:bg-primary/10"
+                        onClick={() => { trackView(ebook.id); setReaderEbook(ebook); }}
+                      >
+                        <BookOpen className="h-3.5 w-3.5" />
+                        {isAr ? 'قراءة' : 'Read'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2 text-xs gap-1 hover:bg-muted"
+                        onClick={() => {
+                          trackDownload(ebook.id);
+                          const a = document.createElement('a');
+                          a.href = ebook.pdf_url;
+                          a.download = `${ebook.title}.pdf`;
+                          a.target = '_blank';
+                          a.click();
+                        }}
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        {isAr ? 'تحميل' : 'Download'}
+                      </Button>
                       {isAdmin && (
                         <ActionButton
                           icon={Trash2}
                           label={isAr ? 'حذف' : 'Delete'}
                           destructive
-                          className="ms-auto"
+                          className="ms-auto h-7 w-7"
                           onClick={() => setDeleteTarget(ebook.id)}
                         />
                       )}
@@ -327,6 +365,27 @@ const Library = () => {
               {uploading ? (isAr ? 'جاري الرفع...' : 'Uploading...') : (isAr ? 'إضافة الكتاب' : 'Add E-book')}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* PDF Reader Dialog */}
+      <Dialog open={!!readerEbook} onOpenChange={(open) => !open && setReaderEbook(null)}>
+        <DialogContent className="max-w-5xl h-[90vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="px-6 py-4 border-b shrink-0">
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" />
+              {readerEbook && (isAr ? readerEbook.title_ar || readerEbook.title : readerEbook.title)}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 min-h-0">
+            {readerEbook && (
+              <iframe
+                src={`${readerEbook.pdf_url}#toolbar=1&navpanes=1`}
+                className="w-full h-full border-0"
+                title={readerEbook.title}
+              />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
