@@ -89,7 +89,7 @@ const AppSidebar = () => {
       label: 'Educate',
       labelAr: 'التعليم',
       items: [
-        { key: 'courses', label: t('nav.courses'), icon: BookOpen, path: '/dashboard/courses', roles: ['admin', 'teacher', 'student'],
+        { key: 'courses', label: t('nav.courses'), icon: BookOpen, path: '/dashboard/courses', roles: ['admin', 'teacher', 'student'], beta: true,
           children: [
             { key: 'tracks', label: isAr ? 'المسارات' : 'Tracks', icon: Route, path: '/dashboard/courses/tracks', roles: ['admin'] },
             { key: 'categories', label: isAr ? 'التصنيفات' : 'Categories', icon: FolderTree, path: '/dashboard/courses/categories', roles: ['admin'] },
