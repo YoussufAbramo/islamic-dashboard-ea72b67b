@@ -625,12 +625,8 @@ const TeacherProfile = () => {
       {/* Account Statement */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg flex items-center justify-between">
-            <span>{isAr ? 'كشف الحساب' : 'Account Statement'}</span>
-            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate('/dashboard/support')}>
-              <HeadphonesIcon className="h-3.5 w-3.5" />
-              {isAr ? 'تقديم تذكرة' : 'Submit Ticket'}
-            </Button>
+          <CardTitle className="text-lg">
+            {isAr ? 'كشف الحساب' : 'Account Statement'}
           </CardTitle>
         </CardHeader>
         <CardContent>

@@ -42,7 +42,16 @@ const PayoutRequests = () => {
       .from('payout_requests')
       .select('*, teachers!inner(id, user_id, profiles:teachers_user_id_profiles_fkey(full_name, email))')
       .order('created_at', { ascending: false });
-    setRequests(data || []);
+    const rows = data || [];
+    // Enrich with admin profile names
+    const adminIds = [...new Set(rows.filter(r => r.admin_id).map(r => r.admin_id))];
+    if (adminIds.length > 0) {
+      const { data: profiles } = await supabase.from('profiles').select('id, full_name').in('id', adminIds);
+      const nameMap: Record<string, string> = {};
+      (profiles || []).forEach(p => { nameMap[p.id] = p.full_name; });
+      rows.forEach((r: any) => { if (r.admin_id) r.admin_profile_name = nameMap[r.admin_id] || '-'; });
+    }
+    setRequests(rows);
     setLoading(false);
   };
 
