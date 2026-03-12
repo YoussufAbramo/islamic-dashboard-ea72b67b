@@ -1,4 +1,5 @@
 import { useLanguage } from '@/contexts/LanguageContext';
+import { COPYRIGHT_TEXT, COPYRIGHT_LINK, COPYRIGHT_NAME, COPYRIGHT_SUFFIX } from '@/lib/version';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
