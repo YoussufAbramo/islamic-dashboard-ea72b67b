@@ -251,61 +251,79 @@ const Chats = () => {
   if (loading) return <ChatSkeleton />;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold shrink-0">{t('chats.title')}</h1>
-        <div className="flex items-center gap-2 ms-auto">
-          <Button variant="outline" size="sm" onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')} className="gap-1 h-9">
-            {sortOrder === 'newest' ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}
-            {sortOrder === 'newest' ? (isAr ? 'الأحدث' : 'Newest') : (isAr ? 'الأقدم' : 'Oldest')}
-          </Button>
-          <div className="relative">
-            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder={isAr ? 'بحث في المحادثات...' : 'Search chats...'} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="ps-9 w-48 sm:w-64 h-9" />
+    <div className="h-[calc(100vh-140px)]">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-0 h-full rounded-xl border overflow-hidden bg-card">
+        {/* Left sidebar */}
+        <div className="md:col-span-1 flex flex-col border-e bg-muted/20">
+          {/* Sidebar header */}
+          <div className="p-3 border-b space-y-2.5">
+            <div className="flex items-center justify-between">
+              <h1 className="text-lg font-bold">{t('chats.title')}</h1>
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSortOrder(prev => prev === 'newest' ? 'oldest' : 'newest')}>
+                  {sortOrder === 'newest' ? <ArrowDown className="h-3.5 w-3.5" /> : <ArrowUp className="h-3.5 w-3.5" />}
+                </Button>
+                {role === 'admin' && (
+                  <Button size="icon" className="h-8 w-8" onClick={() => { setCreateOpen(true); fetchFormData(); }}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+            <div className="relative">
+              <Search className="absolute start-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                placeholder={isAr ? 'بحث في المحادثات...' : 'Search chats...'}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="ps-8 h-8 text-xs bg-background/60 border-border/50 focus:bg-background"
+              />
+            </div>
           </div>
-          {role === 'admin' && (
-            <Button size="sm" className="h-9" onClick={() => { setCreateOpen(true); fetchFormData(); }}>
-              <Plus className="h-4 w-4 me-2" />
-              {isAr ? 'محادثة جديدة' : 'New Chat'}
-            </Button>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-200px)]">
-        <Card className="md:col-span-1">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">{t('chats.title')}</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <ScrollArea className="h-[calc(100vh-320px)]">
-              {paginatedChats.map((chat) => {
-                const lastCheck = localStorage.getItem(`chat_read_${chat.id}`) || '1970-01-01T00:00:00Z';
-                const isUnread = chat.latest_message_at && new Date(chat.latest_message_at) > new Date(lastCheck);
-                return (
-                <div key={chat.id} className={`p-3 border-b cursor-pointer hover:bg-muted/50 transition-colors ${selectedChat?.id === chat.id ? 'bg-muted' : ''} ${isUnread ? 'bg-primary/5 border-s-2 border-s-primary' : ''}`} onClick={() => { setSelectedChat(chat); localStorage.setItem(`chat_read_${chat.id}`, new Date().toISOString()); }}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className={`text-sm ${isUnread ? 'font-bold' : 'font-medium'}`}>{getChatLabel(chat)}</p>
-                      {chat.is_group && <Badge variant="outline" className="text-[10px] mt-1">{isAr ? 'مجموعة' : 'Group'}</Badge>}
+          {/* Chat list */}
+          <ScrollArea className="flex-1">
+            {paginatedChats.map((chat) => {
+              const lastCheck = localStorage.getItem(`chat_read_${chat.id}`) || '1970-01-01T00:00:00Z';
+              const isUnread = chat.latest_message_at && new Date(chat.latest_message_at) > new Date(lastCheck);
+              const isActive = selectedChat?.id === chat.id;
+              return (
+                <div
+                  key={chat.id}
+                  className={`flex items-center gap-2.5 px-3 py-2.5 cursor-pointer transition-colors border-b border-border/40 ${isActive ? 'bg-primary/8 border-s-2 border-s-primary' : 'hover:bg-muted/50'} ${isUnread && !isActive ? 'bg-primary/5' : ''}`}
+                  onClick={() => { setSelectedChat(chat); localStorage.setItem(`chat_read_${chat.id}`, new Date().toISOString()); }}
+                >
+                  <Avatar className="h-8 w-8 shrink-0">
+                    <AvatarFallback className={`text-xs font-medium ${chat.is_group ? 'bg-accent text-accent-foreground' : 'bg-primary/10 text-primary'}`}>
+                      {getChatLabel(chat).charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-1">
+                      <p className={`text-sm truncate ${isUnread ? 'font-bold' : 'font-medium'}`}>{getChatLabel(chat)}</p>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {isUnread && <div className="h-1.5 w-1.5 rounded-full bg-primary" />}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      {isUnread && <div className="h-2 w-2 rounded-full bg-primary" />}
-                      {chat.is_suspended && <Badge variant="destructive" className="text-xs">{t('chats.suspended')}</Badge>}
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      {chat.is_group && <Badge variant="outline" className="text-[9px] h-4 px-1.5">{isAr ? 'مجموعة' : 'Group'}</Badge>}
+                      {chat.is_suspended && <Badge variant="destructive" className="text-[9px] h-4 px-1.5">{t('chats.suspended')}</Badge>}
                     </div>
                   </div>
                 </div>
-                );
-              })}
-              {filteredChats.length === 0 && (
-                <p className="p-4 text-center text-muted-foreground text-sm">
-                  {searchQuery ? (isAr ? 'لا توجد نتائج' : 'No results') : t('common.noData')}
-                </p>
-              )}
-            </ScrollArea>
-            <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
-          </CardContent>
-        </Card>
+              );
+            })}
+            {filteredChats.length === 0 && (
+              <p className="p-6 text-center text-muted-foreground text-xs">
+                {searchQuery ? (isAr ? 'لا توجد نتائج' : 'No results') : t('common.noData')}
+              </p>
+            )}
+          </ScrollArea>
+          {totalPages > 1 && (
+            <div className="border-t">
+              <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
+            </div>
+          )}
+        </div>
 
         <Card className="md:col-span-2 flex flex-col">
           {selectedChat ? (
