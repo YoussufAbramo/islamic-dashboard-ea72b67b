@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { format, differenceInMinutes, isToday, isTomorrow, addDays, startOfWeek, endOfWeek } from 'date-fns';
-import { Video, ExternalLink, Clock, Users, MonitorPlay, AlertCircle } from 'lucide-react';
+import { Video, ExternalLink, Clock, Users, MonitorPlay, AlertCircle, CalendarDays } from 'lucide-react';
 import { toast } from 'sonner';
 import { TableSkeleton } from '@/components/PageSkeleton';
 import EmptyState from '@/components/EmptyState';
@@ -104,33 +104,51 @@ const AttendLesson = () => {
       };
     });
 
-    setEntries(mapped);
+    // Add a mock test entry (10 minutes from now) for testing
+    const testTime = new Date();
+    testTime.setMinutes(testTime.getMinutes() + 10);
+    const mockEntry: LessonEntry = {
+      id: 'mock-test-entry',
+      scheduled_at: testTime.toISOString(),
+      duration_minutes: 45,
+      status: 'scheduled',
+      course_id: null,
+      student_id: null,
+      teacher_id: null,
+      course_title: 'Test Course',
+      student_name: 'Test Student',
+      teacher_name: 'Test Teacher',
+      google_meet_url: 'https://meet.google.com/test-session',
+      zoom_url: 'https://zoom.us/j/123456789',
+    };
+
+    setEntries([mockEntry, ...mapped]);
     setLoading(false);
   };
 
   useEffect(() => { fetchEntries(); }, []);
 
-  const getLessonStatus = (entry: LessonEntry): { label: string; variant: string; isLive: boolean } => {
+  const getLessonStatus = (entry: LessonEntry): { label: string; variant: string; className: string; isLive: boolean } => {
     const scheduledTime = new Date(entry.scheduled_at);
     const endTime = new Date(scheduledTime.getTime() + entry.duration_minutes * 60000);
     const minutesUntil = differenceInMinutes(scheduledTime, now);
 
     if (entry.status === 'cancelled') {
-      return { label: isAr ? 'ملغي' : 'Cancelled', variant: 'destructive', isLive: false };
+      return { label: isAr ? 'ملغي' : 'Cancelled', variant: 'destructive', className: '', isLive: false };
     }
     if (entry.status === 'completed') {
-      return { label: isAr ? 'مكتمل' : 'Completed', variant: 'secondary', isLive: false };
+      return { label: isAr ? 'مكتمل' : 'Completed', variant: 'secondary', className: '', isLive: false };
     }
     if (now >= scheduledTime && now <= endTime) {
-      return { label: isAr ? '🔴 مباشر' : '🔴 Live', variant: 'default', isLive: true };
+      return { label: isAr ? '🔴 مباشر' : '🔴 Live', variant: 'default', className: 'bg-destructive text-destructive-foreground', isLive: true };
     }
     if (minutesUntil <= 15 && minutesUntil > 0) {
-      return { label: isAr ? 'يبدأ قريباً' : 'Starting Soon', variant: 'default', isLive: false };
+      return { label: isAr ? 'يبدأ قريباً' : 'Starting Soon', variant: 'outline', className: 'border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400', isLive: false };
     }
     if (now > endTime) {
-      return { label: isAr ? 'انتهى' : 'Ended', variant: 'secondary', isLive: false };
+      return { label: isAr ? 'انتهى' : 'Ended', variant: 'secondary', className: '', isLive: false };
     }
-    return { label: isAr ? 'قادم لاحقاً' : 'Coming Later', variant: 'outline', isLive: false };
+    return { label: isAr ? 'قادم لاحقاً' : 'Coming Later', variant: 'outline', className: 'border-primary/30 bg-primary/5 text-primary', isLive: false };
   };
 
   const isAttendEnabled = (entry: LessonEntry): boolean => {
@@ -246,8 +264,8 @@ const AttendLesson = () => {
         </Card>
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-accent flex items-center justify-center">
-              <Users className="h-5 w-5 text-accent-foreground" />
+            <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center">
+              <CalendarDays className="h-5 w-5 text-secondary-foreground" />
             </div>
             <div>
               <p className="text-2xl font-bold">{weekTotal}</p>
@@ -317,7 +335,7 @@ const AttendLesson = () => {
                         <span className="text-sm">{entry.duration_minutes} {isAr ? 'د' : 'min'}</span>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={status.variant as any} className={status.isLive ? 'animate-pulse' : ''}>
+                        <Badge variant={status.variant as any} className={`${status.className} ${status.isLive ? 'animate-pulse' : ''}`}>
                           {status.label}
                         </Badge>
                       </TableCell>
