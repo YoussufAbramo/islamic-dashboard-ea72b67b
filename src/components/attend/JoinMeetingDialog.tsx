@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ExternalLink, X, Check, Link2, Plus } from 'lucide-react';
+import { ExternalLink, X, Check, Link2, Plus, Video } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import DashboardMeeting from './DashboardMeeting';
 
-type JoinMethod = 'vconnct' | 'google_meet' | 'zoom';
+type JoinMethod = 'vconnct' | 'google_meet' | 'zoom' | 'dashboard';
 
 interface MeetingEntry {
   google_meet_url: string;
@@ -17,6 +18,7 @@ interface JoinMeetingDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   entry: MeetingEntry | null;
+  entryId?: string;
   isAr: boolean;
   onSessionStart?: () => void;
 }
@@ -35,17 +37,19 @@ const maskUrl = (url: string): string => {
   }
 };
 
-const platforms: { id: JoinMethod; label: string; icon: string; iconType: 'img' }[] = [
-  { id: 'google_meet', label: 'Google Meet', icon: '/icons/google-meet.png', iconType: 'img' },
-  { id: 'zoom', label: 'Zoom', icon: '/icons/zoom.png', iconType: 'img' },
-  { id: 'vconnct', label: 'Vconnct', icon: '/icons/vconnct.ico', iconType: 'img' },
+const platforms: { id: JoinMethod; label: string; labelAr: string; icon: string; iconType: 'img' | 'lucide' }[] = [
+  { id: 'dashboard', label: 'Dashboard Meeting', labelAr: 'اجتماع المنصة', icon: 'video', iconType: 'lucide' },
+  { id: 'google_meet', label: 'Google Meet', labelAr: 'Google Meet', icon: '/icons/google-meet.png', iconType: 'img' },
+  { id: 'zoom', label: 'Zoom', labelAr: 'Zoom', icon: '/icons/zoom.png', iconType: 'img' },
+  { id: 'vconnct', label: 'Vconnct', labelAr: 'Vconnct', icon: '/icons/vconnct.ico', iconType: 'img' },
 ];
 
-const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr, onSessionStart }: JoinMeetingDialogProps) => {
+const JoinMeetingDialog = ({ open, onOpenChange, entry, entryId, isAr, onSessionStart }: JoinMeetingDialogProps) => {
   const [selected, setSelected] = useState<JoinMethod | null>(null);
   const [vconnctUrl, setVconnctUrl] = useState('');
   const [iframeOpen, setIframeOpen] = useState(false);
   const [iframeSrc, setIframeSrc] = useState('');
+  const [dashboardMeetingOpen, setDashboardMeetingOpen] = useState(false);
 
   const handleClose = (val: boolean) => {
     if (!val) {
@@ -56,6 +60,7 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr, onSessionStart }: 
   };
 
   const isPlatformAvailable = (id: JoinMethod): boolean => {
+    if (id === 'dashboard') return true;
     if (!entry) return false;
     if (id === 'google_meet') return !!entry.google_meet_url;
     if (id === 'zoom') return !!entry.zoom_url;
@@ -70,7 +75,16 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr, onSessionStart }: 
   };
 
   const handleJoin = () => {
-    if (!selected || !entry) return;
+    if (!selected) return;
+
+    if (selected === 'dashboard') {
+      setDashboardMeetingOpen(true);
+      onSessionStart?.();
+      handleClose(false);
+      return;
+    }
+
+    if (!entry) return;
 
     if (selected === 'google_meet') {
       if (!entry.google_meet_url) {
@@ -115,8 +129,20 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr, onSessionStart }: 
 
   const canJoin = (): boolean => {
     if (!selected) return false;
+    if (selected === 'dashboard') return !!entryId;
     if (selected === 'vconnct') return !!vconnctUrl.trim();
     return isPlatformAvailable(selected);
+  };
+
+  const renderPlatformIcon = (p: typeof platforms[0]) => {
+    if (p.iconType === 'lucide') {
+      return (
+        <div className="h-7 w-7 shrink-0 rounded-lg bg-primary/15 flex items-center justify-center">
+          <Video className="h-4 w-4 text-primary" />
+        </div>
+      );
+    }
+    return <img src={p.icon} alt={p.label} className="h-7 w-7 shrink-0 rounded" />;
   };
 
   return (
@@ -146,7 +172,7 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr, onSessionStart }: 
                     )}
                   >
                     <div className="flex items-center gap-3 p-3">
-                      <img src={p.icon} alt={p.label} className="h-7 w-7 shrink-0 rounded" />
+                      {renderPlatformIcon(p)}
                       <div className="text-start flex-1 min-w-0">
                         <p className="text-sm font-semibold">{p.label}</p>
                         <p className="text-[10px] text-muted-foreground">
@@ -206,11 +232,13 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr, onSessionStart }: 
                       : 'bg-card hover:bg-accent/50 border-border'
                   )}
                 >
-                  <img src={p.icon} alt={p.label} className="h-7 w-7 shrink-0 rounded" />
+                  {renderPlatformIcon(p)}
                   <div className="text-start flex-1 min-w-0">
-                    <p className="text-sm font-semibold">{p.label}</p>
+                    <p className="text-sm font-semibold">{isAr ? p.labelAr : p.label}</p>
                     <p className="text-[10px] text-muted-foreground truncate">
-                      {url
+                      {p.id === 'dashboard'
+                        ? (isAr ? 'مكالمة فيديو مباشرة داخل المنصة' : 'Direct video call inside the dashboard')
+                        : url
                         ? (isAr ? `سيتم التوجيه إلى ${p.label}` : `You will be redirected to ${p.label}`)
                         : (isAr ? 'لم يتم الإعداد' : 'Not configured')}
                     </p>
@@ -231,8 +259,10 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr, onSessionStart }: 
             disabled={!canJoin()}
             onClick={handleJoin}
           >
-            {selected === 'vconnct' ? null : <ExternalLink className="h-4 w-4" />}
-            {isAr ? 'انضمام' : 'Join Meeting'}
+            {selected === 'vconnct' || selected === 'dashboard' ? null : <ExternalLink className="h-4 w-4" />}
+            {selected === 'dashboard'
+              ? (isAr ? 'بدء الاجتماع' : 'Start Meeting')
+              : (isAr ? 'انضمام' : 'Join Meeting')}
           </Button>
         </DialogContent>
       </Dialog>
@@ -265,6 +295,16 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr, onSessionStart }: 
           />
         </DialogContent>
       </Dialog>
+
+      {/* Dashboard Meeting (WebRTC) */}
+      {entryId && (
+        <DashboardMeeting
+          open={dashboardMeetingOpen}
+          onOpenChange={setDashboardMeetingOpen}
+          entryId={entryId}
+          isAr={isAr}
+        />
+      )}
     </>
   );
 };
