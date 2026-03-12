@@ -506,7 +506,7 @@ const Chats = () => {
                           )}
                           {isSystemMsg ? (
                             <div className="flex justify-center my-2">
-                              <span className="text-[10px] text-muted-foreground bg-muted/70 border border-border/50 px-3 py-1 rounded-full italic">
+                              <span className="text-[10px] text-yellow-700 dark:text-yellow-400 bg-yellow-500/15 border border-yellow-500/25 px-3 py-1 rounded-full italic">
                                 {msg.message.replace('[SYSTEM] ', '')}
                               </span>
                             </div>
