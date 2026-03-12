@@ -217,11 +217,11 @@ const PayoutRequests = () => {
               )}
 
               <div>
-                <Label>{isAr ? 'ملاحظات إضافية' : 'Admin Notes (optional)'}</Label>
+                <Label>{reviewAction === 'approve' ? (isAr ? 'ملاحظة للمعلم' : 'Note to Teacher') : (isAr ? 'ملاحظات إضافية' : 'Admin Notes (optional)')}</Label>
                 <Textarea
                   value={adminNotes}
                   onChange={(e) => setAdminNotes(e.target.value)}
-                  placeholder={isAr ? 'ملاحظات...' : 'Notes...'}
+                  placeholder={reviewAction === 'approve' ? (isAr ? 'أضف ملاحظة للمعلم (اختياري)...' : 'Add a note for the teacher (optional)...') : (isAr ? 'ملاحظات...' : 'Notes...')}
                   maxLength={500}
                 />
               </div>
