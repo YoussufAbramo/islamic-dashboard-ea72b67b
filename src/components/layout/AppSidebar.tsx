@@ -247,6 +247,11 @@ const AppSidebar = () => {
                               {isAr ? 'قريباً' : 'Soon'}
                             </Badge>
                           )}
+                          {item.beta && !item.comingSoon && (
+                            <Badge className="text-[7px] px-1 py-0 h-3.5 shrink-0 ms-auto bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20">
+                              Beta
+                            </Badge>
+                          )}
                           {hasChildren && (
                             <ChevronDown className={`h-3.5 w-3.5 text-sidebar-foreground/50 transition-transform duration-200 shrink-0 ms-auto ${isExpanded ? 'rotate-180' : ''}`} />
                           )}
