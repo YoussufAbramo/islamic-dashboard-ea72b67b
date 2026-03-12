@@ -417,6 +417,9 @@ const Media = () => {
     return allFolders.filter(f => f.toLowerCase().includes(s));
   }, [currentNode, folders, search]);
 
+  // Upload is only allowed in leaf folders (no children) or when inside a subfolder
+  const canUpload = !!currentPath && (!currentNode || currentNode.children.length === 0);
+
   const hasSelection = selectedNames.size > 0;
   const allSelected = filteredFiles.length > 0 && selectedNames.size === filteredFiles.length;
   const breadcrumbs = currentPath ? currentPath.split('/') : [];
