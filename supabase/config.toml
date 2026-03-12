@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.manage-accounts]
 verify_jwt = false
+
+[functions.migrate-media]
+verify_jwt = false
