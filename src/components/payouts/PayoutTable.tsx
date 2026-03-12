@@ -147,7 +147,7 @@ const PayoutTable = ({ requests, loading, isAr, onApprove, onDecline }: Props) =
                       </div>
                     ) : (
                       <span className="text-xs text-muted-foreground">
-                        {req.reviewed_at ? format(new Date(req.reviewed_at), 'MMM dd, yyyy') : '-'}
+                        {req.reviewed_at ? format(new Date(req.reviewed_at), 'MMM dd, yyyy HH:mm') : '-'}
                       </span>
                     )}
                   </TableCell>
