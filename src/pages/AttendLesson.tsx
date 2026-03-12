@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,9 +6,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import JoinMeetingDialog from '@/components/attend/JoinMeetingDialog';
+import SessionTimer from '@/components/attend/SessionTimer';
+import SessionReportDialog from '@/components/attend/SessionReportDialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { format, differenceInMinutes, isToday, isTomorrow, addDays, startOfWeek, endOfWeek } from 'date-fns';
-import { Video, Clock, MonitorPlay, AlertCircle, CalendarDays } from 'lucide-react';
+import { Video, Clock, MonitorPlay, AlertCircle, CalendarDays, FileText, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { TableSkeleton } from '@/components/PageSkeleton';
 import EmptyState from '@/components/EmptyState';
@@ -26,8 +28,8 @@ interface LessonEntry {
   teacher_name: string;
   google_meet_url: string;
   zoom_url: string;
+  has_report?: boolean;
 }
-
 
 const AttendLesson = () => {
   const { language } = useLanguage();
@@ -39,6 +41,22 @@ const AttendLesson = () => {
   const [joinOpen, setJoinOpen] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<LessonEntry | null>(null);
 
+  // Session tracking state
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [sessionStartedAt, setSessionStartedAt] = useState<string | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportSessionData, setReportSessionData] = useState<{
+    timetableEntryId: string;
+    teacherId: string | null;
+    studentId: string | null;
+    courseId: string | null;
+    durationSeconds: number;
+    startedAt: string;
+  } | null>(null);
+
+  // Set of entry IDs that already have reports
+  const [reportedEntryIds, setReportedEntryIds] = useState<Set<string>>(new Set());
+
   // Update "now" every 30 seconds for live status updates
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 30000);
@@ -48,10 +66,8 @@ const AttendLesson = () => {
   const fetchEntries = async () => {
     setLoading(true);
 
-    // Get current week range
     const weekStart = startOfWeek(new Date(), { weekStartsOn: 0 });
     const weekEnd = endOfWeek(new Date(), { weekStartsOn: 0 });
-    // Extend to next week too for upcoming visibility
     const extendedEnd = addDays(weekEnd, 7);
 
     const { data: timetableData, error } = await supabase
@@ -67,20 +83,18 @@ const AttendLesson = () => {
       return;
     }
 
-    // Get subscription URLs for each student-teacher-course combination
+    // Get subscription URLs
     const { data: subscriptions } = await supabase
       .from('subscriptions')
       .select('student_id, teacher_id, course_id, google_meet_url, zoom_url');
 
     const subMap = new Map<string, { google_meet_url: string; zoom_url: string }>();
     (subscriptions || []).forEach(sub => {
-      // Primary key: student + teacher + course (most specific)
       const fullKey = `${sub.student_id}|${sub.teacher_id}|${sub.course_id}`;
       subMap.set(fullKey, {
         google_meet_url: sub.google_meet_url || '',
         zoom_url: sub.zoom_url || '',
       });
-      // Fallback key: student + teacher (for entries without course match)
       const pairKey = `${sub.student_id}|${sub.teacher_id}|`;
       if (!subMap.has(pairKey)) {
         subMap.set(pairKey, {
@@ -89,6 +103,20 @@ const AttendLesson = () => {
         });
       }
     });
+
+    // Get existing session reports for these entries
+    const entryIds = (timetableData || []).map((e: any) => e.id);
+    let reportedIds = new Set<string>();
+    if (entryIds.length > 0) {
+      const { data: reports } = await supabase
+        .from('session_reports' as any)
+        .select('timetable_entry_id')
+        .in('timetable_entry_id', entryIds);
+      if (reports) {
+        reportedIds = new Set((reports as any[]).map((r: any) => r.timetable_entry_id));
+      }
+    }
+    setReportedEntryIds(reportedIds);
 
     const mapped: LessonEntry[] = (timetableData || []).map((e: any) => {
       const fullKey = `${e.student_id}|${e.teacher_id}|${e.course_id}`;
@@ -107,10 +135,11 @@ const AttendLesson = () => {
         teacher_name: e.teachers_rel?.profiles?.full_name || '-',
         google_meet_url: urls.google_meet_url,
         zoom_url: urls.zoom_url,
+        has_report: reportedIds.has(e.id),
       };
     });
 
-    // Add a mock test entry (10 minutes from now) for testing
+    // Mock test entry
     const testTime = new Date();
     testTime.setMinutes(testTime.getMinutes() + 10);
     const mockEntry: LessonEntry = {
@@ -126,6 +155,7 @@ const AttendLesson = () => {
       teacher_name: 'Test Teacher',
       google_meet_url: 'https://meet.google.com/test-session',
       zoom_url: 'https://zoom.us/j/123456789',
+      has_report: false,
     };
 
     setEntries([mockEntry, ...mapped]);
@@ -139,10 +169,14 @@ const AttendLesson = () => {
     const endTime = new Date(scheduledTime.getTime() + entry.duration_minutes * 60000);
     const minutesUntil = differenceInMinutes(scheduledTime, now);
 
+    // If this session is currently active (being tracked)
+    if (activeSessionId === entry.id) {
+      return { label: isAr ? '🟢 جلسة نشطة' : '🟢 In Session', variant: 'default', className: 'bg-emerald-600 text-white', isLive: true };
+    }
     if (entry.status === 'cancelled') {
       return { label: isAr ? 'ملغي' : 'Cancelled', variant: 'destructive', className: '', isLive: false };
     }
-    if (entry.status === 'completed') {
+    if (entry.status === 'completed' || entry.has_report) {
       return { label: isAr ? 'مكتمل' : 'Completed', variant: 'secondary', className: '', isLive: false };
     }
     if (now >= scheduledTime && now <= endTime) {
@@ -158,11 +192,12 @@ const AttendLesson = () => {
   };
 
   const isAttendEnabled = (entry: LessonEntry): boolean => {
+    if (activeSessionId) return false; // Can't start another session while one is active
+    if (entry.has_report || reportedEntryIds.has(entry.id)) return false; // Already reported
     const scheduledTime = new Date(entry.scheduled_at);
     const endTime = new Date(scheduledTime.getTime() + entry.duration_minutes * 60000);
     const minutesUntil = differenceInMinutes(scheduledTime, now);
     if (entry.status === 'cancelled' || entry.status === 'completed') return false;
-    // Enable 15 minutes before start until lesson ends
     return minutesUntil <= 15 && now <= endTime;
   };
 
@@ -170,6 +205,39 @@ const AttendLesson = () => {
     setSelectedEntry(entry);
     setJoinOpen(true);
   };
+
+  // Called when a meeting is successfully joined
+  const handleSessionStart = useCallback((entryId: string) => {
+    setActiveSessionId(entryId);
+    setSessionStartedAt(new Date().toISOString());
+    toast.success(isAr ? 'بدأت الجلسة — المؤقت يعمل' : 'Session started — timer is running');
+  }, [isAr]);
+
+  // Called when End Session is clicked
+  const handleEndSession = useCallback((durationSeconds: number) => {
+    if (!activeSessionId) return;
+    const entry = entries.find(e => e.id === activeSessionId);
+    setReportSessionData({
+      timetableEntryId: activeSessionId,
+      teacherId: entry?.teacher_id || null,
+      studentId: entry?.student_id || null,
+      courseId: entry?.course_id || null,
+      durationSeconds,
+      startedAt: sessionStartedAt || new Date().toISOString(),
+    });
+    setReportOpen(true);
+  }, [activeSessionId, entries, sessionStartedAt]);
+
+  // Called after report is submitted
+  const handleReportSubmitted = useCallback(() => {
+    if (activeSessionId) {
+      setReportedEntryIds(prev => new Set([...prev, activeSessionId]));
+    }
+    setActiveSessionId(null);
+    setSessionStartedAt(null);
+    setReportSessionData(null);
+    fetchEntries();
+  }, [activeSessionId]);
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
@@ -183,19 +251,17 @@ const AttendLesson = () => {
     return format(d, 'h:mm a');
   };
 
-  // Filter: only show upcoming (not ended/cancelled) first, then past
   const sortedEntries = useMemo(() => {
-    return entries.filter(e => {
-      const endTime = new Date(new Date(e.scheduled_at).getTime() + e.duration_minutes * 60000);
-      // Show all non-cancelled upcoming entries, and recently ended ones
-      return e.status !== 'cancelled';
-    });
+    return entries.filter(e => e.status !== 'cancelled');
   }, [entries]);
 
   // Stats
   const liveCount = entries.filter(e => getLessonStatus(e).isLive).length;
   const todayCount = entries.filter(e => isToday(new Date(e.scheduled_at))).length;
   const weekTotal = entries.length;
+
+  // Find the active entry for the timer display
+  const activeEntry = activeSessionId ? entries.find(e => e.id === activeSessionId) : null;
 
   return (
     <div className="space-y-6">
@@ -206,7 +272,32 @@ const AttendLesson = () => {
             {isAr ? 'عرض وحضور الدروس المجدولة لهذا الأسبوع' : 'View and attend your scheduled lessons this week'}
           </p>
         </div>
+        {/* Active Session Timer in header */}
+        {activeEntry && (
+          <SessionTimer
+            isActive={!!activeSessionId}
+            onEndSession={handleEndSession}
+            isAr={isAr}
+          />
+        )}
       </div>
+
+      {/* Active Session Banner */}
+      {activeEntry && (
+        <div className="flex items-center gap-3 p-4 rounded-xl border-2 border-emerald-500/30 bg-emerald-500/5">
+          <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+            <MonitorPlay className="h-5 w-5 text-emerald-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+              {isAr ? 'جلسة نشطة' : 'Active Session'}
+            </p>
+            <p className="text-xs text-muted-foreground truncate">
+              {activeEntry.course_title} — {activeEntry.student_name}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -250,8 +341,8 @@ const AttendLesson = () => {
         <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
         <p className="text-xs text-muted-foreground">
           {isAr
-            ? 'زر "حضور" يتم تفعيله تلقائياً قبل 15 دقيقة من موعد الدرس ويبقى نشطاً حتى انتهاء الدرس.'
-            : 'The "Attend" button activates automatically 15 minutes before the lesson starts and remains active until the lesson ends.'}
+            ? 'زر "حضور" يتم تفعيله تلقائياً قبل 15 دقيقة من موعد الدرس. عند الانضمام يبدأ مؤقت الجلسة ويجب إنهاء الجلسة وكتابة تقرير.'
+            : 'The "Attend" button activates 15 minutes before the lesson. Joining starts a session timer — end the session to submit a report.'}
         </p>
       </div>
 
@@ -276,6 +367,7 @@ const AttendLesson = () => {
                   <TableHead>{isAr ? 'المعلم' : 'Teacher'}</TableHead>
                   <TableHead>{isAr ? 'المدة' : 'Duration'}</TableHead>
                   <TableHead>{isAr ? 'الحالة' : 'Status'}</TableHead>
+                  <TableHead>{isAr ? 'التقرير' : 'Report'}</TableHead>
                   <TableHead className="text-center">{isAr ? 'إجراء' : 'Action'}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -283,9 +375,11 @@ const AttendLesson = () => {
                 {sortedEntries.map(entry => {
                   const status = getLessonStatus(entry);
                   const canAttend = isAttendEnabled(entry);
+                  const isActiveEntry = activeSessionId === entry.id;
+                  const hasReport = entry.has_report || reportedEntryIds.has(entry.id);
 
                   return (
-                    <TableRow key={entry.id} className={status.isLive ? 'bg-destructive/5' : ''}>
+                    <TableRow key={entry.id} className={isActiveEntry ? 'bg-emerald-500/5' : status.isLive ? 'bg-destructive/5' : ''}>
                       <TableCell>
                         <div>
                           <p className="text-sm font-medium">{formatDate(entry.scheduled_at)}</p>
@@ -305,20 +399,36 @@ const AttendLesson = () => {
                         <span className="text-sm">{entry.duration_minutes} {isAr ? 'د' : 'min'}</span>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={status.variant as any} className={`${status.className} ${status.isLive ? 'animate-pulse' : ''}`}>
+                        <Badge variant={status.variant as any} className={`${status.className} ${status.isLive && !isActiveEntry ? 'animate-pulse' : ''}`}>
                           {status.label}
                         </Badge>
                       </TableCell>
+                      <TableCell>
+                        {hasReport ? (
+                          <Badge variant="outline" className="gap-1 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px]">
+                            <CheckCircle2 className="h-3 w-3" />
+                            {isAr ? 'مكتمل' : 'Done'}
+                          </Badge>
+                        ) : (
+                          <span className="text-[10px] text-muted-foreground">{isAr ? 'لا يوجد' : 'None'}</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-center">
-                        <Button
-                          size="sm"
-                          disabled={!canAttend}
-                          onClick={() => handleAttendClick(entry)}
-                          className="gap-1.5"
-                        >
-                          <Video className="h-3.5 w-3.5" />
-                          {isAr ? 'حضور' : 'Attend'}
-                        </Button>
+                        {isActiveEntry ? (
+                          <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                            {isAr ? 'جلسة نشطة...' : 'In session...'}
+                          </span>
+                        ) : (
+                          <Button
+                            size="sm"
+                            disabled={!canAttend}
+                            onClick={() => handleAttendClick(entry)}
+                            className="gap-1.5"
+                          >
+                            <Video className="h-3.5 w-3.5" />
+                            {isAr ? 'حضور' : 'Attend'}
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   );
@@ -329,13 +439,39 @@ const AttendLesson = () => {
         </Card>
       )}
 
-
-      {/* Join Meeting Dialog */}
+      {/* Join Meeting Dialog — starts session on join */}
       <JoinMeetingDialog
         open={joinOpen}
-        onOpenChange={setJoinOpen}
+        onOpenChange={(val) => {
+          setJoinOpen(val);
+          // If closing the dialog after a join was initiated, start the session
+          if (!val && selectedEntry && joinOpen) {
+            // We'll trigger session start from inside JoinMeetingDialog via onSessionStart
+          }
+        }}
         entry={selectedEntry}
         isAr={isAr}
+        onSessionStart={() => {
+          if (selectedEntry) {
+            handleSessionStart(selectedEntry.id);
+          }
+        }}
+      />
+
+      {/* Session Report Dialog */}
+      <SessionReportDialog
+        open={reportOpen}
+        onOpenChange={(val) => {
+          setReportOpen(val);
+          if (!val && activeSessionId) {
+            // If they close without submitting, still end the session
+            setActiveSessionId(null);
+            setSessionStartedAt(null);
+          }
+        }}
+        isAr={isAr}
+        sessionData={reportSessionData}
+        onReportSubmitted={handleReportSubmitted}
       />
     </div>
   );

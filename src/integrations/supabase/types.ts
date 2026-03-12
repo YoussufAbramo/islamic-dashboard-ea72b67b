@@ -1129,6 +1129,93 @@ export type Database = {
         }
         Relationships: []
       }
+      session_reports: {
+        Row: {
+          course_id: string | null
+          created_at: string
+          created_by: string | null
+          ended_at: string
+          id: string
+          observations: string | null
+          performance_remarks: string | null
+          session_duration_seconds: number
+          started_at: string
+          student_id: string | null
+          subscription_id: string | null
+          summary: string
+          teacher_id: string | null
+          timetable_entry_id: string
+        }
+        Insert: {
+          course_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          ended_at?: string
+          id?: string
+          observations?: string | null
+          performance_remarks?: string | null
+          session_duration_seconds?: number
+          started_at?: string
+          student_id?: string | null
+          subscription_id?: string | null
+          summary?: string
+          teacher_id?: string | null
+          timetable_entry_id: string
+        }
+        Update: {
+          course_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          ended_at?: string
+          id?: string
+          observations?: string | null
+          performance_remarks?: string | null
+          session_duration_seconds?: number
+          started_at?: string
+          student_id?: string | null
+          subscription_id?: string | null
+          summary?: string
+          teacher_id?: string | null
+          timetable_entry_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_reports_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_reports_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_reports_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_reports_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_reports_timetable_entry_id_fkey"
+            columns: ["timetable_entry_id"]
+            isOneToOne: false
+            referencedRelation: "timetable_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       student_progress: {
         Row: {
           completed: boolean

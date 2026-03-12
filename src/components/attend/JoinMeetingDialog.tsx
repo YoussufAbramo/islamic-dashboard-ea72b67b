@@ -18,6 +18,7 @@ interface JoinMeetingDialogProps {
   onOpenChange: (open: boolean) => void;
   entry: MeetingEntry | null;
   isAr: boolean;
+  onSessionStart?: () => void;
 }
 
 const maskUrl = (url: string): string => {
@@ -40,7 +41,7 @@ const platforms: { id: JoinMethod; label: string; icon: string; iconType: 'img' 
   { id: 'vconnct', label: 'Vconnct', icon: '/icons/vconnct.ico', iconType: 'img' },
 ];
 
-const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr }: JoinMeetingDialogProps) => {
+const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr, onSessionStart }: JoinMeetingDialogProps) => {
   const [selected, setSelected] = useState<JoinMethod | null>(null);
   const [vconnctUrl, setVconnctUrl] = useState('');
   const [iframeOpen, setIframeOpen] = useState(false);
@@ -78,6 +79,7 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr }: JoinMeetingDialo
       }
       window.open(entry.google_meet_url, '_blank', 'noopener,noreferrer');
       toast.success(isAr ? 'تم فتح Google Meet' : 'Opening Google Meet');
+      onSessionStart?.();
       handleClose(false);
     } else if (selected === 'zoom') {
       if (!entry.zoom_url) {
@@ -86,6 +88,7 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr }: JoinMeetingDialo
       }
       window.open(entry.zoom_url, '_blank', 'noopener,noreferrer');
       toast.success(isAr ? 'تم فتح Zoom' : 'Opening Zoom');
+      onSessionStart?.();
       handleClose(false);
     } else if (selected === 'vconnct') {
       const trimmed = vconnctUrl.trim();
@@ -105,6 +108,7 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, isAr }: JoinMeetingDialo
       }
       setIframeSrc(trimmed);
       setIframeOpen(true);
+      onSessionStart?.();
       handleClose(false);
     }
   };
