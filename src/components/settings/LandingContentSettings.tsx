@@ -768,7 +768,8 @@ const LandingContentSettings = () => {
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="p-3 space-y-3 border-t border-border">
-                  <div className="space-y-2">
+                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2 shadow-sm">
+                    <h5 className="text-[11px] font-semibold text-primary uppercase tracking-wider">{isAr ? 'عنوان العمود' : 'Column Title'}</h5>
                     <div><Label className="text-xs">Title (EN)</Label><Input value={col.title || ''} onChange={e => updateFooterColumn(colIdx, 'title', e.target.value)} className="h-8 text-sm" /></div>
                     <div><Label className="text-xs">Title (AR)</Label><Input dir="rtl" value={col.title_ar || ''} onChange={e => updateFooterColumn(colIdx, 'title_ar', e.target.value)} className="h-8 text-sm" /></div>
                   </div>
