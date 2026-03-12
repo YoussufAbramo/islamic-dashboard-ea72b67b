@@ -359,6 +359,35 @@ export type Database = {
           },
         ]
       }
+      chat_read_receipts: {
+        Row: {
+          chat_id: string
+          id: string
+          last_read_at: string
+          user_id: string
+        }
+        Insert: {
+          chat_id: string
+          id?: string
+          last_read_at?: string
+          user_id: string
+        }
+        Update: {
+          chat_id?: string
+          id?: string
+          last_read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_read_receipts_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chats: {
         Row: {
           created_at: string
