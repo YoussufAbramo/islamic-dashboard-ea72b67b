@@ -8,10 +8,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Save, Search, Globe, FileText, Code, Share2, ShieldCheck, Type } from 'lucide-react';
+import { Save, Search, Globe, FileText, Code, Share2, ShieldCheck, Type, LayoutTemplate } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import ImagePickerField from '@/components/media/ImagePickerField';
+import { defaultGeneralContent } from '@/lib/landingDefaults';
 
 interface SeoConfig {
   // Basic SEO
@@ -98,14 +99,20 @@ const SeoSettings = () => {
   const { language } = useLanguage();
   const isAr = language === 'ar';
   const [seo, setSeo] = useState<SeoConfig>(defaultSeo);
+  const [landing, setLanding] = useState<Record<string, any>>({ ...defaultGeneralContent });
   const [saving, setSaving] = useState(false);
+  const [savingLanding, setSavingLanding] = useState(false);
 
   useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase.from('landing_content').select('content').eq('section_key', 'seo_global_config').maybeSingle();
-      if (data?.content) setSeo({ ...defaultSeo, ...(data.content as any) });
+    const fetchAll = async () => {
+      const [seoRes, landingRes] = await Promise.all([
+        supabase.from('landing_content').select('content').eq('section_key', 'seo_global_config').maybeSingle(),
+        supabase.from('landing_content').select('content').eq('section_key', 'general').maybeSingle(),
+      ]);
+      if (seoRes.data?.content) setSeo({ ...defaultSeo, ...(seoRes.data.content as any) });
+      if (landingRes.data?.content) setLanding({ ...defaultGeneralContent, ...(landingRes.data.content as any) });
     };
-    fetch();
+    fetchAll();
   }, []);
 
   const handleSave = async () => {
@@ -120,10 +127,61 @@ const SeoSettings = () => {
     toast.success(isAr ? 'تم حفظ إعدادات SEO' : 'SEO settings saved');
   };
 
+  const handleSaveLanding = async () => {
+    setSavingLanding(true);
+    const { error } = await supabase.from('landing_content').upsert({
+      section_key: 'general',
+      content: landing as any,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'section_key' });
+    setSavingLanding(false);
+    if (error) { notifyError({ error: 'GENERAL_SAVE_FAILED', isAr }); return; }
+    toast.success(isAr ? 'تم حفظ بيانات SEO للصفحة الرئيسية' : 'Landing page SEO saved');
+  };
+
+  const setLandingField = (key: string, val: string) => setLanding(p => ({ ...p, [key]: val }));
+
   const set = (key: keyof SeoConfig) => (val: string | boolean) => setSeo(p => ({ ...p, [key]: val }));
 
   return (
     <div className="space-y-6">
+
+      {/* 0. Landing Page SEO */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <LayoutTemplate className="h-5 w-5 text-primary" />
+            {isAr ? 'SEO الصفحة الرئيسية' : 'Landing Page SEO'}
+          </CardTitle>
+          <CardDescription>{isAr ? 'بيانات SEO والمشاركة الخاصة بصفحة الهبوط' : 'SEO metadata and social sharing for your landing page'}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="rounded-lg border border-border p-4 space-y-4">
+            <h4 className="text-sm font-medium flex items-center gap-2"><Search className="h-3.5 w-3.5" />{isAr ? 'بيانات SEO' : 'SEO Meta Data'}</h4>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div><Label>Meta Title (EN)</Label><Input value={landing.meta_title || ''} onChange={e => setLandingField('meta_title', e.target.value)} placeholder="Islamic Education Platform" /></div>
+              <div><Label>Meta Title (AR)</Label><Input dir="rtl" value={landing.meta_title_ar || ''} onChange={e => setLandingField('meta_title_ar', e.target.value)} placeholder="منصة التعليم الإسلامي" /></div>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div><Label>Meta Description (EN)</Label><Textarea value={landing.meta_description || ''} onChange={e => setLandingField('meta_description', e.target.value)} rows={2} /></div>
+              <div><Label>Meta Description (AR)</Label><Textarea dir="rtl" value={landing.meta_description_ar || ''} onChange={e => setLandingField('meta_description_ar', e.target.value)} rows={2} /></div>
+            </div>
+            <div><Label>{isAr ? 'الكلمات المفتاحية' : 'Keywords'}</Label><Input value={landing.meta_keywords || ''} onChange={e => setLandingField('meta_keywords', e.target.value)} placeholder="islamic, education, quran" /></div>
+          </div>
+          <div className="rounded-lg border border-border p-4 space-y-4">
+            <h4 className="text-sm font-medium flex items-center gap-2"><Globe className="h-3.5 w-3.5" />{isAr ? 'بيانات المشاركة' : 'Open Graph'}</h4>
+            <div><Label>OG Title</Label><Input value={landing.og_title || ''} onChange={e => setLandingField('og_title', e.target.value)} /></div>
+            <div><Label>OG Description</Label><Textarea value={landing.og_description || ''} onChange={e => setLandingField('og_description', e.target.value)} rows={2} /></div>
+            <ImagePickerField label={isAr ? 'صورة OG' : 'OG Image'} value={landing.og_image || ''} onChange={(url) => setLandingField('og_image', url)} />
+          </div>
+          <div className="flex justify-end">
+            <Button onClick={handleSaveLanding} disabled={savingLanding} size="sm">
+              <Save className="h-4 w-4 me-1" />
+              {savingLanding ? '...' : (isAr ? 'حفظ' : 'Save')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* 1. Meta Defaults */}
       <Card>

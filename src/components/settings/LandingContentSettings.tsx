@@ -94,7 +94,7 @@ const LandingContentSettings = () => {
   const [general, setGeneral] = useState<Record<string, any>>({ ...defaultGeneralContent });
   const [sectionsOrder, setSectionsOrder] = useState<SectionKey[]>([...DEFAULT_SECTION_ORDER]);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'header' | 'sections' | 'footer' | 'seo'>('header');
+  const [activeTab, setActiveTab] = useState<'header' | 'sections' | 'footer'>('header');
   const [saving, setSaving] = useState(false);
   const [websitePages, setWebsitePages] = useState<{ slug: string; title: string; title_ar: string | null }[]>([]);
   const [policies, setPolicies] = useState<{ slug: string; title: string; title_ar: string | null }[]>([]);
@@ -605,29 +605,7 @@ const LandingContentSettings = () => {
     </div>
   );
 
-  // ─── SEO / General settings ───
-  const renderSEO = () => (
-    <div className="space-y-6">
-      <div className="rounded-lg border border-border p-4 space-y-4">
-        <h3 className="font-medium flex items-center gap-2"><Search className="h-4 w-4" />{isAr ? 'بيانات SEO' : 'SEO Meta Data'}</h3>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div><Label>Meta Title (EN)</Label><Input value={general.meta_title || ''} onChange={e => updateGeneralField('meta_title', e.target.value)} placeholder="Islamic Education Platform" /></div>
-          <div><Label>Meta Title (AR)</Label><Input dir="rtl" value={general.meta_title_ar || ''} onChange={e => updateGeneralField('meta_title_ar', e.target.value)} placeholder="منصة التعليم الإسلامي" /></div>
-        </div>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div><Label>Meta Description (EN)</Label><Textarea value={general.meta_description || ''} onChange={e => updateGeneralField('meta_description', e.target.value)} rows={2} /></div>
-          <div><Label>Meta Description (AR)</Label><Textarea dir="rtl" value={general.meta_description_ar || ''} onChange={e => updateGeneralField('meta_description_ar', e.target.value)} rows={2} /></div>
-        </div>
-        <div><Label>{isAr ? 'الكلمات المفتاحية' : 'Keywords'}</Label><Input value={general.meta_keywords || ''} onChange={e => updateGeneralField('meta_keywords', e.target.value)} placeholder="islamic, education, quran" /></div>
-      </div>
-      <div className="rounded-lg border border-border p-4 space-y-4">
-        <h3 className="font-medium flex items-center gap-2"><Globe className="h-4 w-4" />{isAr ? 'بيانات المشاركة' : 'Open Graph'}</h3>
-        <div><Label>OG Title</Label><Input value={general.og_title || ''} onChange={e => updateGeneralField('og_title', e.target.value)} /></div>
-        <div><Label>OG Description</Label><Textarea value={general.og_description || ''} onChange={e => updateGeneralField('og_description', e.target.value)} rows={2} /></div>
-        <ImagePickerField label={isAr ? 'صورة OG' : 'OG Image'} value={general.og_image || ''} onChange={(url) => updateGeneralField('og_image', url)} />
-      </div>
-    </div>
-  );
+
 
   // ─── Footer editor ───
   const footer = general.footer || defaultFooterContent;
@@ -840,10 +818,6 @@ const LandingContentSettings = () => {
           <PanelBottom className="h-4 w-4" />
           {isAr ? 'الفوتر' : 'Footer'}
         </button>
-        <button onClick={() => setActiveTab('seo')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'seo' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-          <Settings2 className="h-4 w-4" />
-          {isAr ? 'SEO' : 'SEO'}
-        </button>
       </div>
 
       {activeTab === 'header' ? (
@@ -861,14 +835,6 @@ const LandingContentSettings = () => {
             <CardDescription>{isAr ? 'صمم تذييل صفحة الهبوط بسهولة' : 'Design your landing page footer with ease'}</CardDescription>
           </CardHeader>
           <CardContent>{renderFooterTab()}</CardContent>
-        </Card>
-      ) : activeTab === 'seo' ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>{isAr ? 'إعدادات SEO' : 'SEO Settings'}</CardTitle>
-            <CardDescription>{isAr ? 'إعدادات محركات البحث والمشاركة' : 'Search engine and social sharing settings'}</CardDescription>
-          </CardHeader>
-          <CardContent>{renderSEO()}</CardContent>
         </Card>
       ) : (
         <div className="space-y-3">
