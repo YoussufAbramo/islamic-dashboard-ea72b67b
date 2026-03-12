@@ -667,8 +667,13 @@ const LandingContentSettings = () => {
   const handleColumnsCountChange = (count: number) => {
     const cols = [...footerColumns];
     while (cols.length < count) cols.push({ title: '', title_ar: '', items: [] });
-    updateFooterField('columns_count', count);
-    updateFooterField('columns', cols.slice(0, count));
+    const brandingCol = footer.branding_column ?? 0;
+    updateGeneralField('footer', {
+      ...footer,
+      columns_count: count,
+      columns: cols.slice(0, count),
+      branding_column: brandingCol >= count ? 0 : brandingCol,
+    });
   };
 
   const renderFooterTab = () => (
