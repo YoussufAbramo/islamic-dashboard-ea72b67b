@@ -21,6 +21,7 @@ interface MenuItem {
   path: string;
   roles: string[];
   comingSoon?: boolean;
+  beta?: boolean;
   badgeKey?: string;
   children?: MenuItem[];
 }
@@ -88,7 +89,7 @@ const AppSidebar = () => {
       label: 'Educate',
       labelAr: 'التعليم',
       items: [
-        { key: 'courses', label: t('nav.courses'), icon: BookOpen, path: '/dashboard/courses', roles: ['admin', 'teacher', 'student'],
+        { key: 'courses', label: t('nav.courses'), icon: BookOpen, path: '/dashboard/courses', roles: ['admin', 'teacher', 'student'], beta: true,
           children: [
             { key: 'tracks', label: isAr ? 'المسارات' : 'Tracks', icon: Route, path: '/dashboard/courses/tracks', roles: ['admin'] },
             { key: 'categories', label: isAr ? 'التصنيفات' : 'Categories', icon: FolderTree, path: '/dashboard/courses/categories', roles: ['admin'] },
@@ -96,14 +97,14 @@ const AppSidebar = () => {
           ],
         },
         { key: 'timetable', label: t('nav.timetable'), icon: Calendar, path: '/dashboard/timetable', roles: ['admin', 'teacher', 'student'] },
-        { key: 'certificates', label: isAr ? 'الشهادات' : 'Certificates', icon: Award, path: '/dashboard/certificates', roles: ['admin', 'teacher', 'student'] },
+        { key: 'certificates', label: isAr ? 'الشهادات' : 'Certificates', icon: Award, path: '/dashboard/certificates', roles: ['admin', 'teacher', 'student'], beta: true },
       ],
     },
     {
       label: 'Reports',
       labelAr: 'التقارير',
       items: [
-        { key: 'attendance', label: isAr ? 'تتبع الحضور' : 'Attendance Tracking', icon: ClipboardCheck, path: '/dashboard/attendance', roles: ['admin', 'teacher'] },
+        { key: 'attendance', label: isAr ? 'تتبع الحضور' : 'Attendance Tracking', icon: ClipboardCheck, path: '/dashboard/attendance', roles: ['admin', 'teacher'], beta: true },
         { key: 'reports', label: isAr ? 'التقارير والتحليلات' : 'Reports & Analytics', icon: BarChart3, path: '/dashboard/reports', roles: ['admin'] },
       ],
     },
@@ -135,7 +136,7 @@ const AppSidebar = () => {
             { key: 'support-priorities', label: isAr ? 'الأولويات' : 'Priorities', icon: Flag, path: '/dashboard/support/priorities', roles: ['admin'] },
           ],
         },
-        { key: 'chats', label: t('nav.chats'), icon: MessageSquare, path: '/dashboard/chats', roles: ['admin', 'teacher', 'student'], badgeKey: 'chats' },
+        { key: 'chats', label: t('nav.chats'), icon: MessageSquare, path: '/dashboard/chats', roles: ['admin', 'teacher', 'student'], badgeKey: 'chats', beta: true },
         { key: 'announcements', label: isAr ? 'الإعلانات' : 'Announcements', icon: Megaphone, path: '/dashboard/announcements', roles: ['admin', 'teacher', 'student'] },
         { key: 'notifications', label: isAr ? 'الإشعارات' : 'Notifications', icon: Bell, path: '/dashboard/notifications', roles: ['admin', 'teacher', 'student'] },
       ],
@@ -244,6 +245,11 @@ const AppSidebar = () => {
                             <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 shrink-0 ms-auto">
                               <Sparkles className="h-2 w-2 me-0.5" />
                               {isAr ? 'قريباً' : 'Soon'}
+                            </Badge>
+                          )}
+                          {item.beta && !item.comingSoon && (
+                            <Badge className="text-[7px] px-1 py-0 h-3.5 shrink-0 ms-auto bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20">
+                              Beta
                             </Badge>
                           )}
                           {hasChildren && (
