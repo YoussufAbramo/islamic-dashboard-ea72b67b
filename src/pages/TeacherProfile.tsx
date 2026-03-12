@@ -40,6 +40,8 @@ const TeacherProfile = () => {
   const [payoutOpen, setPayoutOpen] = useState(false);
   const [payoutAmount, setPayoutAmount] = useState('');
   const [payoutLoading, setPayoutLoading] = useState(false);
+  const [quickViewReq, setQuickViewReq] = useState<any>(null);
+  const [adminProfiles, setAdminProfiles] = useState<Record<string, string>>({});
 
   // Avatar
   const [resolvedAvatar, setResolvedAvatar] = useState('');
