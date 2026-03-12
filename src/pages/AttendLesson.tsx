@@ -250,7 +250,7 @@ const AttendLesson = () => {
   const isNotAttendVisible = (entry: LessonEntry): boolean => {
     if (activeSessionId === entry.id) return false;
     if (entry.has_report || reportedEntryIds.has(entry.id)) return false;
-    if (entry.status === 'cancelled' || entry.status === 'completed') return false;
+    if (terminalStatuses.includes(entry.status)) return false;
     const scheduledTime = new Date(entry.scheduled_at);
     const endTime = new Date(scheduledTime.getTime() + entry.duration_minutes * 60000);
     // Show only for future entries
