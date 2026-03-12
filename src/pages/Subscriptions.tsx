@@ -519,6 +519,19 @@ const Subscriptions = () => {
                   <Badge variant={selected.auto_renew ? 'default' : 'secondary'}>{selected.auto_renew ? (isAr ? 'مفعّل' : 'Enabled') : (isAr ? 'معطّل' : 'Disabled')}</Badge>
                 )}
               </div>
+              {/* Session Reports for this subscription */}
+              <div className="border-t pt-3 space-y-2">
+                <p className="text-sm font-semibold flex items-center gap-1.5">
+                  <span className="h-4 w-4 text-primary">📋</span>
+                  {isAr ? 'تقارير الجلسات' : 'Session Reports'}
+                </p>
+                <SessionReportsList
+                  isAr={isAr}
+                  studentId={selected.student_id}
+                  courseId={selected.course_id}
+                  limit={5}
+                />
+              </div>
               {isAdmin && (
                 <div className="flex gap-2 pt-2 border-t">
                   {editing ? (
