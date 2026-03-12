@@ -540,9 +540,9 @@ const Chats = () => {
               </div>
             </>
           ) : (
-            <CardContent className="flex-1 flex items-center justify-center">
+            <div className="flex-1 flex items-center justify-center">
               <p className="text-muted-foreground">{t('chats.noMessages')}</p>
-            </CardContent>
+            </div>
           )}
         </Card>
       </div>
