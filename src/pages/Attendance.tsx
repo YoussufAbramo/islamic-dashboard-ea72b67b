@@ -134,6 +134,23 @@ const Attendance = () => {
     { name: isAr ? 'معذور' : 'Excused', value: totalExcused },
   ].filter((d) => d.value > 0);
 
+  const tooltipStyle = { background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' };
+
+  const attMonthlyData = useMemo(() => {
+    const map: Record<string, { present: number; absent: number; late: number }> = {};
+    attendance.forEach(a => {
+      const month = format(new Date(a.created_at), 'yyyy-MM');
+      if (!map[month]) map[month] = { present: 0, absent: 0, late: 0 };
+      if (a.status === 'present') map[month].present++;
+      else if (a.status === 'absent') map[month].absent++;
+      else map[month].late++;
+    });
+    return Object.entries(map)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-12)
+      .map(([month, data]) => ({ month: format(new Date(month + '-01'), 'MMM yyyy'), ...data }));
+  }, [attendance]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
