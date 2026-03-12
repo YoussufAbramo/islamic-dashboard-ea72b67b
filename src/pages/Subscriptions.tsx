@@ -489,7 +489,7 @@ const Subscriptions = () => {
                     )}
                     {selected.schedule_time && (
                       <div className="flex items-center gap-2 text-sm">
-                        <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-accent">
+                        <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 border border-primary/20">
                           <Clock className="h-4 w-4 text-primary" />
                         </div>
                         <div>
