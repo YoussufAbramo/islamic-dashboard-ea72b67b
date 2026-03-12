@@ -477,9 +477,11 @@ const Chats = () => {
                                   )}
                                 </div>
                               )}
-                              <p className="leading-snug">{msg.message}</p>
+                              <div className="flex items-end gap-2">
+                                <p className="leading-snug flex-1">{msg.message}</p>
+                                <span className={`text-[8px] shrink-0 whitespace-nowrap ${isOwn ? 'text-primary-foreground/60' : 'text-muted-foreground/60'}`}>{format(msgDate, 'hh:mm a')}</span>
+                              </div>
                             </div>
-                            <span className="text-[8px] text-muted-foreground/60 shrink-0 pb-0.5">{format(msgDate, 'hh:mm a')}</span>
                             {(role === 'admin' || role === 'teacher') && !msg.is_deleted && (
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
