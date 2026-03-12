@@ -252,22 +252,26 @@ const DashboardMeeting = ({ open, onOpenChange, entryId, isAr }: DashboardMeetin
   return (
     <Dialog open={open} onOpenChange={(val) => { if (!val) handleEnd(); }}>
       <DialogContent className="max-w-[95vw] w-[95vw] h-[90vh] p-0 gap-0 overflow-hidden flex flex-col bg-black/95">
-        {/* Connection status bar */}
-        <div className="flex items-center justify-between px-4 py-2 border-b border-border/20 bg-background/10 backdrop-blur-sm z-10">
-          <div className="flex items-center gap-2">
-            <Video className="h-4 w-4 text-primary" />
-            <span className="text-sm font-semibold text-foreground/90">
-              {isAr ? 'اجتماع المنصة' : 'Dashboard Meeting'}
-            </span>
+        {/* Header bar */}
+        <div className="flex items-center justify-between px-5 py-2.5 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent backdrop-blur-md border-b border-primary/15 z-10">
+          <div className="flex items-center gap-2.5">
+            <div className="h-7 w-7 rounded-lg bg-primary/20 flex items-center justify-center">
+              <Video className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <span className="text-sm font-bold text-foreground/95 tracking-tight">
+                {isAr ? 'اجتماع كودكوم' : 'CodeCom Meeting'}
+              </span>
+            </div>
           </div>
           <Badge
             variant="outline"
-            className={`gap-1.5 text-[10px] ${
+            className={`gap-1.5 text-[10px] px-2.5 py-1 rounded-full ${
               connState === 'connected'
-                ? 'border-emerald-500/40 text-emerald-400'
+                ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400'
                 : connState === 'failed'
-                ? 'border-destructive/40 text-destructive'
-                : 'border-muted-foreground/30 text-muted-foreground'
+                ? 'border-destructive/40 bg-destructive/10 text-destructive'
+                : 'border-muted-foreground/20 bg-muted/10 text-muted-foreground'
             }`}
           >
             {connState === 'connected' ? <Wifi className="h-3 w-3" /> :
