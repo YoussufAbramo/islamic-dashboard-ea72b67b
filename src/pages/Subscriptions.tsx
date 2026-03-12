@@ -434,6 +434,28 @@ const Subscriptions = () => {
                   )}
                 </div>
               </div>
+              {/* Live Session URLs */}
+              <div className="p-3 rounded-lg bg-muted/50 space-y-2">
+                <Label className="text-xs flex items-center gap-1.5"><Video className="h-3.5 w-3.5" />{isAr ? 'روابط الجلسات المباشرة' : 'Live Session URLs'}</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Google Meet</Label>
+                    {editing ? (
+                      <Input type="url" placeholder="https://meet.google.com/..." value={editForm.google_meet_url} onChange={(e) => setEditForm({ ...editForm, google_meet_url: e.target.value })} className="h-8 text-xs" />
+                    ) : (
+                      selected.google_meet_url ? <a href={selected.google_meet_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline break-all">{selected.google_meet_url}</a> : <p className="text-xs text-muted-foreground">-</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Zoom</Label>
+                    {editing ? (
+                      <Input type="url" placeholder="https://zoom.us/j/..." value={editForm.zoom_url} onChange={(e) => setEditForm({ ...editForm, zoom_url: e.target.value })} className="h-8 text-xs" />
+                    ) : (
+                      selected.zoom_url ? <a href={selected.zoom_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline break-all">{selected.zoom_url}</a> : <p className="text-xs text-muted-foreground">-</p>
+                    )}
+                  </div>
+                </div>
+              </div>
               {/* Schedule info */}
               {(selected.schedule_days?.length > 0 || selected.schedule_time) && (
                 <div className="p-3 rounded-lg bg-muted/50 space-y-1">
