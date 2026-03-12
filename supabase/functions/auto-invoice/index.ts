@@ -56,11 +56,12 @@ Deno.serve(async (req) => {
 
     const today = new Date().toISOString().split("T")[0];
 
-    // Find active subscriptions where renewal_date <= today
+    // Find active subscriptions where renewal_date <= today AND auto_renew is enabled
     const { data: dueSubs, error: fetchErr } = await supabase
       .from("subscriptions")
-      .select("id, student_id, course_id, price, subscription_type, renewal_date, lesson_duration, weekly_lessons")
+      .select("id, student_id, course_id, price, subscription_type, renewal_date, lesson_duration, weekly_lessons, auto_renew")
       .eq("status", "active")
+      .eq("auto_renew", true)
       .not("renewal_date", "is", null)
       .lte("renewal_date", today);
 
