@@ -656,6 +656,18 @@ const Subscriptions = () => {
               </div>
             </div>
 
+            {/* Auto Renewal Toggle */}
+            <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
+              <div className="flex items-center gap-2">
+                <RefreshCw className="h-4 w-4 text-primary" />
+                <div>
+                  <p className="text-sm font-medium">{isAr ? 'التجديد التلقائي' : 'Auto Renewal'}</p>
+                  <p className="text-[10px] text-muted-foreground">{isAr ? 'إنشاء فاتورة تلقائياً عند تاريخ التجديد' : 'Auto-generate invoice on renewal date'}</p>
+                </div>
+              </div>
+              <Switch checked={createForm.auto_renew} onCheckedChange={(v) => setCreateForm(prev => ({ ...prev, auto_renew: v }))} />
+            </div>
+
             {/* Schedule Picker */}
             <div className="border-t pt-3">
               <SchedulePicker
