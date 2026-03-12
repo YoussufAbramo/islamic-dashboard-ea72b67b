@@ -494,6 +494,7 @@ const Chats = () => {
                         : msgDate.toDateString() === yesterday.toDateString()
                           ? (isAr ? 'أمس' : 'Yesterday')
                           : format(msgDate, 'dd MMM yyyy');
+                      const isSystemMsg = msg.message.startsWith('[SYSTEM]');
                       return (
                         <div key={msg.id}>
                           {showDateSep && (
@@ -503,6 +504,13 @@ const Chats = () => {
                               <div className="flex-1 h-px bg-border" />
                             </div>
                           )}
+                          {isSystemMsg ? (
+                            <div className="flex justify-center my-2">
+                              <span className="text-[10px] text-muted-foreground bg-muted/70 border border-border/50 px-3 py-1 rounded-full italic">
+                                {msg.message.replace('[SYSTEM] ', '')}
+                              </span>
+                            </div>
+                          ) : (
                           <div className={`group flex items-end gap-1.5 ${isOwn ? 'justify-end' : 'justify-start'}`}>
                             {!isOwn && (
                               <Avatar className="h-6 w-6 shrink-0 ring-1 ring-background">
@@ -546,6 +554,7 @@ const Chats = () => {
                               </Avatar>
                             )}
                           </div>
+                          )}
                         </div>
                       );
                     })}
