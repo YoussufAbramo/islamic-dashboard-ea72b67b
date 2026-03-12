@@ -27,6 +27,7 @@ import Support from "./pages/Support";
 import SupportDepartments from "./pages/SupportDepartments";
 import SupportPriorities from "./pages/SupportPriorities";
 import Timetable from "./pages/Timetable";
+import AttendLesson from "./pages/AttendLesson";
 import Subscriptions from "./pages/Subscriptions";
 import Chats from "./pages/Chats";
 import Profile from "./pages/Profile";

@@ -262,7 +262,7 @@ const AttendLesson = () => {
         <TableSkeleton />
       ) : sortedEntries.length === 0 ? (
         <EmptyState
-          icon={<Video className="h-12 w-12 text-muted-foreground/50" />}
+          icon={Video}
           title={isAr ? 'لا توجد دروس مجدولة' : 'No Scheduled Lessons'}
           description={isAr ? 'لا توجد دروس مجدولة لهذا الأسبوع' : 'No lessons are scheduled for this week.'}
         />
