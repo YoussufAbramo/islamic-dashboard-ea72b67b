@@ -5,12 +5,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import JoinMeetingDialog from '@/components/attend/JoinMeetingDialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { format, differenceInMinutes, isToday, isTomorrow, addDays, startOfWeek, endOfWeek } from 'date-fns';
-import { Video, ExternalLink, Clock, Users, MonitorPlay, AlertCircle, CalendarDays } from 'lucide-react';
+import { Video, Clock, MonitorPlay, AlertCircle, CalendarDays } from 'lucide-react';
 import { toast } from 'sonner';
 import { TableSkeleton } from '@/components/PageSkeleton';
 import EmptyState from '@/components/EmptyState';
@@ -30,7 +28,6 @@ interface LessonEntry {
   zoom_url: string;
 }
 
-type JoinMethod = 'vconnect' | 'google_meet' | 'zoom';
 
 const AttendLesson = () => {
   const { language } = useLanguage();
@@ -41,7 +38,6 @@ const AttendLesson = () => {
   const [now, setNow] = useState(new Date());
   const [joinOpen, setJoinOpen] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<LessonEntry | null>(null);
-  const [vconnectUrl, setVconnectUrl] = useState('');
 
   // Update "now" every 30 seconds for live status updates
   useEffect(() => {
@@ -162,43 +158,7 @@ const AttendLesson = () => {
 
   const handleAttendClick = (entry: LessonEntry) => {
     setSelectedEntry(entry);
-    setVconnectUrl('');
     setJoinOpen(true);
-  };
-
-  const handleJoin = (method: JoinMethod) => {
-    if (!selectedEntry) return;
-
-    if (method === 'google_meet') {
-      if (!selectedEntry.google_meet_url) {
-        toast.error(isAr ? 'لم يتم إعداد رابط Google Meet' : 'Google Meet URL not configured');
-        return;
-      }
-      window.open(selectedEntry.google_meet_url, '_blank', 'noopener,noreferrer');
-      toast.success(isAr ? 'تم فتح Google Meet' : 'Opening Google Meet');
-    } else if (method === 'zoom') {
-      if (!selectedEntry.zoom_url) {
-        toast.error(isAr ? 'لم يتم إعداد رابط Zoom' : 'Zoom URL not configured');
-        return;
-      }
-      window.open(selectedEntry.zoom_url, '_blank', 'noopener,noreferrer');
-      toast.success(isAr ? 'تم فتح Zoom' : 'Opening Zoom');
-    } else if (method === 'vconnect') {
-      if (!vconnectUrl.trim()) {
-        toast.error(isAr ? 'الرجاء إدخال رابط الجلسة' : 'Please enter the session URL');
-        return;
-      }
-      try {
-        new URL(vconnectUrl.trim());
-      } catch {
-        toast.error(isAr ? 'رابط غير صالح' : 'Invalid URL');
-        return;
-      }
-      window.open(vconnectUrl.trim(), '_blank', 'noopener,noreferrer');
-      toast.success(isAr ? 'تم فتح Vconnect' : 'Opening Vconnect');
-    }
-
-    setJoinOpen(false);
   };
 
   const formatDate = (dateStr: string) => {
@@ -360,84 +320,13 @@ const AttendLesson = () => {
       )}
 
 
-      {/* Join Method Dialog */}
-      <Dialog open={joinOpen} onOpenChange={setJoinOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{isAr ? 'اختر طريقة الحضور' : 'Choose Attendance Method'}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 pt-2">
-            {/* Google Meet */}
-            <button
-              type="button"
-              onClick={() => handleJoin('google_meet')}
-              disabled={!selectedEntry?.google_meet_url}
-              className="w-full flex items-center gap-3 p-3.5 rounded-xl border bg-card hover:bg-accent/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <img src="/icons/google-meet.png" alt="Google Meet" className="h-8 w-8 shrink-0" />
-              <div className="text-start flex-1 min-w-0">
-                <p className="text-sm font-semibold">Google Meet</p>
-                <p className="text-[10px] text-muted-foreground truncate">
-                  {selectedEntry?.google_meet_url
-                    ? selectedEntry.google_meet_url
-                    : (isAr ? 'لم يتم الإعداد' : 'Not configured')}
-                </p>
-              </div>
-              <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
-            </button>
-
-            {/* Zoom */}
-            <button
-              type="button"
-              onClick={() => handleJoin('zoom')}
-              disabled={!selectedEntry?.zoom_url}
-              className="w-full flex items-center gap-3 p-3.5 rounded-xl border bg-card hover:bg-accent/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <img src="/icons/zoom.png" alt="Zoom" className="h-8 w-8 shrink-0" />
-              <div className="text-start flex-1 min-w-0">
-                <p className="text-sm font-semibold">Zoom</p>
-                <p className="text-[10px] text-muted-foreground truncate">
-                  {selectedEntry?.zoom_url
-                    ? selectedEntry.zoom_url
-                    : (isAr ? 'لم يتم الإعداد' : 'Not configured')}
-                </p>
-              </div>
-              <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
-            </button>
-
-            {/* Vconnect */}
-            <div className="rounded-xl border bg-card p-3.5 space-y-2.5">
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <MonitorPlay className="h-4.5 w-4.5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold">Vconnect</p>
-                  <p className="text-[10px] text-muted-foreground">{isAr ? 'أدخل رابط الجلسة يدوياً' : 'Enter session URL manually'}</p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  type="url"
-                  placeholder={isAr ? 'https://رابط-الجلسة...' : 'https://session-url...'}
-                  value={vconnectUrl}
-                  onChange={(e) => setVconnectUrl(e.target.value)}
-                  className="h-9 text-xs flex-1"
-                />
-                <Button
-                  size="sm"
-                  className="h-9 px-4 gap-1.5"
-                  onClick={() => handleJoin('vconnect')}
-                  disabled={!vconnectUrl.trim()}
-                >
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  {isAr ? 'انضم' : 'Join'}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Join Meeting Dialog */}
+      <JoinMeetingDialog
+        open={joinOpen}
+        onOpenChange={setJoinOpen}
+        entry={selectedEntry}
+        isAr={isAr}
+      />
     </div>
   );
 };
