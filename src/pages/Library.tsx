@@ -164,15 +164,12 @@ const Library = () => {
       const { error: pdfError } = await supabase.storage.from('ebooks').upload(pdfPath, pdfFile);
       if (pdfError) throw pdfError;
 
-      const { data: pdfUrlData } = supabase.storage.from('ebooks').getPublicUrl(pdfPath);
-
-      let coverUrl = '';
+      // Store paths, not public URLs (bucket is now private)
+      let coverPath = '';
       if (coverFile) {
-        const coverPath = `covers/${timestamp}-${coverFile.name}`;
+        coverPath = `covers/${timestamp}-${coverFile.name}`;
         const { error: coverError } = await supabase.storage.from('ebooks').upload(coverPath, coverFile);
         if (coverError) throw coverError;
-        const { data: coverUrlData } = supabase.storage.from('ebooks').getPublicUrl(coverPath);
-        coverUrl = coverUrlData.publicUrl;
       }
 
       const { error } = await supabase.from('ebooks').insert({
@@ -180,8 +177,8 @@ const Library = () => {
         title_ar: form.title_ar || '',
         description: form.description || '',
         description_ar: form.description_ar || '',
-        pdf_url: pdfUrlData.publicUrl,
-        cover_url: coverUrl,
+        pdf_url: pdfPath,
+        cover_url: coverPath,
       });
 
       if (error) throw error;
