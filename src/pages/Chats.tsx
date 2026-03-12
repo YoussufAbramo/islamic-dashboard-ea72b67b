@@ -570,9 +570,19 @@ const Chats = () => {
                                   )}
                                 </div>
                               )}
-                              <div className="flex items-end gap-2">
+                              <div className="flex items-end gap-1.5">
                                 <p className="leading-snug flex-1">{msg.message}</p>
-                                <span className={`text-[8px] shrink-0 whitespace-nowrap ${isOwn ? 'text-primary-foreground/60' : 'text-muted-foreground/60'}`}>{format(msgDate, 'hh:mm a')}</span>
+                                <span className={`flex items-center gap-0.5 text-[8px] shrink-0 whitespace-nowrap ${isOwn ? 'text-primary-foreground/60' : 'text-muted-foreground/60'}`}>
+                                  {format(msgDate, 'hh:mm a')}
+                                  {isOwn && !msg.is_deleted && (() => {
+                                    const seenByOthers = readReceipts.some(
+                                      r => r.user_id !== user?.id && new Date(r.last_read_at) >= msgDate
+                                    );
+                                    return seenByOthers
+                                      ? <CheckCheck className="h-3 w-3 text-blue-400" />
+                                      : <Check className="h-3 w-3" />;
+                                  })()}
+                                </span>
                               </div>
                             </div>
                             {(role === 'admin' || role === 'teacher') && !msg.is_deleted && (
