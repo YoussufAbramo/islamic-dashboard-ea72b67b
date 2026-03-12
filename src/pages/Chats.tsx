@@ -464,7 +464,6 @@ const Chats = () => {
                               </div>
                             )}
                             <p className="leading-relaxed">{msg.message}</p>
-                            <span className={`block text-[9px] mt-1 ${isOwn ? 'opacity-60 text-end' : 'text-muted-foreground/60 text-end'}`}>{format(new Date(msg.created_at), 'HH:mm')}</span>
                           </div>
                           {!isOwn && (role === 'admin' || role === 'teacher') && !msg.is_deleted && (
                             <Button variant="ghost" size="icon" className="h-5 w-5 mt-1.5 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity shrink-0" onClick={() => deleteMessage(msg.id)}>
