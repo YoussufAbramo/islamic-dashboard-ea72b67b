@@ -34,15 +34,13 @@ const Reports = () => {
 
   useEffect(() => {
     const fetchAll = async () => {
-      const [subsRes, attRes, profRes, studRes, courseRes] = await Promise.all([
+      const [subsRes, profRes, studRes, courseRes] = await Promise.all([
         supabase.from('subscriptions').select('*'),
-        supabase.from('attendance').select('*'),
         supabase.from('profiles').select('id, full_name'),
         supabase.from('students').select('id, user_id'),
         supabase.from('courses').select('id, title, title_ar'),
       ]);
       setSubscriptions(subsRes.data || []);
-      setAttendance(attRes.data || []);
       setStudents(studRes.data || []);
       setCourses(courseRes.data || []);
       const pm: Record<string, string> = {};
