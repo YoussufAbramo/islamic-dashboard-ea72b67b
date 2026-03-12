@@ -96,8 +96,15 @@ const AppSidebar = () => {
           ],
         },
         { key: 'timetable', label: t('nav.timetable'), icon: Calendar, path: '/dashboard/timetable', roles: ['admin', 'teacher', 'student'] },
-        { key: 'attendance', label: isAr ? 'الحضور' : 'Attendance', icon: ClipboardCheck, path: '/dashboard/attendance', roles: ['admin', 'teacher'] },
         { key: 'certificates', label: isAr ? 'الشهادات' : 'Certificates', icon: Award, path: '/dashboard/certificates', roles: ['admin', 'teacher', 'student'] },
+      ],
+    },
+    {
+      label: 'Reports',
+      labelAr: 'التقارير',
+      items: [
+        { key: 'attendance', label: isAr ? 'تتبع الحضور' : 'Attendance Tracking', icon: ClipboardCheck, path: '/dashboard/attendance', roles: ['admin', 'teacher'] },
+        { key: 'reports', label: isAr ? 'التقارير والتحليلات' : 'Reports & Analytics', icon: BarChart3, path: '/dashboard/reports', roles: ['admin'] },
       ],
     },
     {
