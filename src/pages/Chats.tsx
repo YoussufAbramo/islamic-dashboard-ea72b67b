@@ -131,9 +131,14 @@ const Chats = () => {
   useEffect(() => {
     if (selectedChat) {
       fetchMessages(selectedChat.id);
+      fetchReadReceipts(selectedChat.id);
+      upsertReadReceipt(selectedChat.id);
       if (selectedChat.is_group) fetchGroupMembers(selectedChat.id);
-      const interval = setInterval(() => fetchMessages(selectedChat.id), 5000);
-      // Mark chats as read
+      const interval = setInterval(() => {
+        fetchMessages(selectedChat.id);
+        fetchReadReceipts(selectedChat.id);
+        upsertReadReceipt(selectedChat.id);
+      }, 5000);
       localStorage.setItem('chat_last_check', new Date().toISOString());
       return () => clearInterval(interval);
     }
