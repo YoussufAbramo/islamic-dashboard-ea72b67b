@@ -360,16 +360,43 @@ const TeacherProfile = () => {
 
   const initials = (profile?.full_name || '?').charAt(0).toUpperCase();
 
-  const statCards = [
+  const statCardsRow1 = [
     { label: isAr ? 'الساعات المطلوبة (شهرياً)' : 'Required Hours (Monthly)', value: `${requiredMonthlyHours}h`, icon: Clock, color: 'text-blue-600' },
     { label: isAr ? 'الساعات المسجلة' : 'Actual Logged Hours', value: `${actualLoggedHours.toFixed(1)}h`, icon: TrendingUp, color: 'text-emerald-600' },
     { label: isAr ? 'الساعات المتبقية' : 'Remaining Hours', value: `${remainingHours.toFixed(1)}h`, icon: Clock, color: 'text-amber-600' },
-    { label: isAr ? 'الحصص المكتملة' : 'Completed Sessions', value: completedSessions.toString(), icon: CheckCircle, color: 'text-emerald-600' },
-    { label: isAr ? 'نسبة الحضور' : 'Attendance %', value: `${attendancePercentage}%`, icon: Percent, color: 'text-purple-600' },
-    { label: isAr ? 'حصص الغياب' : 'Absence Sessions', value: absentSessions.toString(), icon: AlertTriangle, color: 'text-red-600' },
-    { label: isAr ? 'سعر الساعة' : 'Hourly Rate', value: `$${hourlyRate}`, icon: DollarSign, color: 'text-primary' },
-    { label: isAr ? 'الراتب المتوقع' : 'Expected Salary', value: `$${expectedSalary.toFixed(2)}`, icon: DollarSign, color: 'text-blue-600' },
+    { label: isAr ? 'إجمالي الراتب' : 'Total Salary', value: `$${expectedSalary.toFixed(2)}`, icon: DollarSign, color: 'text-blue-600' },
   ];
+
+  const statCardsRow2 = [
+    { label: isAr ? 'الحصص المكتملة' : 'Completed Sessions', value: completedSessions.toString(), icon: CheckCircle, color: 'text-emerald-600' },
+    { label: isAr ? 'حصص الغياب' : 'Absence Sessions', value: absentSessions.toString(), icon: AlertTriangle, color: 'text-red-600' },
+    { label: isAr ? 'نسبة الحضور' : 'Attendance %', value: `${(completedSessions + absentSessions) > 0 ? Math.round((completedSessions / (completedSessions + absentSessions)) * 100) : 0}%`, icon: Percent, color: 'text-purple-600' },
+  ];
+
+  const handleSubmitTicket = async () => {
+    if (!ticketForm.subject.trim() || !ticketForm.message.trim()) {
+      toast.error(isAr ? 'الموضوع والرسالة مطلوبان' : 'Subject and message are required');
+      return;
+    }
+    setTicketLoading(true);
+    const { error } = await supabase.from('support_tickets').insert({
+      name: profile?.full_name || '',
+      email: profile?.email || '',
+      subject: ticketForm.subject,
+      message: ticketForm.message,
+      department: ticketForm.department || (departments[0]?.name || 'general'),
+      priority: ticketForm.priority || (priorities[0]?.name || 'medium'),
+      user_id: user?.id,
+    });
+    setTicketLoading(false);
+    if (error) {
+      toast.error(isAr ? 'فشل في إرسال التذكرة' : 'Failed to submit ticket');
+    } else {
+      toast.success(isAr ? 'تم إرسال التذكرة بنجاح' : 'Ticket submitted successfully');
+      setTicketOpen(false);
+      setTicketForm({ subject: '', message: '', department: '', priority: '' });
+    }
+  };
 
   return (
     <div className="space-y-6">
