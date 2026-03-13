@@ -190,16 +190,25 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between">
                   <Label className="text-xs font-medium text-muted-foreground">{isAr ? 'المضاعف' : 'Multiplier'}</Label>
-                  <span className="text-xs font-bold text-primary tabular-nums">{multiplier}x</span>
                 </div>
-                <Slider
-                  value={[multiplier]}
-                  onValueChange={([v]) => setMultiplier(v)}
-                  min={1} max={10} step={1}
-                  className="w-full"
-                />
+                <div className="flex flex-wrap gap-1.5">
+                  {Array.from({ length: 10 }, (_, i) => i + 1).map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => setMultiplier(v)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                        multiplier === v
+                          ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                          : 'bg-muted/50 text-muted-foreground border-border hover:border-primary/40 hover:bg-muted'
+                      }`}
+                    >
+                      {v}x
+                    </button>
+                  ))}
+                </div>
                 {(() => {
                   const est = getEstimatedCounts(multiplier);
                   return (
