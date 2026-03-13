@@ -1369,10 +1369,35 @@ Deno.serve(async (req) => {
         'landing_content',
         // Audit / logs
         'audit_logs',
+        // Payment config
+        'payment_gateway_config',
+        // App settings
+        'app_settings',
         // Users (order matters: students/teachers before profiles)
         'students', 'teachers',
-        'user_roles', 'profiles',
       ]
+
+      // For user_roles: delete all EXCEPT the current admin's 'admin' role
+      try {
+        const { count, error } = await admin.from('user_roles').delete({ count: 'exact' })
+          .not('user_id', 'eq', caller.id)
+        if (error) throw error
+        deletedCounts['user_roles'] = count || 0
+      } catch (e: any) {
+        errors.push(`user_roles: ${e.message}`)
+        deletedCounts['user_roles'] = -1
+      }
+
+      // For profiles: delete all EXCEPT the current admin's profile
+      try {
+        const { count, error } = await admin.from('profiles').delete({ count: 'exact' })
+          .neq('id', caller.id)
+        if (error) throw error
+        deletedCounts['profiles'] = count || 0
+      } catch (e: any) {
+        errors.push(`profiles: ${e.message}`)
+        deletedCounts['profiles'] = -1
+      }
 
       // Delete all rows from each table
       for (const table of RESET_ORDER) {
@@ -1414,7 +1439,8 @@ Deno.serve(async (req) => {
       }
       if (deletedAuthUsers > 0) deletedCounts['auth_users'] = deletedAuthUsers
 
-      // Re-create the current admin's profile and role (they were deleted above)
+      // The current admin's profile and role are preserved (not deleted above)
+      // Just ensure they exist
       try {
         await admin.from('profiles').upsert({
           id: caller.id,
@@ -1440,10 +1466,8 @@ Deno.serve(async (req) => {
             await admin.storage.from(bucket).remove(paths)
             deletedCounts[`storage:${bucket}`] = paths.length
           }
-          // Also try to clear subdirectories
           for (const file of (files || [])) {
             if (!file.id && file.name) {
-              // It's a folder — list and delete contents
               const { data: subFiles } = await admin.storage.from(bucket).list(file.name, { limit: 1000 })
               if (subFiles && subFiles.length > 0) {
                 const subPaths = subFiles.map(sf => `${file.name}/${sf.name}`)
@@ -1457,37 +1481,24 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Restore default app_settings if needed
+      // Restore default app_settings (was deleted above)
       try {
-        const { data: existingSettings } = await admin.from('app_settings').select('id').limit(1)
-        if (!existingSettings || existingSettings.length === 0) {
-          await admin.from('app_settings').insert({
-            settings: {},
-            updated_by: caller.id,
-          })
-        }
+        await admin.from('app_settings').insert({
+          settings: {},
+          updated_by: caller.id,
+        })
       } catch (_) {}
 
       const totalDeleted = Object.values(deletedCounts).filter(v => v > 0).reduce((a, b) => a + b, 0)
 
-      // Log the reset event in audit_logs
-      try {
-        await admin.from('audit_logs').insert({
-          user_id: caller.id,
-          action: 'SYSTEM_RESET',
-          table_name: 'system',
-          record_id: null,
-          new_data: { deleted_counts: deletedCounts, total_deleted: totalDeleted, errors },
-        })
-      } catch (_) {}
-
+      // DO NOT log to audit_logs after reset — start clean
       return json({
         success: true,
         message: 'System reset completed. Platform restored to fresh-install state.',
         counts: deletedCounts,
         total_deleted: totalDeleted,
         errors,
-        preserved: ['current_admin_account', 'database_schema', 'storage_buckets', 'app_settings'],
+        preserved: ['current_admin_account', 'admin_role', 'database_schema', 'storage_buckets'],
       })
     }
 
