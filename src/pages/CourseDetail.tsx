@@ -408,7 +408,7 @@ const CourseDetail = () => {
                 )}
                 {skillLabel && (
                   <Badge variant="outline" className="gap-1 text-xs">
-                    <Signal className="h-3 w-3" />
+                    <Settings2 className="h-3 w-3" />
                     {isAr && skillLabel.title_ar ? skillLabel.title_ar : skillLabel.title}
                   </Badge>
                 )}
