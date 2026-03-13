@@ -22,6 +22,7 @@ interface JoinMeetingDialogProps {
   entryId?: string;
   isAr: boolean;
   onSessionStart?: () => void;
+  onPlatformSelected?: (platform: string) => void;
 }
 
 const maskUrl = (url: string): string => {
