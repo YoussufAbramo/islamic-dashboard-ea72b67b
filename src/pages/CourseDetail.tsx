@@ -985,6 +985,15 @@ const CourseDetail = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Lesson Builder */}
+      <LessonBuilder
+        open={builderOpen}
+        onOpenChange={setBuilderOpen}
+        lesson={builderLesson}
+        isAr={isAr}
+        onSaved={fetchHierarchy}
+      />
     </div>
   );
 };
