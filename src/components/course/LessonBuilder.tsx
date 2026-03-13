@@ -362,30 +362,34 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
         {/* Blocks Area */}
         <ScrollArea className="flex-1 min-h-0">
           <div className="p-5 space-y-3">
-            {blocks.length === 0 && (
-              <div className="text-center py-10 space-y-3">
-                <FileEdit className="h-10 w-10 mx-auto text-muted-foreground/30" />
-                <p className="text-sm text-muted-foreground">
-                  {isAr ? 'لا يوجد محتوى بعد. أضف كتلة محتوى للبدء.' : 'No content yet. Add a block to get started.'}
-                </p>
+            {blocks.length === 0 ? (
+              <div className="space-y-4">
+                <div className="text-center py-6 space-y-2">
+                  <FileEdit className="h-10 w-10 mx-auto text-muted-foreground/30" />
+                  <p className="text-sm text-muted-foreground">
+                    {isAr ? 'اختر نوع المحتوى للبدء' : 'Choose a content type to get started'}
+                  </p>
+                </div>
+                <AddBlockButtons isAr={isAr} onAdd={addBlock} prominent />
               </div>
+            ) : (
+              <>
+                {blocks.map((block, idx) => (
+                  <BlockEditor
+                    key={block.id}
+                    block={block}
+                    isAr={isAr}
+                    onChange={(updated) => updateBlock(block.id, updated)}
+                    onRemove={() => removeBlock(block.id)}
+                    onMoveUp={() => moveBlock(block.id, 'up')}
+                    onMoveDown={() => moveBlock(block.id, 'down')}
+                    isFirst={idx === 0}
+                    isLast={idx === blocks.length - 1}
+                  />
+                ))}
+                <AddBlockButtons isAr={isAr} onAdd={addBlock} />
+              </>
             )}
-
-            {blocks.map((block, idx) => (
-              <BlockEditor
-                key={block.id}
-                block={block}
-                isAr={isAr}
-                onChange={(updated) => updateBlock(block.id, updated)}
-                onRemove={() => removeBlock(block.id)}
-                onMoveUp={() => moveBlock(block.id, 'up')}
-                onMoveDown={() => moveBlock(block.id, 'down')}
-                isFirst={idx === 0}
-                isLast={idx === blocks.length - 1}
-              />
-            ))}
-
-            <AddBlockButton isAr={isAr} onAdd={addBlock} />
           </div>
         </ScrollArea>
 
