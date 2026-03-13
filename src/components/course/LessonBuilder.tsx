@@ -67,7 +67,7 @@ export interface ContentBlock {
   toc_rows?: { en: string; ar: string }[];
   // divider
   divider_width?: number; // percentage 25-100
-  divider_style?: 'solid' | 'dashed' | 'dotted' | 'double';
+  divider_style?: 'solid' | 'dashed' | 'dotted' | 'double' | 'groove' | 'ridge';
   divider_thickness?: number; // 1-6 px
   divider_color?: string;
   // page break (no extra fields needed, acts as marker)
