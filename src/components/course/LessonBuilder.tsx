@@ -591,6 +591,8 @@ const BlockEditor = ({
           </div>
         )}
       </div>
+      </div>
+      </div>
     </div>
   );
 };
