@@ -55,7 +55,7 @@ const CourseTracks = () => {
   const { language } = useLanguage();
   const isAr = language === 'ar';
   const qc = useQueryClient();
-
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
