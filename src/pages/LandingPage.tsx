@@ -254,7 +254,7 @@ const LandingPage = () => {
                     <div key={ci} className="space-y-6">
                       {renderBranding()}
                       {socialCol === ci && renderSocialIcons()}
-                      {col.items.length > 0 && renderColumn(col, ci)}
+                      {col.items.length > 0 && renderColumn(col, ci, true)}
                     </div>
                   ) : renderColumn(col, ci)
                 ))}
