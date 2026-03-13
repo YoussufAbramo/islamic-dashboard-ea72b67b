@@ -627,7 +627,27 @@ const CourseDetail = () => {
                                     <span className="text-[10px] font-bold text-muted-foreground tabular-nums shrink-0">{topicIdx + 1}.{secIdx + 1}</span>
                                     <CollapsibleTrigger className="flex items-center gap-2 flex-1 min-w-0 text-start group">
                                       <Layers className="h-3.5 w-3.5 shrink-0" style={{ color: 'hsl(var(--gold))' }} />
-                                      <span className="text-sm font-medium truncate">{isAr && section.title_ar ? section.title_ar : section.title}</span>
+                                      {inlineEdit?.id === section.id && inlineEdit?.type === 'section' ? (
+                                        <div className="flex items-center gap-1 flex-1" onClick={(e) => e.stopPropagation()}>
+                                          <Input
+                                            value={inlineEdit.value}
+                                            onChange={(e) => setInlineEdit({ ...inlineEdit, value: e.target.value })}
+                                            onKeyDown={handleInlineKeyDown}
+                                            autoFocus
+                                            className="h-6 text-xs font-medium"
+                                            onClick={(e) => e.preventDefault()}
+                                          />
+                                          <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-primary" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleInlineSave(); }}><Check className="h-3 w-3" /></Button>
+                                          <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-muted-foreground" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleInlineCancel(); }}><X className="h-3 w-3" /></Button>
+                                        </div>
+                                      ) : (
+                                        <span
+                                          className="text-sm font-medium truncate cursor-text"
+                                          onDoubleClick={(e) => { e.stopPropagation(); handleInlineDoubleClick(section.id, 'section', isAr && section.title_ar ? section.title_ar : section.title); }}
+                                        >
+                                          {isAr && section.title_ar ? section.title_ar : section.title}
+                                        </span>
+                                      )}
                                       <Badge variant="outline" className="text-[10px] shrink-0">
                                         {(lessonItems[section.id] || []).length} {isAr ? 'درس' : 'les'}
                                       </Badge>
@@ -640,7 +660,7 @@ const CourseDetail = () => {
                                       />
                                     )}
                                   </div>
-                                  <CollapsibleContent>
+                                  <CollapsibleContent className="animate-accordion-down data-[state=closed]:animate-accordion-up">
                                     <div className="px-3 pb-3 pt-2 space-y-1.5">
                                       {/* Lessons within this Section */}
                                       <SortableList items={lessonItems[section.id] || []} onReorder={(a, o) => reorderLessons(section.id, a, o)}>
