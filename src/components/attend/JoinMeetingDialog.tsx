@@ -284,7 +284,7 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, entryId, isAr, onSession
         <DialogContent className="max-w-[95vw] w-[95vw] h-[90vh] p-0 gap-0 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-2.5 border-b bg-muted/30">
             <div className="flex items-center gap-2">
-              <img src="/icons/vconnct.ico" alt="Vconnct" className="h-5 w-5 rounded" />
+              <img src="/system/logos/vconnct.ico" alt="Vconnct" className="h-5 w-5 rounded" />
               <span className="text-sm font-semibold">Vconnct</span>
               <span className="text-[10px] text-muted-foreground truncate max-w-[300px]">{maskUrl(iframeSrc)}</span>
             </div>
