@@ -441,7 +441,7 @@ const CourseLearning = () => {
     <div className={cn("flex flex-col", topBarHidden ? "h-[calc(100vh-2.5rem)]" : "h-[calc(100vh-6.5rem)]")}>
       {/* Top bar */}
       <div className="flex items-center gap-3 px-4 py-2.5 border-b bg-card shrink-0">
-        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => navigate(`/dashboard/courses/${id}`)}>
+        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setLeaveDialogOpen(true)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 md:hidden" onClick={() => setSidebarOpen(!sidebarOpen)}>
