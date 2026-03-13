@@ -2,6 +2,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Webhook, Clock, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
+import ComingSoonOverlay from '@/components/ComingSoonOverlay';
 
 const WebhookLog = () => {
   const { language } = useLanguage();
