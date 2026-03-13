@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { HardDrive, Plus, Download, Trash2, Loader2, FileJson, FileText, Database, Clock, AlertTriangle, RefreshCw, Save } from 'lucide-react';
+import { HardDrive, Plus, Download, Trash2, Loader2, FileJson, FileText, Database, Clock, AlertTriangle, RefreshCw, Save, Settings } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
