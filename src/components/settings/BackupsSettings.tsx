@@ -459,7 +459,7 @@ const BackupsSettings = () => {
               finally { setBackupingSettings(false); }
             }} disabled={backupingSettings}>
               {backupingSettings ? <Loader2 className="h-4 w-4 me-1 animate-spin" /> : <Settings className="h-4 w-4 me-1" />}
-              {isAr ? 'نسخ الإعدادات' : 'Backup Settings'}
+              {isAr ? 'إنشاء ملف نسخة إعدادات التطبيق' : 'Generate App Settings Backup File'}
             </Button>
           </CardContent>
         </Card>
