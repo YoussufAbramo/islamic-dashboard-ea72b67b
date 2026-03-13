@@ -1274,6 +1274,77 @@ export type Database = {
         }
         Relationships: []
       }
+      seed_records: {
+        Row: {
+          created_at: string
+          id: string
+          record_id: string
+          session_id: string
+          table_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          record_id: string
+          session_id: string
+          table_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          record_id?: string
+          session_id?: string
+          table_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seed_records_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "seed_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seed_sessions: {
+        Row: {
+          categories: string[]
+          cleared_at: string | null
+          counts: Json
+          created_at: string
+          created_by: string | null
+          errors: string[]
+          id: string
+          multiplier: number
+          status: string
+          total_records: number
+        }
+        Insert: {
+          categories?: string[]
+          cleared_at?: string | null
+          counts?: Json
+          created_at?: string
+          created_by?: string | null
+          errors?: string[]
+          id?: string
+          multiplier?: number
+          status?: string
+          total_records?: number
+        }
+        Update: {
+          categories?: string[]
+          cleared_at?: string | null
+          counts?: Json
+          created_at?: string
+          created_by?: string | null
+          errors?: string[]
+          id?: string
+          multiplier?: number
+          status?: string
+          total_records?: number
+        }
+        Relationships: []
+      }
       session_reports: {
         Row: {
           course_id: string | null
