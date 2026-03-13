@@ -308,9 +308,26 @@ const BlockEditor = ({
             </div>
             {block.image_url && (
               <div className="rounded-lg border overflow-hidden bg-muted/30">
-                <img src={block.image_url} alt={block.image_alt || ''} className="max-h-48 mx-auto object-contain" />
+                <img src={block.image_url} alt={block.image_alt || ''} className={cn("max-h-48 mx-auto w-full", `object-${block.image_fit || 'contain'}`)} />
               </div>
             )}
+            <div>
+              <Label className="text-xs mb-1.5 block">{isAr ? 'ملاءمة الصورة' : 'Image Fit'}</Label>
+              <div className="flex flex-wrap gap-1.5">
+                {([
+                  { value: 'contain' as const, label: 'Contain' },
+                  { value: 'cover' as const, label: 'Cover' },
+                  { value: 'fill' as const, label: 'Fill' },
+                  { value: 'none' as const, label: 'None' },
+                  { value: 'scale-down' as const, label: 'Scale Down' },
+                ] as const).map((opt) => (
+                  <button key={opt.value} type="button" onClick={() => onChange({ ...block, image_fit: opt.value })}
+                    className={cn("px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
+                      (block.image_fit || 'contain') === opt.value ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+                    )}>{opt.label}</button>
+                ))}
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label className="text-xs">{isAr ? 'التسمية التوضيحية' : 'Caption'}</Label><Input value={block.image_caption || ''} onChange={(e) => onChange({ ...block, image_caption: e.target.value })} className="mt-1" /></div>
               <div><Label className="text-xs">{isAr ? 'النص البديل' : 'Alt Text'}</Label><Input value={block.image_alt || ''} onChange={(e) => onChange({ ...block, image_alt: e.target.value })} className="mt-1" /></div>
