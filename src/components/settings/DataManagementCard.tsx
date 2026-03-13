@@ -306,8 +306,7 @@ const ClearLogsCard = ({ isAr }: { isAr: boolean }) => {
   );
 };
 
-
-  const [seedLoading, setSeedLoading] = useState(false);
+const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const [clearLoading, setClearLoading] = useState<string | null>(null);
   const [sessions, setSessions] = useState<SeedSession[]>([]);
   const [showHistory, setShowHistory] = useState(false);
