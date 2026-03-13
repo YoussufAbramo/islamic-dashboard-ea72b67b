@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import LandingContentSettings from '@/components/settings/LandingContentSettings';
 import SaaSPricingSettings from '@/components/settings/SaaSPricingSettings';
 import { useLanguage } from '@/contexts/LanguageContext';

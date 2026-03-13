@@ -449,6 +449,22 @@ const LandingContentSettings = () => {
         );
 
       case 'pricing':
+        return (
+          <div className="space-y-4">
+            <TitleSubtitleFields sectionKey="pricing" />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                // Navigate to pricing packages tab in parent
+                window.dispatchEvent(new CustomEvent('switch-landing-tab', { detail: 'pricing' }));
+              }}
+            >
+              <CreditCard className="h-4 w-4 me-1" />
+              {isAr ? 'إدارة باقات الأسعار' : 'Manage Pricing Packages'}
+            </Button>
+          </div>
+        );
       case 'cta':
         return <TitleSubtitleFields sectionKey={key} />;
 
