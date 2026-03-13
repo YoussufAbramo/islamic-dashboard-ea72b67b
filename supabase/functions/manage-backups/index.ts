@@ -124,8 +124,13 @@ Deno.serve(async (req) => {
 
     // ==================== RUN AUTO BACKUP (called by cron) ====================
     if (action === 'run_auto_backup') {
-      // Cron trigger — validated by checking auto_backup_config.enabled
-      // No user-facing data is exposed; this only creates a backup file if enabled
+      // Validate shared secret for cron-triggered backups
+      const cronSecret = req.headers.get('x-backup-secret')
+      const expectedSecret = Deno.env.get('BACKUP_CRON_SECRET')
+      if (!cronSecret || !expectedSecret || cronSecret !== expectedSecret) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+
       const adminClient = createClient(supabaseUrl, serviceRoleKey)
 
       // Check if auto backup is enabled
