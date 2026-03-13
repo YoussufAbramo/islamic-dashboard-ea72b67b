@@ -105,6 +105,22 @@ async function trackRecords(
   }
 }
 
+// ─── dedup helper: filter out items whose title/name already exists ────
+async function dedup<T extends Record<string, any>>(
+  adminClient: any,
+  table: string,
+  items: T[],
+  field: string = 'title'
+): Promise<T[]> {
+  if (items.length === 0) return []
+  const titles = items.map(i => i[field]).filter(Boolean)
+  if (titles.length === 0) return items
+  const { data: existing } = await adminClient.from(table).select(field).in(field, titles)
+  if (!existing || existing.length === 0) return items
+  const existingSet = new Set(existing.map((e: any) => e[field]))
+  return items.filter(i => !existingSet.has(i[field]))
+}
+
 // ─── main handler ──────────────────────────────────────────────────────
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
