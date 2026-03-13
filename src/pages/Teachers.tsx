@@ -104,6 +104,8 @@ const Teachers = () => {
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
 
+  const showEmptyState = !loading && teachers.length === 0;
+
   if (loading) return <TableSkeleton />;
 
   return (
@@ -123,50 +125,56 @@ const Teachers = () => {
         </div>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('teachers.name')}</TableHead>
-              <TableHead>{t('teachers.phone')}</TableHead>
-              <TableHead>{t('teachers.email')}</TableHead>
-              <TableHead>{t('teachers.specialization')}</TableHead>
-              <TableHead>{t('common.actions')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedItems.map((teacher) => (
-              <TableRow key={teacher.id}>
-                <TableCell className="font-medium">{teacher.profiles?.full_name}</TableCell>
-                <TableCell>{teacher.profiles?.phone}</TableCell>
-                <TableCell>{teacher.profiles?.email}</TableCell>
-                <TableCell>{teacher.specialization}</TableCell>
-                <TableCell className="flex gap-1">
-                  <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => navigate(`/dashboard/teacher-profile/${teacher.id}`)} title={isAr ? 'الملف الشخصي' : 'Profile'}><UserCircle className={ACTION_ICON} /></Button>
-                  <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => { viewDetails(teacher); setTimeout(() => setEditing(true), 100); }}><Pencil className={ACTION_ICON} /></Button>
-                  {role === 'admin' && <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteTarget(teacher.id)}><Trash2 className={ACTION_ICON} /></Button>}
-                </TableCell>
-              </TableRow>
-            ))}
-            {paginatedItems.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} className="p-0">
-                  <EmptyState
-                    icon={Users}
-                    title={isAr ? 'لا يوجد معلمون بعد' : 'No teachers yet'}
-                    description={isAr
-                      ? 'أضف أول معلم لبدء تنظيم فريق التدريس.'
-                      : 'Add your first teacher to start building your teaching team.'}
-                    actionLabel={role === 'admin' ? (isAr ? 'إضافة معلم' : 'Add Teacher') : undefined}
-                    onAction={role === 'admin' ? () => setAddOpen(true) : undefined}
-                  />
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
+      {showEmptyState ? (
+        <EmptyState
+          icon={Users}
+          title={isAr ? 'لا يوجد معلمون بعد' : 'No teachers yet'}
+          description={isAr
+            ? 'أضف أول معلم لبدء تنظيم فريق التدريس.'
+            : 'Add your first teacher to start building your teaching team.'}
+          actionLabel={role === 'admin' ? (isAr ? 'إضافة معلم' : 'Add Teacher') : undefined}
+          onAction={role === 'admin' ? () => setAddOpen(true) : undefined}
+        />
+      ) : (
+        <>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t('teachers.name')}</TableHead>
+                  <TableHead>{t('teachers.phone')}</TableHead>
+                  <TableHead>{t('teachers.email')}</TableHead>
+                  <TableHead>{t('teachers.specialization')}</TableHead>
+                  <TableHead>{t('common.actions')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedItems.map((teacher) => (
+                  <TableRow key={teacher.id}>
+                    <TableCell className="font-medium">{teacher.profiles?.full_name}</TableCell>
+                    <TableCell>{teacher.profiles?.phone}</TableCell>
+                    <TableCell>{teacher.profiles?.email}</TableCell>
+                    <TableCell>{teacher.specialization}</TableCell>
+                    <TableCell className="flex gap-1">
+                      <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => navigate(`/dashboard/teacher-profile/${teacher.id}`)} title={isAr ? 'الملف الشخصي' : 'Profile'}><UserCircle className={ACTION_ICON} /></Button>
+                      <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => { viewDetails(teacher); setTimeout(() => setEditing(true), 100); }}><Pencil className={ACTION_ICON} /></Button>
+                      {role === 'admin' && <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteTarget(teacher.id)}><Trash2 className={ACTION_ICON} /></Button>}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {paginatedItems.length === 0 && filtered.length === 0 && teachers.length > 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                      {isAr ? 'لا توجد نتائج للبحث' : 'No results found'}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
+        </>
+      )}
 
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent className="max-w-lg">
