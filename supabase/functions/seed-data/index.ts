@@ -739,8 +739,8 @@ Deno.serve(async (req) => {
         }
 
         // ── SUPPORT (chats, messages, tickets) ──
-        if (categories.includes('support') && budget.canAdd()) {
-          const supportBudget = budget.cap(alloc.support || 10)
+        if (categories.includes('support')) {
+          const supportBudget = budget.capMin(alloc.support || 10)
 
           // Chats & messages
           if (sIds.length > 0 && tIds.length > 0) {
