@@ -20,6 +20,7 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import LessonBuilder from '@/components/course/LessonBuilder';
+import { useSidebar } from '@/components/ui/sidebar';
 
 // ─── Types ───
 interface CourseSection {
