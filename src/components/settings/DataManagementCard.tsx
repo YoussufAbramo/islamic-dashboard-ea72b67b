@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
-import { Database, AlertTriangle, Loader2, PackagePlus, ScrollText, Trash2, History, ChevronDown, ChevronUp, CheckCircle2, XCircle, Clock, Eraser, Info } from 'lucide-react';
+import { Database, AlertTriangle, Loader2, PackagePlus, ScrollText, Trash2, History, ChevronDown, ChevronUp, CheckCircle2, XCircle, Clock, Eraser, Info, FileX2, ClipboardList, Bug } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -15,6 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
+import { logAction } from '@/lib/actionsQueue';
 
 interface DataManagementCardProps {
   isAr: boolean;
