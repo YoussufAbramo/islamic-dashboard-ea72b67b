@@ -1245,6 +1245,177 @@ Deno.serve(async (req) => {
       return json({ success: true, counts: deletedCounts, total_deleted: totalDeleted })
     }
 
+    // ══════════════════════════════════════════════════════════════════
+    // SYSTEM RESET — restore platform to fresh-install state
+    // ══════════════════════════════════════════════════════════════════
+    if (action === 'system_reset') {
+      const confirmation = body.confirmation as string | undefined
+      if (confirmation !== 'RESET SYSTEM') {
+        return json({ error: 'Invalid confirmation phrase. Type "RESET SYSTEM" to proceed.' }, 400)
+      }
+
+      const deletedCounts: Record<string, number> = {}
+      const errors: string[] = []
+
+      // Ordered list respecting foreign key dependencies (children first)
+      const RESET_ORDER = [
+        // Seed tracking
+        'seed_records', 'seed_sessions',
+        // Chat system
+        'chat_read_receipts', 'chat_messages', 'chat_members', 'chats',
+        // Attendance & session
+        'attendance', 'session_reports', 'student_progress',
+        'timetable_entries',
+        // Billing
+        'invoices', 'subscriptions',
+        // Payouts
+        'payout_requests',
+        // Certificates
+        'certificates',
+        // Notifications & announcements
+        'notifications', 'announcements',
+        // Support
+        'support_tickets',
+        // Courses hierarchy
+        'lessons', 'lesson_sections', 'course_sections', 'teacher_courses',
+        'courses',
+        'course_tracks', 'course_categories', 'course_levels',
+        // E-books
+        'ebook_downloads', 'ebook_views', 'ebooks',
+        // Expenses
+        'expenses', 'expense_categories',
+        // Website
+        'blog_posts', 'website_pages', 'policies',
+        // Pricing
+        'pricing_packages',
+        // Support config
+        'support_departments', 'support_priorities',
+        // Landing content
+        'landing_content',
+        // Audit / logs
+        'audit_logs',
+        // Users (order matters: students/teachers before profiles)
+        'students', 'teachers',
+        'user_roles', 'profiles',
+      ]
+
+      // Delete all rows from each table
+      for (const table of RESET_ORDER) {
+        try {
+          // Use a broad filter to delete all rows
+          const { count, error } = await admin.from(table).delete({ count: 'exact' }).neq('id', '00000000-0000-0000-0000-000000000000')
+          if (error) throw error
+          deletedCounts[table] = count || 0
+        } catch (e: any) {
+          errors.push(`${table}: ${e.message}`)
+          deletedCounts[table] = -1
+        }
+      }
+
+      // Delete all auth users except the current admin
+      let deletedAuthUsers = 0
+      try {
+        // List all users (paginated)
+        let page = 1
+        let hasMore = true
+        while (hasMore) {
+          const { data: listData, error: listError } = await admin.auth.admin.listUsers({ page, perPage: 100 })
+          if (listError || !listData?.users || listData.users.length === 0) {
+            hasMore = false
+            break
+          }
+          for (const u of listData.users) {
+            if (u.id === caller.id) continue // preserve current admin
+            try {
+              await admin.auth.admin.deleteUser(u.id)
+              deletedAuthUsers++
+            } catch (_) {}
+          }
+          if (listData.users.length < 100) hasMore = false
+          page++
+        }
+      } catch (e: any) {
+        errors.push(`auth_users: ${e.message}`)
+      }
+      if (deletedAuthUsers > 0) deletedCounts['auth_users'] = deletedAuthUsers
+
+      // Re-create the current admin's profile and role (they were deleted above)
+      try {
+        await admin.from('profiles').upsert({
+          id: caller.id,
+          full_name: caller.user_metadata?.full_name || 'Admin',
+          email: caller.email || '',
+          phone: caller.user_metadata?.phone || '',
+        })
+        await admin.from('user_roles').upsert({
+          user_id: caller.id,
+          role: 'admin',
+        }, { onConflict: 'user_id,role' })
+      } catch (e: any) {
+        errors.push(`restore_admin: ${e.message}`)
+      }
+
+      // Clear storage buckets (user uploads only)
+      const BUCKETS_TO_CLEAR = ['avatars', 'course-images', 'ebooks', 'media']
+      for (const bucket of BUCKETS_TO_CLEAR) {
+        try {
+          const { data: files } = await admin.storage.from(bucket).list('', { limit: 1000 })
+          if (files && files.length > 0) {
+            const paths = files.map(f => f.name)
+            await admin.storage.from(bucket).remove(paths)
+            deletedCounts[`storage:${bucket}`] = paths.length
+          }
+          // Also try to clear subdirectories
+          for (const file of (files || [])) {
+            if (!file.id && file.name) {
+              // It's a folder — list and delete contents
+              const { data: subFiles } = await admin.storage.from(bucket).list(file.name, { limit: 1000 })
+              if (subFiles && subFiles.length > 0) {
+                const subPaths = subFiles.map(sf => `${file.name}/${sf.name}`)
+                await admin.storage.from(bucket).remove(subPaths)
+                deletedCounts[`storage:${bucket}`] = (deletedCounts[`storage:${bucket}`] || 0) + subPaths.length
+              }
+            }
+          }
+        } catch (e: any) {
+          errors.push(`storage:${bucket}: ${e.message}`)
+        }
+      }
+
+      // Restore default app_settings if needed
+      try {
+        const { data: existingSettings } = await admin.from('app_settings').select('id').limit(1)
+        if (!existingSettings || existingSettings.length === 0) {
+          await admin.from('app_settings').insert({
+            settings: {},
+            updated_by: caller.id,
+          })
+        }
+      } catch (_) {}
+
+      const totalDeleted = Object.values(deletedCounts).filter(v => v > 0).reduce((a, b) => a + b, 0)
+
+      // Log the reset event in audit_logs
+      try {
+        await admin.from('audit_logs').insert({
+          user_id: caller.id,
+          action: 'SYSTEM_RESET',
+          table_name: 'system',
+          record_id: null,
+          new_data: { deleted_counts: deletedCounts, total_deleted: totalDeleted, errors },
+        })
+      } catch (_) {}
+
+      return json({
+        success: true,
+        message: 'System reset completed. Platform restored to fresh-install state.',
+        counts: deletedCounts,
+        total_deleted: totalDeleted,
+        errors,
+        preserved: ['current_admin_account', 'database_schema', 'storage_buckets', 'app_settings'],
+      })
+    }
+
     return json({ error: 'Invalid action' }, 400)
   } catch (err: any) {
     console.error('seed-data error:', err)
