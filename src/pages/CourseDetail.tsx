@@ -360,13 +360,28 @@ const CourseDetail = () => {
               <div className="flex items-center gap-2">
                 <CardTitle>{isAr && course.title_ar ? course.title_ar : course.title}</CardTitle>
                 {canEdit && (
-                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-muted-foreground hover:text-foreground shrink-0" onClick={() => { setSlugForm(course.slug || ''); setCourseSettingsOpen(true); }}>
+                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-muted-foreground hover:text-foreground shrink-0" onClick={() => {
+                    setSlugForm(course.slug || '');
+                    setSettingsForm({
+                      title: course.title || '', title_ar: course.title_ar || '',
+                      description: course.description || '', description_ar: course.description_ar || '',
+                      category_id: course.category_id || '', level_id: course.level_id || '',
+                      track_id: course.track_id || '', duration_weeks: course.duration_weeks?.toString() || '',
+                    });
+                    setCourseSettingsOpen(true);
+                  }}>
                     <Settings2 className="h-4 w-4" />
                   </Button>
                 )}
               </div>
               <p className="text-muted-foreground mt-1">{isAr && course.description_ar ? course.description_ar : course.description}</p>
               <div className="flex flex-wrap items-center gap-2 mt-3">
+                {course.slug && (
+                  <Badge variant="outline" className="gap-1 text-xs font-mono">
+                    <Link2 className="h-3 w-3" />
+                    /{course.slug}
+                  </Badge>
+                )}
                 {categoryLabel && (
                   <Badge variant="outline" className="gap-1 text-xs">
                     <FolderTree className="h-3 w-3" />
