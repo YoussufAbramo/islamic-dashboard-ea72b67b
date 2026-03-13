@@ -244,7 +244,7 @@
   .theme-desert:root, :root.theme-desert {
     --primary: 25 60% 42%;
     --primary-foreground: 35 30% 98%;
-    --accent: 35 70% 55%;
+    --accent: 25 20% 93%;
     --accent-foreground: 25 40% 10%;
     --ring: 25 60% 42%;
     --gold: 35 70% 55%;
