@@ -47,6 +47,13 @@ const TeacherProfile = () => {
   const [adminProfiles, setAdminProfiles] = useState<Record<string, string>>({});
   const [authInfo, setAuthInfo] = useState<{ created_at?: string; last_sign_in_at?: string } | null>(null);
 
+  // Support ticket dialog
+  const [ticketOpen, setTicketOpen] = useState(false);
+  const [ticketForm, setTicketForm] = useState({ subject: '', message: '', department: '', priority: '' });
+  const [ticketLoading, setTicketLoading] = useState(false);
+  const [departments, setDepartments] = useState<any[]>([]);
+  const [priorities, setPriorities] = useState<any[]>([]);
+
   // Avatar
   const [resolvedAvatar, setResolvedAvatar] = useState('');
 
