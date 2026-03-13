@@ -240,7 +240,7 @@ const CourseLearning = () => {
   const [activeLesson, setActiveLesson] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [markingComplete, setMarkingComplete] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // collapsed by default
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState<Record<string, string>>({});
