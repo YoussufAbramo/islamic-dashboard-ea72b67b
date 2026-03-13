@@ -459,7 +459,7 @@ const BackupsSettings = () => {
                 const timeStr = now.toLocaleTimeString('en-GB', { timeZone: defaultTimezone, hour12: false }).replace(/:/g, '-');
                 const name = `settings-backup-${dateStr}_${timeStr}`;
                 const { data, error } = await supabase.functions.invoke('manage-backups', {
-                  body: { action: 'create_backup', name, format: 'json', tables: ['app_settings', 'auto_backup_config', 'payment_gateway_config', 'landing_content', 'pricing_packages', 'policies'] },
+                  body: { action: 'create_backup', name, format: 'json', tables: ['app_settings', 'payment_gateway_config', 'landing_content', 'pricing_packages', 'policies'] },
                 });
                 if (error) throw error;
                 if (data?.error) throw new Error(data.error);

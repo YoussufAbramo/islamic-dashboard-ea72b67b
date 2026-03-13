@@ -264,7 +264,8 @@ Deno.serve(async (req) => {
       const timeStr = now.toISOString().slice(11, 19).replace(/:/g, '-')
       const backupName = `auto-backup-${dateStr}_${timeStr}`
 
-      const { data: config } = await adminClient.from('auto_backup_config').select('*').limit(1).single()
+      const { data: settingsRow } = await adminClient.from('app_settings').select('settings').limit(1).single()
+      const config = (settingsRow?.settings as any)?.backup_config
       const format = config?.format || 'json'
       const retentionCount = config?.retention_count || 7
 
