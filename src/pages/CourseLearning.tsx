@@ -417,14 +417,14 @@ const CourseLearning = () => {
   const { open: appSidebarOpen, setOpen: setAppSidebarOpen } = useSidebar();
   const isAr = language === 'ar';
 
-  // Auto-hide top bar & collapse sidebar on mount, restore on unmount
+  // Auto-hide top bar & collapse app sidebar on mount, restore on unmount
   useEffect(() => {
     setTopBarHidden(true);
-    const wasSidebarOpen = sidebarOpen;
-    if (sidebarOpen) setSidebarOpen(false);
+    const wasOpen = appSidebarOpen;
+    if (appSidebarOpen) setAppSidebarOpen(false);
     return () => {
       setTopBarHidden(false);
-      if (wasSidebarOpen) setSidebarOpen(true);
+      if (wasOpen) setAppSidebarOpen(true);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
