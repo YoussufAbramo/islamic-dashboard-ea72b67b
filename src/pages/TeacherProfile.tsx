@@ -836,7 +836,7 @@ const TeacherProfile = () => {
                     <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'ملاحظات المشرف' : 'Admin Notes'}</span><span className="text-xs max-w-[200px] text-end">{quickViewReq.admin_notes}</span></div>
                   )}
                 </div>
-                <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => { setQuickViewReq(null); setTicketForm({ subject: `Payout Request: ${quickViewReq.transaction_ref}`, message: '', department: '', priority: '' }); setTicketOpen(true); }}>
+                <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => { setQuickViewReq(null); setTicketForm({ subject: `Payout Request: ${quickViewReq.transaction_ref}`, message: '', department: 'billing', priority: '' }); setTicketOpen(true); }}>
                   <HeadphonesIcon className="h-3.5 w-3.5" />
                   {isAr ? 'تقديم تذكرة دعم' : 'Submit Support Ticket'}
                 </Button>
