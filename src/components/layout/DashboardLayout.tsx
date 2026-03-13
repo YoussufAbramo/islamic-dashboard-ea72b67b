@@ -199,7 +199,7 @@ const DashboardLayout = () => {
               </Tooltip>
             </TooltipProvider>
             <CopyrightText
-              className={cn("text-muted-foreground/60", isLearnPage ? "text-[8px]" : "text-[11px]")}
+              className={cn(isLearnPage ? "text-[8px] text-muted-foreground" : "text-[11px] text-muted-foreground/80")}
               linkClassName="hover:text-foreground transition-colors no-underline" />
             
           </footer>
