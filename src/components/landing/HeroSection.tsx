@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Star, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getField } from '@/lib/landingDefaults';
+import { useCountUp } from '@/hooks/use-landing-animations';
 const islamicPatternHero = '/system/backgrounds/islamic-pattern-hero.jpg';
 const dashboardMockup = '/system/samples/dashboard-mockup.png';
 
@@ -11,6 +12,16 @@ interface HeroSectionProps {
   user: any;
   statsContent?: Record<string, any>;
 }
+
+const HeroStatItem = ({ stat, isAr }: { stat: any; isAr: boolean }) => {
+  const { display, ref } = useCountUp(stat.value, 2000);
+  return (
+    <div ref={ref} className="text-center">
+      <div className="text-2xl font-bold text-foreground">{display}</div>
+      <div className="text-xs text-muted-foreground">{isAr ? stat.label_ar : stat.label}</div>
+    </div>
+  );
+};
 
 const HeroSection = ({ content, isAr, user, statsContent }: HeroSectionProps) => {
   const navigate = useNavigate();
@@ -52,10 +63,7 @@ const HeroSection = ({ content, isAr, user, statsContent }: HeroSectionProps) =>
               {heroStats.map((stat: any, i: number) => (
                 <div key={i} className="flex items-center gap-6">
                   {i > 0 && <div className="h-8 w-px bg-border" />}
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                    <div className="text-xs text-muted-foreground">{isAr ? stat.label_ar : stat.label}</div>
-                  </div>
+                  <HeroStatItem stat={stat} isAr={isAr} />
                 </div>
               ))}
             </div>

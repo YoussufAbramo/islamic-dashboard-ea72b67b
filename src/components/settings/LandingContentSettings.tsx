@@ -1026,7 +1026,7 @@ const LandingContentSettings = ({ initialTab }: { initialTab?: string }) => {
 
             {/* Right: Content editor */}
             {expandedSection && (
-              <Card className="self-start">
+              <Card className="self-start animate-slide-in-editor">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base flex items-center gap-2">

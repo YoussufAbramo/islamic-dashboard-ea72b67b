@@ -42,7 +42,6 @@ const TestimonialsSection = ({ content, isAr }: TestimonialsSectionProps) => {
   const t = (en: string, ar: string) => isAr ? ar : en;
   if (items.length === 0) return null;
 
-  // Duplicate items enough times for seamless infinite scroll
   const repeated = [...items, ...items, ...items, ...items];
 
   return (
@@ -55,18 +54,15 @@ const TestimonialsSection = ({ content, isAr }: TestimonialsSectionProps) => {
         </div>
       </div>
 
-      {/* Infinite scrolling carousel */}
+      {/* Infinite scrolling carousel — NO hover pause */}
       <div className="relative w-full">
-        {/* Fade edges */}
         <div className="absolute inset-y-0 start-0 w-20 bg-gradient-to-e from-background to-transparent z-10 pointer-events-none" />
         <div className="absolute inset-y-0 end-0 w-20 bg-gradient-to-s from-background to-transparent z-10 pointer-events-none" style={{ background: 'linear-gradient(to left, hsl(var(--background)), transparent)' }} />
         <div className="absolute inset-y-0 start-0 w-20 z-10 pointer-events-none" style={{ background: 'linear-gradient(to right, hsl(var(--background)), transparent)' }} />
 
         <div
-          className="flex animate-scroll-x hover:[animation-play-state:paused]"
-          style={{
-            width: 'max-content',
-          }}
+          className="flex animate-scroll-x"
+          style={{ width: 'max-content' }}
         >
           {repeated.map((item: any, i: number) => (
             <TestimonialCard key={i} item={item} isAr={isAr} />
