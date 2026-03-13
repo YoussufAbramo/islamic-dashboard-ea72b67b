@@ -671,7 +671,25 @@ const CourseDetail = () => {
                                                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                                   <span className="text-[10px] font-mono text-muted-foreground tabular-nums shrink-0">{topicIdx + 1}.{secIdx + 1}.{lesIdx + 1}</span>
                                                   <FileText className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
-                                                  <span className="text-sm truncate">{isAr && lesson.title_ar ? lesson.title_ar : lesson.title}</span>
+                                                  <span
+                                                    className="text-sm truncate cursor-text"
+                                                    onDoubleClick={(e) => { e.stopPropagation(); handleInlineDoubleClick(lesson.id, 'lesson', isAr && lesson.title_ar ? lesson.title_ar : lesson.title); }}
+                                                  >
+                                                    {inlineEdit?.id === lesson.id && inlineEdit?.type === 'lesson' ? null : (isAr && lesson.title_ar ? lesson.title_ar : lesson.title)}
+                                                  </span>
+                                                  {inlineEdit?.id === lesson.id && inlineEdit?.type === 'lesson' && (
+                                                    <div className="flex items-center gap-1 flex-1" onClick={(e) => e.stopPropagation()}>
+                                                      <Input
+                                                        value={inlineEdit.value}
+                                                        onChange={(e) => setInlineEdit({ ...inlineEdit, value: e.target.value })}
+                                                        onKeyDown={handleInlineKeyDown}
+                                                        autoFocus
+                                                        className="h-6 text-xs"
+                                                      />
+                                                      <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-primary" onClick={(e) => { e.stopPropagation(); handleInlineSave(); }}><Check className="h-3 w-3" /></Button>
+                                                      <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-muted-foreground" onClick={(e) => { e.stopPropagation(); handleInlineCancel(); }}><X className="h-3 w-3" /></Button>
+                                                    </div>
+                                                  )}
                                                   <Badge variant="outline" className="text-[10px] font-normal shrink-0 bg-background">
                                                     {allContentTypes.find(ct => ct.value === lesson.lesson_type)?.label || lesson.lesson_type}
                                                   </Badge>
