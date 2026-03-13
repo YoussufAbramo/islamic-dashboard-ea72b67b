@@ -506,17 +506,22 @@ Deno.serve(async (req) => {
 
         // ── COMMUNICATIONS (announcements + notifications) ──
         if (categories.includes('communications')) {
-          const annInsert = pickN(ANNOUNCEMENT_TITLES, qty.announcements).map(a => ({
+          const annRaw = pickN(ANNOUNCEMENT_TITLES, qty.announcements).map(a => ({
             title: a.en, title_ar: a.ar,
             content: `${a.en} - details and information.`,
             content_ar: `${a.ar} - تفاصيل ومعلومات.`,
             target_audience: pick(['all', 'students', 'teachers']),
             created_by: callerId, is_active: true,
           }))
-          const { data: createdAnn } = await admin.from('announcements').insert(annInsert).select('id')
-          const annIds = (createdAnn || []).map(a => a.id)
-          await trackRecords(admin, sessionId, 'announcements', annIds)
-          counts.announcements = annIds.length
+          const annInsert = await dedup(admin, 'announcements', annRaw)
+          if (annInsert.length > 0) {
+            const { data: createdAnn } = await admin.from('announcements').insert(annInsert).select('id')
+            const annIds = (createdAnn || []).map(a => a.id)
+            await trackRecords(admin, sessionId, 'announcements', annIds)
+            counts.announcements = annIds.length
+          } else {
+            counts.announcements = 0
+          }
 
           const notifInsert = Array.from({ length: qty.notifications }, (_, i) => ({
             user_id: callerId,
