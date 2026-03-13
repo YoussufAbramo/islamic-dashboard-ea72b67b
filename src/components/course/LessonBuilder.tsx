@@ -52,7 +52,8 @@ export interface ContentBlock {
   missing_word?: string;
   missing_word_ar?: string;
   pairs?: { left: string; left_ar?: string; right: string; right_ar?: string }[]; // for text_match
-}
+  // table of content rows
+  toc_rows?: { en: string; ar: string }[];
 
 const generateId = () => Math.random().toString(36).substring(2, 10);
 
