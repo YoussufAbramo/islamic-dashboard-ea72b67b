@@ -485,13 +485,42 @@ const BlockEditor = ({
                 </div>
               </div>
             </div>
+            <div>
+              <Label className="text-xs mb-1.5 block">{isAr ? 'اللون' : 'Color'}</Label>
+              <div className="flex flex-wrap gap-1.5">
+                {([
+                  { value: 'border', label: isAr ? 'افتراضي' : 'Default', css: 'hsl(var(--border))' },
+                  { value: 'primary', label: isAr ? 'رئيسي' : 'Primary', css: 'hsl(var(--primary))' },
+                  { value: 'muted', label: isAr ? 'باهت' : 'Muted', css: 'hsl(var(--muted-foreground))' },
+                  { value: 'destructive', label: isAr ? 'أحمر' : 'Red', css: 'hsl(var(--destructive))' },
+                  { value: 'gold', label: isAr ? 'ذهبي' : 'Gold', css: 'hsl(var(--gold, 45 80% 50%))' },
+                ] as const).map((c) => (
+                  <button key={c.value} type="button" onClick={() => onChange({ ...block, divider_color: c.value })}
+                    className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
+                      (block.divider_color || 'border') === c.value ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+                    )}>
+                    <span className="h-2.5 w-2.5 rounded-sm shrink-0" style={{ background: c.css }} />
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             {/* Preview */}
             <div className="flex justify-center p-3 rounded-lg bg-muted/20">
               <hr style={{
                 width: `${block.divider_width || 100}%`,
                 borderStyle: block.divider_style || 'solid',
                 borderWidth: `${block.divider_thickness || 1}px 0 0 0`,
-                borderColor: 'hsl(var(--border))',
+                borderColor: (() => {
+                  const colorMap: Record<string, string> = {
+                    border: 'hsl(var(--border))',
+                    primary: 'hsl(var(--primary))',
+                    muted: 'hsl(var(--muted-foreground))',
+                    destructive: 'hsl(var(--destructive))',
+                    gold: 'hsl(var(--gold, 45 80% 50%))',
+                  };
+                  return colorMap[block.divider_color || 'border'] || 'hsl(var(--border))';
+                })(),
               }} />
             </div>
           </div>
