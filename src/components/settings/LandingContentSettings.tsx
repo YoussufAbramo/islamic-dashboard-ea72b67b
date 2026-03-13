@@ -998,14 +998,12 @@ const LandingContentSettings = ({ initialTab }: { initialTab?: string }) => {
             <p className="text-sm text-muted-foreground">{isAr ? 'اسحب لإعادة الترتيب • اضغط على العين للإظهار/الإخفاء • اضغط القلم للتحرير' : 'Drag to reorder • Click eye to show/hide • Click pencil to edit'}</p>
             <Badge variant="outline">{sectionsOrder.length} {isAr ? 'أقسام' : 'sections'}</Badge>
           </div>
-          <div className={`grid gap-4 ${expandedSection ? 'grid-cols-1 lg:grid-cols-[320px_1fr]' : 'grid-cols-1'}`}>
-            {/* Left: Section list */}
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-[280px_1fr]">
+            {/* Left: Section list — always visible */}
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
               <SortableContext items={sectionsOrder} strategy={verticalListSortingStrategy}>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   {sectionsOrder.map(key => {
-                    const meta = sectionMeta[key];
-                    const Icon = iconMap[meta.iconName] || BookOpen;
                     const isSelected = expandedSection === key;
                     const isVisible = sectionsVisible[key] !== false;
                     return (
@@ -1024,23 +1022,42 @@ const LandingContentSettings = ({ initialTab }: { initialTab?: string }) => {
               </SortableContext>
             </DndContext>
 
-            {/* Right: Content editor */}
-            {expandedSection && (
-              <Card key={expandedSection} className="self-start animate-slide-in-editor">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      {(() => { const Icon = iconMap[sectionMeta[expandedSection as SectionKey]?.iconName] || BookOpen; return <Icon className="h-4 w-4 text-primary" />; })()}
-                      {isAr ? sectionMeta[expandedSection as SectionKey]?.labelAr : sectionMeta[expandedSection as SectionKey]?.label}
-                    </CardTitle>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setExpandedSection(null)}>
-                      <X className="h-4 w-4" />
-                    </Button>
+            {/* Right: Content editor or empty state */}
+            <div className="min-h-[400px]">
+              {expandedSection ? (
+                <Card key={expandedSection} className="self-start animate-slide-in-editor sticky top-4">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        {(() => { const Icon = iconMap[sectionMeta[expandedSection as SectionKey]?.iconName] || BookOpen; return <Icon className="h-4 w-4 text-primary" />; })()}
+                        {isAr ? sectionMeta[expandedSection as SectionKey]?.labelAr : sectionMeta[expandedSection as SectionKey]?.label}
+                      </CardTitle>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setExpandedSection(null)}>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>{renderEditor(expandedSection as SectionKey)}</CardContent>
+                </Card>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full min-h-[400px] rounded-xl border-2 border-dashed border-border bg-muted/20">
+                  <div className="text-center space-y-3 p-8">
+                    <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
+                      <LayoutTemplate className="h-7 w-7 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-foreground">{isAr ? 'اختر قسماً للتحرير' : 'Choose a section to edit'}</h3>
+                      <p className="text-sm text-muted-foreground mt-1 max-w-xs mx-auto">
+                        {isAr ? 'اضغط على أي قسم من القائمة لبدء تعديل محتواه' : 'Click any section from the list to start editing its content'}
+                      </p>
+                    </div>
+                    <Badge variant="secondary" className="text-xs">
+                      {isAr ? `${sectionsOrder.length} أقسام متاحة` : `${sectionsOrder.length} sections available`}
+                    </Badge>
                   </div>
-                </CardHeader>
-                <CardContent>{renderEditor(expandedSection as SectionKey)}</CardContent>
-              </Card>
-            )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
