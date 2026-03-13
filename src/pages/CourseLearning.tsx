@@ -836,6 +836,69 @@ const CourseLearning = () => {
               })}
             </div>
           </ScrollArea>
+
+          {/* Navigation & actions */}
+          {orderedLessons.length > 0 && (
+            <div className="border-t bg-card shrink-0 p-2.5 space-y-2">
+              <div className="flex items-center justify-between gap-1.5">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!hasPrev}
+                  onClick={() => hasPrev && setActiveLesson(orderedLessons[currentIndex - 1].id)}
+                  className="h-7 text-xs px-2"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5 me-0.5" />
+                  {isAr ? 'السابق' : 'Prev'}
+                </Button>
+                <span className="text-[10px] text-muted-foreground font-mono">{currentIndex + 1}/{orderedLessons.length}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!hasNext}
+                  onClick={() => hasNext && setActiveLesson(orderedLessons[currentIndex + 1].id)}
+                  className="h-7 text-xs px-2"
+                >
+                  {isAr ? 'التالي' : 'Next'}
+                  <ChevronRight className="h-3.5 w-3.5 ms-0.5" />
+                </Button>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {canManage && currentLesson && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setBuilderOpen(true)}
+                    className="gap-1 h-7 text-xs flex-1"
+                  >
+                    <Settings2 className="h-3 w-3" />
+                    {isAr ? 'إدارة' : 'Manage'}
+                  </Button>
+                )}
+                {user && currentLesson && !isCurrentCompleted && (
+                  <Button
+                    size="sm"
+                    onClick={handleMarkComplete}
+                    disabled={markingComplete}
+                    className="h-7 text-xs flex-1"
+                  >
+                    {markingComplete ? (
+                      <Loader2 className="h-3.5 w-3.5 me-1 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="h-3.5 w-3.5 me-1" />
+                    )}
+                    {isAr ? 'إكمال' : 'Complete'}
+                  </Button>
+                )}
+                {isCurrentCompleted && (
+                  <Badge variant="default" className="gap-1 text-[10px] flex-1 justify-center py-1">
+                    <CheckCircle2 className="h-3 w-3" />
+                    {isAr ? 'مكتمل' : 'Completed'}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ── Right Panel: Lesson Content ── */}
@@ -866,58 +929,6 @@ const CourseLearning = () => {
             </div>
           </ScrollArea>
 
-          {/* Bottom navigation bar */}
-          {orderedLessons.length > 0 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t bg-card shrink-0">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!hasPrev}
-                onClick={() => hasPrev && setActiveLesson(orderedLessons[currentIndex - 1].id)}
-              >
-                <ChevronLeft className="h-4 w-4 me-1" />
-                {isAr ? 'السابق' : 'Previous'}
-              </Button>
-
-              <div className="flex items-center gap-2">
-                {canManage && currentLesson && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setBuilderOpen(true)}
-                    className="gap-1.5"
-                  >
-                    <Settings2 className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">{isAr ? 'إدارة المحتوى' : 'Manage Content'}</span>
-                  </Button>
-                )}
-                {user && currentLesson && !isCurrentCompleted && (
-                  <Button
-                    size="sm"
-                    onClick={handleMarkComplete}
-                    disabled={markingComplete}
-                  >
-                    {markingComplete ? (
-                      <Loader2 className="h-4 w-4 me-1.5 animate-spin" />
-                    ) : (
-                      <CheckCircle2 className="h-4 w-4 me-1.5" />
-                    )}
-                    {isAr ? 'إكمال الدرس' : 'Mark Complete'}
-                  </Button>
-                )}
-              </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!hasNext}
-                onClick={() => hasNext && setActiveLesson(orderedLessons[currentIndex + 1].id)}
-              >
-                {isAr ? 'التالي' : 'Next'}
-                <ChevronRight className="h-4 w-4 ms-1" />
-              </Button>
-            </div>
-          )}
         </div>
       </div>
 
