@@ -438,7 +438,7 @@ const AttendLesson = () => {
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border bg-muted/30">
             <FlaskConical className="h-4 w-4 text-muted-foreground" />
             <span className="text-xs text-muted-foreground">{isAr ? 'وضع الاختبار' : 'Test Mode'}</span>
-            <Switch checked={testMode} onCheckedChange={setTestMode} />
+            <Switch checked={testMode} onCheckedChange={(v) => { setTestMode(v); try { localStorage.setItem('attend_test_mode', String(v)); } catch {} }} />
           </div>
         )}
       </div>
