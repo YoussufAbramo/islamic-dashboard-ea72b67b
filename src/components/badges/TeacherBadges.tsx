@@ -146,9 +146,9 @@ function TierBadgeIcon({ milestone, category, isAr }: { milestone: { tier: Badge
       <TooltipTrigger asChild>
         <div
           className={`
-            flex items-center justify-center w-8 h-8 rounded-full border-2 text-[10px] font-bold transition-all cursor-default
+            flex items-center justify-center w-7 h-7 rounded-full border-2 text-[9px] font-bold transition-all cursor-default
             ${milestone.earned
-              ? `${colors.bg} ${colors.text} ${colors.border} ring-2 ${colors.ring} scale-100`
+              ? `${colors.bg} ${colors.text} ${colors.border} ring-1 ${colors.ring}`
               : 'bg-muted/50 text-muted-foreground/40 border-muted-foreground/10 grayscale opacity-40'
             }
           `}
