@@ -80,19 +80,26 @@ const WebsiteModeSettings = () => {
           <Switch id="website-mode" checked={websiteMode} onCheckedChange={setWebsiteMode} />
         </div>
         <div className="rounded-lg border border-border p-4 space-y-2">
-          <p className="text-sm font-medium text-foreground">{isAr ? 'عند التفعيل:' : 'When enabled:'}</p>
-          <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
-            <li>{isAr ? 'أقسام الموقع (صفحة الهبوط، السياسات، الصفحات، المدونة) ستظهر في القائمة الرئيسية' : 'Website sections (Landing Page, Policies, Pages, Blog) appear in the main menu'}</li>
-            <li>{isAr ? 'الصفحات العامة متاحة للزوار' : 'Public pages are accessible to visitors'}</li>
+          <p className="text-sm font-medium text-foreground">{isAr ? '✅ عند التفعيل:' : '✅ When enabled:'}</p>
+          <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
+            <li>{isAr ? 'أقسام الموقع (صفحة الهبوط، السياسات، الصفحات، المدونة) ستظهر في القائمة الرئيسية' : 'Website sections (Landing Page, Policies, Pages, Blog) appear in the sidebar menu'}</li>
+            <li>{isAr ? 'الصفحات العامة متاحة للزوار بدون تسجيل دخول' : 'Public pages are accessible to visitors without login'}</li>
             <li>{isAr ? 'يمكن للمشرفين إدارة المحتوى من لوحة التحكم' : 'Administrators can manage content from the dashboard'}</li>
+            <li>{isAr ? 'صفحة الاتصال والمدونة والسياسات تكون قابلة للوصول عبر الروابط المباشرة' : 'Contact page, blog archive, and policies are reachable via direct URLs'}</li>
+            <li>{isAr ? 'نموذج التسجيل وصفحة التسجيل تكون مرئية' : 'Signup form and registration page are visible to new users'}</li>
+            <li>{isAr ? 'إعدادات تحسين محركات البحث (SEO) والبيكسل تكون فعالة على الصفحات العامة' : 'SEO settings and tracking pixels are active on public pages'}</li>
           </ul>
         </div>
         <div className="rounded-lg border border-border p-4 space-y-2">
-          <p className="text-sm font-medium text-foreground">{isAr ? 'عند التعطيل:' : 'When disabled:'}</p>
-          <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
-            <li>{isAr ? 'أقسام الموقع ستكون مخفية من القائمة الرئيسية' : 'Website sections are hidden from the main menu'}</li>
-            <li>{isAr ? 'الزوار سيرون رسالة إعلام بدلاً من المحتوى' : 'Visitors see a notice page instead of content'}</li>
-            <li>{isAr ? 'صفحة تسجيل الدخول تبقى متاحة' : 'Login page remains accessible'}</li>
+          <p className="text-sm font-medium text-foreground">{isAr ? '⛔ عند التعطيل:' : '⛔ When disabled:'}</p>
+          <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
+            <li>{isAr ? 'أقسام الموقع ستكون مخفية من القائمة الرئيسية' : 'Website sections are hidden from the sidebar menu'}</li>
+            <li>{isAr ? 'الزوار سيرون صفحة "الموقع غير متاح" بدلاً من أي محتوى عام' : 'Visitors see a "Website Unavailable" notice page instead of any public content'}</li>
+            <li>{isAr ? 'صفحة تسجيل الدخول تبقى متاحة للمستخدمين المسجلين' : 'Login page remains accessible for registered users'}</li>
+            <li>{isAr ? 'لوحة التحكم تعمل بشكل طبيعي للمستخدمين المصرح لهم' : 'Dashboard functions normally for authorized users'}</li>
+            <li>{isAr ? 'الروابط المباشرة للمدونة والسياسات وصفحة الاتصال ستعرض صفحة الإشعار' : 'Direct URLs to blog, policies, and contact will show the notice page'}</li>
+            <li>{isAr ? 'صفحة التسجيل الذاتي ستكون معطلة' : 'Self-registration / signup page will be disabled'}</li>
+            <li>{isAr ? 'محركات البحث لن تتمكن من فهرسة الصفحات العامة' : 'Search engines will not be able to index public pages'}</li>
           </ul>
         </div>
       </CardContent>
