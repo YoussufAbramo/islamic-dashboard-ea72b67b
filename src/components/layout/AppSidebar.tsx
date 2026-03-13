@@ -238,10 +238,10 @@ const AppSidebar = () => {
 
   return (
     <Sidebar side={isAr ? 'right' : 'left'}>
-      <SidebarHeader className="p-4 border-b border-sidebar-border">
+      <SidebarHeader className="px-4 py-2.5 border-b border-sidebar-border">
         <div className="flex items-center justify-center">
           {displayLogo ? (
-            <img src={displayLogo} alt="Logo" className="max-h-9 w-auto object-contain" />
+            <img src={displayLogo} alt="Logo" className="max-h-8 w-auto object-contain" />
           ) : (
             <span className="text-sm font-bold text-foreground truncate max-w-[160px]">{appName || 'Islamic Dashboard'}</span>
           )}

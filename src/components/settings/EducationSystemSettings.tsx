@@ -15,9 +15,25 @@ const EducationSystemSettings = () => {
     return localStorage.getItem('app_teacher_can_chat') !== 'false';
   });
 
+  const [teacherBadges, setTeacherBadges] = useState(() => {
+    return localStorage.getItem('app_teacher_badges') !== 'false';
+  });
+
+  const [studentBadges, setStudentBadges] = useState(() => {
+    return localStorage.getItem('app_student_badges') !== 'false';
+  });
+
   useEffect(() => {
     localStorage.setItem('app_teacher_can_chat', String(teacherCanChat));
   }, [teacherCanChat]);
+
+  useEffect(() => {
+    localStorage.setItem('app_teacher_badges', String(teacherBadges));
+  }, [teacherBadges]);
+
+  useEffect(() => {
+    localStorage.setItem('app_student_badges', String(studentBadges));
+  }, [studentBadges]);
 
   const teacherFeatures = [
     { icon: BookOpen, label: isAr ? 'نظام الواجبات المنزلية' : 'Homework System', desc: isAr ? 'تعيين ومتابعة الواجبات المنزلية للطلاب' : 'Assign and track student homework' },
@@ -100,6 +116,43 @@ const EducationSystemSettings = () => {
               <p className="text-sm text-muted-foreground">{isAr ? 'عند التفعيل، يمكن للمعلمين بدء محادثات مع طلابهم' : 'When enabled, teachers can initiate chats with their students'}</p>
             </div>
             <Switch checked={teacherCanChat} onCheckedChange={setTeacherCanChat} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Badges Management */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Award className="h-5 w-5 text-primary" />
+            {isAr ? 'إدارة الشارات' : 'Badges Management'}
+          </CardTitle>
+          <CardDescription>{isAr ? 'التحكم في تفعيل نظام الشارات والإنجازات' : 'Control the badges and achievements system'}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Users className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <Label className="text-sm font-medium">{isAr ? 'شارات المعلمين' : 'Teacher Badges'}</Label>
+                <p className="text-xs text-muted-foreground">{isAr ? 'تفعيل نظام الشارات والإنجازات للمعلمين' : 'Enable badges and achievements for teachers'}</p>
+              </div>
+            </div>
+            <Switch checked={teacherBadges} onCheckedChange={setTeacherBadges} />
+          </div>
+          <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                <GraduationCap className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <Label className="text-sm font-medium">{isAr ? 'شارات الطلاب' : 'Student Badges'}</Label>
+                <p className="text-xs text-muted-foreground">{isAr ? 'تفعيل نظام الشارات والإنجازات للطلاب' : 'Enable badges and achievements for students'}</p>
+              </div>
+            </div>
+            <Switch checked={studentBadges} onCheckedChange={setStudentBadges} />
           </div>
         </CardContent>
       </Card>

@@ -690,9 +690,13 @@
   [data-sidebar-mode="light"] [data-sidebar="sidebar"] [data-sidebar="menu-button"] svg {
     color: hsl(var(--sidebar-light-foreground) / 0.7);
   }
+  [data-sidebar-mode="light"] [data-sidebar="sidebar"] [data-sidebar="menu-button"]:hover {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+  }
   [data-sidebar-mode="light"] [data-sidebar="sidebar"] [data-sidebar="menu-button"][data-active="true"] {
     color: hsl(var(--sidebar-light-foreground));
-    background: hsl(var(--sidebar-light-accent));
+    background: hsl(var(--accent));
   }
   [data-sidebar-mode="light"] [data-sidebar="sidebar"] .text-muted-foreground {
     color: hsl(var(--sidebar-light-foreground) / 0.6) !important;

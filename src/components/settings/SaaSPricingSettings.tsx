@@ -10,8 +10,9 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Plus, Trash2, Edit2, GripVertical, Star } from 'lucide-react';
+import { Plus, Trash2, Edit2, Star } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ActionButton } from '@/components/ui/action-button';
 
 interface Package {
   id: string;
@@ -170,8 +171,8 @@ const SaaSPricingSettings = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => openEdit(pkg)}><Edit2 className="h-4 w-4" /></Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleDelete(pkg.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                          <ActionButton icon={Edit2} label={isAr ? 'تعديل' : 'Edit'} onClick={() => openEdit(pkg)} />
+                          <ActionButton icon={Trash2} label={isAr ? 'حذف' : 'Delete'} destructive onClick={() => handleDelete(pkg.id)} />
                         </div>
                       </TableCell>
                     </TableRow>
@@ -240,7 +241,7 @@ const SaaSPricingSettings = () => {
                 {form.features.map((f, i) => (
                   <div key={i} className="flex items-center justify-between gap-2 p-2 rounded bg-muted/50 text-sm">
                     <span className="text-foreground">{f}</span>
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeFeature(i)}><Trash2 className="h-3 w-3" /></Button>
+                    <ActionButton icon={Trash2} label={isAr ? 'حذف' : 'Remove'} destructive onClick={() => removeFeature(i)} />
                   </div>
                 ))}
               </div>

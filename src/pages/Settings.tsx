@@ -4,14 +4,14 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { Button } from '@/components/ui/button';
-import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, DollarSign, HardDrive, GraduationCap, BarChart3, Code, Search as SearchIcon, Cloud } from 'lucide-react';
+import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, HardDrive, GraduationCap, BarChart3, Code, Search as SearchIcon, Cloud } from 'lucide-react';
 import { toast } from 'sonner';
 import AppearanceSettings from '@/components/settings/AppearanceSettings';
 import PaymentGatewayCard from '@/components/settings/PaymentGatewayCard';
 import DataManagementCard from '@/components/settings/DataManagementCard';
 import AuthenticationSettings from '@/components/settings/AuthenticationSettings';
 import GeneralSettings from '@/components/settings/GeneralSettings';
-import SaaSPricingSettings from '@/components/settings/SaaSPricingSettings';
+
 import BackupsSettings from '@/components/settings/BackupsSettings';
 import EducationSystemSettings from '@/components/settings/EducationSystemSettings';
 import PixelsIntegrationSettings from '@/components/settings/PixelsIntegrationSettings';
@@ -107,7 +107,7 @@ const WebsiteModeSettings = () => {
   );
 };
 
-type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'pricing' | 'backups' | 'education' | 'pixels' | 'seo' | 'supabase' | 'developer' | 'website';
+type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'backups' | 'education' | 'pixels' | 'seo' | 'supabase' | 'developer' | 'website';
 
 const Settings = () => {
   const { language } = useLanguage();
@@ -118,7 +118,7 @@ const Settings = () => {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<SettingsTab>(() => {
     const tab = searchParams.get('tab');
-    return tab && ['general','appearance','auth','payment','data','pricing','backups','education','pixels','seo','supabase','developer','website'].includes(tab) ? tab as SettingsTab : 'general';
+    return tab && ['general','appearance','auth','payment','data','backups','education','pixels','seo','supabase','developer','website'].includes(tab) ? tab as SettingsTab : 'general';
   });
 
   // Auto-discard pending changes when leaving settings - use ref to avoid re-running on discardChanges change
@@ -140,7 +140,7 @@ const Settings = () => {
     { value: 'appearance', label: 'Appearance', labelAr: 'المظهر', icon: Palette },
     { value: 'education', label: 'Education System', labelAr: 'النظام التعليمي', icon: GraduationCap },
     { value: 'website', label: 'Website Mode', labelAr: 'وضع الموقع', icon: Globe, adminOnly: true },
-    { value: 'pricing', label: 'Pricing Packages', labelAr: 'باقات الأسعار', icon: DollarSign, adminOnly: true },
+    
     { value: 'pixels', label: 'Pixels & Tracking', labelAr: 'البيكسل والتتبع', icon: BarChart3, adminOnly: true },
     { value: 'seo', label: 'Advanced SEO', labelAr: 'تحسين محركات البحث', icon: SearchIcon, adminOnly: true },
     { value: 'auth', label: 'Authentication', labelAr: 'المصادقة', icon: ShieldCheck, adminOnly: true },
@@ -197,7 +197,7 @@ const Settings = () => {
           {activeTab === 'appearance' && <AppearanceSettings />}
           {activeTab === 'education' && <EducationSystemSettings />}
           {activeTab === 'website' && isAdmin && <WebsiteModeSettings />}
-          {activeTab === 'pricing' && isAdmin && <SaaSPricingSettings />}
+          
           {activeTab === 'auth' && isAdmin && <AuthenticationSettings />}
           {activeTab === 'payment' && isAdmin && <PaymentGatewayCard isAr={isAr} />}
           {activeTab === 'data' && isAdmin && <DataManagementCard isAr={isAr} />}
