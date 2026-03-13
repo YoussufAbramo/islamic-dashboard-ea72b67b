@@ -275,8 +275,8 @@ Deno.serve(async (req) => {
       try {
         // ── STUDENTS ──
         const studentUserIds: string[] = []
-        if (categories.includes('students') && budget.canAdd()) {
-          const qty = budget.cap(alloc.students || 4)
+        if (categories.includes('students')) {
+          const qty = budget.capMin(alloc.students || 4)
           for (let i = 0; i < qty; i++) {
             if (!budget.canAdd()) break
             const fn = pick(FIRST_NAMES)
