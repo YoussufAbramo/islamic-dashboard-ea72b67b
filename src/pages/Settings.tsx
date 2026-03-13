@@ -150,6 +150,7 @@ const Settings = () => {
     { value: 'backups', label: 'Backups', labelAr: 'النسخ الاحتياطية', icon: HardDrive, adminOnly: true },
     { value: 'supabase', label: 'Supabase', labelAr: 'Supabase', icon: Cloud, adminOnly: true },
     { value: 'developer', label: 'Developer', labelAr: 'المطور', icon: Code, adminOnly: true },
+    { value: 'webhooks', label: 'Webhooks', labelAr: 'الويب هوك', icon: Webhook, adminOnly: true },
   ];
 
   const visibleTabs = tabs.filter(t => !t.adminOnly || isAdmin);
