@@ -7,7 +7,7 @@ import AppSidebar from './AppSidebar';
 import TopBar from './TopBar';
 import ImpersonationBanner from './ImpersonationBanner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Bug } from 'lucide-react';
+import { Bug, X } from 'lucide-react';
 import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
@@ -47,6 +47,7 @@ const FloatingButtons = () => {
   const { profile, user } = useAuth();
   const isAr = language === 'ar';
   const [ticketOpen, setTicketOpen] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
   const iframeSrc = (() => {
     const base = 'https://portal.codecom.dev/forms/ticket';
@@ -60,10 +61,26 @@ const FloatingButtons = () => {
 
   const whatsappUrl = `https://wa.me/201558612808?text=${encodeURIComponent("Hello Dear, I'm texting you regarding Quran.CodeCom.dev, are you available to talk?")}`;
 
+  if (dismissed) return null;
+
   return (
     <>
       <div className={`fixed z-50 flex items-center gap-2 animate-fade-in ${isAr ? 'left-5' : 'right-5'}`} style={{ bottom: '35px', animationDelay: '0.5s', animationFillMode: 'backwards' }}>
         <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setDismissed(true)}
+                className="flex items-center justify-center h-7 w-7 rounded-full bg-muted/60 text-muted-foreground shadow-sm hover:scale-110 hover:bg-destructive hover:text-destructive-foreground transition-all duration-200"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs">
+              {isAr ? 'إخفاء' : 'Dismiss'}
+            </TooltipContent>
+          </Tooltip>
+
           <Tooltip>
             <TooltipTrigger asChild>
               <button
@@ -153,11 +170,16 @@ const DashboardLayout = () => {
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={!isLearnPage}>
       <div className="flex min-h-screen w-full" dir={dir}>
         <AppSidebar />
         <SidebarInset className="flex flex-col">
-          {showTopBar && <TopBar />}
+          <div className={cn(
+            "overflow-hidden transition-all duration-300 ease-out",
+            showTopBar ? "max-h-[3.5rem] opacity-100" : "max-h-0 opacity-0"
+          )}>
+            <TopBar />
+          </div>
           {showTopBar && <ImpersonationBanner />}
           <main className={cn("flex-1 overflow-auto", isLearnPage ? "p-0" : "p-4 md:p-6")}>
             <Outlet context={{ topBarHidden, setTopBarHidden }} />
@@ -177,7 +199,7 @@ const DashboardLayout = () => {
               </Tooltip>
             </TooltipProvider>
             <CopyrightText
-              className={cn("text-muted-foreground/60", isLearnPage ? "text-[8px]" : "text-[11px]")}
+              className={cn(isLearnPage ? "text-[8px] text-muted-foreground" : "text-[11px] text-muted-foreground/80")}
               linkClassName="hover:text-foreground transition-colors no-underline" />
             
           </footer>
