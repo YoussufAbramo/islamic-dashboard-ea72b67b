@@ -690,9 +690,33 @@ const CourseDetail = () => {
                                                       <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-muted-foreground" onClick={(e) => { e.stopPropagation(); handleInlineCancel(); }}><X className="h-3 w-3" /></Button>
                                                     </div>
                                                   )}
-                                                  <Badge variant="outline" className="text-[10px] font-normal shrink-0 bg-background">
-                                                    {allContentTypes.find(ct => ct.value === lesson.lesson_type)?.label || lesson.lesson_type}
-                                                  </Badge>
+                                                  {canEdit ? (
+                                                    <Select
+                                                      value={lesson.lesson_type}
+                                                      onValueChange={async (v) => {
+                                                        await supabase.from('lessons').update({ lesson_type: v as any }).eq('id', lesson.id);
+                                                        fetchHierarchy();
+                                                      }}
+                                                    >
+                                                      <SelectTrigger className="h-6 w-auto min-w-0 max-w-[140px] text-[10px] font-normal px-2 py-0 gap-1 border-border/60 bg-background shrink-0 [&>svg]:h-3 [&>svg]:w-3">
+                                                        <SelectValue />
+                                                      </SelectTrigger>
+                                                      <SelectContent>
+                                                        {contentTypeGroups.map(group => (
+                                                          <SelectGroup key={group.label}>
+                                                            <SelectLabel className="text-[10px]">{group.label}</SelectLabel>
+                                                            {group.items.map(ct => (
+                                                              <SelectItem key={ct.value} value={ct.value} className="text-xs">{ct.label}</SelectItem>
+                                                            ))}
+                                                          </SelectGroup>
+                                                        ))}
+                                                      </SelectContent>
+                                                    </Select>
+                                                  ) : (
+                                                    <Badge variant="outline" className="text-[10px] font-normal shrink-0 bg-background">
+                                                      {allContentTypes.find(ct => ct.value === lesson.lesson_type)?.label || lesson.lesson_type}
+                                                    </Badge>
+                                                  )}
                                                 </div>
                                                 {canEdit && (
                                                   <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover/lesson:opacity-100 transition-opacity">
