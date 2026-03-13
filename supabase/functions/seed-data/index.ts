@@ -837,8 +837,8 @@ Deno.serve(async (req) => {
         }
 
         // ── WEBSITE (blogs + pages) ──
-        if (categories.includes('website') && budget.canAdd()) {
-          const webBudget = budget.cap(alloc.website || 5)
+        if (categories.includes('website')) {
+          const webBudget = budget.capMin(alloc.website || 5)
           const numBlogs = Math.max(1, Math.ceil(webBudget * 0.6))
           const numPages = Math.max(1, webBudget - numBlogs)
 
