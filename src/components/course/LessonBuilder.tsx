@@ -60,6 +60,18 @@ export interface ContentBlock {
   toc_style?: 'default' | 'striped' | 'bordered' | 'minimal';
   toc_size?: 'sm' | 'md' | 'lg' | 'xl';
   toc_rows?: { en: string; ar: string }[];
+  // divider
+  divider_width?: number; // percentage 25-100
+  divider_style?: 'solid' | 'dashed' | 'dotted' | 'double';
+  divider_thickness?: number; // 1-6 px
+  divider_color?: string;
+  // page break (no extra fields needed, acts as marker)
+  page_label?: string;
+  page_label_ar?: string;
+  // split screen
+  split_left_html?: string;
+  split_right_html?: string;
+  split_active_side?: 'left' | 'right';
 }
 const generateId = () => Math.random().toString(36).substring(2, 10);
 
