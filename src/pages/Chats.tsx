@@ -37,11 +37,10 @@ const Chats = () => {
   const [adminJoinedChats, setAdminJoinedChats] = useState<Set<string>>(new Set());
 
   const [createOpen, setCreateOpen] = useState(false);
-  const [chatType, setChatType] = useState<'direct' | 'group'>('direct');
   const [studentsList, setStudentsList] = useState<any[]>([]);
   const [teachersList, setTeachersList] = useState<any[]>([]);
   const [subscriptionsList, setSubscriptionsList] = useState<any[]>([]);
-  const [createForm, setCreateForm] = useState({ student_id: '', teacher_id: '', name: '', subscription_id: '', group_students: [] as string[], group_teachers: [] as string[] });
+  const [createForm, setCreateForm] = useState({ student_id: '', teacher_id: '' });
   const [createLoading, setCreateLoading] = useState(false);
 
   // Group members state
