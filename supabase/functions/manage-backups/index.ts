@@ -15,7 +15,7 @@ const ALL_TABLES = [
   'payout_requests', 'expenses', 'expense_categories',
   'ebooks', 'ebook_views', 'ebook_downloads',
   'landing_content', 'blog_posts', 'website_pages', 'policies',
-  'app_settings', 'auto_backup_config', 'payment_gateway_config',
+  'app_settings', 'payment_gateway_config',
   'audit_logs', 'seed_sessions', 'seed_records',
 ]
 
