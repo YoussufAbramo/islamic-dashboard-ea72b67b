@@ -510,8 +510,8 @@ Deno.serve(async (req) => {
 
         // ── BILLING (subscriptions + invoices) ──
         let createdSubIds: string[] = []
-        if (categories.includes('billing') && sIds.length > 0 && cIds.length > 0 && tIds.length > 0 && budget.canAdd()) {
-          const billingBudget = budget.cap(alloc.billing || 12)
+        if (categories.includes('billing') && sIds.length > 0 && cIds.length > 0 && tIds.length > 0) {
+          const billingBudget = budget.capMin(alloc.billing || 12)
           const numSubs = Math.max(1, Math.min(sIds.length, Math.ceil(billingBudget * 0.4)))
           const numInvoices = Math.max(1, billingBudget - numSubs)
 
