@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
+import { logAction } from '@/lib/actionsQueue';
 
 interface BackupFile {
   name: string;
