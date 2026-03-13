@@ -225,6 +225,7 @@ const BlockEditor = ({
 }) => {
   const meta = blockMeta[block.type];
   const Icon = meta.icon;
+  const [collapsed, setCollapsed] = useState(false);
 
   const renderQuestionField = () => (
     <div className="grid grid-cols-2 gap-3">
@@ -241,25 +242,33 @@ const BlockEditor = ({
 
   return (
     <div className="rounded-lg border bg-card group relative">
-      <div className="flex items-center gap-2 px-3 py-2 border-b bg-muted/30">
-        <GripVertical className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+      <div
+        className="flex items-center gap-2 px-3 py-2 border-b bg-muted/30 cursor-pointer select-none"
+        onClick={() => setCollapsed((c) => !c)}
+      >
+        <GripVertical className="h-4 w-4 text-muted-foreground/40 shrink-0" onClick={(e) => e.stopPropagation()} />
         <Icon className={cn("h-4 w-4 shrink-0", meta.color)} />
         <span className="text-xs font-medium text-muted-foreground">
           {isAr ? meta.labelAr : meta.label}
         </span>
         <div className="ms-auto flex items-center gap-0.5">
-          <Button variant="ghost" size="icon" className="h-6 w-6" disabled={isFirst} onClick={onMoveUp}>
+          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); setCollapsed((c) => !c); }}>
+            <ChevronsUpDown className={cn("h-3 w-3 transition-transform", collapsed && "rotate-180")} />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-6 w-6" disabled={isFirst} onClick={(e) => { e.stopPropagation(); onMoveUp(); }}>
             <ChevronUp className="h-3 w-3" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-6 w-6" disabled={isLast} onClick={onMoveDown}>
+          <Button variant="ghost" size="icon" className="h-6 w-6" disabled={isLast} onClick={(e) => { e.stopPropagation(); onMoveDown(); }}>
             <ChevronDown className="h-3 w-3" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/60 hover:text-destructive" onClick={onRemove}>
+          <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/60 hover:text-destructive" onClick={(e) => { e.stopPropagation(); onRemove(); }}>
             <Trash2 className="h-3 w-3" />
           </Button>
         </div>
       </div>
 
+      <div className={cn("grid transition-all duration-300 ease-out", collapsed ? "grid-rows-[0fr]" : "grid-rows-[1fr]")}>
+        <div className="overflow-hidden">
       <div className="p-3 space-y-3">
         {/* ── Media blocks ── */}
         {block.type === 'text' && (
