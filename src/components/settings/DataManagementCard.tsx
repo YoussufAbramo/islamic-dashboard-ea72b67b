@@ -36,6 +36,8 @@ const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon
   { key: 'ebooks', label: 'E-Books', labelAr: 'كتب إلكترونية', icon: '📖', desc: 'E-books, views & downloads', descAr: 'كتب إلكترونية ومشاهدات وتنزيلات' },
   { key: 'website', label: 'Website Content', labelAr: 'محتوى الموقع', icon: '🌐', desc: 'Blog posts & pages', descAr: 'مقالات وصفحات' },
   { key: 'packages', label: 'Pricing Packages', labelAr: 'باقات الأسعار', icon: '📦', desc: 'Pricing packages', descAr: 'باقات الأسعار' },
+  { key: 'payouts', label: 'Payout Requests', labelAr: 'طلبات الدفع', icon: '💸', desc: 'Approved & declined payouts', descAr: 'طلبات دفع مقبولة ومرفوضة' },
+  { key: 'badges', label: 'Badge Achievements', labelAr: 'إنجازات الشارات', icon: '🏆', desc: 'Seed badge data for teachers', descAr: 'بيانات شارات للمعلمين' },
 ];
 
 const getEstimatedCounts = (m: number) => ({

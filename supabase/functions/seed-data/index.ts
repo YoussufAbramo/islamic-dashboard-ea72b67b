@@ -887,6 +887,105 @@ Deno.serve(async (req) => {
           }
         }
 
+        // ── PAYOUTS ──
+        if (categories.includes('payouts') && tIds.length > 0) {
+          const payoutStatuses = ['approved', 'declined', 'approved', 'under_review', 'declined', 'approved']
+          const payoutInsert = Array.from({ length: Math.max(2, multiplier * 2) }, (_, i) => {
+            const status = payoutStatuses[i % payoutStatuses.length]
+            return {
+              teacher_id: tIds[i % tIds.length],
+              requested_amount: [100, 250, 500, 150, 300, 200][i % 6],
+              available_balance_at_request: [500, 800, 1200, 600, 900, 700][i % 6],
+              status,
+              reviewed_at: status !== 'under_review' ? randomDate(10, 0) : null,
+              admin_notes: status === 'approved' ? 'Payment processed' : status === 'declined' ? 'Insufficient documentation' : null,
+              decline_reason: status === 'declined' ? pick(['Missing bank details', 'Minimum threshold not met', 'Duplicate request']) : null,
+              admin_id: status !== 'under_review' ? callerId : null,
+            }
+          })
+          const { data: createdPayouts } = await admin.from('payout_requests').insert(payoutInsert).select('id')
+          const payoutIds = (createdPayouts || []).map(p => p.id)
+          await trackRecords(admin, sessionId, 'payout_requests', payoutIds)
+          counts.payout_requests = payoutIds.length
+        }
+
+        // ── BADGES (seed session reports & timetable for badge thresholds) ──
+        if (categories.includes('badges') && tIds.length > 0) {
+          // For Logged Hours and Completed Sessions, generate enough data
+          // to hit all 5 badge tiers for the first 2 teachers
+          const badgeTeachers = tIds.slice(0, Math.min(2, tIds.length))
+          const HOURS_THRESHOLDS = [200, 500, 800, 1000, 1500] // in hours
+          const SESSION_THRESHOLDS = [100, 300, 600, 1000, 1500]
+          const targetHours = HOURS_THRESHOLDS[4] // 1500 hours = black tier
+          const targetSessions = SESSION_THRESHOLDS[4] // 1500 sessions = black tier
+          
+          for (const teacherId of badgeTeachers) {
+            // Create completed timetable entries for session count
+            const batchSize = 100
+            const totalBatches = Math.ceil(targetSessions / batchSize)
+            
+            for (let batch = 0; batch < totalBatches; batch++) {
+              const count = Math.min(batchSize, targetSessions - batch * batchSize)
+              const ttBatch = Array.from({ length: count }, (_, i) => {
+                const idx = batch * batchSize + i
+                const d = new Date()
+                d.setDate(d.getDate() - 365 - idx)
+                d.setHours(8 + (idx % 8), 0, 0, 0)
+                return {
+                  teacher_id: teacherId,
+                  student_id: sIds.length > 0 ? sIds[idx % sIds.length] : null,
+                  course_id: cIds.length > 0 ? cIds[idx % cIds.length] : null,
+                  scheduled_at: d.toISOString(),
+                  duration_minutes: 60,
+                  status: 'completed',
+                }
+              })
+              const { data: createdTT } = await admin.from('timetable_entries').insert(ttBatch).select('id')
+              const ids = (createdTT || []).map(t => t.id)
+              await trackRecords(admin, sessionId, 'timetable_entries', ids)
+              counts.timetable = (counts.timetable || 0) + ids.length
+
+              // Create session reports to accumulate hours
+              const hoursPerSession = targetHours / targetSessions * 3600 // seconds per session
+              const reportBatch = ids.map((ttId, ri) => {
+                const d = new Date()
+                d.setDate(d.getDate() - 365 - (batch * batchSize + ri))
+                return {
+                  timetable_entry_id: ttId,
+                  teacher_id: teacherId,
+                  student_id: sIds.length > 0 ? sIds[(batch * batchSize + ri) % sIds.length] : null,
+                  course_id: cIds.length > 0 ? cIds[(batch * batchSize + ri) % cIds.length] : null,
+                  summary: 'Badge achievement session',
+                  session_duration_seconds: Math.round(hoursPerSession),
+                  started_at: d.toISOString(),
+                  created_by: callerId,
+                }
+              })
+              const { data: createdReports } = await admin.from('session_reports').insert(reportBatch).select('id')
+              const reportIds = (createdReports || []).map(r => r.id)
+              await trackRecords(admin, sessionId, 'session_reports', reportIds)
+              counts.session_reports = (counts.session_reports || 0) + reportIds.length
+            }
+
+            // Certificates: seed half tiers (2-3 certificates)
+            const certInsert = Array.from({ length: 3 }, (_, i) => ({
+              recipient_id: (allTeachers || []).find(t => t.id === teacherId)?.user_id || callerId,
+              recipient_type: 'teacher',
+              title: `Teaching Excellence Certificate ${i + 1}`,
+              title_ar: `شهادة التميز في التدريس ${i + 1}`,
+              description: 'Awarded for outstanding teaching.',
+              description_ar: 'تُمنح للتميز في التدريس.',
+              issued_by: callerId,
+              status: 'active',
+            }))
+            const { data: createdCerts } = await admin.from('certificates').insert(certInsert).select('id')
+            const certIds = (createdCerts || []).map(c => c.id)
+            await trackRecords(admin, sessionId, 'certificates', certIds)
+            counts.certificates = (counts.certificates || 0) + certIds.length
+          }
+          // Membership stays empty (based on profile created_at which is recent)
+        }
+
         // Finalize session
         const totalRecords = Object.values(counts).reduce((a, b) => a + b, 0)
         await admin.from('seed_sessions').update({
