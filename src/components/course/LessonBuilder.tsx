@@ -53,6 +53,8 @@ export interface ContentBlock {
   missing_word_ar?: string;
   pairs?: { left: string; left_ar?: string; right: string; right_ar?: string }[]; // for text_match
   // table of content rows
+  toc_header_en?: string;
+  toc_header_ar?: string;
   toc_rows?: { en: string; ar: string }[];
 }
 const generateId = () => Math.random().toString(36).substring(2, 10);
@@ -413,6 +415,20 @@ const BlockEditor = ({
           };
           return (
             <div className="space-y-3">
+              <div>
+                <Label className="text-xs font-medium mb-1.5 block">{isAr ? 'عناوين الأعمدة' : 'Column Headers'}</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className="text-[10px] text-muted-foreground">English Header</Label>
+                    <Input dir="ltr" value={block.toc_header_en || ''} onChange={(e) => onChange({ ...block, toc_header_en: e.target.value })} placeholder="English" className="mt-0.5 text-xs" />
+                  </div>
+                  <div>
+                    <Label className="text-[10px] text-muted-foreground">عنوان العربية</Label>
+                    <Input dir="rtl" value={block.toc_header_ar || ''} onChange={(e) => onChange({ ...block, toc_header_ar: e.target.value })} placeholder="العربية" className="mt-0.5 text-xs" />
+                  </div>
+                </div>
+              </div>
+              <Separator />
               <div className="flex items-center justify-between">
                 <Label className="text-xs font-medium">{isAr ? 'صفوف جدول المحتويات' : 'Table of Content Rows'}</Label>
                 <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={addRow}>
