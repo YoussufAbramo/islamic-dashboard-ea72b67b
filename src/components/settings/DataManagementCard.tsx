@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
-import { Database, AlertTriangle, Loader2, PackagePlus, ScrollText, Trash2, History, ChevronDown, ChevronUp, CheckCircle2, XCircle, Clock, Eraser, Info, ClipboardList, Bug } from 'lucide-react';
+import { Database, AlertTriangle, Loader2, PackagePlus, ScrollText, Trash2, History, ChevronDown, ChevronUp, CheckCircle2, XCircle, Clock, Eraser, Info } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -98,120 +98,6 @@ const StatusBadge = ({ status, isAr }: { status: string; isAr: boolean }) => {
   );
 };
 
-// ==================== Clear Logs Card (Compact) ====================
-type LogType = 'audit_logs' | 'seed_log' | 'error_log';
-
-const LOG_TYPES: { key: LogType; label: string; labelAr: string; icon: any; desc: string; descAr: string; isLocal?: boolean }[] = [
-  { key: 'audit_logs', label: 'Audit Logs', labelAr: 'سجل التدقيق', icon: ClipboardList, desc: 'Database audit trail entries', descAr: 'سجلات تدقيق قاعدة البيانات' },
-  { key: 'seed_log', label: 'Seed Log', labelAr: 'سجل البيانات التجريبية', icon: Database, desc: 'Seed sessions & records', descAr: 'جلسات وسجلات البيانات التجريبية' },
-  { key: 'error_log', label: 'Error Log', labelAr: 'سجل الأخطاء', icon: Bug, desc: 'Browser error log (localStorage)', descAr: 'سجل أخطاء المتصفح (محلي)', isLocal: true },
-];
-
-const ClearLogsCard = ({ isAr }: { isAr: boolean }) => {
-  const [selected, setSelected] = useState<LogType[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-
-  const handleClear = async () => {
-    setConfirmOpen(false);
-    setLoading(true);
-    try {
-      // Clear localStorage error log if selected
-      if (selected.includes('error_log')) {
-        localStorage.removeItem('app_error_log');
-      }
-
-      // Clear DB logs
-      const dbLogs = selected.filter(s => s !== 'error_log');
-      if (dbLogs.length > 0) {
-        const { data, error } = await supabase.functions.invoke('seed-data', {
-          body: { action: 'clear_logs', log_types: dbLogs },
-        });
-        if (error || data?.error) throw new Error(data?.error || error?.message);
-        logAction('delete', 'Logs', `Cleared logs: ${selected.join(', ')}`, undefined, `Deleted ${data.total_deleted} DB records`);
-        toast.success(isAr ? `تم مسح ${data.total_deleted} سجل` : `Cleared ${data.total_deleted} log entries`);
-      } else {
-        logAction('delete', 'Logs', 'Cleared error log (localStorage)');
-        toast.success(isAr ? 'تم مسح سجل الأخطاء' : 'Error log cleared');
-      }
-      setSelected([]);
-    } catch (err: any) {
-      toast.error(err.message || 'Failed');
-    } finally { setLoading(false); }
-  };
-
-  return (
-    <>
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-sm">
-            <ScrollText className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            {isAr ? 'مسح السجلات' : 'Clear Logs'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 pt-0">
-          <div className="flex flex-wrap gap-2">
-            {LOG_TYPES.map(lt => {
-              const Icon = lt.icon;
-              return (
-                <label
-                  key={lt.key}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border cursor-pointer transition-colors text-xs ${
-                    selected.includes(lt.key) ? 'border-primary/30 bg-primary/5' : 'border-border'
-                  }`}
-                >
-                  <Checkbox
-                    className="h-3.5 w-3.5"
-                    checked={selected.includes(lt.key)}
-                    onCheckedChange={(checked) => {
-                      if (checked) setSelected(prev => [...prev, lt.key]);
-                      else setSelected(prev => prev.filter(c => c !== lt.key));
-                    }}
-                  />
-                  <Icon className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="font-medium">{isAr ? lt.labelAr : lt.label}</span>
-                  {lt.isLocal && <Badge variant="outline" className="text-[8px] h-3.5 px-1">{isAr ? 'محلي' : 'Local'}</Badge>}
-                </label>
-              );
-            })}
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setConfirmOpen(true)}
-            disabled={loading || selected.length === 0}
-            className="text-destructive hover:text-destructive h-7 text-xs"
-          >
-            {loading && <Loader2 className="h-3.5 w-3.5 me-1 animate-spin" />}
-            {isAr ? 'مسح المحدد' : 'Clear Selected'}
-          </Button>
-        </CardContent>
-      </Card>
-
-      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-              {isAr ? 'تأكيد مسح السجلات' : 'Confirm Log Cleanup'}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {isAr
-                ? `سيتم مسح: ${selected.map(s => LOG_TYPES.find(l => l.key === s)?.labelAr).join('، ')}. لا يمكن التراجع عن هذا الإجراء.`
-                : `This will clear: ${selected.map(s => LOG_TYPES.find(l => l.key === s)?.label).join(', ')}. This cannot be undone.`}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
-            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={handleClear}>
-              {isAr ? 'نعم، مسح' : 'Yes, Clear'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
-  );
-};
 
 const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const [seedLoading, setSeedLoading] = useState(false);
@@ -522,8 +408,6 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
           </CardContent>
         </Card>
 
-        {/* Clear Logs Card */}
-        <ClearLogsCard isAr={isAr} />
 
         {/* System Reset — Danger Zone */}
         <Collapsible>
