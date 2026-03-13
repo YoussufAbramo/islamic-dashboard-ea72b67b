@@ -9,7 +9,7 @@ const ALL_TABLES = [
   'courses', 'course_sections', 'course_categories', 'course_levels', 'course_tracks',
   'lessons', 'lesson_sections', 'students', 'teachers', 'teacher_courses', 'profiles',
   'user_roles', 'subscriptions', 'timetable_entries', 'attendance', 'session_reports',
-  'announcements', 'notifications', 'chats', 'chat_messages', 'chat_members', 'chat_read_receipts',
+  'announcements', 'notifications', 'chats', 'chat_messages', 'chat_members',
   'support_tickets', 'support_departments', 'support_priorities',
   'certificates', 'student_progress', 'invoices', 'pricing_packages',
   'payout_requests', 'expenses', 'expense_categories',
