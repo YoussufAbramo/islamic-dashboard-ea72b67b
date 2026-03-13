@@ -21,6 +21,7 @@ import {
 // ─── Block Types ───
 export type BlockType =
   | 'text' | 'image' | 'video' | 'audio'
+  | 'divider' | 'page_break' | 'split_screen'
   | 'table_of_content' | 'read_listen' | 'memorization' | 'revision' | 'homework'
   | 'exercise_listen_choose' | 'exercise_text_match' | 'exercise_choose_correct'
   | 'exercise_choose_multiple' | 'exercise_rearrange' | 'exercise_missing_text' | 'exercise_true_false';
