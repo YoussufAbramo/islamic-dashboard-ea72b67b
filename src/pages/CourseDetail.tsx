@@ -410,6 +410,14 @@ const CourseDetail = () => {
                   <BookOpen className="h-3 w-3" />
                   {totalContent} {t('courses.content')}
                 </Badge>
+                <Button
+                  size="sm"
+                  className="gap-1.5"
+                  onClick={() => navigate(`/dashboard/courses/${id}/learn`)}
+                >
+                  <GraduationCap className="h-4 w-4" />
+                  {isAr ? 'ابدأ التعلم' : 'Learn Now'}
+                </Button>
               </div>
             </div>
           </div>
