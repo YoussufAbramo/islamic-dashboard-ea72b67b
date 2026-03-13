@@ -765,11 +765,11 @@ const CourseDetail = () => {
       </Dialog>
 
       {/* ─── Lesson Dialog (Add/Edit) ─── */}
-      <Dialog open={lessonDialog} onOpenChange={(o) => { setLessonDialog(o); if (!o) { setEditingLessonId(null); setLessonForm({ title: '', title_ar: '', lesson_type: 'read_listen' }); } }}>
+      <Dialog open={lessonDialog} onOpenChange={(o) => { setLessonDialog(o); if (!o) { setEditingLessonId(null); setLessonForm({ title: '', title_ar: '' }); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {editingLessonId ? <Settings2 className="h-4 w-4 text-primary" /> : <Plus className="h-4 w-4 text-primary" />}
+              {editingLessonId ? <Pencil className="h-4 w-4 text-primary" /> : <Plus className="h-4 w-4 text-primary" />}
               {editingLessonId ? (isAr ? 'تعديل الدرس' : 'Edit Lesson') : t('courses.addLesson')}
             </DialogTitle>
           </DialogHeader>
@@ -777,22 +777,6 @@ const CourseDetail = () => {
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Title (EN)</Label><Input value={lessonForm.title} onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })} /></div>
               <div><Label>Title (AR)</Label><Input value={lessonForm.title_ar} onChange={(e) => setLessonForm({ ...lessonForm, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
-            </div>
-            <div>
-              <Label>{t('courses.lessonType')}</Label>
-              <Select value={lessonForm.lesson_type} onValueChange={(v) => setLessonForm({ ...lessonForm, lesson_type: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {contentTypeGroups.map((group) => (
-                    <SelectGroup key={group.label}>
-                      <SelectLabel className="text-xs font-semibold text-muted-foreground">{group.label}</SelectLabel>
-                      {group.items.map((ct) => (
-                        <SelectItem key={ct.value} value={ct.value}>{ct.label}</SelectItem>
-                      ))}
-                    </SelectGroup>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </div>
           <DialogFooter>
