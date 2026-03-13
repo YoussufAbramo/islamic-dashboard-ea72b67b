@@ -332,6 +332,9 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
             </Button>
           </CardContent>
         </Card>
+
+        {/* System Reset */}
+        <SystemResetCard isAr={isAr} />
       </div>
 
       {/* Confirm Clear Dialog */}
