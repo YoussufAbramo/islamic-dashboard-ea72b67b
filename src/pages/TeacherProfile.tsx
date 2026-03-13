@@ -844,6 +844,61 @@ const TeacherProfile = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Support Ticket Dialog */}
+      <Dialog open={ticketOpen} onOpenChange={setTicketOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <HeadphonesIcon className="h-5 w-5 text-primary" />
+              {isAr ? 'تقديم تذكرة دعم' : 'Submit Support Ticket'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs">{isAr ? 'الموضوع' : 'Subject'} *</Label>
+              <Input value={ticketForm.subject} onChange={e => setTicketForm({ ...ticketForm, subject: e.target.value })} placeholder={isAr ? 'موضوع التذكرة...' : 'Ticket subject...'} />
+            </div>
+            {departments.length > 0 && (
+              <div className="space-y-1.5">
+                <Label className="text-xs">{isAr ? 'القسم' : 'Department'}</Label>
+                <Select value={ticketForm.department} onValueChange={v => setTicketForm({ ...ticketForm, department: v })}>
+                  <SelectTrigger><SelectValue placeholder={isAr ? 'اختر...' : 'Select...'} /></SelectTrigger>
+                  <SelectContent>
+                    {departments.map(d => (
+                      <SelectItem key={d.id} value={d.name}>{isAr ? (d.name_ar || d.name) : d.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            {priorities.length > 0 && (
+              <div className="space-y-1.5">
+                <Label className="text-xs">{isAr ? 'الأولوية' : 'Priority'}</Label>
+                <Select value={ticketForm.priority} onValueChange={v => setTicketForm({ ...ticketForm, priority: v })}>
+                  <SelectTrigger><SelectValue placeholder={isAr ? 'اختر...' : 'Select...'} /></SelectTrigger>
+                  <SelectContent>
+                    {priorities.map(p => (
+                      <SelectItem key={p.id} value={p.name}>{isAr ? (p.name_ar || p.name) : p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div className="space-y-1.5">
+              <Label className="text-xs">{isAr ? 'الرسالة' : 'Message'} *</Label>
+              <Textarea value={ticketForm.message} onChange={e => setTicketForm({ ...ticketForm, message: e.target.value })} placeholder={isAr ? 'اشرح مشكلتك...' : 'Describe your issue...'} rows={4} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTicketOpen(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
+            <Button onClick={handleSubmitTicket} disabled={ticketLoading}>
+              {ticketLoading ? <Loader2 className="h-4 w-4 me-2 animate-spin" /> : <Send className="h-4 w-4 me-2" />}
+              {isAr ? 'إرسال' : 'Submit'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
