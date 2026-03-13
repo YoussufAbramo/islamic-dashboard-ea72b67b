@@ -592,10 +592,9 @@ const CourseDetail = () => {
                       <ChevronDown className="h-4 w-4 text-muted-foreground ms-auto transition-transform group-data-[state=open]:rotate-180 shrink-0" />
                     </CollapsibleTrigger>
                     {canEdit && (
-                      <ItemActionsMenu
-                        onEdit={() => openEditTopic(topic)}
-                        onDelete={() => setDeleteTarget({ id: topic.id, type: 'topic' })}
-                      />
+                      <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: topic.id, type: 'topic' }); }}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
                     )}
                   </div>
                   <CollapsibleContent className="animate-accordion-down data-[state=closed]:animate-accordion-up">
