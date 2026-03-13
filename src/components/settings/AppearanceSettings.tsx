@@ -220,6 +220,9 @@ const AppearanceSettings = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {themes.map((t) => {
               const isSelected = pending.colorTheme === t.value;
+              const colorLabels = isAr
+                ? ['الرئيسي', 'التمييز', 'القائمة', 'الخلفية']
+                : ['Main', 'Accent', 'Sidebar', 'Surface'];
               return (
                 <button
                   key={t.value}
@@ -237,21 +240,32 @@ const AppearanceSettings = () => {
                     {isSelected && <div className="h-2.5 w-2.5 rounded-full bg-primary" />}
                   </div>
 
-                  {/* Color palette strip */}
-                  <div className="flex items-center gap-1 shrink-0">
-                    {t.palette.map((c, i) => (
-                      <div
-                        key={i}
-                        className="w-7 h-7 rounded-lg first:w-9 first:h-9 border border-border/30"
-                        style={{ background: c }}
-                      />
-                    ))}
+                  {/* Color palette box */}
+                  <div className="shrink-0 w-20 h-16 rounded-lg overflow-hidden border border-border/30">
+                    {/* Top 3/4 — Main color */}
+                    <div className="h-[75%]" style={{ background: t.palette[0] }} />
+                    {/* Bottom 1/4 — 3 colors side by side */}
+                    <div className="h-[25%] flex">
+                      <div className="flex-1" style={{ background: t.palette[1] }} />
+                      <div className="flex-1" style={{ background: t.palette[2] }} />
+                      <div className="flex-1" style={{ background: t.palette[3] }} />
+                    </div>
                   </div>
 
-                  {/* Label */}
-                  <span className={`text-sm font-medium truncate ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
-                    {isAr ? t.labelAr : t.label}
-                  </span>
+                  {/* Label + color names */}
+                  <div className="min-w-0 flex-1">
+                    <span className={`text-sm font-medium block truncate ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
+                      {isAr ? t.labelAr : t.label}
+                    </span>
+                    <div className="flex gap-2 mt-1 flex-wrap">
+                      {t.palette.map((c, i) => (
+                        <div key={i} className="flex items-center gap-1">
+                          <div className="w-2 h-2 rounded-sm" style={{ background: c }} />
+                          <span className="text-[10px] text-muted-foreground">{colorLabels[i]}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
                   {isSelected && <Check className="absolute top-3 end-3 h-4 w-4 text-primary" />}
                 </button>
