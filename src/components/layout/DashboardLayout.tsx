@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { useUpcomingAttend } from '@/hooks/use-upcoming-attend';
+import { cn } from '@/lib/utils';
 
 const DashboardSkeleton = () =>
 <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-300">
