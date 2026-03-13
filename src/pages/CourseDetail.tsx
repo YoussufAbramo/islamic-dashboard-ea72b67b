@@ -14,8 +14,8 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree, Layers, FileText, Pencil, Route, MoreHorizontal, Settings2, Edit, HelpCircle, ChevronDown, Link2, GraduationCap, SlidersHorizontal, Check, X } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree, Layers, FileText, Pencil, Route, MoreHorizontal, Settings2, Edit, HelpCircle, ChevronDown, Link2, GraduationCap, SlidersHorizontal, Check, X, MoveRight } from 'lucide-react';
 import PresetSections from '@/components/course/PresetSections';
 import LessonBuilder from '@/components/course/LessonBuilder';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -310,6 +310,16 @@ const CourseDetail = () => {
       toast.success(isAr ? 'تم حذف الدرس' : 'Lesson deleted');
     }
     setDeleteTarget(null);
+    fetchHierarchy();
+  };
+
+  // ─── Move Section to another Topic ───
+  const handleMoveSection = async (sectionId: string, targetTopicId: string) => {
+    const targetSections = sections[targetTopicId] || [];
+    await supabase.from('lesson_sections' as any)
+      .update({ course_section_id: targetTopicId, sort_order: targetSections.length } as any)
+      .eq('id', sectionId);
+    toast.success(isAr ? 'تم نقل القسم' : 'Section moved');
     fetchHierarchy();
   };
 
@@ -629,10 +639,37 @@ const CourseDetail = () => {
                                       <ChevronDown className="h-3.5 w-3.5 text-muted-foreground ms-auto transition-transform group-data-[state=open]:rotate-180 shrink-0" />
                                     </CollapsibleTrigger>
                                     {canEdit && (
-                                      <ItemActionsMenu
-                                        onEdit={() => openEditSection(section, topic.id)}
-                                        onDelete={() => setDeleteTarget({ id: section.id, type: 'section' })}
-                                      />
+                                      <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                          <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted shrink-0" onClick={(e) => e.stopPropagation()}>
+                                            <MoreHorizontal className="h-4 w-4" />
+                                          </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="w-44">
+                                          {topics.length > 1 && (
+                                            <>
+                                              <DropdownMenuSub>
+                                                <DropdownMenuSubTrigger className="gap-2" onClick={(e) => e.stopPropagation()}>
+                                                  <MoveRight className="h-3.5 w-3.5" />
+                                                  {isAr ? 'نقل إلى' : 'Move To'}
+                                                </DropdownMenuSubTrigger>
+                                                <DropdownMenuSubContent>
+                                                  {topics.filter(t => t.id !== topic.id).map(t => (
+                                                    <DropdownMenuItem key={t.id} onClick={(e) => { e.stopPropagation(); handleMoveSection(section.id, t.id); }}>
+                                                      {isAr && t.title_ar ? t.title_ar : t.title}
+                                                    </DropdownMenuItem>
+                                                  ))}
+                                                </DropdownMenuSubContent>
+                                              </DropdownMenuSub>
+                                              <DropdownMenuSeparator />
+                                            </>
+                                          )}
+                                          <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: section.id, type: 'section' }); }}>
+                                            <Trash2 className="h-3.5 w-3.5 me-2" />
+                                            {isAr ? 'حذف' : 'Delete'}
+                                          </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
                                     )}
                                   </div>
                                   <CollapsibleContent className="animate-accordion-down data-[state=closed]:animate-accordion-up">
