@@ -35,6 +35,7 @@ export interface ContentBlock {
   image_url?: string;
   image_caption?: string;
   image_alt?: string;
+  image_fit?: 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
   // video
   video_type?: 'url' | 'youtube' | 'vimeo' | 'embed';
   video_url?: string;
