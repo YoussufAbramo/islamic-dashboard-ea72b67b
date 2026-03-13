@@ -26,7 +26,7 @@
     --muted: 40 20% 94%;
     --muted-foreground: 160 10% 45%;
 
-    --accent: 38 65% 55%;
+    --accent: 160 20% 93%;
     --accent-foreground: 160 30% 10%;
 
     --destructive: 0 72% 50%;
@@ -93,7 +93,7 @@
     --muted: 160 15% 14%;
     --muted-foreground: 40 15% 60%;
 
-    --accent: 38 50% 40%;
+    --accent: 160 15% 18%;
     --accent-foreground: 40 30% 92%;
 
     --destructive: 0 62.8% 30.6%;
@@ -138,7 +138,7 @@
   .theme-ocean:root, :root.theme-ocean {
     --primary: 210 65% 38%;
     --primary-foreground: 210 20% 98%;
-    --accent: 190 60% 50%;
+    --accent: 210 20% 93%;
     --accent-foreground: 210 30% 10%;
     --ring: 210 65% 38%;
     --gold: 190 60% 50%;
@@ -170,7 +170,7 @@
     --secondary-foreground: 210 20% 92%;
     --muted: 210 20% 14%;
     --muted-foreground: 210 15% 60%;
-    --accent: 190 45% 38%;
+    --accent: 210 18% 18%;
     --accent-foreground: 210 20% 92%;
     --border: 210 20% 16%;
     --input: 210 20% 16%;
@@ -191,7 +191,7 @@
   .theme-purple:root, :root.theme-purple {
     --primary: 270 50% 40%;
     --primary-foreground: 270 20% 98%;
-    --accent: 290 55% 55%;
+    --accent: 270 18% 93%;
     --accent-foreground: 270 30% 10%;
     --ring: 270 50% 40%;
     --gold: 290 55% 55%;
@@ -223,7 +223,7 @@
     --secondary-foreground: 270 15% 92%;
     --muted: 270 20% 14%;
     --muted-foreground: 270 15% 60%;
-    --accent: 290 40% 40%;
+    --accent: 270 15% 18%;
     --accent-foreground: 270 15% 92%;
     --border: 270 20% 16%;
     --input: 270 20% 16%;
@@ -244,7 +244,7 @@
   .theme-desert:root, :root.theme-desert {
     --primary: 25 60% 42%;
     --primary-foreground: 35 30% 98%;
-    --accent: 35 70% 55%;
+    --accent: 25 20% 93%;
     --accent-foreground: 25 40% 10%;
     --ring: 25 60% 42%;
     --gold: 35 70% 55%;
@@ -276,7 +276,7 @@
     --secondary-foreground: 35 20% 92%;
     --muted: 25 20% 14%;
     --muted-foreground: 25 15% 60%;
-    --accent: 35 55% 40%;
+    --accent: 25 15% 18%;
     --accent-foreground: 35 20% 92%;
     --border: 25 20% 16%;
     --input: 25 20% 16%;
@@ -297,7 +297,7 @@
   .theme-midnight:root, :root.theme-midnight {
     --primary: 220 55% 35%;
     --primary-foreground: 220 20% 98%;
-    --accent: 240 50% 55%;
+    --accent: 220 18% 93%;
     --accent-foreground: 220 30% 10%;
     --ring: 220 55% 35%;
     --gold: 240 50% 55%;
@@ -329,7 +329,7 @@
     --secondary-foreground: 220 15% 92%;
     --muted: 220 20% 14%;
     --muted-foreground: 220 15% 60%;
-    --accent: 240 38% 42%;
+    --accent: 220 15% 18%;
     --accent-foreground: 220 15% 92%;
     --border: 220 20% 16%;
     --input: 220 20% 16%;
@@ -350,7 +350,7 @@
   .theme-rose:root, :root.theme-rose {
     --primary: 345 55% 45%;
     --primary-foreground: 345 20% 98%;
-    --accent: 330 50% 55%;
+    --accent: 345 18% 93%;
     --accent-foreground: 345 30% 10%;
     --ring: 345 55% 45%;
     --gold: 330 50% 55%;
@@ -381,7 +381,7 @@
     --secondary-foreground: 345 15% 92%;
     --muted: 345 15% 14%;
     --muted-foreground: 345 10% 60%;
-    --accent: 330 38% 42%;
+    --accent: 345 12% 18%;
     --accent-foreground: 345 15% 92%;
     --border: 345 15% 16%;
     --input: 345 15% 16%;
@@ -402,7 +402,7 @@
   .theme-teal:root, :root.theme-teal {
     --primary: 180 50% 35%;
     --primary-foreground: 180 15% 98%;
-    --accent: 170 55% 48%;
+    --accent: 180 18% 93%;
     --accent-foreground: 180 30% 10%;
     --ring: 180 50% 35%;
     --gold: 170 55% 48%;
@@ -433,7 +433,7 @@
     --secondary-foreground: 180 15% 92%;
     --muted: 180 15% 14%;
     --muted-foreground: 180 10% 60%;
-    --accent: 170 40% 38%;
+    --accent: 180 12% 18%;
     --accent-foreground: 180 15% 92%;
     --border: 180 15% 16%;
     --input: 180 15% 16%;
@@ -454,7 +454,7 @@
   .theme-amber:root, :root.theme-amber {
     --primary: 40 75% 45%;
     --primary-foreground: 40 20% 10%;
-    --accent: 30 70% 52%;
+    --accent: 40 22% 93%;
     --accent-foreground: 40 30% 10%;
     --ring: 40 75% 45%;
     --gold: 30 70% 52%;
@@ -485,7 +485,7 @@
     --secondary-foreground: 40 20% 92%;
     --muted: 30 15% 14%;
     --muted-foreground: 30 10% 60%;
-    --accent: 30 55% 40%;
+    --accent: 30 12% 18%;
     --accent-foreground: 40 20% 92%;
     --border: 30 15% 16%;
     --input: 30 15% 16%;
@@ -506,7 +506,7 @@
   .theme-slate:root, :root.theme-slate {
     --primary: 215 20% 40%;
     --primary-foreground: 215 10% 98%;
-    --accent: 210 15% 55%;
+    --accent: 215 12% 93%;
     --accent-foreground: 215 20% 10%;
     --ring: 215 20% 40%;
     --gold: 210 15% 55%;
@@ -537,7 +537,7 @@
     --secondary-foreground: 215 10% 92%;
     --muted: 215 10% 15%;
     --muted-foreground: 215 8% 58%;
-    --accent: 210 12% 42%;
+    --accent: 215 8% 18%;
     --accent-foreground: 215 10% 92%;
     --border: 215 10% 17%;
     --input: 215 10% 17%;
@@ -558,7 +558,7 @@
   .theme-crimson:root, :root.theme-crimson {
     --primary: 0 65% 42%;
     --primary-foreground: 0 10% 98%;
-    --accent: 15 60% 52%;
+    --accent: 0 18% 93%;
     --accent-foreground: 0 30% 10%;
     --ring: 0 65% 42%;
     --gold: 15 60% 52%;
@@ -589,7 +589,7 @@
     --secondary-foreground: 0 10% 92%;
     --muted: 0 15% 14%;
     --muted-foreground: 0 10% 60%;
-    --accent: 15 45% 40%;
+    --accent: 0 12% 18%;
     --accent-foreground: 0 10% 92%;
     --border: 0 15% 16%;
     --input: 0 15% 16%;

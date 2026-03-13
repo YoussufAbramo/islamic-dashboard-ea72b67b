@@ -34,16 +34,16 @@ export type SidebarMode = 'dark' | 'light';
 export type TimeFormat = '12h' | '24h';
 
 const THEMES: { value: ColorTheme; label: string; labelAr: string; color: string; palette: string[] }[] = [
-  { value: 'emerald', label: 'Emerald Gold', labelAr: 'الزمرد الذهبي', color: 'hsl(160 45% 28%)', palette: ['hsl(160 45% 28%)', 'hsl(38 65% 55%)', 'hsl(160 30% 12%)', 'hsl(38 50% 92%)'] },
-  { value: 'ocean', label: 'Ocean Blue', labelAr: 'الأزرق المحيطي', color: 'hsl(210 65% 38%)', palette: ['hsl(210 65% 38%)', 'hsl(190 60% 50%)', 'hsl(210 40% 12%)', 'hsl(210 20% 96%)'] },
-  { value: 'purple', label: 'Royal Purple', labelAr: 'البنفسجي الملكي', color: 'hsl(270 50% 40%)', palette: ['hsl(270 50% 40%)', 'hsl(290 55% 55%)', 'hsl(270 35% 12%)', 'hsl(270 15% 96%)'] },
-  { value: 'desert', label: 'Desert Sand', labelAr: 'رمال الصحراء', color: 'hsl(25 60% 42%)', palette: ['hsl(25 60% 42%)', 'hsl(35 70% 55%)', 'hsl(25 40% 12%)', 'hsl(35 20% 96%)'] },
-  { value: 'midnight', label: 'Midnight', labelAr: 'منتصف الليل', color: 'hsl(220 55% 35%)', palette: ['hsl(220 55% 35%)', 'hsl(240 50% 55%)', 'hsl(220 40% 10%)', 'hsl(220 15% 96%)'] },
-  { value: 'rose', label: 'Rose Garden', labelAr: 'حديقة الورد', color: 'hsl(345 55% 45%)', palette: ['hsl(345 55% 45%)', 'hsl(330 50% 55%)', 'hsl(345 35% 12%)', 'hsl(345 15% 96%)'] },
-  { value: 'teal', label: 'Teal Breeze', labelAr: 'نسيم أزرق مخضر', color: 'hsl(180 50% 35%)', palette: ['hsl(180 50% 35%)', 'hsl(170 55% 48%)', 'hsl(180 40% 10%)', 'hsl(180 15% 96%)'] },
-  { value: 'amber', label: 'Amber Glow', labelAr: 'توهج العنبر', color: 'hsl(40 75% 45%)', palette: ['hsl(40 75% 45%)', 'hsl(30 70% 52%)', 'hsl(30 40% 12%)', 'hsl(40 20% 96%)'] },
-  { value: 'slate', label: 'Slate Steel', labelAr: 'الرمادي الفولاذي', color: 'hsl(215 20% 40%)', palette: ['hsl(215 20% 40%)', 'hsl(210 15% 55%)', 'hsl(215 18% 12%)', 'hsl(215 10% 96%)'] },
-  { value: 'crimson', label: 'Crimson Fire', labelAr: 'النار القرمزية', color: 'hsl(0 65% 42%)', palette: ['hsl(0 65% 42%)', 'hsl(15 60% 52%)', 'hsl(0 40% 12%)', 'hsl(0 15% 96%)'] },
+  { value: 'emerald', label: 'Emerald Gold', labelAr: 'الزمرد الذهبي', color: 'hsl(160 45% 28%)', palette: ['hsl(160 45% 28%)', 'hsl(160 20% 93%)', 'hsl(160 30% 12%)', 'hsl(38 50% 92%)'] },
+  { value: 'ocean', label: 'Ocean Blue', labelAr: 'الأزرق المحيطي', color: 'hsl(210 65% 38%)', palette: ['hsl(210 65% 38%)', 'hsl(210 20% 93%)', 'hsl(210 40% 12%)', 'hsl(210 20% 96%)'] },
+  { value: 'purple', label: 'Royal Purple', labelAr: 'البنفسجي الملكي', color: 'hsl(270 50% 40%)', palette: ['hsl(270 50% 40%)', 'hsl(270 18% 93%)', 'hsl(270 35% 12%)', 'hsl(270 15% 96%)'] },
+  { value: 'desert', label: 'Desert Sand', labelAr: 'رمال الصحراء', color: 'hsl(25 60% 42%)', palette: ['hsl(25 60% 42%)', 'hsl(25 20% 93%)', 'hsl(25 40% 12%)', 'hsl(35 20% 96%)'] },
+  { value: 'midnight', label: 'Midnight', labelAr: 'منتصف الليل', color: 'hsl(220 55% 35%)', palette: ['hsl(220 55% 35%)', 'hsl(220 18% 93%)', 'hsl(220 40% 10%)', 'hsl(220 15% 96%)'] },
+  { value: 'rose', label: 'Rose Garden', labelAr: 'حديقة الورد', color: 'hsl(345 55% 45%)', palette: ['hsl(345 55% 45%)', 'hsl(345 18% 93%)', 'hsl(345 35% 12%)', 'hsl(345 15% 96%)'] },
+  { value: 'teal', label: 'Teal Breeze', labelAr: 'نسيم أزرق مخضر', color: 'hsl(180 50% 35%)', palette: ['hsl(180 50% 35%)', 'hsl(180 18% 93%)', 'hsl(180 40% 10%)', 'hsl(180 15% 96%)'] },
+  { value: 'amber', label: 'Amber Glow', labelAr: 'توهج العنبر', color: 'hsl(40 75% 45%)', palette: ['hsl(40 75% 45%)', 'hsl(40 22% 93%)', 'hsl(30 40% 12%)', 'hsl(40 20% 96%)'] },
+  { value: 'slate', label: 'Slate Steel', labelAr: 'الرمادي الفولاذي', color: 'hsl(215 20% 40%)', palette: ['hsl(215 20% 40%)', 'hsl(215 12% 93%)', 'hsl(215 18% 12%)', 'hsl(215 10% 96%)'] },
+  { value: 'crimson', label: 'Crimson Fire', labelAr: 'النار القرمزية', color: 'hsl(0 65% 42%)', palette: ['hsl(0 65% 42%)', 'hsl(0 18% 93%)', 'hsl(0 40% 12%)', 'hsl(0 15% 96%)'] },
 ];
 
 export const LTR_FONTS = [
