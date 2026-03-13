@@ -409,7 +409,30 @@ const BackupsSettings = () => {
           </CardContent>
         </Card>
 
-        <AutoBackupCard isAr={isAr} />
+        {/* Run a Full Backup Now — standalone button */}
+        <Card>
+          <CardContent className="flex items-center justify-between py-4">
+            <div>
+              <p className="text-sm font-medium">{isAr ? 'تشغيل نسخة احتياطية شاملة الآن' : 'Run a Full Backup Now'}</p>
+              <p className="text-xs text-muted-foreground">{isAr ? 'إنشاء نسخة احتياطية فورية لجميع الجداول' : 'Instantly create a full backup of all database tables'}</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={async () => {
+              setCreating(true);
+              try {
+                const { data, error } = await supabase.functions.invoke('manage-backups', { body: { action: 'test_auto_backup' } });
+                if (error) throw error;
+                if (data?.error) throw new Error(data.error);
+                toast.success(isAr ? `تم إنشاء نسخة شاملة: ${data.fileName} (${data.totalRecords} سجل)` : `Full backup created: ${data.fileName} (${data.totalRecords} records)`);
+                fetchBackups();
+              } catch (err: any) { toast.error(err.message || 'Backup failed'); }
+              finally { setCreating(false); }
+            }} disabled={creating}>
+              {creating ? <Loader2 className="h-4 w-4 me-1 animate-spin" /> : <Database className="h-4 w-4 me-1" />}
+              {isAr ? 'تشغيل الآن' : 'Run a Full Backup Now'}
+            </Button>
+          </CardContent>
+        </Card>
+
       </div>
 
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
