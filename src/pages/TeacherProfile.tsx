@@ -22,7 +22,7 @@ import { useTeacherBadges } from '@/hooks/use-teacher-badges';
 import {
   Clock, DollarSign, TrendingUp, AlertTriangle, CheckCircle,
   Loader2, Percent, Mail, Phone, User, Briefcase, FileText,
-  ExternalLink, FileUp, Pencil, X, Save, Award,
+  ExternalLink, FileUp, Pencil, X, Save, Award, Maximize2, Minimize2,
   CalendarDays, Wallet, Info, Eye, HeadphonesIcon, Receipt, Cake,
   Send,
 } from 'lucide-react';
@@ -58,6 +58,10 @@ const TeacherProfile = () => {
 
   // Avatar
   const [resolvedAvatar, setResolvedAvatar] = useState('');
+
+  // Document preview
+  const [docPreview, setDocPreview] = useState<{ url: string; label: string } | null>(null);
+  const [docFullscreen, setDocFullscreen] = useState(false);
 
   // File uploads - signed URLs for viewing
   const [cvSignedUrl, setCvSignedUrl] = useState('');
@@ -627,6 +631,7 @@ const TeacherProfile = () => {
                       isAr={isAr}
                       icon={<FileUp className="h-4 w-4 text-blue-600" />}
                       iconBg="bg-blue-500/10"
+                      onPreview={() => cvSignedUrl && setDocPreview({ url: cvSignedUrl, label: isAr ? 'السيرة الذاتية' : 'CV / Resume' })}
                     />
                     <DocumentViewCard
                       label={isAr ? 'العقد' : 'Contract'}
@@ -635,6 +640,7 @@ const TeacherProfile = () => {
                       isAr={isAr}
                       icon={<FileText className="h-4 w-4 text-emerald-600" />}
                       iconBg="bg-emerald-500/10"
+                      onPreview={() => contractSignedUrl && setDocPreview({ url: contractSignedUrl, label: isAr ? 'العقد' : 'Contract' })}
                     />
                   </div>
                 </div>
@@ -935,6 +941,37 @@ const TeacherProfile = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Document Preview Dialog */}
+      <Dialog open={!!docPreview} onOpenChange={(open) => { if (!open) { setDocPreview(null); setDocFullscreen(false); } }}>
+        <DialogContent className={docFullscreen ? 'max-w-[95vw] h-[95vh] flex flex-col' : 'max-w-3xl h-[80vh] flex flex-col'}>
+          <DialogHeader className="flex-row items-center justify-between gap-2 space-y-0 shrink-0">
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              {docPreview?.label}
+            </DialogTitle>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDocFullscreen(f => !f)} title={docFullscreen ? (isAr ? 'تصغير' : 'Minimize') : (isAr ? 'تكبير' : 'Fullscreen')}>
+                {docFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                <a href={docPreview?.url} target="_blank" rel="noopener noreferrer" title={isAr ? 'فتح في نافذة جديدة' : 'Open in new tab'}>
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </Button>
+            </div>
+          </DialogHeader>
+          <div className="flex-1 min-h-0 rounded-md border overflow-hidden bg-muted/30">
+            {docPreview && (
+              <iframe
+                src={docPreview.url}
+                className="w-full h-full border-0"
+                title={docPreview.label}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
@@ -958,9 +995,10 @@ interface DocumentViewCardProps {
   isAr: boolean;
   icon: React.ReactNode;
   iconBg: string;
+  onPreview?: () => void;
 }
 
-const DocumentViewCard = ({ label, uploaded, signedUrl, isAr, icon, iconBg }: DocumentViewCardProps) => (
+const DocumentViewCard = ({ label, uploaded, signedUrl, isAr, icon, iconBg, onPreview }: DocumentViewCardProps) => (
   <div className="flex items-center justify-between p-3 rounded-lg border bg-card gap-3">
     <div className="flex items-center gap-2.5 min-w-0">
       <div className={`p-2 rounded-lg ${iconBg}`}>{icon}</div>
@@ -972,9 +1010,14 @@ const DocumentViewCard = ({ label, uploaded, signedUrl, isAr, icon, iconBg }: Do
       </div>
     </div>
     {uploaded && signedUrl && (
-      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" asChild>
-        <a href={signedUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-3.5 w-3.5" /></a>
-      </Button>
+      <div className="flex gap-1 shrink-0">
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onPreview} title={isAr ? 'معاينة' : 'Preview'}>
+          <Eye className="h-3.5 w-3.5" />
+        </Button>
+        <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+          <a href={signedUrl} target="_blank" rel="noopener noreferrer" title={isAr ? 'فتح في نافذة جديدة' : 'Open in new tab'}><ExternalLink className="h-3.5 w-3.5" /></a>
+        </Button>
+      </div>
     )}
   </div>
 );
