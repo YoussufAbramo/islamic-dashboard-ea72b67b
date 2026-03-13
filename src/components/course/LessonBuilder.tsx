@@ -280,12 +280,20 @@ const BlockEditor = ({
   );
 
   return (
-    <div className="rounded-lg border bg-card group relative">
+    <div ref={setNodeRef} style={style} className="rounded-lg border bg-card group relative">
       <div
         className="flex items-center gap-2 px-3 py-2 border-b bg-muted/30 cursor-pointer select-none"
         onClick={() => setCollapsed((c) => !c)}
       >
-        <GripVertical className="h-4 w-4 text-muted-foreground/40 shrink-0" onClick={(e) => e.stopPropagation()} />
+        <button
+          type="button"
+          className="cursor-grab active:cursor-grabbing touch-none shrink-0 text-muted-foreground/40 hover:text-muted-foreground"
+          onClick={(e) => e.stopPropagation()}
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
         <Icon className={cn("h-4 w-4 shrink-0", meta.color)} />
         <span className="text-xs font-medium text-muted-foreground">
           {isAr ? meta.labelAr : meta.label}
