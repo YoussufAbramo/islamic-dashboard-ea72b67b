@@ -133,8 +133,9 @@ Deno.serve(async (req) => {
 
       const adminClient = createClient(supabaseUrl, serviceRoleKey)
 
-      // Check if auto backup is enabled
-      const { data: config } = await adminClient.from('auto_backup_config').select('*').limit(1).single()
+      // Check if auto backup is enabled (stored in app_settings.settings.backup_config)
+      const { data: settingsRow } = await adminClient.from('app_settings').select('settings').limit(1).single()
+      const config = (settingsRow?.settings as any)?.backup_config
       if (!config || !config.enabled) {
         return new Response(JSON.stringify({ success: true, skipped: true, reason: 'Auto backup is disabled' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
