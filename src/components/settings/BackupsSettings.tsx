@@ -173,12 +173,6 @@ const AutoBackupCard = ({ isAr }: { isAr: boolean }) => {
         </div>
 
         <div className="flex justify-end gap-2">
-          {config.enabled && (
-            <Button variant="outline" size="sm" onClick={testBackup} disabled={testing}>
-              {testing ? <Loader2 className="h-4 w-4 me-1 animate-spin" /> : <RefreshCw className="h-4 w-4 me-1" />}
-              {isAr ? 'تشغيل الآن' : 'Run Now'}
-            </Button>
-          )}
           {dirty && (
             <Button size="sm" onClick={save} disabled={saving}>
               {saving ? <Loader2 className="h-4 w-4 me-1 animate-spin" /> : <Save className="h-4 w-4 me-1" />}
@@ -230,24 +224,49 @@ const BackupsSettings = () => {
   const ALL_BACKUP_TABLES = [
     { key: 'courses', label: 'Courses', labelAr: 'الدورات' },
     { key: 'course_sections', label: 'Course Sections', labelAr: 'أقسام الدورات' },
+    { key: 'course_categories', label: 'Course Categories', labelAr: 'تصنيفات الدورات' },
+    { key: 'course_levels', label: 'Course Levels', labelAr: 'مستويات الدورات' },
+    { key: 'course_tracks', label: 'Course Tracks', labelAr: 'مسارات الدورات' },
     { key: 'lessons', label: 'Lessons', labelAr: 'الدروس' },
+    { key: 'lesson_sections', label: 'Lesson Sections', labelAr: 'أقسام الدروس' },
     { key: 'students', label: 'Students', labelAr: 'الطلاب' },
     { key: 'teachers', label: 'Teachers', labelAr: 'المعلمين' },
+    { key: 'teacher_courses', label: 'Teacher Courses', labelAr: 'دورات المعلمين' },
     { key: 'profiles', label: 'Profiles', labelAr: 'الملفات الشخصية' },
     { key: 'user_roles', label: 'User Roles', labelAr: 'أدوار المستخدمين' },
     { key: 'subscriptions', label: 'Subscriptions', labelAr: 'الاشتراكات' },
     { key: 'invoices', label: 'Invoices', labelAr: 'الفواتير' },
     { key: 'timetable_entries', label: 'Timetable', labelAr: 'الجداول الزمنية' },
     { key: 'attendance', label: 'Attendance', labelAr: 'الحضور' },
+    { key: 'session_reports', label: 'Session Reports', labelAr: 'تقارير الحصص' },
     { key: 'certificates', label: 'Certificates', labelAr: 'الشهادات' },
+    { key: 'student_progress', label: 'Student Progress', labelAr: 'تقدم الطلاب' },
     { key: 'announcements', label: 'Announcements', labelAr: 'الإعلانات' },
     { key: 'notifications', label: 'Notifications', labelAr: 'الإشعارات' },
     { key: 'chats', label: 'Chats', labelAr: 'المحادثات' },
     { key: 'chat_messages', label: 'Chat Messages', labelAr: 'رسائل المحادثات' },
+    { key: 'chat_members', label: 'Chat Members', labelAr: 'أعضاء المحادثات' },
+    { key: 'chat_read_receipts', label: 'Read Receipts', labelAr: 'إيصالات القراءة' },
     { key: 'support_tickets', label: 'Support Tickets', labelAr: 'تذاكر الدعم' },
-    { key: 'student_progress', label: 'Student Progress', labelAr: 'تقدم الطلاب' },
+    { key: 'support_departments', label: 'Support Departments', labelAr: 'أقسام الدعم' },
+    { key: 'support_priorities', label: 'Support Priorities', labelAr: 'أولويات الدعم' },
     { key: 'pricing_packages', label: 'Pricing Packages', labelAr: 'باقات الأسعار' },
+    { key: 'payout_requests', label: 'Payout Requests', labelAr: 'طلبات الصرف' },
+    { key: 'expenses', label: 'Expenses', labelAr: 'المصروفات' },
+    { key: 'expense_categories', label: 'Expense Categories', labelAr: 'تصنيفات المصروفات' },
+    { key: 'ebooks', label: 'E-Books', labelAr: 'الكتب الإلكترونية' },
+    { key: 'ebook_views', label: 'E-Book Views', labelAr: 'مشاهدات الكتب' },
+    { key: 'ebook_downloads', label: 'E-Book Downloads', labelAr: 'تنزيلات الكتب' },
     { key: 'landing_content', label: 'Landing Content', labelAr: 'محتوى الصفحة' },
+    { key: 'blog_posts', label: 'Blog Posts', labelAr: 'المقالات' },
+    { key: 'website_pages', label: 'Website Pages', labelAr: 'صفحات الموقع' },
+    { key: 'policies', label: 'Policies', labelAr: 'السياسات' },
+    { key: 'app_settings', label: 'App Settings', labelAr: 'إعدادات التطبيق' },
+    { key: 'auto_backup_config', label: 'Auto Backup Config', labelAr: 'إعدادات النسخ التلقائي' },
+    { key: 'payment_gateway_config', label: 'Payment Gateway', labelAr: 'بوابة الدفع' },
+    { key: 'audit_logs', label: 'Audit Logs', labelAr: 'سجل المراجعة' },
+    { key: 'seed_sessions', label: 'Seed Sessions', labelAr: 'جلسات البيانات التجريبية' },
+    { key: 'seed_records', label: 'Seed Records', labelAr: 'سجلات البيانات التجريبية' },
   ];
 
   const [selectedTables, setSelectedTables] = useState<Record<string, boolean>>(() =>
@@ -387,6 +406,30 @@ const BackupsSettings = () => {
                 ))}
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Run a Full Backup Now — standalone button */}
+        <Card>
+          <CardContent className="flex items-center justify-between py-4">
+            <div>
+              <p className="text-sm font-medium">{isAr ? 'تشغيل نسخة احتياطية شاملة الآن' : 'Run a Full Backup Now'}</p>
+              <p className="text-xs text-muted-foreground">{isAr ? 'إنشاء نسخة احتياطية فورية لجميع الجداول' : 'Instantly create a full backup of all database tables'}</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={async () => {
+              setCreating(true);
+              try {
+                const { data, error } = await supabase.functions.invoke('manage-backups', { body: { action: 'test_auto_backup' } });
+                if (error) throw error;
+                if (data?.error) throw new Error(data.error);
+                toast.success(isAr ? `تم إنشاء نسخة شاملة: ${data.fileName} (${data.totalRecords} سجل)` : `Full backup created: ${data.fileName} (${data.totalRecords} records)`);
+                fetchBackups();
+              } catch (err: any) { toast.error(err.message || 'Backup failed'); }
+              finally { setCreating(false); }
+            }} disabled={creating}>
+              {creating ? <Loader2 className="h-4 w-4 me-1 animate-spin" /> : <Database className="h-4 w-4 me-1" />}
+              {isAr ? 'تشغيل الآن' : 'Run a Full Backup Now'}
+            </Button>
           </CardContent>
         </Card>
 
