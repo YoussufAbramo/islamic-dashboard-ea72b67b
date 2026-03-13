@@ -15,9 +15,25 @@ const EducationSystemSettings = () => {
     return localStorage.getItem('app_teacher_can_chat') !== 'false';
   });
 
+  const [teacherBadges, setTeacherBadges] = useState(() => {
+    return localStorage.getItem('app_teacher_badges') !== 'false';
+  });
+
+  const [studentBadges, setStudentBadges] = useState(() => {
+    return localStorage.getItem('app_student_badges') !== 'false';
+  });
+
   useEffect(() => {
     localStorage.setItem('app_teacher_can_chat', String(teacherCanChat));
   }, [teacherCanChat]);
+
+  useEffect(() => {
+    localStorage.setItem('app_teacher_badges', String(teacherBadges));
+  }, [teacherBadges]);
+
+  useEffect(() => {
+    localStorage.setItem('app_student_badges', String(studentBadges));
+  }, [studentBadges]);
 
   const teacherFeatures = [
     { icon: BookOpen, label: isAr ? 'نظام الواجبات المنزلية' : 'Homework System', desc: isAr ? 'تعيين ومتابعة الواجبات المنزلية للطلاب' : 'Assign and track student homework' },
