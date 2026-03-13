@@ -15,7 +15,7 @@ const ALL_TABLES = [
   'payout_requests', 'expenses', 'expense_categories',
   'ebooks', 'ebook_views', 'ebook_downloads',
   'landing_content', 'blog_posts', 'website_pages', 'policies',
-  'app_settings', 'auto_backup_config', 'payment_gateway_config',
+  'app_settings', 'payment_gateway_config',
   'audit_logs', 'seed_sessions', 'seed_records',
 ]
 
@@ -133,8 +133,9 @@ Deno.serve(async (req) => {
 
       const adminClient = createClient(supabaseUrl, serviceRoleKey)
 
-      // Check if auto backup is enabled
-      const { data: config } = await adminClient.from('auto_backup_config').select('*').limit(1).single()
+      // Check if auto backup is enabled (stored in app_settings.settings.backup_config)
+      const { data: settingsRow } = await adminClient.from('app_settings').select('settings').limit(1).single()
+      const config = (settingsRow?.settings as any)?.backup_config
       if (!config || !config.enabled) {
         return new Response(JSON.stringify({ success: true, skipped: true, reason: 'Auto backup is disabled' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
@@ -263,7 +264,8 @@ Deno.serve(async (req) => {
       const timeStr = now.toISOString().slice(11, 19).replace(/:/g, '-')
       const backupName = `auto-backup-${dateStr}_${timeStr}`
 
-      const { data: config } = await adminClient.from('auto_backup_config').select('*').limit(1).single()
+      const { data: settingsRow } = await adminClient.from('app_settings').select('settings').limit(1).single()
+      const config = (settingsRow?.settings as any)?.backup_config
       const format = config?.format || 'json'
       const retentionCount = config?.retention_count || 7
 

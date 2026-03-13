@@ -2,6 +2,16 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.9.1] - 2026-03-13
+
+### Changed — Database Consolidation
+- **Merged `auto_backup_config` into `app_settings`** — backup configuration (enabled, schedule, retention, format, scheduled_time) is now stored as `backup_config` key inside `app_settings.settings` jsonb, eliminating a standalone table
+- **Updated `manage-backups` edge function** — reads backup config from `app_settings.settings.backup_config` instead of the removed table
+- **Updated `BackupsSettings` component** — reads/writes backup config via `app_settings` instead of `auto_backup_config`
+- **Removed `auto_backup_config`** from backup table lists and settings backup scope
+
+---
+
 ## [5.9.0] - 2026-03-13
 
 ### Added

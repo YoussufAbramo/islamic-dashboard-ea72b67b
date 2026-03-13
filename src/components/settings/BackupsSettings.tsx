@@ -39,8 +39,20 @@ const AutoBackupCard = ({ isAr }: { isAr: boolean }) => {
   const [testing, setTesting] = useState(false);
 
   useEffect(() => {
-    supabase.from('auto_backup_config').select('*').limit(1).single().then(({ data }) => {
-      if (data) { setConfig({ enabled: data.enabled, schedule: data.schedule, retention_count: data.retention_count, format: data.format, scheduled_time: (data as any).scheduled_time || '02:00' }); }
+    // Read backup config from app_settings.settings jsonb
+    supabase.from('app_settings').select('settings').limit(1).single().then(({ data }) => {
+      if (data?.settings) {
+        const s = data.settings as any;
+        if (s.backup_config) {
+          setConfig({
+            enabled: s.backup_config.enabled ?? false,
+            schedule: s.backup_config.schedule ?? 'daily',
+            retention_count: s.backup_config.retention_count ?? 7,
+            format: s.backup_config.format ?? 'json',
+            scheduled_time: s.backup_config.scheduled_time ?? '02:00',
+          });
+        }
+      }
       setLoading(false);
     });
   }, []);
@@ -53,14 +65,12 @@ const AutoBackupCard = ({ isAr }: { isAr: boolean }) => {
   const save = async () => {
     setSaving(true);
     try {
-      const { error } = await supabase.from('auto_backup_config').update({
-        enabled: config.enabled,
-        schedule: config.schedule,
-        retention_count: config.retention_count,
-        format: config.format,
-        scheduled_time: config.scheduled_time,
-        updated_at: new Date().toISOString(),
-      } as any).neq('id', '00000000-0000-0000-0000-000000000000');
+      // Read current settings, merge backup_config into it
+      const { data: current } = await supabase.from('app_settings').select('id, settings').limit(1).single();
+      if (!current) throw new Error('No app_settings row found');
+      const currentSettings = (current.settings as any) || {};
+      const merged = { ...currentSettings, backup_config: { enabled: config.enabled, schedule: config.schedule, retention_count: config.retention_count, format: config.format, scheduled_time: config.scheduled_time } };
+      const { error } = await supabase.from('app_settings').update({ settings: merged, updated_at: new Date().toISOString() }).eq('id', current.id);
       if (error) throw error;
       toast.success(isAr ? 'تم حفظ إعدادات النسخ التلقائي' : 'Auto backup settings saved');
       setDirty(false);
@@ -263,7 +273,7 @@ const BackupsSettings = () => {
     { key: 'website_pages', label: 'Website Pages', labelAr: 'صفحات الموقع' },
     { key: 'policies', label: 'Policies', labelAr: 'السياسات' },
     { key: 'app_settings', label: 'App Settings', labelAr: 'إعدادات التطبيق' },
-    { key: 'auto_backup_config', label: 'Auto Backup Config', labelAr: 'إعدادات النسخ التلقائي' },
+    { key: 'payment_gateway_config', label: 'Payment Gateway', labelAr: 'بوابة الدفع' },
     { key: 'payment_gateway_config', label: 'Payment Gateway', labelAr: 'بوابة الدفع' },
     { key: 'audit_logs', label: 'Audit Logs', labelAr: 'سجل المراجعة' },
     { key: 'seed_sessions', label: 'Seed Sessions', labelAr: 'جلسات البيانات التجريبية' },
@@ -449,7 +459,7 @@ const BackupsSettings = () => {
                 const timeStr = now.toLocaleTimeString('en-GB', { timeZone: defaultTimezone, hour12: false }).replace(/:/g, '-');
                 const name = `settings-backup-${dateStr}_${timeStr}`;
                 const { data, error } = await supabase.functions.invoke('manage-backups', {
-                  body: { action: 'create_backup', name, format: 'json', tables: ['app_settings', 'auto_backup_config', 'payment_gateway_config', 'landing_content', 'pricing_packages', 'policies'] },
+                  body: { action: 'create_backup', name, format: 'json', tables: ['app_settings', 'payment_gateway_config', 'landing_content', 'pricing_packages', 'policies'] },
                 });
                 if (error) throw error;
                 if (data?.error) throw new Error(data.error);
