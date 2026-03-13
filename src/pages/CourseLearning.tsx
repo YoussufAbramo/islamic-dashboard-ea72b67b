@@ -83,6 +83,7 @@ const getContentLabel = (type: string, isAr: boolean): string => {
 
 // ─── Content Viewer ───
 const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean }) => {
+  const [currentPage, setCurrentPage] = React.useState(0);
   if (!lesson) {
     return (
       <div className="flex items-center justify-center h-full text-muted-foreground">
