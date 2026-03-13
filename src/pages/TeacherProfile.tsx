@@ -958,9 +958,10 @@ interface DocumentViewCardProps {
   isAr: boolean;
   icon: React.ReactNode;
   iconBg: string;
+  onPreview?: () => void;
 }
 
-const DocumentViewCard = ({ label, uploaded, signedUrl, isAr, icon, iconBg }: DocumentViewCardProps) => (
+const DocumentViewCard = ({ label, uploaded, signedUrl, isAr, icon, iconBg, onPreview }: DocumentViewCardProps) => (
   <div className="flex items-center justify-between p-3 rounded-lg border bg-card gap-3">
     <div className="flex items-center gap-2.5 min-w-0">
       <div className={`p-2 rounded-lg ${iconBg}`}>{icon}</div>
@@ -972,9 +973,14 @@ const DocumentViewCard = ({ label, uploaded, signedUrl, isAr, icon, iconBg }: Do
       </div>
     </div>
     {uploaded && signedUrl && (
-      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" asChild>
-        <a href={signedUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-3.5 w-3.5" /></a>
-      </Button>
+      <div className="flex gap-1 shrink-0">
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onPreview} title={isAr ? 'معاينة' : 'Preview'}>
+          <Eye className="h-3.5 w-3.5" />
+        </Button>
+        <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+          <a href={signedUrl} target="_blank" rel="noopener noreferrer" title={isAr ? 'فتح في نافذة جديدة' : 'Open in new tab'}><ExternalLink className="h-3.5 w-3.5" /></a>
+        </Button>
+      </div>
     )}
   </div>
 );
