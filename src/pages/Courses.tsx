@@ -364,8 +364,8 @@ const Courses = () => {
                   </TableCell>
                   <TableCell><Badge variant={statusColor[course.status] as any}>{getLabel(courseStatusLabels, course.status, isAr)}</Badge></TableCell>
                   <TableCell className="flex gap-1">
-                    <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => navigate(`/dashboard/courses/${course.id}`)}><Eye className={ACTION_ICON} /></Button>
-                    {canEdit && <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => openEdit(course)}><Edit className={ACTION_ICON} /></Button>}
+                    <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => navigate(`/dashboard/courses/${course.id}`)}><Edit className={ACTION_ICON} /></Button>
+                    {canEdit && <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => openEdit(course)}><Settings className={ACTION_ICON} /></Button>}
                     {role === 'admin' && <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteTarget(course.id)}><Trash2 className={ACTION_ICON} /></Button>}
                   </TableCell>
                 </TableRow>

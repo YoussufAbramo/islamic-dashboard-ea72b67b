@@ -2,6 +2,23 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.1.0] - 2026-03-13
+
+### Changed
+- **Course action icons updated** — "View" button now uses Edit (pencil) icon, "Edit" button now uses Settings (gear) icon for clearer semantic distinction between viewing course content and editing course settings
+- **Backup system improvements** — full database backup now covers all 46 tables; new standalone "Backup App Settings" card for exporting configuration data independently
+- **Landing page editor animation** — smooth slide-in animation when opening the section editor panel
+- **Subscription renewal dates** — quarterly billing cycle corrected to 88 days; seed data now generates proper renewal dates based on billing cycle
+
+### Added
+- **Separate App Settings backup** — new card in Backups settings to export only configuration tables (app_settings, auto_backup_config, payment_gateway_config, landing_content, pricing_packages, policies)
+- **Live session URLs in seed data** — sample subscriptions now include Google Meet and Zoom URLs
+
+### Fixed
+- **Quarterly renewal label** — corrected from "84 days" to "88 days" in subscription creation form
+
+---
+
 ## [5.0.0] - 2026-03-13
 
 ### Added — Sample Data System v2 (Major)
