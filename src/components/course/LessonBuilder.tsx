@@ -70,6 +70,7 @@ export interface ContentBlock {
   divider_style?: 'solid' | 'dashed' | 'dotted' | 'double' | 'groove' | 'ridge';
   divider_thickness?: number; // 1-6 px
   divider_color?: string;
+  divider_text?: string;
   // page break (no extra fields needed, acts as marker)
   page_label?: string;
   page_label_ar?: string;
@@ -535,10 +536,18 @@ const BlockEditor = ({
                 ))}
               </div>
             </div>
+            <div>
+              <Label className="text-xs mb-1.5 block">{isAr ? 'نص الفاصل' : 'Divider Text'}</Label>
+              <Input
+                placeholder={isAr ? 'اختياري — مثال: القسم الأول' : 'Optional — e.g. Section One'}
+                value={block.divider_text || ''}
+                onChange={(e) => onChange({ ...block, divider_text: e.target.value })}
+                className="mt-1"
+              />
+            </div>
             {/* Preview */}
-            <div className="flex justify-center p-3 rounded-lg bg-muted/20">
-              <hr style={{
-                width: `${block.divider_width || 100}%`,
+            <div className="flex items-center justify-center gap-3 p-3 rounded-lg bg-muted/20" style={{ width: `${block.divider_width || 100}%`, margin: '0 auto' }}>
+              <hr className="flex-1" style={{
                 borderStyle: block.divider_style || 'solid',
                 borderWidth: `${block.divider_thickness || 1}px 0 0 0`,
                 borderColor: (() => {
@@ -552,6 +561,27 @@ const BlockEditor = ({
                   return colorMap[block.divider_color || 'border'] || 'hsl(var(--border) / 0.15)';
                 })(),
               }} />
+              {block.divider_text && (
+                <span className="shrink-0 text-muted-foreground whitespace-nowrap" style={{
+                  fontSize: `${Math.max(10, (block.divider_thickness || 1) * 3 + 8)}px`,
+                }}>{block.divider_text}</span>
+              )}
+              {block.divider_text && (
+                <hr className="flex-1" style={{
+                  borderStyle: block.divider_style || 'solid',
+                  borderWidth: `${block.divider_thickness || 1}px 0 0 0`,
+                  borderColor: (() => {
+                    const colorMap: Record<string, string> = {
+                      border: 'hsl(var(--border) / 0.15)',
+                      primary: 'hsl(var(--primary) / 0.15)',
+                      muted: 'hsl(var(--muted-foreground) / 0.15)',
+                      destructive: 'hsl(var(--destructive) / 0.15)',
+                      gold: 'hsl(var(--gold, 45 80% 50%) / 0.15)',
+                    };
+                    return colorMap[block.divider_color || 'border'] || 'hsl(var(--border) / 0.15)';
+                  })(),
+                }} />
+              )}
             </div>
           </div>
         )}
