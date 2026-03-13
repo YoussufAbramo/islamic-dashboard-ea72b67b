@@ -376,6 +376,7 @@ const TeacherProfile = () => {
     { label: isAr ? 'الحصص المكتملة' : 'Completed Sessions', value: completedSessions.toString(), icon: CheckCircle, color: 'text-emerald-600' },
     { label: isAr ? 'حصص الغياب' : 'Absence Sessions', value: absentSessions.toString(), icon: AlertTriangle, color: 'text-red-600' },
     { label: isAr ? 'نسبة الحضور' : 'Attendance %', value: `${(completedSessions + absentSessions) > 0 ? Math.round((completedSessions / (completedSessions + absentSessions)) * 100) : 0}%`, icon: Percent, color: 'text-purple-600' },
+    { label: isAr ? 'الأوسمة المحصّلة' : 'Badges Collected', value: badgeCategories.reduce((s, c) => s + c.totalEarned, 0).toString(), icon: Award, color: 'text-amber-600' },
   ];
 
   const handleSubmitTicket = async () => {
