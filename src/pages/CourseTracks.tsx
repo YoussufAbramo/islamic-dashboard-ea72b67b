@@ -163,6 +163,41 @@ const CourseTracks = () => {
     setEditing(null);
   };
 
+  const openAssignDialog = (trackId: string) => {
+    setAssignTrackId(trackId);
+    setAssignSelected(new Set());
+  };
+
+  const handleAssignCourses = async () => {
+    if (!assignTrackId || assignSelected.size === 0) return;
+    setAssignLoading(true);
+    try {
+      for (const courseId of assignSelected) {
+        const { error } = await supabase.from('courses').update({ track_id: assignTrackId }).eq('id', courseId);
+        if (error) throw error;
+      }
+      const track = tracks.find(t => t.id === assignTrackId);
+      logAction('modify', 'Course Track', `Assigned ${assignSelected.size} course(s) to track: ${track?.title || assignTrackId}`, assignTrackId);
+      toast.success(isAr ? `تم ربط ${assignSelected.size} دورة بالمسار` : `Assigned ${assignSelected.size} course(s) to track`);
+      qc.invalidateQueries({ queryKey: ['courses_for_tracks'] });
+      setAssignTrackId(null);
+    } catch {
+      toast.error(isAr ? 'حدث خطأ' : 'An error occurred');
+    } finally {
+      setAssignLoading(false);
+    }
+  };
+
+  const handleUnlinkCourse = async (courseId: string) => {
+    const { error } = await supabase.from('courses').update({ track_id: null }).eq('id', courseId);
+    if (error) { toast.error(isAr ? 'حدث خطأ' : 'Error'); return; }
+    logAction('modify', 'Course', 'Unlinked course from track', courseId);
+    toast.success(isAr ? 'تم إلغاء الربط' : 'Course unlinked');
+    qc.invalidateQueries({ queryKey: ['courses_for_tracks'] });
+  };
+
+  const unassignedCourses = courses.filter(c => !c.track_id || c.track_id === '');
+
   const toggleTrack = (id: string) => {
     setExpandedTracks(prev => {
       const next = new Set(prev);
