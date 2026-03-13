@@ -132,6 +132,7 @@ const Courses = () => {
       level_id: course.level_id || '',
       track_id: course.track_id || '',
       duration_weeks: course.duration_weeks?.toString() || '',
+      slug: course.slug || '',
     });
     setDialogOpen(true);
   };
