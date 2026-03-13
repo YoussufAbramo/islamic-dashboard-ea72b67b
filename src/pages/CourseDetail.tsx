@@ -313,6 +313,16 @@ const CourseDetail = () => {
     fetchHierarchy();
   };
 
+  // ─── Move Section to another Topic ───
+  const handleMoveSection = async (sectionId: string, targetTopicId: string) => {
+    const targetSections = sections[targetTopicId] || [];
+    await supabase.from('lesson_sections' as any)
+      .update({ course_section_id: targetTopicId, sort_order: targetSections.length } as any)
+      .eq('id', sectionId);
+    toast.success(isAr ? 'تم نقل القسم' : 'Section moved');
+    fetchHierarchy();
+  };
+
   if (!course) return <div className="text-muted-foreground">{t('common.loading')}</div>;
 
   const categoryLabel = categories.find(c => c.id === course.category_id);
