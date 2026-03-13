@@ -47,7 +47,8 @@ const FloatingButtons = () => {
   const { profile, user } = useAuth();
   const isAr = language === 'ar';
   const [ticketOpen, setTicketOpen] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
+  const [bugDismissed, setBugDismissed] = useState(false);
+  const [whatsappDismissed, setWhatsappDismissed] = useState(false);
 
   const iframeSrc = (() => {
     const base = 'https://portal.codecom.dev/forms/ticket';
@@ -61,55 +62,63 @@ const FloatingButtons = () => {
 
   const whatsappUrl = `https://wa.me/201558612808?text=${encodeURIComponent("Hello Dear, I'm texting you regarding Quran.CodeCom.dev, are you available to talk?")}`;
 
-  if (dismissed) return null;
+  if (bugDismissed && whatsappDismissed) return null;
+
+  const dismissBtnClass = `absolute -top-1 ${isAr ? '-right-1' : '-left-1'} flex items-center justify-center h-4 w-4 rounded-full bg-muted-foreground/20 text-muted-foreground opacity-0 group-hover:opacity-100 hover:!bg-destructive hover:!text-destructive-foreground transition-all duration-200 z-10`;
 
   return (
     <>
       <div className={`fixed z-50 flex items-center gap-2 animate-fade-in ${isAr ? 'left-5' : 'right-5'}`} style={{ bottom: '35px', animationDelay: '0.5s', animationFillMode: 'backwards' }}>
         <TooltipProvider delayDuration={200}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => setDismissed(true)}
-                className="flex items-center justify-center h-7 w-7 rounded-full bg-muted/60 text-muted-foreground shadow-sm hover:scale-110 hover:bg-destructive hover:text-destructive-foreground transition-all duration-200"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs">
-              {isAr ? 'إخفاء' : 'Dismiss'}
-            </TooltipContent>
-          </Tooltip>
+          {!bugDismissed && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="relative group">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setBugDismissed(true); }}
+                    className={dismissBtnClass}
+                  >
+                    <X className="h-2.5 w-2.5" />
+                  </button>
+                  <button
+                    onClick={() => setTicketOpen(true)}
+                    className="flex items-center justify-center h-9 w-9 rounded-full bg-muted text-muted-foreground shadow-md hover:scale-110 hover:bg-primary hover:text-primary-foreground transition-all duration-200"
+                  >
+                    <Bug className="h-4 w-4" />
+                  </button>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">
+                {isAr ? 'الإبلاغ عن خطأ' : 'Report a Bug'}
+              </TooltipContent>
+            </Tooltip>
+          )}
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => setTicketOpen(true)}
-                className="flex items-center justify-center h-9 w-9 rounded-full bg-muted text-muted-foreground shadow-md hover:scale-110 hover:bg-primary hover:text-primary-foreground transition-all duration-200"
-              >
-                <Bug className="h-4 w-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs">
-              {isAr ? 'الإبلاغ عن خطأ' : 'Report a Bug'}
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center h-9 w-9 rounded-full bg-muted text-muted-foreground shadow-md hover:scale-110 hover:bg-primary hover:text-primary-foreground transition-all duration-200"
-              >
-                <WhatsAppIcon />
-              </a>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs">
-              {isAr ? 'تواصل مع المبيعات' : 'Contact Sales'}
-            </TooltipContent>
-          </Tooltip>
+          {!whatsappDismissed && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="relative group">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setWhatsappDismissed(true); }}
+                    className={dismissBtnClass}
+                  >
+                    <X className="h-2.5 w-2.5" />
+                  </button>
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center h-9 w-9 rounded-full bg-muted text-muted-foreground shadow-md hover:scale-110 hover:bg-primary hover:text-primary-foreground transition-all duration-200"
+                  >
+                    <WhatsAppIcon />
+                  </a>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">
+                {isAr ? 'تواصل مع المبيعات' : 'Contact Sales'}
+              </TooltipContent>
+            </Tooltip>
+          )}
         </TooltipProvider>
       </div>
 
