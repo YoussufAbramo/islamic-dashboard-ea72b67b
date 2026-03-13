@@ -643,7 +643,7 @@ const CourseLearning = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={openEditDialog}
+                    onClick={() => setBuilderOpen(true)}
                     className="gap-1.5"
                   >
                     <Settings2 className="h-3.5 w-3.5" />
