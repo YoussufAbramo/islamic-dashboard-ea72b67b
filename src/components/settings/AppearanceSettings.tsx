@@ -118,95 +118,60 @@ const AppearanceSettings = () => {
 
   return (
     <div className="space-y-6">
-      {/* Branding */}
+      {/* Branding — Compact Grid Layout */}
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2"><Building2 className="h-5 w-5 text-primary" />{isAr ? 'العلامة التجارية' : 'Branding'}</CardTitle>
           <CardDescription>{isAr ? 'خصص الشعار والأيقونة والتوقيع' : 'Customize logo, favicon, signature and stamp'}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* App Logo */}
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">{isAr ? 'الشعار الرئيسي للوضع الفاتح' : 'Main logo for light mode'}</p>
-            <ImagePickerField
-              label={isAr ? 'شعار التطبيق' : 'App Logo'}
-              value={appLogo}
-              onChange={setAppLogo}
-            />
+          {/* Row 1: Logos + Favicon — 3 columns */}
+          <div className="grid grid-cols-3 gap-3">
+            {([
+              { label: isAr ? 'شعار التطبيق' : 'App Logo', desc: isAr ? 'الوضع الفاتح' : 'Light mode', value: appLogo, onChange: setAppLogo },
+              { label: isAr ? 'شعار داكن' : 'Dark Logo', desc: isAr ? 'الوضع الداكن' : 'Dark mode', value: darkLogo, onChange: setDarkLogo },
+              { label: isAr ? 'أيقونة الموقع' : 'Favicon', desc: isAr ? 'تبويب المتصفح' : 'Browser tab', value: favicon, onChange: setFavicon },
+            ] as const).map((item, i) => (
+              <div key={i} className="rounded-lg border border-border p-3 space-y-2 bg-muted/20">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-medium text-foreground">{item.label}</p>
+                </div>
+                <p className="text-[10px] text-muted-foreground -mt-1">{item.desc}</p>
+                <CompactImagePicker value={item.value} onChange={item.onChange} isAr={isAr} />
+              </div>
+            ))}
           </div>
 
-          {/* Dark Mode Logo */}
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">{isAr ? 'شعار بديل يظهر على الخلفيات الداكنة' : 'Alternative logo shown on dark backgrounds'}</p>
-            <ImagePickerField
-              label={isAr ? 'شعار الوضع الداكن' : 'Dark Mode Logo'}
-              value={darkLogo}
-              onChange={setDarkLogo}
-            />
-          </div>
-
-          {/* Favicon */}
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">{isAr ? 'الأيقونة التي تظهر في تبويب المتصفح' : 'The icon shown in the browser tab'}</p>
-            <ImagePickerField
-              label={isAr ? 'أيقونة الموقع (Favicon)' : 'Favicon'}
-              value={favicon}
-              onChange={setFavicon}
-            />
-          </div>
-
-          {/* Signature Image */}
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">{isAr ? 'تظهر في تذييل الفواتير' : 'Displayed in invoice footer'}</p>
-            <ImagePickerField
-              label={isAr ? 'صورة التوقيع' : 'Signature Image'}
-              value={signatureImage}
-              onChange={setSignatureImage}
-            />
-          </div>
-
-          {/* Stamp Image */}
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">{isAr ? 'تظهر في تذييل الفواتير' : 'Displayed in invoice footer'}</p>
-            <ImagePickerField
-              label={isAr ? 'صورة الختم' : 'Stamp Image'}
-              value={stampImage}
-              onChange={setStampImage}
-            />
-          </div>
-
-          {/* Position Controls */}
-          {(signatureImage || stampImage) && (
-            <div className="space-y-3 pt-2 border-t border-border">
-              <Label>{isAr ? 'موضع التوقيع والختم' : 'Signature & Stamp Position'}</Label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {signatureImage && (
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">{isAr ? 'موضع التوقيع' : 'Signature Position'}</p>
-                    <div className="flex gap-1">
-                      {([['left', AlignLeft, 'Left', 'يسار'], ['center', AlignCenter, 'Center', 'وسط'], ['right', AlignRight, 'Right', 'يمين']] as const).map(([pos, Icon, label, labelAr]) => (
-                        <Button key={pos} variant={pending.signaturePosition === pos ? 'default' : 'outline'} size="sm" className="flex-1 gap-1" onClick={() => updatePending({ signaturePosition: pos })}>
-                          <Icon className="h-3 w-3" /><span className="text-xs">{isAr ? labelAr : label}</span>
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {stampImage && (
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">{isAr ? 'موضع الختم' : 'Stamp Position'}</p>
-                    <div className="flex gap-1">
-                      {([['left', AlignLeft, 'Left', 'يسار'], ['center', AlignCenter, 'Center', 'وسط'], ['right', AlignRight, 'Right', 'يمين']] as const).map(([pos, Icon, label, labelAr]) => (
-                        <Button key={pos} variant={pending.stampPosition === pos ? 'default' : 'outline'} size="sm" className="flex-1 gap-1" onClick={() => updatePending({ stampPosition: pos })}>
-                          <Icon className="h-3 w-3" /><span className="text-xs">{isAr ? labelAr : label}</span>
-                        </Button>
-                      ))}
-                    </div>
+          {/* Row 2: Signature + Stamp — 2 columns */}
+          <div className="grid grid-cols-2 gap-3">
+            {([
+              { label: isAr ? 'صورة التوقيع' : 'Signature', desc: isAr ? 'تذييل الفواتير' : 'Invoice footer', value: signatureImage, onChange: setSignatureImage, posValue: pending.signaturePosition, posKey: 'signaturePosition' as const },
+              { label: isAr ? 'صورة الختم' : 'Stamp', desc: isAr ? 'تذييل الفواتير' : 'Invoice footer', value: stampImage, onChange: setStampImage, posValue: pending.stampPosition, posKey: 'stampPosition' as const },
+            ] as const).map((item, i) => (
+              <div key={i} className="rounded-lg border border-border p-3 space-y-2 bg-muted/20">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-medium text-foreground">{item.label}</p>
+                </div>
+                <p className="text-[10px] text-muted-foreground -mt-1">{item.desc}</p>
+                <CompactImagePicker value={item.value} onChange={item.onChange} isAr={isAr} />
+                {item.value && (
+                  <div className="flex gap-0.5 pt-1">
+                    {([['left', AlignLeft], ['center', AlignCenter], ['right', AlignRight]] as const).map(([pos, Icon]) => (
+                      <Button
+                        key={pos}
+                        variant={item.posValue === pos ? 'default' : 'ghost'}
+                        size="sm"
+                        className="flex-1 h-6 px-0"
+                        onClick={() => updatePending({ [item.posKey]: pos })}
+                      >
+                        <Icon className="h-3 w-3" />
+                      </Button>
+                    ))}
                   </div>
                 )}
               </div>
-            </div>
-          )}
+            ))}
+          </div>
         </CardContent>
       </Card>
 
