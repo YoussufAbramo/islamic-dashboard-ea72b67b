@@ -767,6 +767,22 @@
     box-shadow: 0 0 30px hsl(var(--gold) / 0.2), 0 0 60px hsl(var(--gold) / 0.1);
   }
 
+  /* Section editor slide-in animation */
+  @keyframes slide-in-editor {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .animate-slide-in-editor {
+    animation: slide-in-editor 0.3s ease-out;
+  }
+
   @media print {
     .no-print {
       display: none !important;
