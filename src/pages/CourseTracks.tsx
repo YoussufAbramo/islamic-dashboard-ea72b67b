@@ -4,7 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { Route, Plus, Pencil, Trash2, Search, ChevronDown, BookOpen, GripVertical, Layers, Hash, ExternalLink } from 'lucide-react';
+import { Route, Plus, Pencil, Trash2, Search, ChevronDown, BookOpen, GripVertical, Layers, Hash, ExternalLink, LinkIcon, Unlink } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
