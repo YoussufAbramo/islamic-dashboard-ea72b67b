@@ -257,7 +257,6 @@ const BackupsSettings = () => {
     { key: 'chats', label: 'Chats', labelAr: 'المحادثات' },
     { key: 'chat_messages', label: 'Chat Messages', labelAr: 'رسائل المحادثات' },
     { key: 'chat_members', label: 'Chat Members', labelAr: 'أعضاء المحادثات' },
-    { key: 'chat_read_receipts', label: 'Read Receipts', labelAr: 'إيصالات القراءة' },
     { key: 'support_tickets', label: 'Support Tickets', labelAr: 'تذاكر الدعم' },
     { key: 'support_departments', label: 'Support Departments', labelAr: 'أقسام الدعم' },
     { key: 'support_priorities', label: 'Support Priorities', labelAr: 'أولويات الدعم' },
