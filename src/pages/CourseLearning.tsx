@@ -459,6 +459,15 @@ const CourseLearning = () => {
             <GraduationCap className="h-3 w-3" />
             {completedSet.size}/{orderedLessons.length}
           </Badge>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0"
+            onClick={() => setTopBarHidden(!topBarHidden)}
+            title={topBarHidden ? (isAr ? 'إظهار الشريط العلوي' : 'Show Top Bar') : (isAr ? 'إخفاء الشريط العلوي' : 'Hide Top Bar')}
+          >
+            {topBarHidden ? <PanelTop className="h-4 w-4" /> : <PanelTopClose className="h-4 w-4" />}
+          </Button>
         </div>
       </div>
 
