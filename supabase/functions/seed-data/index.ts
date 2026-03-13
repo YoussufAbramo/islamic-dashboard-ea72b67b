@@ -950,8 +950,8 @@ Deno.serve(async (req) => {
         }
 
         // ── EBOOKS ──
-        if (categories.includes('ebooks') && budget.canAdd()) {
-          const ebookBudget = budget.cap(alloc.ebooks || 3)
+        if (categories.includes('ebooks')) {
+          const ebookBudget = budget.capMin(alloc.ebooks || 3)
           const ebookRaw = Array.from({ length: ebookBudget }, (_, i) => {
             const createdAt = randomPastDate(90)
             trackTs(createdAt)
