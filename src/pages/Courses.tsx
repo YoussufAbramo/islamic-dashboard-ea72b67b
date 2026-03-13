@@ -102,6 +102,7 @@ const Courses = () => {
       level_id: form.level_id || null,
       track_id: form.track_id || null,
       duration_weeks: form.duration_weeks ? parseInt(form.duration_weeks) : null,
+      slug: form.slug || null,
     };
     if (editCourse) {
       await supabase.from('courses').update(saveData).eq('id', editCourse.id);
