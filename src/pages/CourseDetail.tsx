@@ -24,42 +24,6 @@ import { arrayMove } from '@dnd-kit/sortable';
 import SortableItem from '@/components/course/SortableItem';
 import SortableList from '@/components/course/SortableList';
 
-const contentTypeGroups = [
-  {
-    label: '📄 Text',
-    items: [
-      { value: 'table_of_content', label: 'Table of Content' },
-      { value: 'read_listen', label: 'Read & Listen' },
-      { value: 'memorization', label: 'Memorization' },
-    ],
-  },
-  {
-    label: '🎧 Audio',
-    items: [
-      { value: 'exercise_listen_choose', label: 'Listen & Choose' },
-    ],
-  },
-  {
-    label: '✏️ Exercises',
-    items: [
-      { value: 'exercise_text_match', label: 'Text Match' },
-      { value: 'exercise_choose_correct', label: 'Choose Correct' },
-      { value: 'exercise_choose_multiple', label: 'Choose Multiple' },
-      { value: 'exercise_rearrange', label: 'Rearrange Words' },
-      { value: 'exercise_missing_text', label: 'Missing Text' },
-      { value: 'exercise_true_false', label: 'True / False' },
-    ],
-  },
-  {
-    label: '📚 Other',
-    items: [
-      { value: 'revision', label: 'Revision' },
-      { value: 'homework', label: 'Homework' },
-    ],
-  },
-];
-
-const allContentTypes = contentTypeGroups.flatMap((g) => g.items);
 
 const CourseDetail = () => {
   const { id } = useParams();
@@ -100,7 +64,7 @@ const CourseDetail = () => {
   // Forms
   const [topicForm, setTopicForm] = useState({ title: '', title_ar: '' });
   const [sectionForm, setSectionForm] = useState({ title: '', title_ar: '' });
-  const [lessonForm, setLessonForm] = useState({ title: '', title_ar: '', lesson_type: 'read_listen' });
+  const [lessonForm, setLessonForm] = useState({ title: '', title_ar: '' });
 
   // Inline edit state
   const [inlineEdit, setInlineEdit] = useState<{ id: string; type: 'topic' | 'section' | 'lesson'; field: string; value: string } | null>(null);
@@ -305,7 +269,6 @@ const CourseDetail = () => {
       await supabase.from('lessons').update({
         title: lessonForm.title,
         title_ar: lessonForm.title_ar,
-        lesson_type: lessonForm.lesson_type as any,
       }).eq('id', editingLessonId);
       setEditingLessonId(null);
       toast.success(isAr ? 'تم تحديث الدرس' : 'Lesson updated');
@@ -315,21 +278,20 @@ const CourseDetail = () => {
       await supabase.from('lessons').insert([{
         title: lessonForm.title,
         title_ar: lessonForm.title_ar,
-        lesson_type: lessonForm.lesson_type as any,
         section_id: activeSectionId,
         sort_order: currentLessons.length,
       }]);
       toast.success(isAr ? 'تمت إضافة الدرس' : 'Lesson added');
     }
     setLessonDialog(false);
-    setLessonForm({ title: '', title_ar: '', lesson_type: 'read_listen' });
+    setLessonForm({ title: '', title_ar: '' });
     fetchHierarchy();
   };
 
   const openEditLesson = (lesson: any, sectionId: string) => {
     setEditingLessonId(lesson.id);
     setActiveSectionId(sectionId);
-    setLessonForm({ title: lesson.title, title_ar: lesson.title_ar || '', lesson_type: lesson.lesson_type });
+    setLessonForm({ title: lesson.title, title_ar: lesson.title_ar || '' });
     setLessonDialog(true);
   };
 
@@ -703,33 +665,6 @@ const CourseDetail = () => {
                                                       <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-muted-foreground" onClick={(e) => { e.stopPropagation(); handleInlineCancel(); }}><X className="h-3 w-3" /></Button>
                                                     </div>
                                                   )}
-                                                  {canEdit ? (
-                                                    <Select
-                                                      value={lesson.lesson_type}
-                                                      onValueChange={async (v) => {
-                                                        await supabase.from('lessons').update({ lesson_type: v as any }).eq('id', lesson.id);
-                                                        fetchHierarchy();
-                                                      }}
-                                                    >
-                                                      <SelectTrigger className="h-6 w-auto min-w-0 max-w-[140px] text-[10px] font-normal px-2 py-0 gap-1 border-border/60 bg-background shrink-0 [&>svg]:h-3 [&>svg]:w-3">
-                                                        <SelectValue />
-                                                      </SelectTrigger>
-                                                      <SelectContent>
-                                                        {contentTypeGroups.map(group => (
-                                                          <SelectGroup key={group.label}>
-                                                            <SelectLabel className="text-[10px]">{group.label}</SelectLabel>
-                                                            {group.items.map(ct => (
-                                                              <SelectItem key={ct.value} value={ct.value} className="text-xs">{ct.label}</SelectItem>
-                                                            ))}
-                                                          </SelectGroup>
-                                                        ))}
-                                                      </SelectContent>
-                                                    </Select>
-                                                  ) : (
-                                                    <Badge variant="outline" className="text-[10px] font-normal shrink-0 bg-background">
-                                                      {allContentTypes.find(ct => ct.value === lesson.lesson_type)?.label || lesson.lesson_type}
-                                                    </Badge>
-                                                  )}
                                                 </div>
                                                 {canEdit && (
                                                   <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover/lesson:opacity-100 transition-opacity">
@@ -752,7 +687,7 @@ const CourseDetail = () => {
                                       )}
 
                                       {canEdit && (
-                                        <Button variant="ghost" size="sm" className="w-full text-xs text-muted-foreground hover:text-foreground border border-dashed border-border/60 hover:border-border mt-1" onClick={() => { setActiveSectionId(section.id); setEditingLessonId(null); setLessonForm({ title: '', title_ar: '', lesson_type: 'read_listen' }); setLessonDialog(true); }}>
+                                        <Button variant="ghost" size="sm" className="w-full text-xs text-muted-foreground hover:text-foreground border border-dashed border-border/60 hover:border-border mt-1" onClick={() => { setActiveSectionId(section.id); setEditingLessonId(null); setLessonForm({ title: '', title_ar: '' }); setLessonDialog(true); }}>
                                           <Plus className="h-3 w-3 me-1" />{t('courses.addLesson')}
                                         </Button>
                                       )}
@@ -830,11 +765,11 @@ const CourseDetail = () => {
       </Dialog>
 
       {/* ─── Lesson Dialog (Add/Edit) ─── */}
-      <Dialog open={lessonDialog} onOpenChange={(o) => { setLessonDialog(o); if (!o) { setEditingLessonId(null); setLessonForm({ title: '', title_ar: '', lesson_type: 'read_listen' }); } }}>
+      <Dialog open={lessonDialog} onOpenChange={(o) => { setLessonDialog(o); if (!o) { setEditingLessonId(null); setLessonForm({ title: '', title_ar: '' }); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {editingLessonId ? <Settings2 className="h-4 w-4 text-primary" /> : <Plus className="h-4 w-4 text-primary" />}
+              {editingLessonId ? <Pencil className="h-4 w-4 text-primary" /> : <Plus className="h-4 w-4 text-primary" />}
               {editingLessonId ? (isAr ? 'تعديل الدرس' : 'Edit Lesson') : t('courses.addLesson')}
             </DialogTitle>
           </DialogHeader>
@@ -842,22 +777,6 @@ const CourseDetail = () => {
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Title (EN)</Label><Input value={lessonForm.title} onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })} /></div>
               <div><Label>Title (AR)</Label><Input value={lessonForm.title_ar} onChange={(e) => setLessonForm({ ...lessonForm, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
-            </div>
-            <div>
-              <Label>{t('courses.lessonType')}</Label>
-              <Select value={lessonForm.lesson_type} onValueChange={(v) => setLessonForm({ ...lessonForm, lesson_type: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {contentTypeGroups.map((group) => (
-                    <SelectGroup key={group.label}>
-                      <SelectLabel className="text-xs font-semibold text-muted-foreground">{group.label}</SelectLabel>
-                      {group.items.map((ct) => (
-                        <SelectItem key={ct.value} value={ct.value}>{ct.label}</SelectItem>
-                      ))}
-                    </SelectGroup>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </div>
           <DialogFooter>
