@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.seed-data]
 verify_jwt = false
+
+[functions.check-subscriptions]
+verify_jwt = false

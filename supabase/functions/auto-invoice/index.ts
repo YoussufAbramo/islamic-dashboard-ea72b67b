@@ -3,7 +3,13 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+const PERIOD_DAYS: Record<string, number> = {
+  monthly: 28,
+  quarterly: 88,
+  yearly: 365,
 };
 
 Deno.serve(async (req) => {
@@ -94,9 +100,11 @@ Deno.serve(async (req) => {
         }
 
         const amount = sub.price || 0;
-        const isYearly = sub.subscription_type === "yearly";
+        const subType = sub.subscription_type || "monthly";
+        const periodDays = PERIOD_DAYS[subType] || 28;
+
         const dueDate = new Date(sub.renewal_date);
-        dueDate.setDate(dueDate.getDate() + (isYearly ? 365 : 30));
+        dueDate.setDate(dueDate.getDate() + periodDays);
 
         // Create the invoice
         const { data: invoice, error: insertErr } = await supabase
@@ -106,9 +114,9 @@ Deno.serve(async (req) => {
             student_id: sub.student_id,
             course_id: sub.course_id,
             amount,
-            billing_cycle: sub.subscription_type || "monthly",
+            billing_cycle: subType,
             due_date: dueDate.toISOString().split("T")[0],
-            notes: `Auto-generated invoice for ${isYearly ? "yearly" : "monthly"} renewal`,
+            notes: `Auto-generated invoice for ${subType} renewal`,
             status: "pending",
           })
           .select("id")
@@ -121,11 +129,7 @@ Deno.serve(async (req) => {
 
         // Advance renewal_date to next cycle
         const nextRenewal = new Date(sub.renewal_date);
-        if (isYearly) {
-          nextRenewal.setFullYear(nextRenewal.getFullYear() + 1);
-        } else {
-          nextRenewal.setMonth(nextRenewal.getMonth() + 1);
-        }
+        nextRenewal.setDate(nextRenewal.getDate() + periodDays);
 
         await supabase
           .from("subscriptions")
