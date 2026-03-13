@@ -1190,7 +1190,7 @@ Deno.serve(async (req) => {
       }
 
       const DELETE_ORDER = [
-        'chat_read_receipts', 'chat_messages', 'chat_members',
+        'chat_messages', 'chat_members',
         'attendance', 'session_reports', 'student_progress',
         'timetable_entries', 'invoices', 'subscriptions', 'chats',
         'certificates', 'support_tickets', 'notifications', 'announcements',
