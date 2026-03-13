@@ -32,7 +32,7 @@ const formatTimer = (seconds: number): string => {
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 };
 
-/** Attend button that shows "Now" or countdown to lesson start */
+/** Attend button that shows "Now" or countdown to lesson start in MM:SS */
 const PendingAttendButton = ({ pendingAttend, isAr }: { pendingAttend: { scheduledAt: string; onAttend: () => void }; isAr: boolean }) => {
   const [label, setLabel] = useState('');
 
@@ -42,12 +42,20 @@ const PendingAttendButton = ({ pendingAttend, isAr }: { pendingAttend: { schedul
       if (diff <= 0) {
         setLabel(isAr ? 'الآن' : 'Now');
       } else {
-        const mins = Math.ceil(diff / 60000);
-        setLabel(mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`);
+        const totalSeconds = Math.ceil(diff / 1000);
+        const mins = Math.floor(totalSeconds / 60);
+        const secs = totalSeconds % 60;
+        if (mins >= 60) {
+          const h = Math.floor(mins / 60);
+          const m = mins % 60;
+          setLabel(`${h}h ${m.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
+        } else {
+          setLabel(`${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
+        }
       }
     };
     update();
-    const iv = setInterval(update, 10000);
+    const iv = setInterval(update, 1000);
     return () => clearInterval(iv);
   }, [pendingAttend.scheduledAt, isAr]);
 
