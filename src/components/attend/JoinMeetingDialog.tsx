@@ -69,7 +69,7 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, entryId, isAr, onSession
   };
 
   const isPlatformAvailable = (id: JoinMethod): boolean => {
-    if (id === 'dashboard') return true;
+    if (id === 'dashboard') return false; // CodeCom Meeting disabled (coming soon)
     if (!entry) return false;
     if (id === 'google_meet') return !!entry.google_meet_url;
     if (id === 'zoom') return !!entry.zoom_url;
@@ -245,7 +245,7 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, entryId, isAr, onSession
                   <div className="text-start flex-1 min-w-0">
                     <p className="text-sm font-semibold flex items-center gap-1.5">
                       {isAr ? p.labelAr : p.label}
-                      {p.id === 'dashboard' && <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 font-medium">Beta</Badge>}
+                      {p.id === 'dashboard' && <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 font-medium text-muted-foreground">Soon</Badge>}
                     </p>
                     <p className="text-[10px] text-muted-foreground truncate">
                       {p.id === 'dashboard'
