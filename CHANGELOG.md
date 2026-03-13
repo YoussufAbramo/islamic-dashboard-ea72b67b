@@ -2,6 +2,18 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.5.0] - 2026-03-13
+
+### Added
+- **Lesson Builder** — block-based content editor for lessons supporting Text (rich HTML), Image (URL + caption + alt), Video, and Audio blocks with drag reorder, inline preview, and legacy content auto-migration
+- **Course Documentation dialog** — "Full Documentation" button inside the course info accordion opens a wide bilingual popup explaining content hierarchy, all 12 lesson types, builder blocks, and preset usage tips
+- **Preset topic selector** — preset insertion dialog now includes a dropdown to choose an existing topic or create a new one per preset
+
+### Improved
+- **Preset English translations** — fixed untranslated Arabic labels in English mode (Virtues of the Surah, Reasons of Revelation, Prophetic Context, Lessons Learned, Ethics of the Surah)
+
+---
+
 ## [5.4.0] - 2026-03-13
 
 ### Changed
