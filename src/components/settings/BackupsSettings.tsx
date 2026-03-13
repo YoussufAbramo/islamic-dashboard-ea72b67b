@@ -186,7 +186,6 @@ const AutoBackupCard = ({ isAr }: { isAr: boolean }) => {
 };
 
 // ==================== Main Backups Component ====================
-  const [backupingSettings, setBackupingSettings] = useState(false);
 const BackupsSettings = () => {
   const { language } = useLanguage();
   const { pending } = useAppSettings();
@@ -199,6 +198,7 @@ const BackupsSettings = () => {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [backupingSettings, setBackupingSettings] = useState(false);
 
   const [backupName, setBackupName] = useState('');
   const [backupFormat, setBackupFormat] = useState<'json' | 'sql' | 'csv'>('json');
