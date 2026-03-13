@@ -65,14 +65,12 @@ const AutoBackupCard = ({ isAr }: { isAr: boolean }) => {
   const save = async () => {
     setSaving(true);
     try {
-      const { error } = await supabase.from('auto_backup_config').update({
-        enabled: config.enabled,
-        schedule: config.schedule,
-        retention_count: config.retention_count,
-        format: config.format,
-        scheduled_time: config.scheduled_time,
-        updated_at: new Date().toISOString(),
-      } as any).neq('id', '00000000-0000-0000-0000-000000000000');
+      // Read current settings, merge backup_config into it
+      const { data: current } = await supabase.from('app_settings').select('id, settings').limit(1).single();
+      if (!current) throw new Error('No app_settings row found');
+      const currentSettings = (current.settings as any) || {};
+      const merged = { ...currentSettings, backup_config: { enabled: config.enabled, schedule: config.schedule, retention_count: config.retention_count, format: config.format, scheduled_time: config.scheduled_time } };
+      const { error } = await supabase.from('app_settings').update({ settings: merged, updated_at: new Date().toISOString() }).eq('id', current.id);
       if (error) throw error;
       toast.success(isAr ? 'تم حفظ إعدادات النسخ التلقائي' : 'Auto backup settings saved');
       setDirty(false);
