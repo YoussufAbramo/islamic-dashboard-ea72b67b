@@ -19,7 +19,7 @@ interface DataManagementCardProps {
   isAr: boolean;
 }
 
-type SeedCategory = 'students' | 'teachers' | 'courses' | 'billing' | 'schedule' | 'communications' | 'support' | 'certificates' | 'website' | 'packages' | 'expenses' | 'ebooks' | 'progress' | 'support_config';
+type SeedCategory = 'students' | 'teachers' | 'courses' | 'billing' | 'schedule' | 'communications' | 'support' | 'certificates' | 'website' | 'packages' | 'expenses' | 'ebooks' | 'progress' | 'support_config' | 'payouts' | 'badges';
 
 const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon: string; desc: string; descAr: string }[] = [
   { key: 'students', label: 'Students', labelAr: 'طلاب', icon: '👨‍🎓', desc: 'Auth users + profiles + student records', descAr: 'مستخدمون + ملفات + سجلات طلاب' },
