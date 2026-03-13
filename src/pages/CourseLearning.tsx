@@ -20,6 +20,7 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import LessonBuilder from '@/components/course/LessonBuilder';
+import { useSidebar } from '@/components/ui/sidebar';
 
 // ─── Types ───
 interface CourseSection {
@@ -413,13 +414,20 @@ const CourseLearning = () => {
   const { language } = useLanguage();
   const { user, role } = useAuth();
   const { topBarHidden, setTopBarHidden } = useOutletContext<{ topBarHidden: boolean; setTopBarHidden: (v: boolean) => void }>();
+  const { open: appSidebarOpen, setOpen: setAppSidebarOpen } = useSidebar();
   const isAr = language === 'ar';
 
-  // Auto-hide top bar on mount, restore on unmount
+  // Auto-hide top bar & collapse app sidebar on mount, restore on unmount
   useEffect(() => {
     setTopBarHidden(true);
-    return () => setTopBarHidden(false);
-  }, [setTopBarHidden]);
+    const wasOpen = appSidebarOpen;
+    if (appSidebarOpen) setAppSidebarOpen(false);
+    return () => {
+      setTopBarHidden(false);
+      if (wasOpen) setAppSidebarOpen(true);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [course, setCourse] = useState<any>(null);
   const [courseSections, setCourseSections] = useState<CourseSection[]>([]);
