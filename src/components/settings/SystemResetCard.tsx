@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { AlertTriangle, Loader2, RotateCcw, ShieldAlert, CheckCircle2, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -21,6 +22,7 @@ const CONFIRMATION_PHRASE = 'RESET SYSTEM';
 const SystemResetCard = ({ isAr }: SystemResetCardProps) => {
   const [showDialog, setShowDialog] = useState(false);
   const [confirmInput, setConfirmInput] = useState('');
+  const [showFinalConfirm, setShowFinalConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const navigate = useNavigate();
@@ -28,7 +30,7 @@ const SystemResetCard = ({ isAr }: SystemResetCardProps) => {
   const isConfirmed = confirmInput === CONFIRMATION_PHRASE;
 
   const handleReset = async () => {
-    if (!isConfirmed) return;
+    setShowFinalConfirm(false);
     setLoading(true);
     setResult(null);
     try {
@@ -87,7 +89,8 @@ const SystemResetCard = ({ isAr }: SystemResetCardProps) => {
                 <li>{isAr ? 'جميع الدورات والاشتراكات والفواتير ستُزال' : 'All courses, subscriptions, and invoices will be removed'}</li>
                 <li>{isAr ? 'جميع المحادثات والشهادات والتقارير ستُحذف' : 'All chats, certificates, and reports will be erased'}</li>
                 <li>{isAr ? 'جميع الملفات المرفوعة في التخزين السحابي ستُمسح' : 'All uploaded files in cloud storage will be cleared'}</li>
-                <li>{isAr ? 'سيتم الاحتفاظ بحسابك كمدير للنظام فقط' : 'Only your admin account will be preserved'}</li>
+                <li>{isAr ? 'سجلات التدقيق وإعدادات الدفع ستُمسح' : 'Audit logs and payment config will be cleared'}</li>
+                <li>{isAr ? 'سيتم الاحتفاظ بحسابك كمدير للنظام فقط' : 'Only your admin account & role will be preserved'}</li>
               </ul>
             </div>
           </div>
@@ -100,10 +103,9 @@ const SystemResetCard = ({ isAr }: SystemResetCardProps) => {
                 {isAr ? 'ما سيتم الاحتفاظ به' : 'What will be preserved'}
               </p>
               <ul className="list-disc list-inside text-muted-foreground space-y-0.5">
-                <li>{isAr ? 'حساب المدير الحالي' : 'Current admin account'}</li>
+                <li>{isAr ? 'حساب المدير الحالي ودوره' : 'Current admin account & admin role'}</li>
                 <li>{isAr ? 'هيكل قاعدة البيانات والترحيلات' : 'Database schema & migrations'}</li>
                 <li>{isAr ? 'ملفات النظام المحلية' : 'Local system assets (/public/system)'}</li>
-                <li>{isAr ? 'إعدادات التطبيق الأساسية' : 'Core app settings structure'}</li>
               </ul>
             </div>
           </div>
@@ -119,8 +121,8 @@ const SystemResetCard = ({ isAr }: SystemResetCardProps) => {
         </CardContent>
       </Card>
 
-      {/* Confirmation Dialog */}
-      <Dialog open={showDialog} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
+      {/* Step 1: Type confirmation phrase */}
+      <Dialog open={showDialog && !showFinalConfirm} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-destructive">
@@ -174,13 +176,10 @@ const SystemResetCard = ({ isAr }: SystemResetCardProps) => {
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={handleReset}
+                  onClick={() => setShowFinalConfirm(true)}
                   disabled={!isConfirmed || loading}
                 >
-                  {loading && <Loader2 className="h-4 w-4 me-1.5 animate-spin" />}
-                  {loading
-                    ? (isAr ? 'جاري إعادة التعيين...' : 'Resetting...')
-                    : (isAr ? 'إعادة تعيين النظام' : 'Reset System')}
+                  {isAr ? 'متابعة' : 'Proceed'}
                 </Button>
               </DialogFooter>
             </div>
@@ -243,6 +242,41 @@ const SystemResetCard = ({ isAr }: SystemResetCardProps) => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Step 2: Final confirmation AlertDialog */}
+      <AlertDialog open={showFinalConfirm} onOpenChange={(open) => { if (!open) setShowFinalConfirm(false); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <ShieldAlert className="h-5 w-5" />
+              {isAr ? 'تأكيد نهائي' : 'Final Confirmation'}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <span className="block">
+                {isAr
+                  ? 'أنت على وشك حذف جميع بيانات النظام نهائياً. هذا الإجراء لا يمكن التراجع عنه بأي شكل.'
+                  : 'You are about to permanently erase ALL system data. This action is absolutely irreversible.'}
+              </span>
+              <span className="block font-semibold text-destructive">
+                {isAr ? 'هل أنت متأكد تماماً أنك تريد المتابعة؟' : 'Are you absolutely sure you want to proceed?'}
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={loading}>{isAr ? 'لا، إلغاء' : 'No, Cancel'}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleReset}
+              disabled={loading}
+            >
+              {loading && <Loader2 className="h-4 w-4 me-1.5 animate-spin" />}
+              {loading
+                ? (isAr ? 'جاري إعادة التعيين...' : 'Resetting...')
+                : (isAr ? 'نعم، إعادة تعيين النظام' : 'Yes, Reset System')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
