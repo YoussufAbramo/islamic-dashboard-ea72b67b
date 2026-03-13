@@ -711,76 +711,14 @@ const CourseLearning = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Manage Content Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Settings2 className="h-5 w-5 text-primary" />
-              {isAr ? 'إدارة محتوى الدرس' : 'Manage Lesson Content'}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>{isAr ? 'رابط الفيديو' : 'Video URL'}</Label>
-              <Input
-                placeholder="https://..."
-                value={editForm.video_url || ''}
-                onChange={e => setEditForm(f => ({ ...f, video_url: e.target.value }))}
-              />
-            </div>
-            <div>
-              <Label>{isAr ? 'رابط الصوت' : 'Audio URL'}</Label>
-              <Input
-                placeholder="https://..."
-                value={editForm.audio_url || ''}
-                onChange={e => setEditForm(f => ({ ...f, audio_url: e.target.value }))}
-              />
-            </div>
-            <div>
-              <Label>{isAr ? 'رابط PDF' : 'PDF URL'}</Label>
-              <Input
-                placeholder="https://..."
-                value={editForm.pdf_url || ''}
-                onChange={e => setEditForm(f => ({ ...f, pdf_url: e.target.value }))}
-              />
-            </div>
-            <div>
-              <Label>{isAr ? 'رابط خارجي' : 'External Link'}</Label>
-              <Input
-                placeholder="https://..."
-                value={editForm.external_url || ''}
-                onChange={e => setEditForm(f => ({ ...f, external_url: e.target.value }))}
-              />
-            </div>
-            <div>
-              <Label>{isAr ? 'التعليمات' : 'Instructions'}</Label>
-              <Textarea
-                rows={3}
-                value={editForm.instructions || ''}
-                onChange={e => setEditForm(f => ({ ...f, instructions: e.target.value }))}
-              />
-            </div>
-            <div>
-              <Label>{isAr ? 'المحتوى النصي (HTML)' : 'Text Content (HTML)'}</Label>
-              <Textarea
-                rows={5}
-                value={editForm.text || ''}
-                onChange={e => setEditForm(f => ({ ...f, text: e.target.value }))}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
-              {isAr ? 'إلغاء' : 'Cancel'}
-            </Button>
-            <Button onClick={handleSaveContent} disabled={saving}>
-              {saving && <Loader2 className="h-4 w-4 me-1.5 animate-spin" />}
-              {isAr ? 'حفظ' : 'Save'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Lesson Builder */}
+      <LessonBuilder
+        open={builderOpen}
+        onOpenChange={setBuilderOpen}
+        lesson={currentLesson ? { id: currentLesson.id, title: currentLesson.title, title_ar: currentLesson.title_ar, content: currentLesson.content } : null}
+        isAr={isAr}
+        onSaved={handleBuilderSaved}
+      />
     </div>
   );
 };
