@@ -421,7 +421,7 @@ const Courses = () => {
                     <TableHead>{t('courses.name')}</TableHead>
                     <TableHead>{isAr ? 'التصنيف' : 'Category'}</TableHead>
                     <TableHead>{isAr ? 'المسار' : 'Track'}</TableHead>
-                    <TableHead>{isAr ? 'المدة' : 'Duration'}</TableHead>
+                    <TableHead>{isAr ? 'المحتوى' : 'Content'}</TableHead>
                     <TableHead>{t('courses.status')}</TableHead>
                     <TableHead>{t('common.actions')}</TableHead>
                   </TableRow>
