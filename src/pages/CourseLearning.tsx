@@ -177,7 +177,7 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
                 borderStyle: block.divider_style || 'solid',
                 borderWidth: `${block.divider_thickness || 1}px 0 0 0`,
                 borderColor: (() => {
-                  const m: Record<string, string> = { border: 'hsl(var(--border))', primary: 'hsl(var(--primary))', muted: 'hsl(var(--muted-foreground))', destructive: 'hsl(var(--destructive))', gold: 'hsl(var(--gold, 45 80% 50%))' };
+                  const m: Record<string, string> = { border: 'hsl(var(--border) / 0.15)', primary: 'hsl(var(--primary) / 0.15)', muted: 'hsl(var(--muted-foreground) / 0.15)', destructive: 'hsl(var(--destructive) / 0.15)', gold: 'hsl(var(--gold, 45 80% 50%) / 0.15)' };
                   return m[block.divider_color || 'border'] || 'hsl(var(--border))';
                 })(),
               }} />

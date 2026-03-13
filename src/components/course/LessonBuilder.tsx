@@ -519,11 +519,11 @@ const BlockEditor = ({
               <Label className="text-xs mb-1.5 block">{isAr ? 'اللون' : 'Color'}</Label>
               <div className="flex flex-wrap gap-1.5">
                 {([
-                  { value: 'border', label: isAr ? 'افتراضي' : 'Default', css: 'hsl(var(--border))' },
-                  { value: 'primary', label: isAr ? 'رئيسي' : 'Primary', css: 'hsl(var(--primary))' },
-                  { value: 'muted', label: isAr ? 'باهت' : 'Muted', css: 'hsl(var(--muted-foreground))' },
-                  { value: 'destructive', label: isAr ? 'أحمر' : 'Red', css: 'hsl(var(--destructive))' },
-                  { value: 'gold', label: isAr ? 'ذهبي' : 'Gold', css: 'hsl(var(--gold, 45 80% 50%))' },
+                  { value: 'border', label: isAr ? 'افتراضي' : 'Default', css: 'hsl(var(--border) / 0.15)' },
+                  { value: 'primary', label: isAr ? 'رئيسي' : 'Primary', css: 'hsl(var(--primary) / 0.15)' },
+                  { value: 'muted', label: isAr ? 'باهت' : 'Muted', css: 'hsl(var(--muted-foreground) / 0.15)' },
+                  { value: 'destructive', label: isAr ? 'أحمر' : 'Red', css: 'hsl(var(--destructive) / 0.15)' },
+                  { value: 'gold', label: isAr ? 'ذهبي' : 'Gold', css: 'hsl(var(--gold, 45 80% 50%) / 0.15)' },
                 ] as const).map((c) => (
                   <button key={c.value} type="button" onClick={() => onChange({ ...block, divider_color: c.value })}
                     className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
@@ -543,13 +543,13 @@ const BlockEditor = ({
                 borderWidth: `${block.divider_thickness || 1}px 0 0 0`,
                 borderColor: (() => {
                   const colorMap: Record<string, string> = {
-                    border: 'hsl(var(--border))',
-                    primary: 'hsl(var(--primary))',
-                    muted: 'hsl(var(--muted-foreground))',
-                    destructive: 'hsl(var(--destructive))',
-                    gold: 'hsl(var(--gold, 45 80% 50%))',
+                    border: 'hsl(var(--border) / 0.15)',
+                    primary: 'hsl(var(--primary) / 0.15)',
+                    muted: 'hsl(var(--muted-foreground) / 0.15)',
+                    destructive: 'hsl(var(--destructive) / 0.15)',
+                    gold: 'hsl(var(--gold, 45 80% 50%) / 0.15)',
                   };
-                  return colorMap[block.divider_color || 'border'] || 'hsl(var(--border))';
+                  return colorMap[block.divider_color || 'border'] || 'hsl(var(--border) / 0.15)';
                 })(),
               }} />
             </div>
