@@ -114,6 +114,10 @@ const FloatingButtons = () => {
 const DashboardLayout = () => {
   const { user, loading } = useAuth();
   const { dir } = useLanguage();
+  const location = useLocation();
+  const [topBarHidden, setTopBarHidden] = useState(false);
+  const isLearnPage = /\/courses\/[^/]+\/learn/.test(location.pathname);
+  const showTopBar = !(isLearnPage && topBarHidden);
   useUpcomingAttend();
 
   if (loading) {
