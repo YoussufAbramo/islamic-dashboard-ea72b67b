@@ -83,20 +83,42 @@ const SystemResetCard = ({ isAr }: SystemResetCardProps) => {
           </div>
         </CardHeader>
         <CardContent className="space-y-4 pt-0">
-          {/* Compact two-column info */}
+          {/* Critical Warning Banner */}
+          <div className="p-3 rounded-lg border border-destructive/30 bg-destructive/10 flex items-start gap-2.5">
+            <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-destructive">
+                {isAr ? '⚠️ تحذير حرج — لا يمكن التراجع!' : '⚠️ Critical Warning — Irreversible!'}
+              </p>
+              <p className="text-[11px] text-destructive/80 leading-relaxed">
+                {isAr
+                  ? 'ستؤدي هذه العملية إلى حذف جميع البيانات نهائياً من أكثر من 40 جدول في قاعدة البيانات. لا يمكن استعادة البيانات بعد التنفيذ. يُنصح بشدة بإنشاء نسخة احتياطية كاملة قبل المتابعة.'
+                  : 'This operation permanently deletes all data across 40+ database tables. Data cannot be recovered after execution. It is strongly recommended to create a full backup before proceeding.'}
+              </p>
+            </div>
+          </div>
+
+          {/* Detailed two-column info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* What's deleted */}
             <div className="p-3 rounded-lg border border-destructive/20 bg-destructive/5 space-y-2">
               <div className="flex items-center gap-1.5">
-                <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
+                <XCircle className="h-3.5 w-3.5 text-destructive" />
                 <span className="text-xs font-semibold text-destructive">
-                  {isAr ? 'سيتم حذفه' : 'Will be deleted'}
+                  {isAr ? 'سيتم حذفه نهائياً' : 'Permanently Deleted'}
                 </span>
               </div>
               <ul className="text-[11px] text-muted-foreground space-y-0.5 list-disc list-inside">
-                <li>{isAr ? 'جميع المستخدمين والدورات والاشتراكات' : 'All users, courses & subscriptions'}</li>
-                <li>{isAr ? 'المحادثات والشهادات والتقارير' : 'Chats, certificates & reports'}</li>
-                <li>{isAr ? 'الملفات المرفوعة وسجلات التدقيق' : 'Uploaded files & audit logs'}</li>
+                <li>{isAr ? 'جميع الطلاب والمعلمين وحساباتهم' : 'All students, teachers & their accounts'}</li>
+                <li>{isAr ? 'الدورات والمواضيع والأقسام والدروس' : 'Courses, topics, sections & lessons'}</li>
+                <li>{isAr ? 'الاشتراكات والفواتير والمدفوعات' : 'Subscriptions, invoices & payments'}</li>
+                <li>{isAr ? 'الجدول الزمني والحضور وتقارير الجلسات' : 'Timetable, attendance & session reports'}</li>
+                <li>{isAr ? 'المحادثات والإشعارات والإعلانات' : 'Chats, notifications & announcements'}</li>
+                <li>{isAr ? 'الشهادات وتقدم الطلاب والشارات' : 'Certificates, student progress & badges'}</li>
+                <li>{isAr ? 'تذاكر الدعم والمصروفات والمكتبة' : 'Support tickets, expenses & library'}</li>
+                <li>{isAr ? 'المدونات وصفحات الموقع والباقات' : 'Blog posts, website pages & packages'}</li>
+                <li>{isAr ? 'سجلات التدقيق وجميع الملفات المرفوعة' : 'Audit logs & all uploaded files'}</li>
+                <li>{isAr ? 'إعدادات التطبيق (يُعاد تعيينها للافتراضي)' : 'App settings (reset to defaults)'}</li>
               </ul>
             </div>
 
@@ -109,11 +131,38 @@ const SystemResetCard = ({ isAr }: SystemResetCardProps) => {
                 </span>
               </div>
               <ul className="text-[11px] text-muted-foreground space-y-0.5 list-disc list-inside">
-                <li>{isAr ? 'حساب المدير الحالي ودوره' : 'Your admin account & role'}</li>
-                <li>{isAr ? 'هيكل قاعدة البيانات' : 'Database schema & migrations'}</li>
-                <li>{isAr ? 'ملفات النظام المحلية' : 'Local system assets'}</li>
+                <li>{isAr ? 'حساب المدير الحالي (أنت)' : 'Your current admin account'}</li>
+                <li>{isAr ? 'دور المدير وصلاحياته' : 'Admin role & permissions'}</li>
+                <li>{isAr ? 'هيكل قاعدة البيانات والترحيلات' : 'Database schema & migrations'}</li>
+                <li>{isAr ? 'هيكل حاويات التخزين' : 'Storage bucket structure'}</li>
+                <li>{isAr ? 'ملفات النظام المحلية' : 'Local system assets & fonts'}</li>
               </ul>
             </div>
+          </div>
+
+          {/* How it works */}
+          <div className="p-3 rounded-lg border border-border bg-muted/20 space-y-2">
+            <p className="text-xs font-semibold text-foreground">
+              {isAr ? '🔄 كيف تعمل هذه العملية' : '🔄 How This Works'}
+            </p>
+            <ol className="text-[11px] text-muted-foreground space-y-0.5 list-decimal list-inside">
+              <li>{isAr ? 'اكتب عبارة التأكيد "RESET SYSTEM" للمتابعة' : 'Type the confirmation phrase "RESET SYSTEM" to proceed'}</li>
+              <li>{isAr ? 'تأكيد نهائي قبل بدء الحذف' : 'Final confirmation before deletion begins'}</li>
+              <li>{isAr ? 'حذف متسلسل يحترم ترتيب العلاقات بين الجداول' : 'Cascading deletion respecting table foreign key order'}</li>
+              <li>{isAr ? 'مسح حاويات التخزين من جميع الملفات' : 'Storage buckets cleared of all files'}</li>
+              <li>{isAr ? 'إعادة إنشاء إعدادات التطبيق الافتراضية' : 'Default app settings re-created'}</li>
+              <li>{isAr ? 'إعادة توجيهك إلى لوحة التحكم' : 'Redirect you to the dashboard'}</li>
+            </ol>
+          </div>
+
+          {/* Safety note */}
+          <div className="p-2.5 rounded-md border border-amber-500/20 bg-amber-500/5 flex items-start gap-2">
+            <ShieldAlert className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <p className="text-[11px] text-amber-700 dark:text-amber-300 leading-relaxed">
+              {isAr
+                ? 'يتطلب هذا الإجراء تأكيدًا مزدوجًا للحماية: كتابة عبارة تأكيد + تأكيد نهائي. تأكد من إنشاء نسخة احتياطية كاملة من قسم النسخ الاحتياطية قبل المتابعة.'
+                : 'This action requires double confirmation for safety: typing a confirmation phrase + final approval. Ensure you create a full backup from the Backups section before proceeding.'}
+            </p>
           </div>
 
           <Button
