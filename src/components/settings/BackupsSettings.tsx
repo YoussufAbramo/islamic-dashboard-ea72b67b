@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { HardDrive, Plus, Download, Trash2, Loader2, FileJson, FileText, Database, Clock, AlertTriangle, RefreshCw, Save } from 'lucide-react';
+import { HardDrive, Plus, Download, Trash2, Loader2, FileJson, FileText, Database, Clock, AlertTriangle, RefreshCw, Save, Settings } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -198,6 +198,7 @@ const BackupsSettings = () => {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [backupingSettings, setBackupingSettings] = useState(false);
 
   const [backupName, setBackupName] = useState('');
   const [backupFormat, setBackupFormat] = useState<'json' | 'sql' | 'csv'>('json');
@@ -433,6 +434,35 @@ const BackupsSettings = () => {
           </CardContent>
         </Card>
 
+        {/* Backup App Settings Only */}
+        <Card>
+          <CardContent className="flex items-center justify-between py-4">
+            <div>
+              <p className="text-sm font-medium">{isAr ? 'نسخ إعدادات التطبيق' : 'Backup App Settings'}</p>
+              <p className="text-xs text-muted-foreground">{isAr ? 'نسخة احتياطية لإعدادات التطبيق، النسخ التلقائي، وبوابة الدفع فقط' : 'Export app settings, auto backup config, and payment gateway config only'}</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={async () => {
+              setBackupingSettings(true);
+              try {
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('en-CA', { timeZone: defaultTimezone });
+                const timeStr = now.toLocaleTimeString('en-GB', { timeZone: defaultTimezone, hour12: false }).replace(/:/g, '-');
+                const name = `settings-backup-${dateStr}_${timeStr}`;
+                const { data, error } = await supabase.functions.invoke('manage-backups', {
+                  body: { action: 'create_backup', name, format: 'json', tables: ['app_settings', 'auto_backup_config', 'payment_gateway_config', 'landing_content', 'pricing_packages', 'policies'] },
+                });
+                if (error) throw error;
+                if (data?.error) throw new Error(data.error);
+                toast.success(isAr ? `تم نسخ الإعدادات: ${data.file}` : `Settings backup created: ${data.file}`);
+                fetchBackups();
+              } catch (err: any) { toast.error(err.message || 'Backup failed'); }
+              finally { setBackupingSettings(false); }
+            }} disabled={backupingSettings}>
+              {backupingSettings ? <Loader2 className="h-4 w-4 me-1 animate-spin" /> : <Settings className="h-4 w-4 me-1" />}
+              {isAr ? 'نسخ الإعدادات' : 'Backup Settings'}
+            </Button>
+          </CardContent>
+        </Card>
         <AutoBackupCard isAr={isAr} />
       </div>
 
