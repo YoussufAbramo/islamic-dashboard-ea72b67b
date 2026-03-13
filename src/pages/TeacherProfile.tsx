@@ -532,7 +532,7 @@ const TeacherProfile = () => {
           ) : (
             <div className="flex flex-col md:flex-row gap-6">
               {/* Avatar & Name & Payout */}
-              <div className="flex flex-col items-center gap-3 md:min-w-[180px]">
+              <div className="flex flex-col items-center gap-3 md:w-[200px] md:min-w-[200px] md:max-w-[200px]">
                 <Avatar className="h-24 w-24 border-2 border-border">
                   <AvatarImage src={resolvedAvatar} alt={profile?.full_name} />
                   <AvatarFallback className="text-2xl bg-primary/10 text-primary">{initials}</AvatarFallback>
