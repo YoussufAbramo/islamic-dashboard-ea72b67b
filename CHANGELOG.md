@@ -2,6 +2,27 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.6.0] - 2026-03-13
+
+### Changed — Lesson Types → Builder Elements (Major)
+- **Lesson types moved to Lesson Builder** — the 12 hardcoded lesson types (Table of Content, Read & Listen, Memorization, Exercises, etc.) are no longer a property of the lesson row; they are now selectable content block types inside the Lesson Builder
+- **Lesson type dropdown removed** — removed the inline type selector from lesson rows in the course builder and the type field from the Add/Edit Lesson dialog
+- **Lesson dialog simplified** — creating/editing a lesson now only requires Title (EN/AR); content and type are managed entirely in the Lesson Builder
+
+### Added
+- **16 block types in Lesson Builder** — expanded from 4 (Text, Image, Video, Audio) to 16 with full editors:
+  - **Media**: Text, Image, Video, Audio
+  - **Content**: Table of Content, Read & Listen, Memorization, Revision, Homework (rich text with optional audio for Read & Listen / Memorization)
+  - **Exercises**: Listen & Choose, Choose Correct, Choose Multiple, True/False, Text Match, Rearrange, Missing Text — each with appropriate question, options, pairs, or items editors
+- **Grouped block selector** — builder shows blocks organized into Media, Content, and Exercises groups with labeled sections
+- **Exercise editors** — Choose Correct/Multiple with radio/checkbox option selection, True/False with radio group, Text Match with pairs editor, Rearrange with ordered items editor, Missing Text with sentence/word fields, Listen & Choose with audio + options
+
+### Removed
+- **`contentTypeGroups` constant** — removed hardcoded lesson type definitions from CourseDetail
+- **Lesson type badge** — removed from the course learning page header
+
+---
+
 ## [5.5.0] - 2026-03-13
 
 ### Added
