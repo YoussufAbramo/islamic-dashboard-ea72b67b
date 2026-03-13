@@ -16,6 +16,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree, Layers, FileText, Pencil, Route, MoreHorizontal, Settings2, Edit, HelpCircle, ChevronDown, Link2, GraduationCap, SlidersHorizontal, Check, X } from 'lucide-react';
+import PresetSections from '@/components/course/PresetSections';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 import { arrayMove } from '@dnd-kit/sortable';
@@ -561,9 +562,12 @@ const CourseDetail = () => {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">{t('courses.topics')}</h2>
         {canEdit && (
-          <Button size="sm" onClick={() => { setEditingTopicId(null); setTopicForm({ title: '', title_ar: '' }); setTopicDialog(true); }}>
-            <Plus className="h-4 w-4 me-2" />{t('courses.addTopic')}
-          </Button>
+          <div className="flex items-center gap-2">
+            <PresetSections courseId={id!} currentTopicCount={topics.length} onInserted={fetchHierarchy} />
+            <Button size="sm" onClick={() => { setEditingTopicId(null); setTopicForm({ title: '', title_ar: '' }); setTopicDialog(true); }}>
+              <Plus className="h-4 w-4 me-2" />{t('courses.addTopic')}
+            </Button>
+          </div>
         )}
       </div>
 
