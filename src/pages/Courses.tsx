@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Search, Edit, Settings, Trash2, LayoutGrid, List, BookOpen } from 'lucide-react';
+import { Plus, Search, Edit, Settings, Trash2, LayoutGrid, List, BookOpen, GraduationCap } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
