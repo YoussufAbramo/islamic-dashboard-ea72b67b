@@ -63,6 +63,9 @@ const CourseTracks = () => {
   const [editing, setEditing] = useState<Track | null>(null);
   const [form, setForm] = useState({ title: '', title_ar: '', description: '', description_ar: '' });
   const [expandedTracks, setExpandedTracks] = useState<Set<string>>(new Set());
+  const [assignTrackId, setAssignTrackId] = useState<string | null>(null);
+  const [assignSelected, setAssignSelected] = useState<Set<string>>(new Set());
+  const [assignLoading, setAssignLoading] = useState(false);
 
   const { data: tracks = [], isLoading } = useQuery({
     queryKey: ['course_tracks'],
