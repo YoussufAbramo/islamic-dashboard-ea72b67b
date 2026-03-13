@@ -3,6 +3,7 @@ import { useParams, Navigate, useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { resolveAvatarUrl } from '@/lib/storage';
 import { uploadMedia, getMediaSignedUrl, MEDIA_PATHS } from '@/lib/mediaStorage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
