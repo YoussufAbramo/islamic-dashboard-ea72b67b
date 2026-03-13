@@ -269,7 +269,6 @@ const CourseDetail = () => {
       await supabase.from('lessons').update({
         title: lessonForm.title,
         title_ar: lessonForm.title_ar,
-        lesson_type: lessonForm.lesson_type as any,
       }).eq('id', editingLessonId);
       setEditingLessonId(null);
       toast.success(isAr ? 'تم تحديث الدرس' : 'Lesson updated');
@@ -279,14 +278,13 @@ const CourseDetail = () => {
       await supabase.from('lessons').insert([{
         title: lessonForm.title,
         title_ar: lessonForm.title_ar,
-        lesson_type: lessonForm.lesson_type as any,
         section_id: activeSectionId,
         sort_order: currentLessons.length,
       }]);
       toast.success(isAr ? 'تمت إضافة الدرس' : 'Lesson added');
     }
     setLessonDialog(false);
-    setLessonForm({ title: '', title_ar: '', lesson_type: 'read_listen' });
+    setLessonForm({ title: '', title_ar: '' });
     fetchHierarchy();
   };
 
