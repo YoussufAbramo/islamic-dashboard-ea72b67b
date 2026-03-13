@@ -172,14 +172,7 @@ const TopBar = () => {
 
         {/* Pending Attend button in TopBar */}
         {pendingAttend && !activeSessionId && (
-          <Button
-            size="sm"
-            className="gap-1.5 h-8"
-            onClick={pendingAttend.onAttend}
-          >
-            <Video className="h-3.5 w-3.5" />
-            {isAr ? 'حضور' : 'Attend'}
-          </Button>
+          <PendingAttendButton pendingAttend={pendingAttend} isAr={isAr} />
         )}
 
         {/* Active Session Timer in TopBar */}
