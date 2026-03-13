@@ -810,8 +810,8 @@ Deno.serve(async (req) => {
         }
 
         // ── CERTIFICATES ──
-        if (categories.includes('certificates') && sIds.length > 0 && budget.canAdd()) {
-          const certBudget = budget.cap(alloc.certificates || 3)
+        if (categories.includes('certificates') && sIds.length > 0) {
+          const certBudget = budget.capMin(alloc.certificates || 3)
           const certInsert = Array.from({ length: certBudget }, (_, i) => {
             const issuedAt = randomPastDate(60)
             trackTs(issuedAt)
