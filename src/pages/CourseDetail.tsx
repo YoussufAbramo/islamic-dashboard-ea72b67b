@@ -687,7 +687,7 @@ const CourseDetail = () => {
                                       )}
 
                                       {canEdit && (
-                                        <Button variant="ghost" size="sm" className="w-full text-xs text-muted-foreground hover:text-foreground border border-dashed border-border/60 hover:border-border mt-1" onClick={() => { setActiveSectionId(section.id); setEditingLessonId(null); setLessonForm({ title: '', title_ar: '', lesson_type: 'read_listen' }); setLessonDialog(true); }}>
+                                        <Button variant="ghost" size="sm" className="w-full text-xs text-muted-foreground hover:text-foreground border border-dashed border-border/60 hover:border-border mt-1" onClick={() => { setActiveSectionId(section.id); setEditingLessonId(null); setLessonForm({ title: '', title_ar: '' }); setLessonDialog(true); }}>
                                           <Plus className="h-3 w-3 me-1" />{t('courses.addLesson')}
                                         </Button>
                                       )}
