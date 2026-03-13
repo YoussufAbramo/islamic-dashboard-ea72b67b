@@ -3,7 +3,8 @@ import { ACTION_BTN, ACTION_BTN_DESTRUCTIVE, ACTION_ICON } from '@/lib/actionBtn
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Route, Plus, Pencil, Trash2, Search, ChevronDown, BookOpen, GripVertical, Layers, Hash } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Route, Plus, Pencil, Trash2, Search, ChevronDown, BookOpen, GripVertical, Layers, Hash, ExternalLink } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,7 +55,7 @@ const CourseTracks = () => {
   const { language } = useLanguage();
   const isAr = language === 'ar';
   const qc = useQueryClient();
-
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -330,10 +331,21 @@ const CourseTracks = () => {
                     <Separator />
                     <CardContent className="py-4 px-5">
                       {trackCourses.length === 0 ? (
-                        <div className="text-center py-8 border border-dashed rounded-xl bg-muted/30">
-                          <BookOpen className="h-8 w-8 mx-auto mb-2 text-muted-foreground/40" />
-                          <p className="text-sm text-muted-foreground">{isAr ? 'لا توجد دورات مرتبطة بهذا المسار' : 'No courses assigned to this track'}</p>
-                          <p className="text-xs text-muted-foreground/60 mt-1">{isAr ? 'اربط الدورات من صفحة إدارة الدورات' : 'Link courses from the course management page'}</p>
+                        <div className="text-center py-8 border border-dashed rounded-xl bg-muted/30 space-y-3">
+                          <BookOpen className="h-8 w-8 mx-auto text-muted-foreground/40" />
+                          <div>
+                            <p className="text-sm text-muted-foreground">{isAr ? 'لا توجد دورات مرتبطة بهذا المسار' : 'No courses assigned to this track'}</p>
+                            <p className="text-xs text-muted-foreground/60 mt-1">{isAr ? 'اربط الدورات من صفحة إدارة الدورات' : 'Link courses from the course management page'}</p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1.5"
+                            onClick={() => navigate('/dashboard/courses')}
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                            {isAr ? 'إدارة الدورات' : 'Manage Courses'}
+                          </Button>
                         </div>
                       ) : (
                         <div className="space-y-5">
