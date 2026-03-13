@@ -4,8 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
-import { Database, AlertTriangle, Loader2, PackagePlus, ScrollText, Trash2, History, ChevronDown, ChevronUp, CheckCircle2, XCircle, Clock, Eraser } from 'lucide-react';
-import { Slider } from '@/components/ui/slider';
+import { Database, AlertTriangle, Loader2, PackagePlus, ScrollText, Trash2, History, ChevronDown, ChevronUp, CheckCircle2, XCircle, Clock, Eraser, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
@@ -40,14 +39,9 @@ const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon
   { key: 'badges', label: 'Badge Achievements', labelAr: 'إنجازات الشارات', icon: '🏆', desc: 'Seed badge data for teachers', descAr: 'بيانات شارات للمعلمين' },
 ];
 
-const getEstimatedCounts = (m: number) => ({
-  students: m * 2,
-  teachers: Math.max(1, Math.ceil(m * 0.8)),
-  courses: Math.max(1, Math.ceil(m * 0.6)),
-  timetable: m * 3,
-  tickets: Math.max(1, m),
-  blogs: Math.max(1, Math.ceil(m * 0.6)),
-});
+const MAX_TOTAL_RECORDS = 1000;
+
+const getEstimatedTotal = (m: number) => Math.min(MAX_TOTAL_RECORDS, m * 100);
 
 interface SeedSession {
   id: string;
@@ -87,6 +81,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
   const [selectedCategories, setSelectedCategories] = useState<SeedCategory[]>(SEED_CATEGORIES.map(c => c.key));
   const [multiplier, setMultiplier] = useState(3);
   const [expandedSession, setExpandedSession] = useState<string | null>(null);
+  const [lastSeedResult, setLastSeedResult] = useState<any>(null);
 
   const fetchSessions = async () => {
     const { data, error } = await supabase.functions.invoke('seed-data', {
@@ -109,6 +104,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       return;
     }
     setSeedLoading(true);
+    setLastSeedResult(null);
     try {
       const { data, error } = await supabase.functions.invoke('seed-data', {
         body: { action: 'seed', categories: selectedCategories, multiplier },
@@ -116,6 +112,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       const serverError = data?.error;
       if (error || serverError) throw new Error(serverError || error?.message);
       
+      setLastSeedResult(data);
       toast.success(
         isAr
           ? `تم إضافة ${data.total_records} سجل تجريبي بنجاح`
@@ -156,12 +153,6 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
     }
   };
 
-  const formatCounts = (counts: Record<string, number>) =>
-    Object.entries(counts)
-      .filter(([, v]) => v > 0)
-      .map(([k, v]) => `${k}: ${v}`)
-      .join(' · ');
-
   return (
     <>
       <div className="space-y-4">
@@ -191,9 +182,27 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
                 </div>
               </div>
 
+              {/* Record limit notice */}
+              <div className="flex items-start gap-2 p-2.5 rounded-md bg-muted/50 border border-border">
+                <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <div className="text-[11px] text-muted-foreground space-y-0.5">
+                  <p className="font-medium text-foreground">
+                    {isAr ? `الحد الأقصى: ${MAX_TOTAL_RECORDS} سجل` : `Global limit: ${MAX_TOTAL_RECORDS} records max`}
+                  </p>
+                  <p>
+                    {isAr
+                      ? 'يتم توزيع السجلات عبر آخر 90 يومًا بشكل طبيعي مع الحفاظ على العلاقات بين الجداول.'
+                      : 'Records are distributed across the last 90 days with natural timestamps and full relational integrity.'}
+                  </p>
+                </div>
+              </div>
+
               <div className="space-y-2">
-              <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between">
                   <Label className="text-xs font-medium text-muted-foreground">{isAr ? 'المضاعف' : 'Multiplier'}</Label>
+                  <span className="text-[10px] text-muted-foreground font-mono">
+                    ~{getEstimatedTotal(multiplier)} {isAr ? 'سجل' : 'records'}
+                  </span>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {Array.from({ length: 10 }, (_, i) => i + 1).map((v) => (
@@ -211,17 +220,6 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
                     </button>
                   ))}
                 </div>
-                {(() => {
-                  const est = getEstimatedCounts(multiplier);
-                  return (
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
-                      <span>👨‍🎓 ~{est.students} {isAr ? 'طالب' : 'students'}</span>
-                      <span>👨‍🏫 ~{est.teachers} {isAr ? 'معلم' : 'teachers'}</span>
-                      <span>📚 ~{est.courses} {isAr ? 'دورات' : 'courses'}</span>
-                      <span>📅 ~{est.timetable} {isAr ? 'مواعيد' : 'entries'}</span>
-                    </div>
-                  );
-                })()}
               </div>
 
               {/* Category Selection */}

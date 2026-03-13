@@ -11,12 +11,22 @@ const pickN = <T>(arr: T[], n: number): T[] => {
   const shuffled = [...arr].sort(() => Math.random() - 0.5)
   return shuffled.slice(0, Math.min(n, arr.length))
 }
-const randomDate = (daysAgo: number, daysAhead: number): string => {
-  const d = new Date()
-  d.setDate(d.getDate() - daysAgo + Math.floor(Math.random() * (daysAgo + daysAhead)))
-  return d.toISOString()
+
+// Generate a random date within the last `daysBack` days, spread naturally
+const randomPastDate = (daysBack = 90): string => {
+  const now = Date.now()
+  const offset = Math.random() * daysBack * 24 * 60 * 60 * 1000
+  return new Date(now - offset).toISOString()
 }
-const randomDateOnly = (daysAgo: number, daysAhead: number): string => randomDate(daysAgo, daysAhead).split('T')[0]
+const randomPastDateOnly = (daysBack = 90): string => randomPastDate(daysBack).split('T')[0]
+
+// Generate a random future date within the next `daysAhead` days
+const randomFutureDate = (daysAhead = 30): string => {
+  const now = Date.now()
+  const offset = Math.random() * daysAhead * 24 * 60 * 60 * 1000
+  return new Date(now + offset).toISOString()
+}
+
 const uuid = () => crypto.randomUUID()
 
 // ─── data pools ────────────────────────────────────────────────────────
@@ -90,6 +100,25 @@ const ANNOUNCEMENT_TITLES = [
   { en: 'New Course Available', ar: 'دورة جديدة متاحة' },
 ]
 
+const SUMMARIES = [
+  'Student reviewed Surah Al-Fatiha and began memorizing Surah Al-Baqarah verses 1-5.',
+  'Covered Arabic grammar rules for noun-adjective agreement. Student showed good understanding.',
+  'Practiced tajweed rules: Idgham and Ikhfa. Student needs more practice on Ikhfa.',
+  'Discussed Islamic history - The Hijra. Student participated actively.',
+  'Memorization session: Student completed 2 new verses with proper tajweed.',
+  'Revision of previously memorized surahs. Good retention observed.',
+]
+const OBSERVATIONS = [
+  'Student is making steady progress and shows enthusiasm.',
+  'Needs additional practice on pronunciation of certain letters.',
+  'Excellent memorization skills, ahead of schedule.',
+  'Student was focused and attentive throughout the session.',
+  'Recommended extra revision before the next lesson.',
+  'Good improvement compared to last session.',
+]
+const PERF_REMARKS = ['Excellent', 'Very Good', 'Good', 'Satisfactory', 'Needs Improvement', 'Outstanding']
+const CANCEL_REASONS = ['Student requested postponement', 'Teacher unavailable', 'Technical issues', 'Schedule conflict', 'Holiday']
+
 // ─── tracking helper ───────────────────────────────────────────────────
 async function trackRecords(
   adminClient: any,
@@ -99,7 +128,6 @@ async function trackRecords(
 ) {
   if (ids.length === 0) return
   const rows = ids.map(id => ({ session_id: sessionId, table_name: tableName, record_id: id }))
-  // batch in chunks of 500
   for (let i = 0; i < rows.length; i += 500) {
     await adminClient.from('seed_records').insert(rows.slice(i, i + 500))
   }
@@ -119,6 +147,54 @@ async function dedup<T extends Record<string, any>>(
   if (!existing || existing.length === 0) return items
   const existingSet = new Set(existing.map((e: any) => e[field]))
   return items.filter(i => !existingSet.has(i[field]))
+}
+
+// ─── Global record budget tracker ─────────────────────────────────────
+const MAX_TOTAL_RECORDS = 1000
+
+class RecordBudget {
+  private used = 0
+  remaining() { return Math.max(0, MAX_TOTAL_RECORDS - this.used) }
+  canAdd() { return this.used < MAX_TOTAL_RECORDS }
+  consume(n: number) { this.used += n }
+  cap(desired: number) { return Math.min(desired, this.remaining()) }
+  total() { return this.used }
+}
+
+// ─── Record allocation plan based on multiplier ────────────────────────
+// Multiplier 1-10 scales the dataset, but NEVER exceeds 1000 total.
+// The plan ensures logical proportions and minimum coverage.
+function computeAllocation(multiplier: number, categories: string[]) {
+  // Base quantities per multiplier (these sum to ~100 at multiplier=1)
+  const has = (c: string) => categories.includes(c)
+
+  // Weight-based allocation across categories
+  const weights: Record<string, number> = {}
+  if (has('students')) weights.students = 8
+  if (has('teachers')) weights.teachers = 4
+  if (has('courses')) weights.courses = 10 // includes tracks, cats, levels, sections, lessons
+  if (has('billing')) weights.billing = 12 // subscriptions + invoices
+  if (has('schedule')) weights.schedule = 25 // timetable + attendance + reports
+  if (has('communications')) weights.communications = 5
+  if (has('support')) weights.support = 10
+  if (has('certificates')) weights.certificates = 3
+  if (has('website')) weights.website = 5
+  if (has('packages')) weights.packages = 2
+  if (has('expenses')) weights.expenses = 5
+  if (has('ebooks')) weights.ebooks = 3
+  if (has('progress')) weights.progress = 5
+  if (has('support_config')) weights.support_config = 2
+  if (has('payouts')) weights.payouts = 4
+  if (has('badges')) weights.badges = 15
+
+  const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0) || 1
+  const budget = Math.min(MAX_TOTAL_RECORDS, multiplier * 100) // 100-1000
+
+  const alloc: Record<string, number> = {}
+  for (const [k, w] of Object.entries(weights)) {
+    alloc[k] = Math.max(1, Math.round((w / totalWeight) * budget))
+  }
+  return alloc
 }
 
 // ─── main handler ──────────────────────────────────────────────────────
@@ -170,6 +246,9 @@ Deno.serve(async (req) => {
       const multiplier: number = Math.min(Math.max(Number(body.multiplier) || 3, 1), 10)
       if (categories.length === 0) return json({ error: 'No categories selected' }, 400)
 
+      const budget = new RecordBudget()
+      const alloc = computeAllocation(multiplier, categories)
+
       // Create session
       const sessionId = uuid()
       await admin.from('seed_sessions').insert({
@@ -183,51 +262,44 @@ Deno.serve(async (req) => {
       const counts: Record<string, number> = {}
       const errors: string[] = []
       const callerId = caller.id
+      let timestampMin = new Date().toISOString()
+      let timestampMax = new Date(0).toISOString()
 
-      // Quantity calculations
-      const qty = {
-        students: multiplier * 2,
-        teachers: Math.max(1, Math.ceil(multiplier * 0.8)),
-        courses: Math.max(1, Math.ceil(multiplier * 0.6)),
-        tracks: Math.max(1, Math.ceil(multiplier * 0.4)),
-        categories: Math.max(1, Math.ceil(multiplier * 0.5)),
-        levels: Math.max(1, Math.ceil(multiplier * 0.5)),
-        sections: Math.max(2, Math.ceil(multiplier * 0.8)),
-        lessonSections: Math.max(1, Math.ceil(multiplier * 0.5)),
-        lessonsPerSection: Math.max(1, Math.ceil(multiplier * 0.4)),
-        timetable: multiplier * 3,
-        invoices: multiplier * 2,
-        announcements: Math.max(1, Math.ceil(multiplier * 0.5)),
-        notifications: multiplier,
-        chats: Math.max(1, Math.ceil(multiplier * 0.5)),
-        tickets: Math.max(1, multiplier),
-        certs: Math.max(1, Math.ceil(multiplier * 0.5)),
-        blogs: Math.max(1, Math.ceil(multiplier * 0.6)),
-        pages: Math.max(1, Math.ceil(multiplier * 0.5)),
-        packages: Math.max(1, Math.ceil(multiplier * 0.4)),
+      const trackTs = (ts: string) => {
+        if (ts < timestampMin) timestampMin = ts
+        if (ts > timestampMax) timestampMax = ts
       }
 
       try {
         // ── STUDENTS ──
         const studentUserIds: string[] = []
-        if (categories.includes('students')) {
-          for (let i = 0; i < qty.students; i++) {
+        if (categories.includes('students') && budget.canAdd()) {
+          const qty = budget.cap(alloc.students || 4)
+          for (let i = 0; i < qty; i++) {
+            if (!budget.canAdd()) break
             const fn = pick(FIRST_NAMES)
             const ln = pick(LAST_NAMES)
             const email = `seed-${sessionId.slice(0,8)}-s${i+1}@sample.edu`
             try {
+              const createdAt = randomPastDate(90)
+              trackTs(createdAt)
               const { data: newUser, error } = await admin.auth.admin.createUser({
                 email, password: crypto.randomUUID(), email_confirm: true,
                 user_metadata: { full_name: `${fn} ${ln}`, phone: `+20100000${String(1000 + i).slice(1)}` }
               })
               if (!error && newUser.user) {
                 studentUserIds.push(newUser.user.id)
+                // Update profile created_at to simulate historical signup
+                await admin.from('profiles').update({ created_at: createdAt }).eq('id', newUser.user.id)
                 await trackRecords(admin, sessionId, 'auth_users', [newUser.user.id])
                 await trackRecords(admin, sessionId, 'profiles', [newUser.user.id])
                 await trackRecords(admin, sessionId, 'user_roles', [newUser.user.id])
-                // Track the auto-created student record
                 const { data: sRec } = await admin.from('students').select('id').eq('user_id', newUser.user.id).single()
-                if (sRec) await trackRecords(admin, sessionId, 'students', [sRec.id])
+                if (sRec) {
+                  await admin.from('students').update({ created_at: createdAt }).eq('id', sRec.id)
+                  await trackRecords(admin, sessionId, 'students', [sRec.id])
+                }
+                budget.consume(4) // auth_user + profile + user_role + student
               }
             } catch (e: any) { errors.push(`Student ${i+1}: ${e.message}`) }
           }
@@ -236,26 +308,30 @@ Deno.serve(async (req) => {
 
         // ── TEACHERS ──
         const teacherUserIds: string[] = []
-        if (categories.includes('teachers')) {
-          for (let i = 0; i < qty.teachers; i++) {
+        if (categories.includes('teachers') && budget.canAdd()) {
+          const qty = budget.cap(alloc.teachers || 2)
+          for (let i = 0; i < qty; i++) {
+            if (!budget.canAdd()) break
             const fn = pick(FIRST_NAMES)
             const ln = pick(LAST_NAMES)
             const title = pick(TITLES_TEACHER)
             const email = `seed-${sessionId.slice(0,8)}-t${i+1}@sample.edu`
             try {
+              const createdAt = randomPastDate(90)
+              trackTs(createdAt)
               const { data: newUser, error } = await admin.auth.admin.createUser({
                 email, password: crypto.randomUUID(), email_confirm: true,
                 user_metadata: { full_name: `${title} ${fn} ${ln}`, phone: `+20110000${String(1000 + i).slice(1)}` }
               })
               if (!error && newUser.user) {
                 teacherUserIds.push(newUser.user.id)
+                await admin.from('profiles').update({ created_at: createdAt }).eq('id', newUser.user.id)
                 await trackRecords(admin, sessionId, 'auth_users', [newUser.user.id])
                 await trackRecords(admin, sessionId, 'profiles', [newUser.user.id])
 
                 await admin.from('user_roles').update({ role: 'teacher' }).eq('user_id', newUser.user.id)
                 await trackRecords(admin, sessionId, 'user_roles', [newUser.user.id])
 
-                // Delete auto-created student, create teacher
                 const { data: autoStudent } = await admin.from('students').select('id').eq('user_id', newUser.user.id).single()
                 if (autoStudent) await admin.from('students').delete().eq('id', autoStudent.id)
 
@@ -264,8 +340,10 @@ Deno.serve(async (req) => {
                   specialization: pick(SPECS),
                   bio: pick(BIOS),
                   title: title,
+                  created_at: createdAt,
                 }).select('id').single()
                 if (tRec) await trackRecords(admin, sessionId, 'teachers', [tRec.id])
+                budget.consume(4) // auth_user + profile + user_role + teacher
                 counts.teachers = (counts.teachers || 0) + 1
               }
             } catch (e: any) { errors.push(`Teacher ${i+1}: ${e.message}`) }
@@ -293,9 +371,13 @@ Deno.serve(async (req) => {
 
         // ── COURSES (tracks, categories, levels, sections, lessons) ──
         let cIds: string[] = []
-        if (categories.includes('courses')) {
+        if (categories.includes('courses') && budget.canAdd()) {
+          const courseBudget = budget.cap(alloc.courses || 10)
+          // Split budget: ~10% taxonomy, ~20% courses, ~30% sections, ~40% lessons
+          const numCourses = Math.max(1, Math.min(5, Math.ceil(courseBudget * 0.15)))
+
           // Tracks
-          const tracksRaw = pickN(TRACK_TITLES, qty.tracks).map((t, i) => ({
+          const tracksRaw = pickN(TRACK_TITLES, Math.min(2, numCourses)).map((t, i) => ({
             title: t.en, title_ar: t.ar, sort_order: i,
             description: `${t.en} description`, description_ar: `وصف ${t.ar}`,
           }))
@@ -304,14 +386,14 @@ Deno.serve(async (req) => {
             ? await admin.from('course_tracks').insert(tracksInsert).select('id')
             : { data: [] }
           const trackIds = (createdTracks || []).map(t => t.id)
-          // Also get existing track IDs for FK references
           const { data: allTrackRows } = await admin.from('course_tracks').select('id').limit(50)
           const allTrackIds = (allTrackRows || []).map(t => t.id)
           await trackRecords(admin, sessionId, 'course_tracks', trackIds)
+          budget.consume(trackIds.length)
           counts.tracks = trackIds.length
 
           // Categories
-          const catsRaw = pickN(CAT_TITLES, qty.categories).map((c, i) => ({
+          const catsRaw = pickN(CAT_TITLES, Math.min(3, numCourses)).map((c, i) => ({
             title: c.en, title_ar: c.ar, sort_order: i,
             description: `${c.en} courses`, description_ar: `دورات ${c.ar}`,
           }))
@@ -323,10 +405,11 @@ Deno.serve(async (req) => {
           const { data: allCatRows } = await admin.from('course_categories').select('id').limit(50)
           const allCatIds = (allCatRows || []).map(c => c.id)
           await trackRecords(admin, sessionId, 'course_categories', catIds)
+          budget.consume(catIds.length)
           counts.categories = catIds.length
 
           // Levels
-          const levelsRaw = pickN(LEVEL_TITLES, qty.levels).map((l, i) => ({
+          const levelsRaw = pickN(LEVEL_TITLES, Math.min(3, numCourses)).map((l, i) => ({
             title: l.en, title_ar: l.ar, sort_order: i,
             description: `For ${l.en.toLowerCase()} learners`, description_ar: `للمتعلمين ${l.ar}`,
           }))
@@ -338,22 +421,29 @@ Deno.serve(async (req) => {
           const { data: allLevelRows } = await admin.from('course_levels').select('id').limit(50)
           const allLevelIds = (allLevelRows || []).map(l => l.id)
           await trackRecords(admin, sessionId, 'course_levels', levelIds)
+          budget.consume(levelIds.length)
           counts.levels = levelIds.length
 
           // Courses
-          const coursesRaw = pickN(COURSE_TITLES, qty.courses).map((c, i) => ({
-            title: c.en, title_ar: c.ar, status: 'active', created_by: callerId,
-            description: `Complete course: ${c.en}`, description_ar: `دورة كاملة: ${c.ar}`,
-            category_id: allCatIds.length > 0 ? allCatIds[i % allCatIds.length] : null,
-            level_id: allLevelIds.length > 0 ? allLevelIds[i % allLevelIds.length] : null,
-            track_id: allTrackIds.length > 0 ? allTrackIds[i % allTrackIds.length] : null,
-          }))
+          const coursesRaw = pickN(COURSE_TITLES, numCourses).map((c, i) => {
+            const createdAt = randomPastDate(90)
+            trackTs(createdAt)
+            return {
+              title: c.en, title_ar: c.ar, status: 'active', created_by: callerId,
+              description: `Complete course: ${c.en}`, description_ar: `دورة كاملة: ${c.ar}`,
+              category_id: allCatIds.length > 0 ? allCatIds[i % allCatIds.length] : null,
+              level_id: allLevelIds.length > 0 ? allLevelIds[i % allLevelIds.length] : null,
+              track_id: allTrackIds.length > 0 ? allTrackIds[i % allTrackIds.length] : null,
+              created_at: createdAt, updated_at: createdAt,
+            }
+          })
           const coursesInsert = await dedup(admin, 'courses', coursesRaw)
           const { data: createdCourses } = coursesInsert.length > 0
             ? await admin.from('courses').insert(coursesInsert).select('id')
             : { data: [] }
           cIds = (createdCourses || []).map(c => c.id)
           await trackRecords(admin, sessionId, 'courses', cIds)
+          budget.consume(cIds.length)
           counts.courses = cIds.length
 
           // Assign teachers to courses
@@ -363,43 +453,51 @@ Deno.serve(async (req) => {
             }))
             const { data: createdTC } = await admin.from('teacher_courses').insert(tcInsert).select('id')
             await trackRecords(admin, sessionId, 'teacher_courses', (createdTC || []).map(tc => tc.id))
+            budget.consume((createdTC || []).length)
           }
 
-          // Course sections
+          // Course sections (2 per course)
+          const sectionsPerCourse = Math.min(2, Math.ceil(budget.cap(courseBudget * 0.3) / Math.max(1, cIds.length)))
           const sectionsInsert = cIds.flatMap(cid =>
-            pickN(SECTION_TITLES, qty.sections).map((s, i) => ({
+            pickN(SECTION_TITLES, sectionsPerCourse).map((s, i) => ({
               course_id: cid, title: s.en, title_ar: s.ar, sort_order: i
             }))
           )
-          const { data: createdSections } = await admin.from('course_sections').insert(sectionsInsert).select('id')
-          const secIds = (createdSections || []).map(s => s.id)
-          await trackRecords(admin, sessionId, 'course_sections', secIds)
-          counts.sections = secIds.length
+          if (sectionsInsert.length > 0) {
+            const { data: createdSections } = await admin.from('course_sections').insert(sectionsInsert).select('id')
+            const secIds = (createdSections || []).map(s => s.id)
+            await trackRecords(admin, sessionId, 'course_sections', secIds)
+            budget.consume(secIds.length)
+            counts.sections = secIds.length
 
-          // Lesson sections
-          const lSecInsert = secIds.flatMap(sid =>
-            Array.from({ length: qty.lessonSections }, (_, i) => ({
-              course_section_id: sid, title: `Part ${i + 1}`, title_ar: `الجزء ${i + 1}`, sort_order: i
+            // Lesson sections (1 per course section)
+            const lSecInsert = secIds.map((sid, i) => ({
+              course_section_id: sid, title: `Part ${i + 1}`, title_ar: `الجزء ${i + 1}`, sort_order: 0
             }))
-          )
-          const { data: createdLSecs } = await admin.from('lesson_sections').insert(lSecInsert).select('id')
-          const lSecIds = (createdLSecs || []).map(s => s.id)
-          await trackRecords(admin, sessionId, 'lesson_sections', lSecIds)
-          counts.lesson_sections = lSecIds.length
+            const { data: createdLSecs } = await admin.from('lesson_sections').insert(lSecInsert).select('id')
+            const lSecIds = (createdLSecs || []).map(s => s.id)
+            await trackRecords(admin, sessionId, 'lesson_sections', lSecIds)
+            budget.consume(lSecIds.length)
+            counts.lesson_sections = lSecIds.length
 
-          // Lessons
-          const lessonsInsert = lSecIds.flatMap((sid, si) =>
-            Array.from({ length: qty.lessonsPerSection }, (_, li) => ({
-              section_id: sid, title: `Lesson ${si * qty.lessonsPerSection + li + 1}`,
-              title_ar: `الدرس ${si * qty.lessonsPerSection + li + 1}`,
-              sort_order: li, lesson_type: LESSON_TYPES[(si + li) % LESSON_TYPES.length],
-              content: { text: 'Sample lesson content', text_ar: 'محتوى درس تجريبي' }
-            }))
-          )
-          const { data: createdLessons } = await admin.from('lessons').insert(lessonsInsert).select('id')
-          const lessonIds = (createdLessons || []).map(l => l.id)
-          await trackRecords(admin, sessionId, 'lessons', lessonIds)
-          counts.lessons = lessonIds.length
+            // Lessons (2 per lesson section, capped)
+            const lessonsPerLSec = Math.min(2, Math.max(1, Math.floor(budget.cap(courseBudget * 0.4) / Math.max(1, lSecIds.length))))
+            const lessonsInsert = lSecIds.flatMap((sid, si) =>
+              Array.from({ length: lessonsPerLSec }, (_, li) => ({
+                section_id: sid, title: `Lesson ${si * lessonsPerLSec + li + 1}`,
+                title_ar: `الدرس ${si * lessonsPerLSec + li + 1}`,
+                sort_order: li, lesson_type: LESSON_TYPES[(si + li) % LESSON_TYPES.length],
+                content: { text: 'Sample lesson content', text_ar: 'محتوى درس تجريبي' }
+              }))
+            )
+            if (lessonsInsert.length > 0) {
+              const { data: createdLessons } = await admin.from('lessons').insert(lessonsInsert).select('id')
+              const lessonIds = (createdLessons || []).map(l => l.id)
+              await trackRecords(admin, sessionId, 'lessons', lessonIds)
+              budget.consume(lessonIds.length)
+              counts.lessons = lessonIds.length
+            }
+          }
         }
 
         // Get existing courses if needed
@@ -410,25 +508,29 @@ Deno.serve(async (req) => {
 
         // ── BILLING (subscriptions + invoices) ──
         let createdSubIds: string[] = []
-        if (categories.includes('billing') && sIds.length > 0 && cIds.length > 0 && tIds.length > 0) {
+        if (categories.includes('billing') && sIds.length > 0 && cIds.length > 0 && tIds.length > 0 && budget.canAdd()) {
+          const billingBudget = budget.cap(alloc.billing || 12)
+          const numSubs = Math.max(1, Math.min(sIds.length, Math.ceil(billingBudget * 0.4)))
+          const numInvoices = Math.max(1, billingBudget - numSubs)
+
           const MEET_URLS = [
             'https://meet.google.com/abc-defg-hij',
             'https://meet.google.com/xyz-uvwx-rst',
-            'https://meet.google.com/klm-nopq-stu',
           ]
           const ZOOM_URLS = [
             'https://zoom.us/j/1234567890',
             'https://zoom.us/j/9876543210',
-            'https://zoom.us/j/5555555555',
           ]
-          const subsInsert = sIds.slice(0, Math.min(sIds.length, qty.invoices)).map((sid, i) => {
+          const subsInsert = Array.from({ length: numSubs }, (_, i) => {
             const subType = ['monthly', 'quarterly', 'yearly'][i % 3]
             const renewalDays = subType === 'yearly' ? 365 : subType === 'quarterly' ? 88 : 28
-            const startDate = randomDateOnly(30, 0)
+            const startDate = randomPastDateOnly(60)
             const renewalDate = new Date(startDate)
             renewalDate.setDate(renewalDate.getDate() + renewalDays)
+            const createdAt = randomPastDate(90)
+            trackTs(createdAt)
             return {
-              student_id: sid, course_id: cIds[i % cIds.length], teacher_id: tIds[i % tIds.length],
+              student_id: sIds[i % sIds.length], course_id: cIds[i % cIds.length], teacher_id: tIds[i % tIds.length],
               status: i === 0 ? 'expired' : 'active',
               subscription_type: subType,
               price: [50, 100, 75, 120, 80][i % 5],
@@ -436,293 +538,357 @@ Deno.serve(async (req) => {
               renewal_date: renewalDate.toISOString().split('T')[0],
               google_meet_url: MEET_URLS[i % MEET_URLS.length],
               zoom_url: ZOOM_URLS[i % ZOOM_URLS.length],
+              created_at: createdAt,
             }
           })
           const { data: subs } = await admin.from('subscriptions').insert(subsInsert).select('id, student_id, course_id, price, subscription_type')
           const subRows = subs || []
           createdSubIds = subRows.map(s => s.id)
           await trackRecords(admin, sessionId, 'subscriptions', createdSubIds)
+          budget.consume(createdSubIds.length)
           counts.subscriptions = createdSubIds.length
 
           // Invoices
           if (subRows.length > 0) {
             const statuses = ['pending', 'paid', 'overdue', 'cancelled']
-            const invoicesInsert = Array.from({ length: Math.min(qty.invoices, subRows.length * 2) }, (_, i) => {
+            const invoicesInsert = Array.from({ length: Math.min(numInvoices, subRows.length * 3) }, (_, i) => {
               const sub = subRows[i % subRows.length]
               const status = statuses[i % statuses.length]
               const amount = sub.price || 50
+              const createdAt = randomPastDate(90)
+              trackTs(createdAt)
               return {
                 subscription_id: sub.id, student_id: sub.student_id,
                 course_id: sub.course_id || null,
                 amount, original_price: amount,
                 sale_price: i % 3 === 0 ? Math.round(amount * 0.8) : null,
                 billing_cycle: sub.subscription_type || 'monthly',
-                due_date: randomDateOnly(status === 'overdue' ? 0 : -30, status === 'overdue' ? -1 : 30),
+                due_date: randomPastDateOnly(status === 'overdue' ? 30 : -10),
                 status,
-                paid_at: status === 'paid' ? randomDate(10, 0) : null,
+                paid_at: status === 'paid' ? randomPastDate(30) : null,
                 notes: status === 'paid' ? 'Payment received' : '',
+                created_at: createdAt, updated_at: createdAt,
               }
             })
-            const { data: createdInv } = await admin.from('invoices').insert(invoicesInsert).select('id')
-            const invIds = (createdInv || []).map(inv => inv.id)
-            await trackRecords(admin, sessionId, 'invoices', invIds)
-            counts.invoices = invIds.length
+            const cappedInvoices = invoicesInsert.slice(0, budget.cap(invoicesInsert.length))
+            if (cappedInvoices.length > 0) {
+              const { data: createdInv } = await admin.from('invoices').insert(cappedInvoices).select('id')
+              const invIds = (createdInv || []).map(inv => inv.id)
+              await trackRecords(admin, sessionId, 'invoices', invIds)
+              budget.consume(invIds.length)
+              counts.invoices = invIds.length
+            }
           }
         }
 
         // ── SCHEDULE (timetable + attendance + session reports) ──
-        if (categories.includes('schedule') && sIds.length > 0 && tIds.length > 0 && cIds.length > 0) {
-          const CANCEL_REASONS = ['Student requested postponement', 'Teacher unavailable', 'Technical issues', 'Schedule conflict', 'Holiday']
-          const now = new Date()
-          const completedCount = Math.floor(qty.timetable * 0.4)
-          const cancelledCount = Math.max(1, Math.floor(qty.timetable * 0.15))
-          const scheduledCount = qty.timetable - completedCount - cancelledCount
+        if (categories.includes('schedule') && sIds.length > 0 && tIds.length > 0 && cIds.length > 0 && budget.canAdd()) {
+          const scheduleBudget = budget.cap(alloc.schedule || 25)
+          // Split: ~40% timetable, ~20% attendance, ~40% reports
+          const numTT = Math.max(3, Math.ceil(scheduleBudget * 0.4))
+          const completedCount = Math.floor(numTT * 0.4)
+          const cancelledCount = Math.max(1, Math.floor(numTT * 0.15))
+          const scheduledCount = numTT - completedCount - cancelledCount
 
-          const ttInsert = Array.from({ length: qty.timetable }, (_, i) => {
-            const d = new Date(now)
+          const ttInsert = Array.from({ length: numTT }, (_, i) => {
             const duration = [30, 45, 60][i % 3]
             let status: string
             let cancellationReason: string | null = null
+            let scheduledAt: string
 
             if (i < completedCount) {
-              // Past completed sessions
-              d.setDate(d.getDate() - completedCount + i)
-              d.setHours(8 + (i % 6), 0, 0, 0)
+              // Past completed sessions — spread across last 90 days
+              scheduledAt = randomPastDate(90)
               status = 'completed'
             } else if (i < completedCount + cancelledCount) {
-              // Cancelled sessions (mix of past and future)
-              d.setDate(d.getDate() - 2 + (i - completedCount))
-              d.setHours(10 + (i % 4), 0, 0, 0)
+              scheduledAt = randomPastDate(60)
               status = 'cancelled'
               cancellationReason = pick(CANCEL_REASONS)
             } else {
               // Future scheduled sessions
-              d.setDate(d.getDate() + 1 + (i - completedCount - cancelledCount))
-              d.setHours(8 + (i % 6), 0, 0, 0)
+              scheduledAt = randomFutureDate(30)
               status = 'scheduled'
             }
 
+            // Set a realistic hour 8-14
+            const d = new Date(scheduledAt)
+            d.setHours(8 + (i % 6), 0, 0, 0)
+            scheduledAt = d.toISOString()
+            trackTs(scheduledAt)
+
             return {
               student_id: sIds[i % sIds.length], teacher_id: tIds[i % tIds.length],
-              course_id: cIds[i % cIds.length], scheduled_at: d.toISOString(),
+              course_id: cIds[i % cIds.length], scheduled_at: scheduledAt,
               duration_minutes: duration, status,
               cancellation_reason: cancellationReason,
             }
           })
-          const { data: createdTT } = await admin.from('timetable_entries').insert(ttInsert).select('id, status, scheduled_at, duration_minutes, student_id, teacher_id, course_id')
+          const cappedTT = ttInsert.slice(0, budget.cap(ttInsert.length))
+          const { data: createdTT } = await admin.from('timetable_entries').insert(cappedTT).select('id, status, scheduled_at, duration_minutes, student_id, teacher_id, course_id')
           const ttIds = (createdTT || []).map(t => t.id)
           await trackRecords(admin, sessionId, 'timetable_entries', ttIds)
+          budget.consume(ttIds.length)
           counts.timetable = ttIds.length
 
           // Attendance for completed entries
           const completedTT = (createdTT || []).filter(t => t.status === 'completed')
-          if (completedTT.length > 0) {
-            const attInsert = completedTT.map((tt, i) => ({
+          if (completedTT.length > 0 && budget.canAdd()) {
+            const attInsert = completedTT.slice(0, budget.cap(completedTT.length)).map((tt, i) => ({
               timetable_entry_id: tt.id, student_id: tt.student_id,
               status: i % 5 === 4 ? 'absent' : 'present',
               notes: i % 5 === 4 ? 'Student was absent' : 'Attended on time',
+              created_at: tt.scheduled_at,
             }))
             const { data: createdAtt } = await admin.from('attendance').insert(attInsert).select('id')
             const attIds = (createdAtt || []).map(a => a.id)
             await trackRecords(admin, sessionId, 'attendance', attIds)
+            budget.consume(attIds.length)
             counts.attendance = attIds.length
           }
 
-          // Session reports (logged time) for completed entries
-          const attendedTT = completedTT.filter((_, i) => i % 5 !== 4) // exclude absent ones
-          if (attendedTT.length > 0) {
-            const SUMMARIES = [
-              'Student reviewed Surah Al-Fatiha and began memorizing Surah Al-Baqarah verses 1-5.',
-              'Covered Arabic grammar rules for noun-adjective agreement. Student showed good understanding.',
-              'Practiced tajweed rules: Idgham and Ikhfa. Student needs more practice on Ikhfa.',
-              'Discussed Islamic history - The Hijra. Student participated actively.',
-              'Memorization session: Student completed 2 new verses with proper tajweed.',
-              'Revision of previously memorized surahs. Good retention observed.',
-            ]
-            const OBSERVATIONS = [
-              'Student is making steady progress and shows enthusiasm.',
-              'Needs additional practice on pronunciation of certain letters.',
-              'Excellent memorization skills, ahead of schedule.',
-              'Student was focused and attentive throughout the session.',
-              'Recommended extra revision before the next lesson.',
-              'Good improvement compared to last session.',
-            ]
-            const PERF_REMARKS = ['Excellent', 'Very Good', 'Good', 'Satisfactory', 'Needs Improvement', 'Outstanding']
+          // Session reports for completed (non-absent) entries
+          const attendedTT = completedTT.filter((_, i) => i % 5 !== 4)
+          if (attendedTT.length > 0 && budget.canAdd()) {
+            const reportInsert = await Promise.all(
+              attendedTT.slice(0, budget.cap(attendedTT.length)).map(async (tt) => {
+                const scheduledAtDate = new Date(tt.scheduled_at)
+                const durationMins = tt.duration_minutes || 30
+                const actualDurationSecs = (durationMins * 60) + Math.floor(Math.random() * 300) - 120
+                const endedAt = new Date(scheduledAtDate.getTime() + actualDurationSecs * 1000)
 
-            // Find subscription IDs for student-course pairs
-            const reportInsert = await Promise.all(attendedTT.map(async (tt, i) => {
-              const scheduledAt = new Date(tt.scheduled_at)
-              const durationMins = tt.duration_minutes || 30
-              // Realistic: actual duration varies slightly from scheduled
-              const actualDurationSecs = (durationMins * 60) + Math.floor(Math.random() * 300) - 120 // ±2 min variance
-              const endedAt = new Date(scheduledAt.getTime() + actualDurationSecs * 1000)
+                const { data: subMatch } = await admin.from('subscriptions')
+                  .select('id')
+                  .eq('student_id', tt.student_id)
+                  .eq('course_id', tt.course_id)
+                  .limit(1)
+                  .single()
 
-              // Try to find matching subscription
-              const { data: subMatch } = await admin.from('subscriptions')
-                .select('id')
-                .eq('student_id', tt.student_id)
-                .eq('course_id', tt.course_id)
-                .limit(1)
-                .single()
-
-              return {
-                timetable_entry_id: tt.id,
-                teacher_id: tt.teacher_id,
-                student_id: tt.student_id,
-                course_id: tt.course_id,
-                subscription_id: subMatch?.id || null,
-                summary: pick(SUMMARIES),
-                observations: pick(OBSERVATIONS),
-                performance_remarks: pick(PERF_REMARKS),
-                session_duration_seconds: Math.max(actualDurationSecs, 300),
-                started_at: scheduledAt.toISOString(),
-                ended_at: endedAt.toISOString(),
-                created_by: callerId,
-              }
-            }))
-
+                return {
+                  timetable_entry_id: tt.id,
+                  teacher_id: tt.teacher_id,
+                  student_id: tt.student_id,
+                  course_id: tt.course_id,
+                  subscription_id: subMatch?.id || null,
+                  summary: pick(SUMMARIES),
+                  observations: pick(OBSERVATIONS),
+                  performance_remarks: pick(PERF_REMARKS),
+                  session_duration_seconds: Math.max(actualDurationSecs, 300),
+                  started_at: scheduledAtDate.toISOString(),
+                  ended_at: endedAt.toISOString(),
+                  created_by: callerId,
+                  created_at: scheduledAtDate.toISOString(),
+                }
+              })
+            )
             const { data: createdReports } = await admin.from('session_reports').insert(reportInsert).select('id')
             const reportIds = (createdReports || []).map(r => r.id)
             await trackRecords(admin, sessionId, 'session_reports', reportIds)
+            budget.consume(reportIds.length)
             counts.session_reports = reportIds.length
           }
         }
 
         // ── COMMUNICATIONS (announcements + notifications) ──
-        if (categories.includes('communications')) {
-          const annRaw = pickN(ANNOUNCEMENT_TITLES, qty.announcements).map(a => ({
-            title: a.en, title_ar: a.ar,
-            content: `${a.en} - details and information.`,
-            content_ar: `${a.ar} - تفاصيل ومعلومات.`,
-            target_audience: pick(['all', 'students', 'teachers']),
-            created_by: callerId, is_active: true,
-          }))
+        if (categories.includes('communications') && budget.canAdd()) {
+          const commBudget = budget.cap(alloc.communications || 5)
+          const numAnn = Math.max(1, Math.ceil(commBudget * 0.5))
+          const numNotif = Math.max(1, commBudget - numAnn)
+
+          const annRaw = pickN(ANNOUNCEMENT_TITLES, numAnn).map(a => {
+            const createdAt = randomPastDate(90)
+            trackTs(createdAt)
+            return {
+              title: a.en, title_ar: a.ar,
+              content: `${a.en} - details and information.`,
+              content_ar: `${a.ar} - تفاصيل ومعلومات.`,
+              target_audience: pick(['all', 'students', 'teachers']),
+              created_by: callerId, is_active: true,
+              created_at: createdAt,
+            }
+          })
           const annInsert = await dedup(admin, 'announcements', annRaw)
           if (annInsert.length > 0) {
             const { data: createdAnn } = await admin.from('announcements').insert(annInsert).select('id')
             const annIds = (createdAnn || []).map(a => a.id)
             await trackRecords(admin, sessionId, 'announcements', annIds)
+            budget.consume(annIds.length)
             counts.announcements = annIds.length
-          } else {
-            counts.announcements = 0
           }
 
-          const notifInsert = Array.from({ length: qty.notifications }, (_, i) => ({
-            user_id: callerId,
-            title: `Sample Notification ${i + 1}`,
-            message: `This is a sample notification message #${i + 1}`,
-            link: pick(['/dashboard/students', '/dashboard/courses', '/dashboard/subscriptions', '/dashboard/support']),
-          }))
-          const { data: createdNotif } = await admin.from('notifications').insert(notifInsert).select('id')
-          const notifIds = (createdNotif || []).map(n => n.id)
-          await trackRecords(admin, sessionId, 'notifications', notifIds)
-          counts.notifications = notifIds.length
+          const notifInsert = Array.from({ length: budget.cap(numNotif) }, (_, i) => {
+            const createdAt = randomPastDate(30)
+            trackTs(createdAt)
+            return {
+              user_id: callerId,
+              title: `Sample Notification ${i + 1}`,
+              message: `This is a sample notification message #${i + 1}`,
+              link: pick(['/dashboard/students', '/dashboard/courses', '/dashboard/subscriptions', '/dashboard/support']),
+              created_at: createdAt,
+            }
+          })
+          if (notifInsert.length > 0) {
+            const { data: createdNotif } = await admin.from('notifications').insert(notifInsert).select('id')
+            const notifIds = (createdNotif || []).map(n => n.id)
+            await trackRecords(admin, sessionId, 'notifications', notifIds)
+            budget.consume(notifIds.length)
+            counts.notifications = notifIds.length
+          }
         }
 
         // ── SUPPORT (chats, messages, tickets) ──
-        if (categories.includes('support')) {
+        if (categories.includes('support') && budget.canAdd()) {
+          const supportBudget = budget.cap(alloc.support || 10)
+
           // Chats & messages
           if (sIds.length > 0 && tIds.length > 0) {
-            const chatCount = Math.min(qty.chats, sIds.length, tIds.length)
-            const chatsInsert = Array.from({ length: chatCount }, (_, i) => ({
-              student_id: sIds[i % sIds.length], teacher_id: tIds[i % tIds.length],
-              name: pick(['Quran Progress', 'Arabic Help', 'Fiqh Discussion', 'General Chat']),
-              is_group: false,
-            }))
+            const chatCount = Math.max(1, Math.min(Math.ceil(supportBudget * 0.2), sIds.length, tIds.length))
+            const chatsInsert = Array.from({ length: budget.cap(chatCount) }, (_, i) => {
+              const createdAt = randomPastDate(60)
+              trackTs(createdAt)
+              return {
+                student_id: sIds[i % sIds.length], teacher_id: tIds[i % tIds.length],
+                name: pick(['Quran Progress', 'Arabic Help', 'Fiqh Discussion', 'General Chat']),
+                is_group: false,
+                created_at: createdAt,
+              }
+            })
             const { data: createdChats } = await admin.from('chats').insert(chatsInsert).select('id')
             const chatIds = (createdChats || []).map(c => c.id)
             await trackRecords(admin, sessionId, 'chats', chatIds)
+            budget.consume(chatIds.length)
             counts.chats = chatIds.length
 
-            if (chatIds.length > 0 && sUserIds.length > 0 && tUserIds.length > 0) {
+            if (chatIds.length > 0 && sUserIds.length > 0 && tUserIds.length > 0 && budget.canAdd()) {
               const msgsInsert: any[] = []
-              for (let i = 0; i < chatIds.length; i++) {
-                msgsInsert.push(
-                  { chat_id: chatIds[i], sender_id: tUserIds[i % tUserIds.length], message: 'Assalamu alaikum! How is your progress?' },
-                  { chat_id: chatIds[i], sender_id: sUserIds[i % sUserIds.length], message: 'Wa alaikum assalam! Alhamdulillah, going well.' },
-                  { chat_id: chatIds[i], sender_id: tUserIds[i % tUserIds.length], message: 'Great! Keep up the good work.' },
-                )
+              for (let i = 0; i < chatIds.length && budget.canAdd(); i++) {
+                const baseTime = new Date(randomPastDate(60))
+                const msgs = [
+                  { chat_id: chatIds[i], sender_id: tUserIds[i % tUserIds.length], message: 'Assalamu alaikum! How is your progress?', created_at: baseTime.toISOString() },
+                  { chat_id: chatIds[i], sender_id: sUserIds[i % sUserIds.length], message: 'Wa alaikum assalam! Alhamdulillah, going well.', created_at: new Date(baseTime.getTime() + 120000).toISOString() },
+                  { chat_id: chatIds[i], sender_id: tUserIds[i % tUserIds.length], message: 'Great! Keep up the good work.', created_at: new Date(baseTime.getTime() + 300000).toISOString() },
+                ]
+                const capped = msgs.slice(0, budget.cap(3))
+                msgsInsert.push(...capped)
               }
-              const { data: createdMsgs } = await admin.from('chat_messages').insert(msgsInsert).select('id')
-              const msgIds = (createdMsgs || []).map(m => m.id)
-              await trackRecords(admin, sessionId, 'chat_messages', msgIds)
-              counts.messages = msgIds.length
+              if (msgsInsert.length > 0) {
+                const { data: createdMsgs } = await admin.from('chat_messages').insert(msgsInsert).select('id')
+                const msgIds = (createdMsgs || []).map(m => m.id)
+                await trackRecords(admin, sessionId, 'chat_messages', msgIds)
+                budget.consume(msgIds.length)
+                counts.messages = msgIds.length
+              }
             }
           }
 
           // Support tickets
-          const ticketsInsert = Array.from({ length: qty.tickets }, (_, i) => ({
-            name: `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`,
-            email: `ticket-${i+1}@sample.edu`,
-            subject: pick(TICKET_SUBJECTS),
-            message: 'This is a sample support ticket for testing purposes.',
-            department: pick(['technical', 'billing', 'general']),
-            priority: pick(['low', 'medium', 'high']),
-            status: pick(['open', 'in_progress', 'resolved', 'closed']),
-            user_id: callerId,
-          }))
-          const { data: createdTickets } = await admin.from('support_tickets').insert(ticketsInsert).select('id')
-          const ticketIds = (createdTickets || []).map(t => t.id)
-          await trackRecords(admin, sessionId, 'support_tickets', ticketIds)
-          counts.tickets = ticketIds.length
+          const ticketCount = budget.cap(Math.max(1, Math.ceil(supportBudget * 0.4)))
+          if (ticketCount > 0) {
+            const ticketsInsert = Array.from({ length: ticketCount }, (_, i) => {
+              const createdAt = randomPastDate(90)
+              trackTs(createdAt)
+              return {
+                name: `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`,
+                email: `ticket-${i+1}@sample.edu`,
+                subject: pick(TICKET_SUBJECTS),
+                message: 'This is a sample support ticket for testing purposes.',
+                department: pick(['technical', 'billing', 'general']),
+                priority: pick(['low', 'medium', 'high']),
+                status: pick(['open', 'in_progress', 'resolved', 'closed']),
+                user_id: callerId,
+                created_at: createdAt, updated_at: createdAt,
+              }
+            })
+            const { data: createdTickets } = await admin.from('support_tickets').insert(ticketsInsert).select('id')
+            const ticketIds = (createdTickets || []).map(t => t.id)
+            await trackRecords(admin, sessionId, 'support_tickets', ticketIds)
+            budget.consume(ticketIds.length)
+            counts.tickets = ticketIds.length
+          }
         }
 
         // ── CERTIFICATES ──
-        if (categories.includes('certificates') && sIds.length > 0) {
-          const certInsert = Array.from({ length: qty.certs }, (_, i) => ({
-            recipient_id: sUserIds[i % sUserIds.length] || callerId,
-            recipient_type: 'student',
-            title: `Certificate of Completion - Course ${i + 1}`,
-            title_ar: `شهادة إتمام - الدورة ${i + 1}`,
-            description: 'Awarded for successfully completing the course.',
-            description_ar: 'تُمنح لإتمام الدورة بنجاح.',
-            course_id: cIds.length > 0 ? cIds[i % cIds.length] : null,
-            issued_by: callerId,
-            status: 'active',
-          }))
+        if (categories.includes('certificates') && sIds.length > 0 && budget.canAdd()) {
+          const certBudget = budget.cap(alloc.certificates || 3)
+          const certInsert = Array.from({ length: certBudget }, (_, i) => {
+            const issuedAt = randomPastDate(60)
+            trackTs(issuedAt)
+            return {
+              recipient_id: sUserIds[i % sUserIds.length] || callerId,
+              recipient_type: 'student',
+              title: `Certificate of Completion - Course ${i + 1}`,
+              title_ar: `شهادة إتمام - الدورة ${i + 1}`,
+              description: 'Awarded for successfully completing the course.',
+              description_ar: 'تُمنح لإتمام الدورة بنجاح.',
+              course_id: cIds.length > 0 ? cIds[i % cIds.length] : null,
+              issued_by: callerId,
+              status: 'active',
+              issued_at: issuedAt,
+              created_at: issuedAt,
+            }
+          })
           const { data: createdCerts } = await admin.from('certificates').insert(certInsert).select('id')
           const certIds = (createdCerts || []).map(c => c.id)
           await trackRecords(admin, sessionId, 'certificates', certIds)
+          budget.consume(certIds.length)
           counts.certificates = certIds.length
         }
 
         // ── WEBSITE (blogs + pages) ──
-        if (categories.includes('website')) {
-          const blogInsert = pickN(BLOG_TITLES, qty.blogs).map((b, i) => ({
-            title: b.en, title_ar: b.ar, slug: `${b.slug}-${sessionId.slice(0,8)}`,
-            excerpt: `${b.en} excerpt`, excerpt_ar: `مقتطف ${b.ar}`,
-            content: `<h2>${b.en}</h2><p>Sample content for testing.</p>`,
-            content_ar: `<h2>${b.ar}</h2><p>محتوى تجريبي للاختبار.</p>`,
-            status: i % 3 === 2 ? 'draft' : 'published',
-            published_at: i % 3 === 2 ? null : new Date().toISOString(),
-            created_by: callerId,
-          }))
+        if (categories.includes('website') && budget.canAdd()) {
+          const webBudget = budget.cap(alloc.website || 5)
+          const numBlogs = Math.max(1, Math.ceil(webBudget * 0.6))
+          const numPages = Math.max(1, webBudget - numBlogs)
+
+          const blogInsert = pickN(BLOG_TITLES, budget.cap(numBlogs)).map((b, i) => {
+            const createdAt = randomPastDate(90)
+            const publishedAt = i % 3 === 2 ? null : createdAt
+            trackTs(createdAt)
+            return {
+              title: b.en, title_ar: b.ar, slug: `${b.slug}-${sessionId.slice(0,8)}`,
+              excerpt: `${b.en} excerpt`, excerpt_ar: `مقتطف ${b.ar}`,
+              content: `<h2>${b.en}</h2><p>Sample content for testing.</p>`,
+              content_ar: `<h2>${b.ar}</h2><p>محتوى تجريبي للاختبار.</p>`,
+              status: i % 3 === 2 ? 'draft' : 'published',
+              published_at: publishedAt,
+              created_by: callerId,
+              created_at: createdAt, updated_at: createdAt,
+            }
+          })
           const { data: createdBlogs } = await admin.from('blog_posts').insert(blogInsert).select('id')
           const blogIds = (createdBlogs || []).map(b => b.id)
           await trackRecords(admin, sessionId, 'blog_posts', blogIds)
+          budget.consume(blogIds.length)
           counts.blogs = blogIds.length
 
-          const pageInsert = Array.from({ length: qty.pages }, (_, i) => ({
-            title: `Sample Page ${i + 1}`, title_ar: `صفحة تجريبية ${i + 1}`,
-            slug: `sample-page-${sessionId.slice(0,8)}-${i + 1}`,
-            content: `<h1>Sample Page ${i + 1}</h1><p>This is sample page content.</p>`,
-            content_ar: `<h1>صفحة تجريبية ${i + 1}</h1><p>هذا محتوى صفحة تجريبية.</p>`,
-            status: 'published', created_by: callerId,
-          }))
-          const { data: createdPages } = await admin.from('website_pages').insert(pageInsert).select('id')
-          const pageIds = (createdPages || []).map(p => p.id)
-          await trackRecords(admin, sessionId, 'website_pages', pageIds)
-          counts.pages = pageIds.length
+          const pageInsert = Array.from({ length: budget.cap(numPages) }, (_, i) => {
+            const createdAt = randomPastDate(90)
+            trackTs(createdAt)
+            return {
+              title: `Sample Page ${i + 1}`, title_ar: `صفحة تجريبية ${i + 1}`,
+              slug: `sample-page-${sessionId.slice(0,8)}-${i + 1}`,
+              content: `<h1>Sample Page ${i + 1}</h1><p>This is sample page content.</p>`,
+              content_ar: `<h1>صفحة تجريبية ${i + 1}</h1><p>هذا محتوى صفحة تجريبية.</p>`,
+              status: 'published', created_by: callerId,
+              created_at: createdAt, updated_at: createdAt,
+            }
+          })
+          if (pageInsert.length > 0) {
+            const { data: createdPages } = await admin.from('website_pages').insert(pageInsert).select('id')
+            const pageIds = (createdPages || []).map(p => p.id)
+            await trackRecords(admin, sessionId, 'website_pages', pageIds)
+            budget.consume(pageIds.length)
+            counts.pages = pageIds.length
+          }
         }
 
         // ── PACKAGES ──
-        if (categories.includes('packages')) {
+        if (categories.includes('packages') && budget.canAdd()) {
           const pkgs = [
             { title: 'Starter', title_ar: 'بداية', subtitle: 'For getting started', subtitle_ar: 'للبداية', regular_price: 19, sale_price: null, max_courses: 1, max_students: 3, max_teachers: 1, is_featured: false },
             { title: 'Growth', title_ar: 'نمو', subtitle: 'Growing institutions', subtitle_ar: 'المؤسسات النامية', regular_price: 79, sale_price: 69, max_courses: 10, max_students: 30, max_teachers: 5, is_featured: true },
             { title: 'Enterprise', title_ar: 'مؤسسات', subtitle: 'For organizations', subtitle_ar: 'للمؤسسات', regular_price: 199, sale_price: null, max_courses: 50, max_students: 200, max_teachers: 15, is_featured: false },
           ]
-          const pkgRaw = pkgs.slice(0, qty.packages).map((p, i) => ({
+          const pkgRaw = pkgs.slice(0, budget.cap(3)).map((p, i) => ({
             ...p, billing_cycle: 'monthly', is_active: true, sort_order: 100 + i,
             features: JSON.stringify([{ text: `${p.max_courses} Courses`, text_ar: `${p.max_courses} دورات` }, { text: 'Support', text_ar: 'دعم' }])
           }))
@@ -731,131 +897,117 @@ Deno.serve(async (req) => {
             const { data: createdPkgs } = await admin.from('pricing_packages').insert(pkgInsert).select('id')
             const pkgIds = (createdPkgs || []).map(p => p.id)
             await trackRecords(admin, sessionId, 'pricing_packages', pkgIds)
+            budget.consume(pkgIds.length)
             counts.packages = pkgIds.length
-          } else {
-            counts.packages = 0
           }
         }
 
         // ── EXPENSES (categories + records) ──
-        if (categories.includes('expenses')) {
+        if (categories.includes('expenses') && budget.canAdd()) {
+          const expBudget = budget.cap(alloc.expenses || 5)
           const expCatRaw = [
             { title: 'Office Supplies', title_ar: 'لوازم مكتبية', color: '#6366f1', sort_order: 0 },
             { title: 'Software', title_ar: 'برمجيات', color: '#8b5cf6', sort_order: 1 },
             { title: 'Marketing', title_ar: 'تسويق', color: '#ec4899', sort_order: 2 },
-          ].slice(0, Math.max(1, Math.ceil(multiplier * 0.3)))
+          ].slice(0, Math.min(3, expBudget))
           const expCatInsert = await dedup(admin, 'expense_categories', expCatRaw)
           let expCatIds: string[] = []
           if (expCatInsert.length > 0) {
             const { data: createdExpCats } = await admin.from('expense_categories').insert(expCatInsert).select('id')
             expCatIds = (createdExpCats || []).map(c => c.id)
             await trackRecords(admin, sessionId, 'expense_categories', expCatIds)
+            budget.consume(expCatIds.length)
           }
-          // Use all existing categories for FK refs
           const { data: allExpCatRows } = await admin.from('expense_categories').select('id').limit(50)
           const allExpCatIds = (allExpCatRows || []).map(c => c.id)
           counts.expense_categories = expCatIds.length
 
-          if (allExpCatIds.length > 0) {
-            // Use session-unique titles to avoid duplicates
-            const expInsert = Array.from({ length: Math.max(1, multiplier) }, (_, i) => ({
-              title: `Sample Expense ${sessionId.slice(0,6)}-${i + 1}`, title_ar: `مصروف تجريبي ${sessionId.slice(0,6)}-${i + 1}`,
-              amount: [50, 120, 300, 75, 200][i % 5],
-              category_id: allExpCatIds[i % allExpCatIds.length],
-              expense_date: randomDateOnly(30, 0),
-              status: ['pending', 'approved', 'rejected'][i % 3],
-              created_by: callerId,
-              notes: 'Sample expense for testing',
-            }))
+          if (allExpCatIds.length > 0 && budget.canAdd()) {
+            const numExp = budget.cap(Math.max(1, expBudget - expCatIds.length))
+            const expInsert = Array.from({ length: numExp }, (_, i) => {
+              const expDate = randomPastDateOnly(90)
+              trackTs(expDate + 'T00:00:00.000Z')
+              return {
+                title: `Sample Expense ${sessionId.slice(0,6)}-${i + 1}`, title_ar: `مصروف تجريبي ${sessionId.slice(0,6)}-${i + 1}`,
+                amount: [50, 120, 300, 75, 200][i % 5],
+                category_id: allExpCatIds[i % allExpCatIds.length],
+                expense_date: expDate,
+                status: ['pending', 'approved', 'rejected'][i % 3],
+                created_by: callerId,
+                notes: 'Sample expense for testing',
+                created_at: randomPastDate(90),
+              }
+            })
             const { data: createdExp } = await admin.from('expenses').insert(expInsert).select('id')
             const expIds = (createdExp || []).map(e => e.id)
             await trackRecords(admin, sessionId, 'expenses', expIds)
+            budget.consume(expIds.length)
             counts.expenses = expIds.length
           }
         }
 
         // ── EBOOKS ──
-        if (categories.includes('ebooks')) {
-          const ebookRaw = Array.from({ length: Math.max(1, Math.ceil(multiplier * 0.5)) }, (_, i) => ({
-            title: `Sample E-Book ${i + 1}`, title_ar: `كتاب إلكتروني تجريبي ${i + 1}`,
-            description: `Description for sample e-book ${i + 1}`,
-            description_ar: `وصف الكتاب الإلكتروني التجريبي ${i + 1}`,
-            pdf_url: `https://example.com/sample-ebook-${i + 1}.pdf`,
-            created_by: callerId,
-          }))
+        if (categories.includes('ebooks') && budget.canAdd()) {
+          const ebookBudget = budget.cap(alloc.ebooks || 3)
+          const ebookRaw = Array.from({ length: ebookBudget }, (_, i) => {
+            const createdAt = randomPastDate(90)
+            trackTs(createdAt)
+            return {
+              title: `Sample E-Book ${i + 1}`, title_ar: `كتاب إلكتروني تجريبي ${i + 1}`,
+              description: `Description for sample e-book ${i + 1}`,
+              description_ar: `وصف الكتاب الإلكتروني التجريبي ${i + 1}`,
+              pdf_url: `https://example.com/sample-ebook-${i + 1}.pdf`,
+              created_by: callerId,
+              created_at: createdAt, updated_at: createdAt,
+            }
+          })
           const ebookInsert = await dedup(admin, 'ebooks', ebookRaw)
           if (ebookInsert.length > 0) {
             const { data: createdEbooks } = await admin.from('ebooks').insert(ebookInsert).select('id')
             const ebookIds = (createdEbooks || []).map(e => e.id)
             await trackRecords(admin, sessionId, 'ebooks', ebookIds)
+            budget.consume(ebookIds.length)
             counts.ebooks = ebookIds.length
-          } else {
-            counts.ebooks = 0
           }
         }
 
-        // ── PROGRESS & REPORTS ──
-        if (categories.includes('progress') && sIds.length > 0 && tIds.length > 0) {
-          // Student progress (needs lesson IDs) — skip combos that already exist
-          const { data: existingLessons } = await admin.from('lessons').select('id').limit(10)
+        // ── PROGRESS ──
+        if (categories.includes('progress') && sIds.length > 0 && budget.canAdd()) {
+          const progBudget = budget.cap(alloc.progress || 5)
+          const { data: existingLessons } = await admin.from('lessons').select('id').limit(20)
           const lessonIdsForProgress = (existingLessons || []).map(l => l.id)
           if (lessonIdsForProgress.length > 0) {
-            // Check existing progress combos
             const { data: existingProgress } = await admin.from('student_progress').select('student_id, lesson_id')
             const existingComboSet = new Set((existingProgress || []).map((p: any) => `${p.student_id}|${p.lesson_id}`))
-            
-            const progressCandidates = Array.from({ length: Math.min(multiplier * 2, sIds.length * lessonIdsForProgress.length) }, (_, i) => ({
-              student_id: sIds[i % sIds.length],
-              lesson_id: lessonIdsForProgress[i % lessonIdsForProgress.length],
-              completed: i % 3 !== 0,
-              completed_at: i % 3 !== 0 ? randomDate(14, 0) : null,
-              score: i % 3 !== 0 ? Math.floor(Math.random() * 40) + 60 : null,
-            }))
-            const progressInsert = progressCandidates.filter(p => !existingComboSet.has(`${p.student_id}|${p.lesson_id}`))
-            
+
+            const progressCandidates = Array.from({ length: Math.min(progBudget, sIds.length * lessonIdsForProgress.length) }, (_, i) => {
+              const completedAt = randomPastDate(60)
+              trackTs(completedAt)
+              return {
+                student_id: sIds[i % sIds.length],
+                lesson_id: lessonIdsForProgress[i % lessonIdsForProgress.length],
+                completed: i % 3 !== 0,
+                completed_at: i % 3 !== 0 ? completedAt : null,
+                score: i % 3 !== 0 ? Math.floor(Math.random() * 40) + 60 : null,
+                created_at: completedAt,
+              }
+            })
+            const progressInsert = progressCandidates
+              .filter(p => !existingComboSet.has(`${p.student_id}|${p.lesson_id}`))
+              .slice(0, budget.cap(progBudget))
+
             if (progressInsert.length > 0) {
               const { data: createdProgress } = await admin.from('student_progress').insert(progressInsert).select('id')
               const progressIds = (createdProgress || []).map(p => p.id)
               await trackRecords(admin, sessionId, 'student_progress', progressIds)
+              budget.consume(progressIds.length)
               counts.student_progress = progressIds.length
-            } else {
-              counts.student_progress = 0
-            }
-          }
-
-          // Session reports — skip entries that already have a report
-          const { data: completedEntries } = await admin.from('timetable_entries').select('id, teacher_id, student_id, course_id').eq('status', 'completed').limit(multiplier)
-          if (completedEntries && completedEntries.length > 0) {
-            const entryIds = completedEntries.map(e => e.id)
-            const { data: existingReports } = await admin.from('session_reports').select('timetable_entry_id').in('timetable_entry_id', entryIds)
-            const reportedSet = new Set((existingReports || []).map((r: any) => r.timetable_entry_id))
-            const unreportedEntries = completedEntries.filter(e => !reportedSet.has(e.id))
-            
-            if (unreportedEntries.length > 0) {
-              const reportInsert = unreportedEntries.map((entry, i) => ({
-                timetable_entry_id: entry.id,
-                teacher_id: entry.teacher_id,
-                student_id: entry.student_id,
-                course_id: entry.course_id,
-                summary: `Sample session summary ${i + 1}`,
-                observations: 'Student showed good progress',
-                performance_remarks: pick(['Excellent', 'Good', 'Needs improvement', 'Outstanding']),
-                session_duration_seconds: [1800, 2700, 3600][i % 3],
-                started_at: randomDate(14, 0),
-                created_by: callerId,
-              }))
-              const { data: createdReports } = await admin.from('session_reports').insert(reportInsert).select('id')
-              const reportIds = (createdReports || []).map(r => r.id)
-              await trackRecords(admin, sessionId, 'session_reports', reportIds)
-              counts.session_reports = reportIds.length
-            } else {
-              counts.session_reports = 0
             }
           }
         }
 
         // ── SUPPORT CONFIG (departments + priorities) ──
-        if (categories.includes('support_config')) {
+        if (categories.includes('support_config') && budget.canAdd()) {
           const deptRaw = [
             { name: 'Technical Support', name_ar: 'الدعم الفني', sort_order: 0 },
             { name: 'Billing', name_ar: 'الفواتير', sort_order: 1 },
@@ -866,9 +1018,8 @@ Deno.serve(async (req) => {
             const { data: createdDepts } = await admin.from('support_departments').insert(deptInsert).select('id')
             const deptIds = (createdDepts || []).map(d => d.id)
             await trackRecords(admin, sessionId, 'support_departments', deptIds)
+            budget.consume(deptIds.length)
             counts.support_departments = deptIds.length
-          } else {
-            counts.support_departments = 0
           }
 
           const prioRaw = [
@@ -877,122 +1028,137 @@ Deno.serve(async (req) => {
             { name: 'High', name_ar: 'مرتفع', color: '#ef4444', sort_order: 2 },
           ]
           const prioInsert = await dedup(admin, 'support_priorities', prioRaw, 'name')
-          if (prioInsert.length > 0) {
+          if (prioInsert.length > 0 && budget.canAdd()) {
             const { data: createdPrios } = await admin.from('support_priorities').insert(prioInsert).select('id')
             const prioIds = (createdPrios || []).map(p => p.id)
             await trackRecords(admin, sessionId, 'support_priorities', prioIds)
+            budget.consume(prioIds.length)
             counts.support_priorities = prioIds.length
-          } else {
-            counts.support_priorities = 0
           }
         }
 
         // ── PAYOUTS ──
-        if (categories.includes('payouts') && tIds.length > 0) {
+        if (categories.includes('payouts') && tIds.length > 0 && budget.canAdd()) {
+          const payoutBudget = budget.cap(alloc.payouts || 4)
           const payoutStatuses = ['approved', 'declined', 'approved', 'under_review', 'declined', 'approved']
-          const payoutInsert = Array.from({ length: Math.max(2, multiplier * 2) }, (_, i) => {
+          const payoutInsert = Array.from({ length: payoutBudget }, (_, i) => {
             const status = payoutStatuses[i % payoutStatuses.length]
+            const createdAt = randomPastDate(60)
+            trackTs(createdAt)
             return {
               teacher_id: tIds[i % tIds.length],
               requested_amount: [100, 250, 500, 150, 300, 200][i % 6],
               available_balance_at_request: [500, 800, 1200, 600, 900, 700][i % 6],
               status,
-              reviewed_at: status !== 'under_review' ? randomDate(10, 0) : null,
+              reviewed_at: status !== 'under_review' ? randomPastDate(30) : null,
               admin_notes: status === 'approved' ? 'Payment processed' : status === 'declined' ? 'Insufficient documentation' : null,
               decline_reason: status === 'declined' ? pick(['Missing bank details', 'Minimum threshold not met', 'Duplicate request']) : null,
               admin_id: status !== 'under_review' ? callerId : null,
+              created_at: createdAt,
             }
           })
           const { data: createdPayouts } = await admin.from('payout_requests').insert(payoutInsert).select('id')
           const payoutIds = (createdPayouts || []).map(p => p.id)
           await trackRecords(admin, sessionId, 'payout_requests', payoutIds)
+          budget.consume(payoutIds.length)
           counts.payout_requests = payoutIds.length
         }
 
-        // ── BADGES (seed session reports & timetable for badge thresholds) ──
-        if (categories.includes('badges') && tIds.length > 0) {
-          // For Logged Hours and Completed Sessions, generate enough data
-          // to hit all 5 badge tiers for the first 2 teachers
-          const badgeTeachers = tIds.slice(0, Math.min(2, tIds.length))
-          const HOURS_THRESHOLDS = [200, 500, 800, 1000, 1500] // in hours
-          const SESSION_THRESHOLDS = [100, 300, 600, 1000, 1500]
-          const targetHours = HOURS_THRESHOLDS[4] // 1500 hours = black tier
-          const targetSessions = SESSION_THRESHOLDS[4] // 1500 sessions = black tier
-          
-          for (const teacherId of badgeTeachers) {
-            // Create completed timetable entries for session count
-            const batchSize = 100
-            const totalBatches = Math.ceil(targetSessions / batchSize)
-            
-            for (let batch = 0; batch < totalBatches; batch++) {
-              const count = Math.min(batchSize, targetSessions - batch * batchSize)
-              const ttBatch = Array.from({ length: count }, (_, i) => {
-                const idx = batch * batchSize + i
-                const d = new Date()
-                d.setDate(d.getDate() - 365 - idx)
-                d.setHours(8 + (idx % 8), 0, 0, 0)
-                return {
-                  teacher_id: teacherId,
-                  student_id: sIds.length > 0 ? sIds[idx % sIds.length] : null,
-                  course_id: cIds.length > 0 ? cIds[idx % cIds.length] : null,
-                  scheduled_at: d.toISOString(),
-                  duration_minutes: 60,
-                  status: 'completed',
-                }
-              })
-              const { data: createdTT } = await admin.from('timetable_entries').insert(ttBatch).select('id')
-              const ids = (createdTT || []).map(t => t.id)
-              await trackRecords(admin, sessionId, 'timetable_entries', ids)
-              counts.timetable = (counts.timetable || 0) + ids.length
+        // ── BADGES (realistic teacher data for badge thresholds) ──
+        if (categories.includes('badges') && tIds.length > 0 && budget.canAdd()) {
+          const badgeBudget = budget.cap(alloc.badges || 15)
+          // Create enough sessions/reports for 1-2 teachers to hit mid-tier badges
+          const badgeTeacher = tIds[0]
+          const numSessions = Math.max(3, Math.floor(badgeBudget * 0.45))
+          const numReports = Math.max(3, Math.floor(badgeBudget * 0.45))
+          const numCerts = Math.max(1, badgeBudget - numSessions - numReports)
 
-              // Create session reports to accumulate hours
-              const hoursPerSession = targetHours / targetSessions * 3600 // seconds per session
-              const reportBatch = ids.map((ttId, ri) => {
-                const d = new Date()
-                d.setDate(d.getDate() - 365 - (batch * batchSize + ri))
-                return {
-                  timetable_entry_id: ttId,
-                  teacher_id: teacherId,
-                  student_id: sIds.length > 0 ? sIds[(batch * batchSize + ri) % sIds.length] : null,
-                  course_id: cIds.length > 0 ? cIds[(batch * batchSize + ri) % cIds.length] : null,
-                  summary: 'Badge achievement session',
-                  session_duration_seconds: Math.round(hoursPerSession),
-                  started_at: d.toISOString(),
-                  created_by: callerId,
-                }
-              })
+          // Timetable entries spanning 90 days
+          const ttBatch = Array.from({ length: budget.cap(numSessions) }, (_, i) => {
+            const d = randomPastDate(90)
+            trackTs(d)
+            return {
+              teacher_id: badgeTeacher,
+              student_id: sIds.length > 0 ? sIds[i % sIds.length] : null,
+              course_id: cIds.length > 0 ? cIds[i % cIds.length] : null,
+              scheduled_at: d,
+              duration_minutes: 60,
+              status: 'completed',
+            }
+          })
+          if (ttBatch.length > 0) {
+            const { data: createdTT } = await admin.from('timetable_entries').insert(ttBatch).select('id, scheduled_at')
+            const ids = (createdTT || []).map(t => t.id)
+            await trackRecords(admin, sessionId, 'timetable_entries', ids)
+            budget.consume(ids.length)
+            counts.timetable = (counts.timetable || 0) + ids.length
+
+            // Session reports with substantial hours
+            const reportBatch = (createdTT || []).slice(0, budget.cap(numReports)).map((tt, ri) => ({
+              timetable_entry_id: tt.id,
+              teacher_id: badgeTeacher,
+              student_id: sIds.length > 0 ? sIds[ri % sIds.length] : null,
+              course_id: cIds.length > 0 ? cIds[ri % cIds.length] : null,
+              summary: pick(SUMMARIES),
+              observations: pick(OBSERVATIONS),
+              performance_remarks: pick(PERF_REMARKS),
+              session_duration_seconds: 3600, // 1 hour each
+              started_at: tt.scheduled_at,
+              created_by: callerId,
+              created_at: tt.scheduled_at,
+            }))
+            if (reportBatch.length > 0) {
               const { data: createdReports } = await admin.from('session_reports').insert(reportBatch).select('id')
               const reportIds = (createdReports || []).map(r => r.id)
               await trackRecords(admin, sessionId, 'session_reports', reportIds)
+              budget.consume(reportIds.length)
               counts.session_reports = (counts.session_reports || 0) + reportIds.length
             }
+          }
 
-            // Certificates: seed half tiers (2-3 certificates)
-            const certInsert = Array.from({ length: 3 }, (_, i) => ({
-              recipient_id: (allTeachers || []).find(t => t.id === teacherId)?.user_id || callerId,
-              recipient_type: 'teacher',
-              title: `Teaching Excellence Certificate ${i + 1}`,
-              title_ar: `شهادة التميز في التدريس ${i + 1}`,
-              description: 'Awarded for outstanding teaching.',
-              description_ar: 'تُمنح للتميز في التدريس.',
-              issued_by: callerId,
-              status: 'active',
-            }))
+          // Teacher certificates
+          if (budget.canAdd()) {
+            const teacherUserId = (allTeachers || []).find(t => t.id === badgeTeacher)?.user_id || callerId
+            const certInsert = Array.from({ length: budget.cap(numCerts) }, (_, i) => {
+              const issuedAt = randomPastDate(90)
+              trackTs(issuedAt)
+              return {
+                recipient_id: teacherUserId,
+                recipient_type: 'teacher',
+                title: `Teaching Excellence Certificate ${i + 1}`,
+                title_ar: `شهادة التميز في التدريس ${i + 1}`,
+                description: 'Awarded for outstanding teaching.',
+                description_ar: 'تُمنح للتميز في التدريس.',
+                issued_by: callerId,
+                status: 'active',
+                issued_at: issuedAt,
+                created_at: issuedAt,
+              }
+            })
             const { data: createdCerts } = await admin.from('certificates').insert(certInsert).select('id')
             const certIds = (createdCerts || []).map(c => c.id)
             await trackRecords(admin, sessionId, 'certificates', certIds)
+            budget.consume(certIds.length)
             counts.certificates = (counts.certificates || 0) + certIds.length
           }
-          // Membership stays empty (based on profile created_at which is recent)
         }
 
         // Finalize session
-        const totalRecords = Object.values(counts).reduce((a, b) => a + b, 0)
+        const totalRecords = budget.total()
         await admin.from('seed_sessions').update({
           status: 'completed', counts, errors, total_records: totalRecords
         }).eq('id', sessionId)
 
-        return json({ success: true, session_id: sessionId, counts, errors, total_records: totalRecords })
+        return json({
+          success: true,
+          session_id: sessionId,
+          counts,
+          errors,
+          total_records: totalRecords,
+          max_records: MAX_TOTAL_RECORDS,
+          timestamp_range: { from: timestampMin, to: timestampMax },
+          warnings: totalRecords >= MAX_TOTAL_RECORDS ? ['Record limit (1000) reached. Some categories may have fewer records than requested.'] : [],
+        })
       } catch (err: any) {
         errors.push(err.message || 'Unknown error')
         await admin.from('seed_sessions').update({ status: 'failed', counts, errors }).eq('id', sessionId)
@@ -1007,7 +1173,6 @@ Deno.serve(async (req) => {
       const sessionId = body.session_id as string | undefined
       const clearAll = body.clear_all === true
 
-      // Get records to delete
       let query = admin.from('seed_records').select('table_name, record_id, session_id')
       if (sessionId && !clearAll) {
         query = query.eq('session_id', sessionId)
@@ -1017,14 +1182,12 @@ Deno.serve(async (req) => {
         return json({ success: true, message: 'No seed records found', deleted: 0 })
       }
 
-      // Group records by table
       const byTable: Record<string, string[]> = {}
       for (const r of records) {
         if (!byTable[r.table_name]) byTable[r.table_name] = []
         byTable[r.table_name].push(r.record_id)
       }
 
-      // Delete in FK-safe order (most dependent first)
       const DELETE_ORDER = [
         'chat_read_receipts', 'chat_messages', 'chat_members',
         'attendance', 'session_reports', 'student_progress',
@@ -1045,7 +1208,6 @@ Deno.serve(async (req) => {
         if (!ids || ids.length === 0) continue
         try {
           if (table === 'user_roles') {
-            // user_roles uses user_id as the identifier
             const { count } = await admin.from(table).delete({ count: 'exact' }).in('user_id', ids)
             deletedCounts[table] = count || 0
           } else {
@@ -1053,11 +1215,10 @@ Deno.serve(async (req) => {
             deletedCounts[table] = count || 0
           }
         } catch (e: any) {
-          deletedCounts[table] = -1 // mark as error
+          deletedCounts[table] = -1
         }
       }
 
-      // Delete auth users
       const authUserIds = byTable['auth_users'] || []
       let deletedAuthUsers = 0
       for (const uid of authUserIds) {
@@ -1068,12 +1229,10 @@ Deno.serve(async (req) => {
       }
       if (deletedAuthUsers > 0) deletedCounts['auth_users'] = deletedAuthUsers
 
-      // Clean up seed_records
       if (sessionId && !clearAll) {
         await admin.from('seed_records').delete().eq('session_id', sessionId)
         await admin.from('seed_sessions').update({ status: 'cleared', cleared_at: new Date().toISOString() }).eq('id', sessionId)
       } else {
-        // Get all session IDs from the records
         const sessionIds = [...new Set(records.map(r => r.session_id))]
         for (const sid of sessionIds) {
           await admin.from('seed_records').delete().eq('session_id', sid)
