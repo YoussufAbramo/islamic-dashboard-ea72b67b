@@ -417,21 +417,22 @@ const AttendLesson = () => {
       {/* Info note with attendance policy */}
       <div className="flex items-start gap-2 p-3 rounded-lg border bg-muted/30">
         <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-        <div className="text-xs text-muted-foreground space-y-1">
-          <p>
-            {isAr
-              ? 'زر "حضور" يتم تفعيله تلقائياً قبل 15 دقيقة من موعد الدرس. عند الانضمام يبدأ مؤقت الجلسة ويجب إنهاء الجلسة وكتابة تقرير.'
-              : 'The "Attend" button activates 15 minutes before the lesson. Joining starts a session timer — end the session to submit a report.'}
-          </p>
-          <p>
-            {isAr
-              ? 'خيار "الغياب" متاح حتى 30 دقيقة قبل موعد الجلسة. خلال آخر 30 دقيقة، لا يمكن إلغاء الحضور. لمزيد من التفاصيل، راجع '
-              : 'The "Absence" option is available up to 30 minutes before the session. Within the last 30 minutes, cancellation is not allowed. For more details, see the '}
-            <a href="/policies/attendance-policy" target="_blank" className="text-primary underline underline-offset-2 hover:text-primary/80">
-              {isAr ? 'سياسة الحضور' : 'Attendance Policy'}
-            </a>.
-          </p>
-        </div>
+        <p className="text-xs text-muted-foreground">
+          {isAr
+            ? 'زر "حضور" يتم تفعيله تلقائياً قبل 15 دقيقة من موعد الدرس. عند الانضمام يبدأ مؤقت الجلسة ويجب إنهاء الجلسة وكتابة تقرير.'
+            : 'The "Attend" button activates 15 minutes before the lesson. Joining starts a session timer — end the session to submit a report.'}
+        </p>
+      </div>
+      <div className="flex items-start gap-2 p-3 rounded-lg border bg-muted/30">
+        <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+        <p className="text-xs text-muted-foreground">
+          {isAr
+            ? 'خيار "الغياب" متاح حتى 30 دقيقة قبل موعد الجلسة. خلال آخر 30 دقيقة، لا يمكن إلغاء الحضور. لمزيد من التفاصيل، راجع '
+            : 'The "Absence" option is available up to 30 minutes before the session. Within the last 30 minutes, cancellation is not allowed. For more details, see the '}
+          <a href="/policies/attendance-policy" target="_blank" className="text-primary underline underline-offset-2 hover:text-primary/80">
+            {isAr ? 'سياسة الحضور' : 'Attendance Policy'}
+          </a>.
+        </p>
       </div>
 
       {/* Lessons Table */}
