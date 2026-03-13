@@ -319,10 +319,10 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
     if (!lesson) return;
     setSaving(true);
     try {
-      const newContent = { blocks };
+      const newContent = { blocks: blocks as any[] };
       const { error } = await supabase
         .from('lessons')
-        .update({ content: newContent })
+        .update({ content: newContent as any })
         .eq('id', lesson.id);
       if (error) throw error;
       toast.success(isAr ? 'تم حفظ المحتوى' : 'Content saved');
