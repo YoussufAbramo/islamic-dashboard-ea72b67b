@@ -113,7 +113,7 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
             case 'text':
               return block.html ? (
                 <div key={block.id || idx} className="prose prose-sm dark:prose-invert max-w-none">
-                  <div dangerouslySetInnerHTML={{ __html: block.html }} />
+                  <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.html) }} />
                 </div>
               ) : null;
 
