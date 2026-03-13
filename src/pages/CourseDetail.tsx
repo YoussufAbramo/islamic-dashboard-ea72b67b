@@ -562,9 +562,9 @@ const CourseDetail = () => {
                                     onDelete={() => setDeleteTarget({ id: section.id, type: 'section' })}
                                   />
                                 )}
-                                <AccordionTrigger className="hover:no-underline py-3 text-sm flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <Layers className="h-3.5 w-3.5 text-muted-foreground" />
+                                <AccordionTrigger className="hover:no-underline py-3 text-sm flex-1 [&>svg]:ms-auto">
+                                  <div className="flex items-center gap-2 flex-1">
+                                    <Layers className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                                     <span>{isAr && section.title_ar ? section.title_ar : section.title}</span>
                                     <Badge variant="outline" className="text-xs">
                                       {(contents[section.id] || []).length} {t('courses.content')}
