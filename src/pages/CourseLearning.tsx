@@ -346,6 +346,7 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
   const externalUrl = content.external_url || content.externalUrl || content.link;
   const textContent = content.text || content.body || content.html || content.description;
   const instructions = content.instructions;
+  const tocRows = content.toc_rows;
 
   return (
     <div className="space-y-6">
