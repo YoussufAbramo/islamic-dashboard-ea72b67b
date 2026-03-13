@@ -468,6 +468,7 @@ const BackupsSettings = () => {
                 });
                 if (error) throw error;
                 if (data?.error) throw new Error(data.error);
+                logAction('add', 'Backup', `Settings backup created: ${data.file}`, undefined, 'App settings only');
                 toast.success(isAr ? `تم نسخ الإعدادات: ${data.file}` : `Settings backup created: ${data.file}`);
                 fetchBackups();
               } catch (err: any) { toast.error(err.message || 'Backup failed'); }
