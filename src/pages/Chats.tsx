@@ -210,29 +210,18 @@ const Chats = () => {
   };
 
   const handleCreateChat = async () => {
-    if (chatType === 'direct') {
-      if (!createForm.student_id && !createForm.teacher_id) {
-        notifyError({ error: 'VAL_SELECT_USER', isAr });
-        return;
-      }
-    } else {
-      if (!createForm.name) {
-        notifyError({ error: 'VAL_GROUP_NAME', isAr });
-        return;
-      }
-      if (createForm.group_students.length === 0 && createForm.group_teachers.length === 0) {
-        toast.error(isAr ? 'يجب اختيار عضو واحد على الأقل' : 'Select at least one member');
-        return;
-      }
+    if (!createForm.student_id && !createForm.teacher_id) {
+      notifyError({ error: 'VAL_SELECT_USER', isAr });
+      return;
     }
 
     setCreateLoading(true);
     const insertData: any = {
-      is_group: chatType === 'group',
-      name: chatType === 'group' ? createForm.name : null,
-      subscription_id: chatType === 'group' && createForm.subscription_id ? createForm.subscription_id : null,
-      student_id: chatType === 'direct' ? (createForm.student_id || null) : null,
-      teacher_id: chatType === 'direct' ? (createForm.teacher_id || null) : null,
+      is_group: false,
+      name: null,
+      subscription_id: null,
+      student_id: createForm.student_id || null,
+      teacher_id: createForm.teacher_id || null,
     };
 
     const { data: newChat, error } = await supabase.from('chats').insert(insertData).select().single();
@@ -246,34 +235,19 @@ const Chats = () => {
     if (newChat) {
       const members: { chat_id: string; user_id: string; role: string }[] = [];
 
-      if (chatType === 'direct') {
-        // Add admin creator
-        if (user) {
-          members.push({ chat_id: newChat.id, user_id: user.id, role: 'admin' });
-        }
-        // Add student participant
-        if (createForm.student_id) {
-          const student = studentsList.find(s => s.id === createForm.student_id);
-          if (student) members.push({ chat_id: newChat.id, user_id: student.user_id, role: 'student' });
-        }
-        // Add teacher participant
-        if (createForm.teacher_id) {
-          const teacher = teachersList.find(t => t.id === createForm.teacher_id);
-          if (teacher) members.push({ chat_id: newChat.id, user_id: teacher.user_id, role: 'teacher' });
-        }
-      } else {
-        // Group chat: add admin creator
-        if (user) {
-          members.push({ chat_id: newChat.id, user_id: user.id, role: 'admin' });
-        }
-        createForm.group_students.forEach(sid => {
-          const student = studentsList.find(s => s.id === sid);
-          if (student) members.push({ chat_id: newChat.id, user_id: student.user_id, role: 'student' });
-        });
-        createForm.group_teachers.forEach(tid => {
-          const teacher = teachersList.find(t => t.id === tid);
-          if (teacher) members.push({ chat_id: newChat.id, user_id: teacher.user_id, role: 'teacher' });
-        });
+      // Add admin creator
+      if (user) {
+        members.push({ chat_id: newChat.id, user_id: user.id, role: 'admin' });
+      }
+      // Add student participant
+      if (createForm.student_id) {
+        const student = studentsList.find(s => s.id === createForm.student_id);
+        if (student) members.push({ chat_id: newChat.id, user_id: student.user_id, role: 'student' });
+      }
+      // Add teacher participant
+      if (createForm.teacher_id) {
+        const teacher = teachersList.find(t => t.id === createForm.teacher_id);
+        if (teacher) members.push({ chat_id: newChat.id, user_id: teacher.user_id, role: 'teacher' });
       }
 
       if (members.length > 0) {
@@ -288,7 +262,7 @@ const Chats = () => {
     setCreateLoading(false);
     toast.success(isAr ? 'تم إنشاء المحادثة' : 'Chat created');
     setCreateOpen(false);
-    setCreateForm({ student_id: '', teacher_id: '', name: '', subscription_id: '', group_students: [], group_teachers: [] });
+    setCreateForm({ student_id: '', teacher_id: '' });
     fetchChats();
   };
 
