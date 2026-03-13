@@ -1100,15 +1100,19 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
           </div>
 
           {/* Right: Element palette */}
-          <div className="w-56 shrink-0 overflow-y-auto bg-muted/20">
-            <div className="p-3 space-y-4">
-              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-1">
+          <div className="w-60 shrink-0 overflow-y-auto border-s bg-muted/10">
+            <div className="p-3 space-y-1">
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-2 pb-2">
                 {isAr ? 'العناصر' : 'Elements'}
               </p>
-              {blockGroups.map(group => (
-                <div key={group.key} className="space-y-1.5">
-                  <span className="text-[10px] font-semibold text-muted-foreground/70 px-1">{isAr ? group.labelAr : group.label}</span>
-                  <div className="space-y-1">
+              {blockGroups.map((group, gIdx) => (
+                <div key={group.key}>
+                  {gIdx > 0 && <Separator className="my-2" />}
+                  <div className="px-2 py-1.5 flex items-center gap-2">
+                    <span className="text-xs font-bold text-foreground/80">{isAr ? group.labelAr : group.label}</span>
+                    <span className="text-[10px] text-muted-foreground/60 bg-muted rounded-full px-1.5 py-0.5 leading-none">{group.types.length}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 px-1 pt-1">
                     {group.types.map(type => {
                       const meta = blockMeta[type];
                       const Icon = meta.icon;
@@ -1117,10 +1121,10 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                           key={type}
                           type="button"
                           onClick={() => addBlock(type)}
-                          className="w-full flex items-center gap-2 px-2.5 py-2 rounded-md border border-transparent text-start text-[11px] font-medium text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-foreground"
+                          className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg border border-border/50 bg-background text-center text-[10px] font-medium text-muted-foreground transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-foreground hover:shadow-sm"
                         >
-                          <Icon className={cn("h-3.5 w-3.5 shrink-0", meta.color)} />
-                          <span className="truncate">{isAr ? meta.labelAr : meta.label}</span>
+                          <Icon className={cn("h-4 w-4 shrink-0", meta.color)} />
+                          <span className="truncate w-full leading-tight">{isAr ? meta.labelAr : meta.label}</span>
                         </button>
                       );
                     })}
