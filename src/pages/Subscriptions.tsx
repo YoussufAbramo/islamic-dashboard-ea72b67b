@@ -81,7 +81,7 @@ const Subscriptions = () => {
 
   useEffect(() => { fetchSubscriptions(); }, []);
 
-  const RENEWAL_DAYS: Record<string, number> = { monthly: 28, quarterly: 84, yearly: 365 };
+  const RENEWAL_DAYS: Record<string, number> = { monthly: 28, quarterly: 88, yearly: 365 };
 
   const calcTotalHours = (weeklyLessons: string, lessonDuration: string, subType: string) => {
     const wl = parseInt(weeklyLessons) || 1;
