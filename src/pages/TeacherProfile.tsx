@@ -631,6 +631,7 @@ const TeacherProfile = () => {
                       isAr={isAr}
                       icon={<FileUp className="h-4 w-4 text-blue-600" />}
                       iconBg="bg-blue-500/10"
+                      onPreview={() => cvSignedUrl && setDocPreview({ url: cvSignedUrl, label: isAr ? 'السيرة الذاتية' : 'CV / Resume' })}
                     />
                     <DocumentViewCard
                       label={isAr ? 'العقد' : 'Contract'}
@@ -639,6 +640,7 @@ const TeacherProfile = () => {
                       isAr={isAr}
                       icon={<FileText className="h-4 w-4 text-emerald-600" />}
                       iconBg="bg-emerald-500/10"
+                      onPreview={() => contractSignedUrl && setDocPreview({ url: contractSignedUrl, label: isAr ? 'العقد' : 'Contract' })}
                     />
                   </div>
                 </div>
