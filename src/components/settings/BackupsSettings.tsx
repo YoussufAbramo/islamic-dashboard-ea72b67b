@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
+import { logAction } from '@/lib/actionsQueue';
 
 interface BackupFile {
   name: string;
@@ -72,6 +73,7 @@ const AutoBackupCard = ({ isAr }: { isAr: boolean }) => {
       const merged = { ...currentSettings, backup_config: { enabled: config.enabled, schedule: config.schedule, retention_count: config.retention_count, format: config.format, scheduled_time: config.scheduled_time } };
       const { error } = await supabase.from('app_settings').update({ settings: merged, updated_at: new Date().toISOString() }).eq('id', current.id);
       if (error) throw error;
+      logAction('modify', 'Cron Job', `Auto backup ${config.enabled ? 'enabled' : 'disabled'} — ${config.schedule} at ${config.scheduled_time} UTC`, undefined, `Format: ${config.format}, Retention: ${config.retention_count}`);
       toast.success(isAr ? 'تم حفظ إعدادات النسخ التلقائي' : 'Auto backup settings saved');
       setDirty(false);
     } catch (err: any) {
@@ -85,6 +87,7 @@ const AutoBackupCard = ({ isAr }: { isAr: boolean }) => {
       const { data, error } = await supabase.functions.invoke('manage-backups', { body: { action: 'test_auto_backup' } });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+      logAction('add', 'Backup', `Test auto backup created: ${data.fileName}`, undefined, `${data.totalRecords} records`);
       toast.success(isAr ? `تم إنشاء نسخة تجريبية: ${data.fileName} (${data.totalRecords} سجل)` : `Test backup created: ${data.fileName} (${data.totalRecords} records)`);
     } catch (err: any) {
       toast.error(err.message || 'Test backup failed');
@@ -313,6 +316,7 @@ const BackupsSettings = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       if (backupComment.trim()) saveComment(data.file, backupComment.trim());
+      logAction('add', 'Backup', `Created backup: ${data.file}`, undefined, `${data.total_records} records, format: ${backupFormat}`);
       toast.success(isAr ? `تم إنشاء النسخة الاحتياطية: ${data.file} (${data.total_records} سجل)` : `Backup created: ${data.file} (${data.total_records} records)`);
       setShowCreate(false);
       setBackupName('');
@@ -340,6 +344,7 @@ const BackupsSettings = () => {
       const { data, error } = await supabase.functions.invoke('manage-backups', { body: { action: 'delete_backup', fileName: deleteTarget } });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+      logAction('delete', 'Backup', `Deleted backup: ${deleteTarget}`);
       toast.success(isAr ? 'تم حذف النسخة الاحتياطية' : 'Backup deleted');
       setDeleteTarget(null);
       fetchBackups();
@@ -432,6 +437,7 @@ const BackupsSettings = () => {
                 const { data, error } = await supabase.functions.invoke('manage-backups', { body: { action: 'test_auto_backup' } });
                 if (error) throw error;
                 if (data?.error) throw new Error(data.error);
+                logAction('add', 'Backup', `Full backup created: ${data.fileName}`, undefined, `${data.totalRecords} records`);
                 toast.success(isAr ? `تم إنشاء نسخة شاملة: ${data.fileName} (${data.totalRecords} سجل)` : `Full backup created: ${data.fileName} (${data.totalRecords} records)`);
                 fetchBackups();
               } catch (err: any) { toast.error(err.message || 'Backup failed'); }
@@ -462,6 +468,7 @@ const BackupsSettings = () => {
                 });
                 if (error) throw error;
                 if (data?.error) throw new Error(data.error);
+                logAction('add', 'Backup', `Settings backup created: ${data.file}`, undefined, 'App settings only');
                 toast.success(isAr ? `تم نسخ الإعدادات: ${data.file}` : `Settings backup created: ${data.file}`);
                 fetchBackups();
               } catch (err: any) { toast.error(err.message || 'Backup failed'); }

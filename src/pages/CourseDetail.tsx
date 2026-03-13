@@ -855,27 +855,30 @@ const CourseDetail = () => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <Label>{isAr ? 'التصنيف' : 'Category'}</Label>
-                <Select value={settingsForm.category_id} onValueChange={(v) => setSettingsForm(f => ({ ...f, category_id: v }))}>
+                <Select value={settingsForm.category_id || '__none__'} onValueChange={(v) => setSettingsForm(f => ({ ...f, category_id: v === '__none__' ? '' : v }))}>
                   <SelectTrigger className="mt-1"><SelectValue placeholder={isAr ? 'اختر' : 'Select'} /></SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="__none__">{isAr ? '— بدون تصنيف —' : '— No Category —'}</SelectItem>
                     {categories.map(c => <SelectItem key={c.id} value={c.id}>{isAr && c.title_ar ? c.title_ar : c.title}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <Label>{isAr ? 'المستوى' : 'Level'}</Label>
-                <Select value={settingsForm.level_id} onValueChange={(v) => setSettingsForm(f => ({ ...f, level_id: v }))}>
+                <Select value={settingsForm.level_id || '__none__'} onValueChange={(v) => setSettingsForm(f => ({ ...f, level_id: v === '__none__' ? '' : v }))}>
                   <SelectTrigger className="mt-1"><SelectValue placeholder={isAr ? 'اختر' : 'Select'} /></SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="__none__">{isAr ? '— بدون مستوى —' : '— No Level —'}</SelectItem>
                     {levels.map(l => <SelectItem key={l.id} value={l.id}>{isAr && l.title_ar ? l.title_ar : l.title}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <Label>{isAr ? 'المسار' : 'Track'}</Label>
-                <Select value={settingsForm.track_id} onValueChange={(v) => setSettingsForm(f => ({ ...f, track_id: v }))}>
+                <Select value={settingsForm.track_id || '__none__'} onValueChange={(v) => setSettingsForm(f => ({ ...f, track_id: v === '__none__' ? '' : v }))}>
                   <SelectTrigger className="mt-1"><SelectValue placeholder={isAr ? 'اختر' : 'Select'} /></SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="__none__">{isAr ? '— بدون مسار —' : '— No Track —'}</SelectItem>
                     {tracks.map(tr => <SelectItem key={tr.id} value={tr.id}>{isAr && tr.title_ar ? tr.title_ar : tr.title}</SelectItem>)}
                   </SelectContent>
                 </Select>
