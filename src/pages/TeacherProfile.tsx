@@ -3,6 +3,7 @@ import { useParams, Navigate, useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { resolveAvatarUrl } from '@/lib/storage';
 import { uploadMedia, getMediaSignedUrl, MEDIA_PATHS } from '@/lib/mediaStorage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,7 +25,7 @@ import {
   Loader2, Percent, Mail, Phone, User, Briefcase, FileText,
   ExternalLink, FileUp, Pencil, X, Save, Award, Maximize2, Minimize2,
   CalendarDays, Wallet, Info, Eye, HeadphonesIcon, Receipt, Cake,
-  Send,
+  Send, Lock,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ACTION_BTN, ACTION_ICON } from '@/lib/actionBtnClass';
@@ -37,6 +38,7 @@ const TeacherProfile = () => {
   const { user, role } = useAuth();
   const navigate = useNavigate();
   const isAr = language === 'ar';
+  const { teacherBadges: teacherBadgesEnabled } = useAppSettings();
 
   const [teacher, setTeacher] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
@@ -646,7 +648,7 @@ const TeacherProfile = () => {
                 </div>
 
                 {/* Badge Icons — Personal Info Section */}
-                {!badgesLoading && (
+                {teacherBadgesEnabled && !badgesLoading && (
                   <div>
                     <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2.5 font-medium">
                       {isAr ? 'الأوسمة والإنجازات' : 'Badges & Achievements'}
@@ -679,23 +681,37 @@ const TeacherProfile = () => {
 
       {/* Stats Grid - Row 2 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {statCardsRow2.map((stat, i) => (
-          <Card key={i} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-4 flex items-start gap-3">
-              <div className={`rounded-lg p-2 bg-muted ${stat.color}`}>
-                <stat.icon className="h-4 w-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs text-muted-foreground truncate">{stat.label}</p>
-                <p className="text-lg font-bold">{stat.value}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        {statCardsRow2.map((stat, i) => {
+          const isBadgeCard = stat.icon === Award;
+          const isLocked = isBadgeCard && !teacherBadgesEnabled;
+
+          return (
+            <Card key={i} className={`hover:shadow-md transition-shadow ${isLocked ? 'opacity-60' : ''}`}>
+              <CardContent className="p-4 flex items-start gap-3">
+                <div className={`rounded-lg p-2 bg-muted ${isLocked ? 'text-muted-foreground' : stat.color}`}>
+                  {isLocked ? <Lock className="h-4 w-4" /> : <stat.icon className="h-4 w-4" />}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground truncate">{stat.label}</p>
+                  {isLocked ? (
+                    <button
+                      onClick={() => navigate('/dashboard/settings?tab=education')}
+                      className="text-xs text-primary hover:underline font-medium mt-1"
+                    >
+                      {isAr ? 'نظام الشارات غير مفعّل' : 'Badges Module is not Activated'}
+                    </button>
+                  ) : (
+                    <p className="text-lg font-bold">{stat.value}</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Achievements Summary Cards */}
-      {!badgesLoading && <BadgeSummaryCards categories={badgeCategories} isAr={isAr} />}
+      {teacherBadgesEnabled && !badgesLoading && <BadgeSummaryCards categories={badgeCategories} isAr={isAr} />}
 
       {/* Assigned Subscriptions */}
       <Card>

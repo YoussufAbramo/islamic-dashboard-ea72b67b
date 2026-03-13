@@ -99,6 +99,8 @@ interface PendingSettings {
   developerMode: boolean;
   websiteMode: boolean;
   socialLinks: SocialLinks;
+  teacherBadges: boolean;
+  studentBadges: boolean;
 }
 
 interface AppSettingsContextType {
@@ -146,6 +148,10 @@ interface AppSettingsContextType {
   setDeveloperMode: (d: boolean) => void;
   websiteMode: boolean;
   setWebsiteMode: (w: boolean) => void;
+  teacherBadges: boolean;
+  setTeacherBadges: (b: boolean) => void;
+  studentBadges: boolean;
+  setStudentBadges: (b: boolean) => void;
   pending: PendingSettings;
   updatePending: (partial: Partial<PendingSettings>) => void;
   saveSettings: () => void;
@@ -197,6 +203,8 @@ function loadSaved(): PendingSettings {
     developerMode: localStorage.getItem('app_developer_mode') !== 'false',
     websiteMode: localStorage.getItem('app_website_mode') !== 'false',
     socialLinks: (() => { try { const s = localStorage.getItem('app_social_links'); return s ? { ...DEFAULT_SOCIAL_LINKS, ...JSON.parse(s) } : DEFAULT_SOCIAL_LINKS; } catch { return DEFAULT_SOCIAL_LINKS; } })(),
+    teacherBadges: localStorage.getItem('app_teacher_badges') !== 'false',
+    studentBadges: localStorage.getItem('app_student_badges') !== 'false',
   };
 }
 
@@ -267,6 +275,8 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     localStorage.setItem('app_developer_mode', String(pending.developerMode));
     localStorage.setItem('app_website_mode', String(pending.websiteMode));
     localStorage.setItem('app_social_links', JSON.stringify(pending.socialLinks));
+    localStorage.setItem('app_teacher_badges', String(pending.teacherBadges));
+    localStorage.setItem('app_student_badges', String(pending.studentBadges));
     setSaved({ ...pending });
   }, [pending]);
 
@@ -304,6 +314,8 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const setTimeFormat = useCallback((f: TimeFormat) => { setPending(p => ({ ...p, timeFormat: f })); }, []);
   const setDeveloperMode = useCallback((d: boolean) => { setPending(p => ({ ...p, developerMode: d })); }, []);
   const setWebsiteMode = useCallback((w: boolean) => { setPending(p => ({ ...p, websiteMode: w })); }, []);
+  const setTeacherBadges = useCallback((b: boolean) => { setPending(p => ({ ...p, teacherBadges: b })); }, []);
+  const setStudentBadges = useCallback((b: boolean) => { setPending(p => ({ ...p, studentBadges: b })); }, []);
 
   return (
     <AppSettingsContext.Provider value={{
@@ -328,6 +340,8 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       timeFormat: saved.timeFormat, setTimeFormat,
       developerMode: saved.developerMode, setDeveloperMode,
       websiteMode: saved.websiteMode, setWebsiteMode,
+      teacherBadges: saved.teacherBadges, setTeacherBadges,
+      studentBadges: saved.studentBadges, setStudentBadges,
       pending, updatePending, saveSettings, hasPendingChanges, discardChanges,
     }}>
       {children}

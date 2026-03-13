@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -9,31 +10,17 @@ import { MessageSquare, BookOpen, ClipboardCheck, Award, Calendar, GraduationCap
 
 const EducationSystemSettings = () => {
   const { language } = useLanguage();
+  const { pending, setTeacherBadges, setStudentBadges } = useAppSettings();
   const isAr = language === 'ar';
 
+  // Chat permission uses localStorage directly (instant toggle, no save needed)
   const [teacherCanChat, setTeacherCanChat] = useState(() => {
     return localStorage.getItem('app_teacher_can_chat') !== 'false';
-  });
-
-  const [teacherBadges, setTeacherBadges] = useState(() => {
-    return localStorage.getItem('app_teacher_badges') !== 'false';
-  });
-
-  const [studentBadges, setStudentBadges] = useState(() => {
-    return localStorage.getItem('app_student_badges') !== 'false';
   });
 
   useEffect(() => {
     localStorage.setItem('app_teacher_can_chat', String(teacherCanChat));
   }, [teacherCanChat]);
-
-  useEffect(() => {
-    localStorage.setItem('app_teacher_badges', String(teacherBadges));
-  }, [teacherBadges]);
-
-  useEffect(() => {
-    localStorage.setItem('app_student_badges', String(studentBadges));
-  }, [studentBadges]);
 
   const teacherFeatures = [
     { icon: BookOpen, label: isAr ? 'نظام الواجبات المنزلية' : 'Homework System', desc: isAr ? 'تعيين ومتابعة الواجبات المنزلية للطلاب' : 'Assign and track student homework' },
@@ -140,7 +127,7 @@ const EducationSystemSettings = () => {
                 <p className="text-xs text-muted-foreground">{isAr ? 'تفعيل نظام الشارات والإنجازات للمعلمين' : 'Enable badges and achievements for teachers'}</p>
               </div>
             </div>
-            <Switch checked={teacherBadges} onCheckedChange={setTeacherBadges} />
+            <Switch checked={pending.teacherBadges} onCheckedChange={setTeacherBadges} />
           </div>
           <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
             <div className="flex items-center gap-3">
@@ -152,7 +139,7 @@ const EducationSystemSettings = () => {
                 <p className="text-xs text-muted-foreground">{isAr ? 'تفعيل نظام الشارات والإنجازات للطلاب' : 'Enable badges and achievements for students'}</p>
               </div>
             </div>
-            <Switch checked={studentBadges} onCheckedChange={setStudentBadges} />
+            <Switch checked={pending.studentBadges} onCheckedChange={setStudentBadges} />
           </div>
         </CardContent>
       </Card>
