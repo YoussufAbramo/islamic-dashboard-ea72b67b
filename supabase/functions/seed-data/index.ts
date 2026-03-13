@@ -764,7 +764,8 @@ Deno.serve(async (req) => {
         'courses', 'course_tracks', 'course_categories', 'course_levels',
         'ebook_downloads', 'ebook_views', 'ebooks',
         'blog_posts', 'website_pages', 'pricing_packages',
-        'payout_requests', 'expenses',
+        'payout_requests', 'expenses', 'expense_categories',
+        'support_departments', 'support_priorities',
         'students', 'teachers', 'profiles', 'user_roles',
       ]
 
