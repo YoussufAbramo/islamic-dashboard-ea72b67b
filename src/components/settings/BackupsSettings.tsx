@@ -344,6 +344,7 @@ const BackupsSettings = () => {
       const { data, error } = await supabase.functions.invoke('manage-backups', { body: { action: 'delete_backup', fileName: deleteTarget } });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+      logAction('delete', 'Backup', `Deleted backup: ${deleteTarget}`);
       toast.success(isAr ? 'تم حذف النسخة الاحتياطية' : 'Backup deleted');
       setDeleteTarget(null);
       fetchBackups();
