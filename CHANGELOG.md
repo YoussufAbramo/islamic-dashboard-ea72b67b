@@ -2,6 +2,27 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.0.0] - 2026-03-13
+
+### Added — Sample Data System v2 (Major)
+- **New `seed-data` edge function** — fully re-engineered database seeding tool, separate from legacy `manage-accounts` for backward compatibility
+- **Session-based tracking** — every seed operation creates a `seed_sessions` record with metadata (categories, multiplier, counts, errors, status, timestamps)
+- **Record-level tracking** — every generated record is logged in `seed_records` (session_id, table_name, record_id) enabling precise, safe cleanup
+- **Safe cleanup** — delete only tracked seed records in FK-safe order while preserving all real/production data; supports per-session or bulk cleanup
+- **Unique email namespacing** — seeded users use session-scoped emails (`seed-{session_id}-s1@sample.edu`) preventing collisions across sessions
+- **Full entity coverage** — seeds students, teachers, courses (tracks/categories/levels/sections/lessons), subscriptions, invoices, timetable, attendance, announcements, notifications, chats, messages, support tickets, certificates, blog posts, pages, and pricing packages
+- **Session History UI** — expandable session cards showing status badges, record counts per entity, error logs, and per-session delete buttons
+- **Database tables** — `seed_sessions` and `seed_records` with admin-only RLS policies and optimized indexes
+
+### Improved
+- **DataManagementCard** — completely rebuilt UI with cleaner layout, category descriptions, active session summary, and integrated history dialog
+- **Relational integrity** — seeding logic respects all FK constraints, enum values, and column defaults across the full schema
+
+### Security
+- New tables use admin-only RLS policies via `has_role()` security definer function
+
+---
+
 ## [4.19.0] - 2026-03-13
 
 ### Fixed
