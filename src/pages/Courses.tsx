@@ -35,7 +35,7 @@ const Courses = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editCourse, setEditCourse] = useState<any>(null);
-  const [form, setForm] = useState({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft', image_url: '', category_id: '', level_id: '', track_id: '', duration_weeks: '' });
+  const [form, setForm] = useState({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft', image_url: '', category_id: '', level_id: '', track_id: '', duration_weeks: '', slug: '' });
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => (localStorage.getItem('courses_view') as any) || 'list');
@@ -102,6 +102,7 @@ const Courses = () => {
       level_id: form.level_id || null,
       track_id: form.track_id || null,
       duration_weeks: form.duration_weeks ? parseInt(form.duration_weeks) : null,
+      slug: form.slug || null,
     };
     if (editCourse) {
       await supabase.from('courses').update(saveData).eq('id', editCourse.id);
@@ -116,7 +117,7 @@ const Courses = () => {
     fetchCourses();
   };
 
-  const resetForm = () => setForm({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft', image_url: '', category_id: '', level_id: '', track_id: '', duration_weeks: '' });
+  const resetForm = () => setForm({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft', image_url: '', category_id: '', level_id: '', track_id: '', duration_weeks: '', slug: '' });
 
   const openEdit = (course: any) => {
     setEditCourse(course);
@@ -131,6 +132,7 @@ const Courses = () => {
       level_id: course.level_id || '',
       track_id: course.track_id || '',
       duration_weeks: course.duration_weeks?.toString() || '',
+      slug: course.slug || '',
     });
     setDialogOpen(true);
   };
@@ -249,6 +251,19 @@ const Courses = () => {
                     value={form.image_url}
                     onChange={(url) => setForm({ ...form, image_url: url })}
                   />
+                  <div>
+                    <Label>{isAr ? 'الرابط المختصر (Slug)' : 'URL Slug'}</Label>
+                    <Input
+                      value={form.slug}
+                      onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-') })}
+                      placeholder="e.g. quran-memorization"
+                      className="font-mono text-sm"
+                      dir="ltr"
+                    />
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {isAr ? 'أحرف إنجليزية صغيرة وأرقام وشرطات فقط' : 'Lowercase letters, numbers, and hyphens only'}
+                    </p>
+                  </div>
                   <Button onClick={handleSave} className="w-full">
                     {t('common.save')}
                   </Button>

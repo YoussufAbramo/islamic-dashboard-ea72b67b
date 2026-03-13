@@ -625,6 +625,7 @@ export type Database = {
           image_url: string | null
           level_id: string | null
           skill_level: string
+          slug: string | null
           status: string
           title: string
           title_ar: string | null
@@ -644,6 +645,7 @@ export type Database = {
           image_url?: string | null
           level_id?: string | null
           skill_level?: string
+          slug?: string | null
           status?: string
           title: string
           title_ar?: string | null
@@ -663,6 +665,7 @@ export type Database = {
           image_url?: string | null
           level_id?: string | null
           skill_level?: string
+          slug?: string | null
           status?: string
           title?: string
           title_ar?: string | null

@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree, Layers, FileText, Pencil, Route, MoreHorizontal, Settings2, Edit, HelpCircle, ChevronDown } from 'lucide-react';
+import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree, Layers, FileText, Pencil, Route, MoreHorizontal, Settings2, Edit, HelpCircle, ChevronDown, Link2 } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 import { arrayMove } from '@dnd-kit/sortable';
@@ -68,6 +68,8 @@ const CourseDetail = () => {
   const canEdit = role === 'admin' || role === 'teacher';
 
   const [course, setCourse] = useState<any>(null);
+  const [courseSettingsOpen, setCourseSettingsOpen] = useState(false);
+  const [slugForm, setSlugForm] = useState('');
   const [categories, setCategories] = useState<any[]>([]);
   const [levels, setLevels] = useState<any[]>([]);
   const [tracks, setTracks] = useState<any[]>([]);
@@ -351,7 +353,14 @@ const CourseDetail = () => {
               <img src={course.image_url} alt={course.title} className="h-20 w-20 rounded-lg object-cover shrink-0" />
             )}
             <div className="flex-1 min-w-0">
-              <CardTitle>{isAr && course.title_ar ? course.title_ar : course.title}</CardTitle>
+              <div className="flex items-center gap-2">
+                <CardTitle>{isAr && course.title_ar ? course.title_ar : course.title}</CardTitle>
+                {canEdit && (
+                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-muted-foreground hover:text-foreground shrink-0" onClick={() => { setSlugForm(course.slug || ''); setCourseSettingsOpen(true); }}>
+                    <Settings2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
               <p className="text-muted-foreground mt-1">{isAr && course.description_ar ? course.description_ar : course.description}</p>
               <div className="flex flex-wrap items-center gap-2 mt-3">
                 {categoryLabel && (
@@ -677,6 +686,45 @@ const CourseDetail = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setContentDialog(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
             <Button onClick={addContent} disabled={!contentForm.title.trim()}>{t('common.save')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Course Settings Dialog (slug) */}
+      <Dialog open={courseSettingsOpen} onOpenChange={setCourseSettingsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings2 className="h-4 w-4 text-primary" />
+              {isAr ? 'إعدادات الدورة' : 'Course Settings'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="flex items-center gap-1.5">
+                <Link2 className="h-3.5 w-3.5" />
+                {isAr ? 'الرابط المختصر (Slug)' : 'URL Slug'}
+              </Label>
+              <Input
+                value={slugForm}
+                onChange={(e) => setSlugForm(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-'))}
+                placeholder="e.g. quran-memorization"
+                className="mt-1 font-mono text-sm"
+                dir="ltr"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                {isAr ? 'يُستخدم في رابط الدورة. يقبل أحرف إنجليزية صغيرة وأرقام وشرطات فقط.' : 'Used in the course URL. Only lowercase letters, numbers, and hyphens allowed.'}
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCourseSettingsOpen(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
+            <Button onClick={async () => {
+              await supabase.from('courses').update({ slug: slugForm || null }).eq('id', id);
+              toast.success(isAr ? 'تم تحديث الإعدادات' : 'Settings updated');
+              setCourseSettingsOpen(false);
+              fetchCourse();
+            }} disabled={!slugForm.trim()}>{t('common.save')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

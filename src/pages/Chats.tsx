@@ -37,14 +37,13 @@ const Chats = () => {
   const [adminJoinedChats, setAdminJoinedChats] = useState<Set<string>>(new Set());
 
   const [createOpen, setCreateOpen] = useState(false);
-  const [chatType, setChatType] = useState<'direct' | 'group'>('direct');
   const [studentsList, setStudentsList] = useState<any[]>([]);
   const [teachersList, setTeachersList] = useState<any[]>([]);
   const [subscriptionsList, setSubscriptionsList] = useState<any[]>([]);
-  const [createForm, setCreateForm] = useState({ student_id: '', teacher_id: '', name: '', subscription_id: '', group_students: [] as string[], group_teachers: [] as string[] });
+  const [createForm, setCreateForm] = useState({ student_id: '', teacher_id: '' });
   const [createLoading, setCreateLoading] = useState(false);
 
-  // Group members state
+  // Group members state (for viewing existing group chats)
   const [groupMembers, setGroupMembers] = useState<any[]>([]);
   const [addMemberKey, setAddMemberKey] = useState(0);
 
@@ -212,29 +211,18 @@ const Chats = () => {
   };
 
   const handleCreateChat = async () => {
-    if (chatType === 'direct') {
-      if (!createForm.student_id && !createForm.teacher_id) {
-        notifyError({ error: 'VAL_SELECT_USER', isAr });
-        return;
-      }
-    } else {
-      if (!createForm.name) {
-        notifyError({ error: 'VAL_GROUP_NAME', isAr });
-        return;
-      }
-      if (createForm.group_students.length === 0 && createForm.group_teachers.length === 0) {
-        toast.error(isAr ? 'يجب اختيار عضو واحد على الأقل' : 'Select at least one member');
-        return;
-      }
+    if (!createForm.student_id && !createForm.teacher_id) {
+      notifyError({ error: 'VAL_SELECT_USER', isAr });
+      return;
     }
 
     setCreateLoading(true);
     const insertData: any = {
-      is_group: chatType === 'group',
-      name: chatType === 'group' ? createForm.name : null,
-      subscription_id: chatType === 'group' && createForm.subscription_id ? createForm.subscription_id : null,
-      student_id: chatType === 'direct' ? (createForm.student_id || null) : null,
-      teacher_id: chatType === 'direct' ? (createForm.teacher_id || null) : null,
+      is_group: false,
+      name: null,
+      subscription_id: null,
+      student_id: createForm.student_id || null,
+      teacher_id: createForm.teacher_id || null,
     };
 
     const { data: newChat, error } = await supabase.from('chats').insert(insertData).select().single();
@@ -248,34 +236,19 @@ const Chats = () => {
     if (newChat) {
       const members: { chat_id: string; user_id: string; role: string }[] = [];
 
-      if (chatType === 'direct') {
-        // Add admin creator
-        if (user) {
-          members.push({ chat_id: newChat.id, user_id: user.id, role: 'admin' });
-        }
-        // Add student participant
-        if (createForm.student_id) {
-          const student = studentsList.find(s => s.id === createForm.student_id);
-          if (student) members.push({ chat_id: newChat.id, user_id: student.user_id, role: 'student' });
-        }
-        // Add teacher participant
-        if (createForm.teacher_id) {
-          const teacher = teachersList.find(t => t.id === createForm.teacher_id);
-          if (teacher) members.push({ chat_id: newChat.id, user_id: teacher.user_id, role: 'teacher' });
-        }
-      } else {
-        // Group chat: add admin creator
-        if (user) {
-          members.push({ chat_id: newChat.id, user_id: user.id, role: 'admin' });
-        }
-        createForm.group_students.forEach(sid => {
-          const student = studentsList.find(s => s.id === sid);
-          if (student) members.push({ chat_id: newChat.id, user_id: student.user_id, role: 'student' });
-        });
-        createForm.group_teachers.forEach(tid => {
-          const teacher = teachersList.find(t => t.id === tid);
-          if (teacher) members.push({ chat_id: newChat.id, user_id: teacher.user_id, role: 'teacher' });
-        });
+      // Add admin creator
+      if (user) {
+        members.push({ chat_id: newChat.id, user_id: user.id, role: 'admin' });
+      }
+      // Add student participant
+      if (createForm.student_id) {
+        const student = studentsList.find(s => s.id === createForm.student_id);
+        if (student) members.push({ chat_id: newChat.id, user_id: student.user_id, role: 'student' });
+      }
+      // Add teacher participant
+      if (createForm.teacher_id) {
+        const teacher = teachersList.find(t => t.id === createForm.teacher_id);
+        if (teacher) members.push({ chat_id: newChat.id, user_id: teacher.user_id, role: 'teacher' });
       }
 
       if (members.length > 0) {
@@ -290,7 +263,7 @@ const Chats = () => {
     setCreateLoading(false);
     toast.success(isAr ? 'تم إنشاء المحادثة' : 'Chat created');
     setCreateOpen(false);
-    setCreateForm({ student_id: '', teacher_id: '', name: '', subscription_id: '', group_students: [], group_teachers: [] });
+    setCreateForm({ student_id: '', teacher_id: '' });
     fetchChats();
   };
 
@@ -658,85 +631,23 @@ const Chats = () => {
 
       {/* Create Chat Dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{isAr ? 'إنشاء محادثة جديدة' : 'Create New Chat'}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>{isAr ? 'نوع المحادثة' : 'Chat Type'}</Label>
-              <div className="grid grid-cols-2 gap-2 mt-1">
-                <button type="button" onClick={() => setChatType('direct')} className={`p-3 rounded-lg border-2 text-sm transition-all ${chatType === 'direct' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'}`}>
-                  {isAr ? 'محادثة مباشرة' : '1-on-1 Chat'}
-                </button>
-                <button type="button" onClick={() => setChatType('group')} className={`relative p-3 rounded-lg border-2 text-sm transition-all ${chatType === 'group' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'}`}>
-                  {isAr ? 'مجموعة' : 'Group Chat'}
-                  <Badge className="absolute -top-1.5 -end-1.5 text-[7px] px-1 py-0 h-3.5 bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">Beta</Badge>
-                </button>
-              </div>
+              <Label>{isAr ? 'الطالب' : 'Student'}</Label>
+              <Select value={createForm.student_id} onValueChange={(v) => setCreateForm(prev => ({ ...prev, student_id: v }))}>
+                <SelectTrigger><SelectValue placeholder={isAr ? 'اختر طالب' : 'Select student'} /></SelectTrigger>
+                <SelectContent>{studentsList.map((s) => <SelectItem key={s.id} value={s.id}>{s.profiles?.full_name || s.id}</SelectItem>)}</SelectContent>
+              </Select>
             </div>
-            {chatType === 'direct' ? (
-              <>
-                <div>
-                  <Label>{isAr ? 'الطالب' : 'Student'}</Label>
-                  <Select value={createForm.student_id} onValueChange={(v) => setCreateForm(prev => ({ ...prev, student_id: v }))}>
-                    <SelectTrigger><SelectValue placeholder={isAr ? 'اختر طالب' : 'Select student'} /></SelectTrigger>
-                    <SelectContent>{studentsList.map((s) => <SelectItem key={s.id} value={s.id}>{s.profiles?.full_name || s.id}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>{isAr ? 'المعلم' : 'Teacher'}</Label>
-                  <Select value={createForm.teacher_id} onValueChange={(v) => setCreateForm(prev => ({ ...prev, teacher_id: v }))}>
-                    <SelectTrigger><SelectValue placeholder={isAr ? 'اختر معلم' : 'Select teacher'} /></SelectTrigger>
-                    <SelectContent>{teachersList.map((te) => <SelectItem key={te.id} value={te.id}>{te.profiles?.full_name || te.id}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-              </>
-            ) : (
-              <>
-                <div>
-                  <Label>{isAr ? 'اسم المجموعة' : 'Group Name'} *</Label>
-                  <Input value={createForm.name} onChange={(e) => setCreateForm(prev => ({ ...prev, name: e.target.value }))} />
-                </div>
-                <div>
-                  <Label>{isAr ? 'الاشتراك المرتبط (اختياري)' : 'Linked Subscription (optional)'}</Label>
-                  <Select value={createForm.subscription_id} onValueChange={(v) => setCreateForm(prev => ({ ...prev, subscription_id: v }))}>
-                    <SelectTrigger><SelectValue placeholder={isAr ? 'اختر اشتراك' : 'Select subscription'} /></SelectTrigger>
-                    <SelectContent>{subscriptionsList.map((sub) => <SelectItem key={sub.id} value={sub.id}>{sub.students?.profiles?.full_name || ''} - {sub.courses?.title || ''}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                {/* Multi-select teachers */}
-                <div>
-                  <Label>{isAr ? 'المعلمون' : 'Teachers'}</Label>
-                  <div className="flex flex-wrap gap-1.5 mt-1 p-2 border rounded-md min-h-[40px]">
-                    {teachersList.map(te => (
-                      <button
-                        key={te.id}
-                        type="button"
-                        onClick={() => setCreateForm(prev => ({ ...prev, group_teachers: toggleMultiSelect(prev.group_teachers, te.id) }))}
-                        className={`px-2 py-1 rounded-md text-xs border transition-all ${createForm.group_teachers.includes(te.id) ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/50 text-muted-foreground border-border hover:border-primary/40'}`}
-                      >
-                        {te.profiles?.full_name || te.id}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {/* Multi-select students */}
-                <div>
-                  <Label>{isAr ? 'الطلاب' : 'Students'}</Label>
-                  <div className="flex flex-wrap gap-1.5 mt-1 p-2 border rounded-md min-h-[40px]">
-                    {studentsList.map(s => (
-                      <button
-                        key={s.id}
-                        type="button"
-                        onClick={() => setCreateForm(prev => ({ ...prev, group_students: toggleMultiSelect(prev.group_students, s.id) }))}
-                        className={`px-2 py-1 rounded-md text-xs border transition-all ${createForm.group_students.includes(s.id) ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/50 text-muted-foreground border-border hover:border-primary/40'}`}
-                      >
-                        {s.profiles?.full_name || s.id}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
+            <div>
+              <Label>{isAr ? 'المعلم' : 'Teacher'}</Label>
+              <Select value={createForm.teacher_id} onValueChange={(v) => setCreateForm(prev => ({ ...prev, teacher_id: v }))}>
+                <SelectTrigger><SelectValue placeholder={isAr ? 'اختر معلم' : 'Select teacher'} /></SelectTrigger>
+                <SelectContent>{teachersList.map((te) => <SelectItem key={te.id} value={te.id}>{te.profiles?.full_name || te.id}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
             <Button onClick={handleCreateChat} disabled={createLoading} className="w-full">
               {createLoading ? t('common.loading') : (isAr ? 'إنشاء المحادثة' : 'Create Chat')}
             </Button>

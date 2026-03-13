@@ -19,7 +19,7 @@ interface DataManagementCardProps {
   isAr: boolean;
 }
 
-type SeedCategory = 'students' | 'teachers' | 'courses' | 'billing' | 'schedule' | 'communications' | 'support' | 'certificates' | 'website' | 'packages' | 'expenses' | 'ebooks' | 'progress' | 'support_config';
+type SeedCategory = 'students' | 'teachers' | 'courses' | 'billing' | 'schedule' | 'communications' | 'support' | 'certificates' | 'website' | 'packages' | 'expenses' | 'ebooks' | 'progress' | 'support_config' | 'payouts' | 'badges';
 
 const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon: string; desc: string; descAr: string }[] = [
   { key: 'students', label: 'Students', labelAr: 'طلاب', icon: '👨‍🎓', desc: 'Auth users + profiles + student records', descAr: 'مستخدمون + ملفات + سجلات طلاب' },
@@ -36,6 +36,8 @@ const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon
   { key: 'ebooks', label: 'E-Books', labelAr: 'كتب إلكترونية', icon: '📖', desc: 'E-books, views & downloads', descAr: 'كتب إلكترونية ومشاهدات وتنزيلات' },
   { key: 'website', label: 'Website Content', labelAr: 'محتوى الموقع', icon: '🌐', desc: 'Blog posts & pages', descAr: 'مقالات وصفحات' },
   { key: 'packages', label: 'Pricing Packages', labelAr: 'باقات الأسعار', icon: '📦', desc: 'Pricing packages', descAr: 'باقات الأسعار' },
+  { key: 'payouts', label: 'Payout Requests', labelAr: 'طلبات الدفع', icon: '💸', desc: 'Approved & declined payouts', descAr: 'طلبات دفع مقبولة ومرفوضة' },
+  { key: 'badges', label: 'Badge Achievements', labelAr: 'إنجازات الشارات', icon: '🏆', desc: 'Seed badge data for teachers', descAr: 'بيانات شارات للمعلمين' },
 ];
 
 const getEstimatedCounts = (m: number) => ({
@@ -190,16 +192,25 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between">
                   <Label className="text-xs font-medium text-muted-foreground">{isAr ? 'المضاعف' : 'Multiplier'}</Label>
-                  <span className="text-xs font-bold text-primary tabular-nums">{multiplier}x</span>
                 </div>
-                <Slider
-                  value={[multiplier]}
-                  onValueChange={([v]) => setMultiplier(v)}
-                  min={1} max={10} step={1}
-                  className="w-full"
-                />
+                <div className="flex flex-wrap gap-1.5">
+                  {Array.from({ length: 10 }, (_, i) => i + 1).map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => setMultiplier(v)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                        multiplier === v
+                          ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                          : 'bg-muted/50 text-muted-foreground border-border hover:border-primary/40 hover:bg-muted'
+                      }`}
+                    >
+                      {v}x
+                    </button>
+                  ))}
+                </div>
                 {(() => {
                   const est = getEstimatedCounts(multiplier);
                   return (

@@ -13,7 +13,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Search, Eye, Plus, Trash2, Pencil, UserCircle } from 'lucide-react';
+import { Search, Eye, Plus, Trash2, Pencil, UserCircle, Users } from 'lucide-react';
+import EmptyState from '@/components/EmptyState';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
@@ -147,7 +148,21 @@ const Teachers = () => {
                 </TableCell>
               </TableRow>
             ))}
-            {filtered.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">{t('common.noData')}</TableCell></TableRow>}
+            {paginatedItems.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="p-0">
+                  <EmptyState
+                    icon={Users}
+                    title={isAr ? 'لا يوجد معلمون بعد' : 'No teachers yet'}
+                    description={isAr
+                      ? 'أضف أول معلم لبدء تنظيم فريق التدريس.'
+                      : 'Add your first teacher to start building your teaching team.'}
+                    actionLabel={role === 'admin' ? (isAr ? 'إضافة معلم' : 'Add Teacher') : undefined}
+                    onAction={role === 'admin' ? () => setAddOpen(true) : undefined}
+                  />
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>

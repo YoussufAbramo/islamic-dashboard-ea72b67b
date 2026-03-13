@@ -13,7 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Search, Eye, Plus, Trash2, Pencil } from 'lucide-react';
+import { Search, Eye, Plus, Trash2, Pencil, Users } from 'lucide-react';
+import EmptyState from '@/components/EmptyState';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { TableSkeleton } from '@/components/PageSkeleton';
@@ -155,7 +156,21 @@ const Students = () => {
                 </TableCell>
               </TableRow>
             ))}
-            {filtered.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">{t('common.noData')}</TableCell></TableRow>}
+            {paginatedItems.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="p-0">
+                  <EmptyState
+                    icon={Users}
+                    title={isAr ? 'لا يوجد طلاب بعد' : 'No students yet'}
+                    description={isAr
+                      ? 'أضف أول طالب لبدء إدارة الفصول الدراسية.'
+                      : 'Add your first student to start managing your classrooms.'}
+                    actionLabel={role === 'admin' ? (isAr ? 'إضافة طالب' : 'Add Student') : undefined}
+                    onAction={role === 'admin' ? () => setAddOpen(true) : undefined}
+                  />
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
