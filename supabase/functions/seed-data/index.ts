@@ -712,42 +712,61 @@ Deno.serve(async (req) => {
 
         // ── PROGRESS & REPORTS ──
         if (categories.includes('progress') && sIds.length > 0 && tIds.length > 0) {
-          // Student progress (needs lesson IDs)
+          // Student progress (needs lesson IDs) — skip combos that already exist
           const { data: existingLessons } = await admin.from('lessons').select('id').limit(10)
           const lessonIdsForProgress = (existingLessons || []).map(l => l.id)
           if (lessonIdsForProgress.length > 0) {
-            const progressInsert = Array.from({ length: Math.min(multiplier * 2, sIds.length * lessonIdsForProgress.length) }, (_, i) => ({
+            // Check existing progress combos
+            const { data: existingProgress } = await admin.from('student_progress').select('student_id, lesson_id')
+            const existingComboSet = new Set((existingProgress || []).map((p: any) => `${p.student_id}|${p.lesson_id}`))
+            
+            const progressCandidates = Array.from({ length: Math.min(multiplier * 2, sIds.length * lessonIdsForProgress.length) }, (_, i) => ({
               student_id: sIds[i % sIds.length],
               lesson_id: lessonIdsForProgress[i % lessonIdsForProgress.length],
               completed: i % 3 !== 0,
               completed_at: i % 3 !== 0 ? randomDate(14, 0) : null,
               score: i % 3 !== 0 ? Math.floor(Math.random() * 40) + 60 : null,
             }))
-            const { data: createdProgress } = await admin.from('student_progress').insert(progressInsert).select('id')
-            const progressIds = (createdProgress || []).map(p => p.id)
-            await trackRecords(admin, sessionId, 'student_progress', progressIds)
-            counts.student_progress = progressIds.length
+            const progressInsert = progressCandidates.filter(p => !existingComboSet.has(`${p.student_id}|${p.lesson_id}`))
+            
+            if (progressInsert.length > 0) {
+              const { data: createdProgress } = await admin.from('student_progress').insert(progressInsert).select('id')
+              const progressIds = (createdProgress || []).map(p => p.id)
+              await trackRecords(admin, sessionId, 'student_progress', progressIds)
+              counts.student_progress = progressIds.length
+            } else {
+              counts.student_progress = 0
+            }
           }
 
-          // Session reports (needs timetable entries)
+          // Session reports — skip entries that already have a report
           const { data: completedEntries } = await admin.from('timetable_entries').select('id, teacher_id, student_id, course_id').eq('status', 'completed').limit(multiplier)
           if (completedEntries && completedEntries.length > 0) {
-            const reportInsert = completedEntries.map((entry, i) => ({
-              timetable_entry_id: entry.id,
-              teacher_id: entry.teacher_id,
-              student_id: entry.student_id,
-              course_id: entry.course_id,
-              summary: `Sample session summary ${i + 1}`,
-              observations: 'Student showed good progress',
-              performance_remarks: pick(['Excellent', 'Good', 'Needs improvement', 'Outstanding']),
-              session_duration_seconds: [1800, 2700, 3600][i % 3],
-              started_at: randomDate(14, 0),
-              created_by: callerId,
-            }))
-            const { data: createdReports } = await admin.from('session_reports').insert(reportInsert).select('id')
-            const reportIds = (createdReports || []).map(r => r.id)
-            await trackRecords(admin, sessionId, 'session_reports', reportIds)
-            counts.session_reports = reportIds.length
+            const entryIds = completedEntries.map(e => e.id)
+            const { data: existingReports } = await admin.from('session_reports').select('timetable_entry_id').in('timetable_entry_id', entryIds)
+            const reportedSet = new Set((existingReports || []).map((r: any) => r.timetable_entry_id))
+            const unreportedEntries = completedEntries.filter(e => !reportedSet.has(e.id))
+            
+            if (unreportedEntries.length > 0) {
+              const reportInsert = unreportedEntries.map((entry, i) => ({
+                timetable_entry_id: entry.id,
+                teacher_id: entry.teacher_id,
+                student_id: entry.student_id,
+                course_id: entry.course_id,
+                summary: `Sample session summary ${i + 1}`,
+                observations: 'Student showed good progress',
+                performance_remarks: pick(['Excellent', 'Good', 'Needs improvement', 'Outstanding']),
+                session_duration_seconds: [1800, 2700, 3600][i % 3],
+                started_at: randomDate(14, 0),
+                created_by: callerId,
+              }))
+              const { data: createdReports } = await admin.from('session_reports').insert(reportInsert).select('id')
+              const reportIds = (createdReports || []).map(r => r.id)
+              await trackRecords(admin, sessionId, 'session_reports', reportIds)
+              counts.session_reports = reportIds.length
+            } else {
+              counts.session_reports = 0
+            }
           }
         }
 
