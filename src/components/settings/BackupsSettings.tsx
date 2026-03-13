@@ -433,6 +433,7 @@ const BackupsSettings = () => {
           </CardContent>
         </Card>
 
+        <AutoBackupCard isAr={isAr} />
       </div>
 
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
