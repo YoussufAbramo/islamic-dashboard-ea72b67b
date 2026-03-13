@@ -3,7 +3,8 @@ import { ACTION_BTN, ACTION_BTN_DESTRUCTIVE, ACTION_ICON } from '@/lib/actionBtn
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Route, Plus, Pencil, Trash2, Search, ChevronDown, BookOpen, GripVertical, Layers, Hash } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Route, Plus, Pencil, Trash2, Search, ChevronDown, BookOpen, GripVertical, Layers, Hash, ExternalLink } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

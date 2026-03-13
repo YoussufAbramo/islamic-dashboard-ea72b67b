@@ -64,48 +64,54 @@ const SystemResetCard = ({ isAr }: SystemResetCardProps) => {
 
   return (
     <>
-      <Card className="border-destructive/30">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-destructive">
-            <ShieldAlert className="h-5 w-5" />
-            {isAr ? 'إعادة تعيين النظام' : 'System Reset'}
-          </CardTitle>
-          <CardDescription>
-            {isAr
-              ? 'إعادة النظام بالكامل إلى حالة التثبيت الأولى. سيتم حذف جميع البيانات التشغيلية بشكل دائم.'
-              : 'Restore the platform to a fresh installation state. All operational data will be permanently deleted.'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Warning */}
-          <div className="flex items-start gap-3 p-3 rounded-lg border border-destructive/20 bg-destructive/5">
-            <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-            <div className="text-xs space-y-1.5">
-              <p className="font-semibold text-destructive">
-                {isAr ? 'تحذير: هذا الإجراء لا يمكن التراجع عنه' : 'Warning: This action is irreversible'}
-              </p>
-              <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                <li>{isAr ? 'جميع المستخدمين (طلاب، معلمون) سيتم حذفهم' : 'All users (students, teachers) will be deleted'}</li>
-                <li>{isAr ? 'جميع الدورات والاشتراكات والفواتير ستُزال' : 'All courses, subscriptions, and invoices will be removed'}</li>
-                <li>{isAr ? 'جميع المحادثات والشهادات والتقارير ستُحذف' : 'All chats, certificates, and reports will be erased'}</li>
-                <li>{isAr ? 'جميع الملفات المرفوعة في التخزين السحابي ستُمسح' : 'All uploaded files in cloud storage will be cleared'}</li>
-                <li>{isAr ? 'سجلات التدقيق وإعدادات الدفع ستُمسح' : 'Audit logs and payment config will be cleared'}</li>
-                <li>{isAr ? 'سيتم الاحتفاظ بحسابك كمدير للنظام فقط' : 'Only your admin account & role will be preserved'}</li>
-              </ul>
+      <Card className="border-destructive/30 bg-destructive/[0.02]">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
+              <ShieldAlert className="h-5 w-5 text-destructive" />
+            </div>
+            <div>
+              <CardTitle className="text-destructive text-base">
+                {isAr ? 'إعادة تعيين النظام' : 'System Reset'}
+              </CardTitle>
+              <CardDescription className="text-xs mt-0.5">
+                {isAr
+                  ? 'إعادة النظام إلى حالة التثبيت الأولى — حذف جميع البيانات نهائياً'
+                  : 'Restore to fresh install state — permanently erases all data'}
+              </CardDescription>
             </div>
           </div>
+        </CardHeader>
+        <CardContent className="space-y-4 pt-0">
+          {/* Compact two-column info */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* What's deleted */}
+            <div className="p-3 rounded-lg border border-destructive/20 bg-destructive/5 space-y-2">
+              <div className="flex items-center gap-1.5">
+                <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
+                <span className="text-xs font-semibold text-destructive">
+                  {isAr ? 'سيتم حذفه' : 'Will be deleted'}
+                </span>
+              </div>
+              <ul className="text-[11px] text-muted-foreground space-y-0.5 list-disc list-inside">
+                <li>{isAr ? 'جميع المستخدمين والدورات والاشتراكات' : 'All users, courses & subscriptions'}</li>
+                <li>{isAr ? 'المحادثات والشهادات والتقارير' : 'Chats, certificates & reports'}</li>
+                <li>{isAr ? 'الملفات المرفوعة وسجلات التدقيق' : 'Uploaded files & audit logs'}</li>
+              </ul>
+            </div>
 
-          {/* What's preserved */}
-          <div className="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/30">
-            <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-            <div className="text-xs space-y-1">
-              <p className="font-semibold text-foreground">
-                {isAr ? 'ما سيتم الاحتفاظ به' : 'What will be preserved'}
-              </p>
-              <ul className="list-disc list-inside text-muted-foreground space-y-0.5">
-                <li>{isAr ? 'حساب المدير الحالي ودوره' : 'Current admin account & admin role'}</li>
-                <li>{isAr ? 'هيكل قاعدة البيانات والترحيلات' : 'Database schema & migrations'}</li>
-                <li>{isAr ? 'ملفات النظام المحلية' : 'Local system assets (/public/system)'}</li>
+            {/* What's preserved */}
+            <div className="p-3 rounded-lg border border-border bg-muted/30 space-y-2">
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                <span className="text-xs font-semibold text-foreground">
+                  {isAr ? 'سيتم الاحتفاظ به' : 'Preserved'}
+                </span>
+              </div>
+              <ul className="text-[11px] text-muted-foreground space-y-0.5 list-disc list-inside">
+                <li>{isAr ? 'حساب المدير الحالي ودوره' : 'Your admin account & role'}</li>
+                <li>{isAr ? 'هيكل قاعدة البيانات' : 'Database schema & migrations'}</li>
+                <li>{isAr ? 'ملفات النظام المحلية' : 'Local system assets'}</li>
               </ul>
             </div>
           </div>
@@ -114,6 +120,7 @@ const SystemResetCard = ({ isAr }: SystemResetCardProps) => {
             variant="destructive"
             size="sm"
             onClick={() => setShowDialog(true)}
+            className="w-full sm:w-auto"
           >
             <RotateCcw className="h-4 w-4 me-1.5" />
             {isAr ? 'بدء إعادة تعيين النظام' : 'Initiate System Reset'}
