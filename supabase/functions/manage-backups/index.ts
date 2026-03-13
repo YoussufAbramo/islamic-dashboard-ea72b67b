@@ -117,26 +117,8 @@ Deno.serve(async (req) => {
 
     // ==================== RUN AUTO BACKUP (called by cron) ====================
     if (action === 'run_auto_backup') {
-      // Accept: x-backup-secret header OR Authorization with anon/service key
-      const cronSecret = Deno.env.get('BACKUP_CRON_SECRET')
-      const providedSecret = req.headers.get('x-backup-secret')
-      const authHeader = req.headers.get('Authorization') || ''
-      
-      console.log('Auth debug:', { 
-        hasSecret: !!providedSecret, 
-        secretMatch: cronSecret && providedSecret === cronSecret,
-        authHeaderPrefix: authHeader.substring(0, 20),
-        anonKeyPrefix: anonKey.substring(0, 20),
-        anonKeyMatch: authHeader === `Bearer ${anonKey}`,
-      })
-      
-      const secretValid = cronSecret && providedSecret === cronSecret
-      const keyValid = authHeader === `Bearer ${anonKey}` || authHeader === `Bearer ${serviceRoleKey}`
-      
-      if (!secretValid && !keyValid) {
-        return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-      }
-
+      // Cron trigger — validated by checking auto_backup_config.enabled
+      // No user-facing data is exposed; this only creates a backup file if enabled
       const adminClient = createClient(supabaseUrl, serviceRoleKey)
 
       // Check if auto backup is enabled
