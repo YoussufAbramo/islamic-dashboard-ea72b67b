@@ -2,6 +2,18 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.9.3] - 2026-03-13
+
+### Changed
+- **Lesson Builder — Block palette restyled** — element categories now display in a 2-column grid with card-style buttons, category headers with item counts, and separators between groups
+- **Lesson Builder — New "Layout" category** — Divider, New Page, Split Screen, and Table of Content moved from Media/Content into a dedicated 🧩 Layout group
+- **Lesson content page navigation** — replaced top/bottom duplicate pagination bars with a single sticky frosted-glass bar fixed at the bottom of the content area
+- **Divider block — text labels** — added optional text inside dividers with font size that scales dynamically based on selected thickness
+- **Divider block — new styles & thicknesses** — added Groove and Ridge border styles; expanded thickness presets to 6px and 8px; all divider colors now render at 15% opacity
+- **Lesson Builder — blocks collapsed by default** — all block elements start collapsed for cleaner editing; drag handle on the grip icon enables drag-and-drop reordering
+
+---
+
 ## [5.9.2] - 2026-03-13
 
 ### Added
