@@ -52,8 +52,9 @@ export interface ContentBlock {
   missing_word?: string;
   missing_word_ar?: string;
   pairs?: { left: string; left_ar?: string; right: string; right_ar?: string }[]; // for text_match
+  // table of content rows
+  toc_rows?: { en: string; ar: string }[];
 }
-
 const generateId = () => Math.random().toString(36).substring(2, 10);
 
 interface BlockMetaItem {
@@ -393,8 +394,73 @@ const BlockEditor = ({
           </div>
         )}
 
+        {/* ── Table of Content (structured rows) ── */}
+        {block.type === 'table_of_content' && (() => {
+          const rows = block.toc_rows || [];
+          const updateRow = (idx: number, field: 'en' | 'ar', val: string) => {
+            const updated = [...rows];
+            updated[idx] = { ...updated[idx], [field]: val };
+            onChange({ ...block, toc_rows: updated });
+          };
+          const addRow = () => onChange({ ...block, toc_rows: [...rows, { en: '', ar: '' }] });
+          const removeRow = (idx: number) => onChange({ ...block, toc_rows: rows.filter((_, i) => i !== idx) });
+          const moveRow = (from: number, to: number) => {
+            if (to < 0 || to >= rows.length) return;
+            const updated = [...rows];
+            const [item] = updated.splice(from, 1);
+            updated.splice(to, 0, item);
+            onChange({ ...block, toc_rows: updated });
+          };
+          return (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-medium">{isAr ? 'صفوف جدول المحتويات' : 'Table of Content Rows'}</Label>
+                <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={addRow}>
+                  <Plus className="h-3 w-3" />
+                  {isAr ? 'إضافة صف' : 'Add Row'}
+                </Button>
+              </div>
+              {rows.length === 0 && (
+                <div className="p-4 rounded-lg border border-dashed bg-muted/20 text-center">
+                  <p className="text-xs text-muted-foreground">{isAr ? 'لا توجد صفوف. أضف صفًا للبدء.' : 'No rows yet. Add a row to get started.'}</p>
+                </div>
+              )}
+              <div className="space-y-2">
+                {rows.map((row, idx) => (
+                  <div key={idx} className="rounded-lg border bg-muted/20 p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-medium text-muted-foreground">{isAr ? `صف ${idx + 1}` : `Row ${idx + 1}`}</span>
+                      <div className="flex items-center gap-0.5">
+                        <Button type="button" variant="ghost" size="icon" className="h-5 w-5" disabled={idx === 0} onClick={() => moveRow(idx, idx - 1)}>
+                          <ChevronUp className="h-3 w-3" />
+                        </Button>
+                        <Button type="button" variant="ghost" size="icon" className="h-5 w-5" disabled={idx === rows.length - 1} onClick={() => moveRow(idx, idx + 1)}>
+                          <ChevronDown className="h-3 w-3" />
+                        </Button>
+                        <Button type="button" variant="ghost" size="icon" className="h-5 w-5 text-destructive/60 hover:text-destructive" onClick={() => removeRow(idx)}>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground">English</Label>
+                        <Input dir="ltr" value={row.en} onChange={(e) => updateRow(idx, 'en', e.target.value)} placeholder="English content..." className="mt-0.5 text-xs" />
+                      </div>
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground">العربية</Label>
+                        <Input dir="rtl" value={row.ar} onChange={(e) => updateRow(idx, 'ar', e.target.value)} placeholder="المحتوى بالعربية..." className="mt-0.5 text-xs" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* ── Content type blocks (rich text based) ── */}
-        {(block.type === 'table_of_content' || block.type === 'read_listen' || block.type === 'memorization' || block.type === 'revision' || block.type === 'homework') && (
+        {(block.type === 'read_listen' || block.type === 'memorization' || block.type === 'revision' || block.type === 'homework') && (
           <div className="space-y-3">
             <ContentEditor
               value={block.html || ''}
