@@ -114,6 +114,7 @@ const FloatingButtons = () => {
 const DashboardLayout = () => {
   const { user, loading } = useAuth();
   const { dir } = useLanguage();
+  useUpcomingAttend();
 
   if (loading) {
     return (
