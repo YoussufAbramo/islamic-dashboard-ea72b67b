@@ -403,6 +403,12 @@ const CourseDetail = () => {
             <SortableItem key={lesson.id} id={lesson.id} disabled={!canEdit}>
               <AccordionItem value={lesson.id} className="border rounded-lg px-4">
                 <div className="flex items-center gap-1">
+                  {canEdit && (
+                    <ItemActionsMenu
+                      onEdit={() => openEditLesson(lesson)}
+                      onDelete={() => setDeleteTarget({ id: lesson.id, type: 'lesson' })}
+                    />
+                  )}
                   <AccordionTrigger className="hover:no-underline flex-1">
                     <div className="flex items-center gap-2">
                       <BookOpen className="h-4 w-4 text-primary" />
@@ -412,12 +418,6 @@ const CourseDetail = () => {
                       </Badge>
                     </div>
                   </AccordionTrigger>
-                  {canEdit && (
-                    <ItemActionsMenu
-                      onEdit={() => openEditLesson(lesson)}
-                      onDelete={() => setDeleteTarget({ id: lesson.id, type: 'lesson' })}
-                    />
-                  )}
                 </div>
                 <AccordionContent>
                   <div className="space-y-3 pt-2">
