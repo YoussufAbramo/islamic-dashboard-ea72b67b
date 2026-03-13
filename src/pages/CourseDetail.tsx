@@ -85,6 +85,7 @@ const CourseDetail = () => {
 
   // Dialog states
   const [topicDialog, setTopicDialog] = useState(false);
+  const [docsDialogOpen, setDocsDialogOpen] = useState(false);
   const [sectionDialog, setSectionDialog] = useState(false);
   const [lessonDialog, setLessonDialog] = useState(false);
   const [activeTopicId, setActiveTopicId] = useState<string | null>(null);
