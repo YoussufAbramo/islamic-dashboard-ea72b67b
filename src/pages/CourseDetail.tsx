@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree, Layers, FileText, Pencil, Route, MoreHorizontal, Settings2, Edit, HelpCircle, ChevronDown, Link2, GraduationCap, SlidersHorizontal, Check, X } from 'lucide-react';
 import PresetSections from '@/components/course/PresetSections';
+import LessonBuilder from '@/components/course/LessonBuilder';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 import { arrayMove } from '@dnd-kit/sortable';
@@ -102,6 +103,8 @@ const CourseDetail = () => {
 
   // Inline edit state
   const [inlineEdit, setInlineEdit] = useState<{ id: string; type: 'topic' | 'section' | 'lesson'; field: string; value: string } | null>(null);
+  const [builderLesson, setBuilderLesson] = useState<any | null>(null);
+  const [builderOpen, setBuilderOpen] = useState(false);
 
   const handleInlineDoubleClick = (id: string, type: 'topic' | 'section' | 'lesson', currentValue: string) => {
     if (!canEdit) return;
@@ -727,9 +730,9 @@ const CourseDetail = () => {
                                                     <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted" onClick={(e) => { e.stopPropagation(); openEditLesson(lesson, section.id); }}>
                                                       <Settings2 className="h-3.5 w-3.5" />
                                                     </Button>
-                                                    <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted" onClick={(e) => { e.stopPropagation(); }}>
-                                                      <Edit className="h-3.5 w-3.5" />
-                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted" onClick={(e) => { e.stopPropagation(); setBuilderLesson(lesson); setBuilderOpen(true); }}>
+                                                       <Edit className="h-3.5 w-3.5" />
+                                                     </Button>
                                                     <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-destructive/60 hover:text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: lesson.id, type: 'lesson' }); }}>
                                                       <Trash2 className="h-3.5 w-3.5" />
                                                     </Button>
@@ -982,6 +985,15 @@ const CourseDetail = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Lesson Builder */}
+      <LessonBuilder
+        open={builderOpen}
+        onOpenChange={setBuilderOpen}
+        lesson={builderLesson}
+        isAr={isAr}
+        onSaved={fetchHierarchy}
+      />
     </div>
   );
 };

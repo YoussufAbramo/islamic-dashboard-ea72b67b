@@ -97,7 +97,87 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
   const content = lesson.content || {};
   const Icon = getContentIcon(lesson.lesson_type);
 
-  // Try to extract different content types from the JSON content
+  // ─── Block-based content (new format) ───
+  if (Array.isArray(content.blocks) && content.blocks.length > 0) {
+    return (
+      <div className="space-y-6">
+        {/* Lesson header */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-[10px] gap-1">
+              <Icon className="h-3 w-3" />
+              {getContentLabel(lesson.lesson_type, isAr)}
+            </Badge>
+          </div>
+          <h2 className="text-xl font-bold">
+            {isAr && lesson.title_ar ? lesson.title_ar : lesson.title}
+          </h2>
+        </div>
+        <Separator />
+
+        {content.blocks.map((block: any, idx: number) => {
+          switch (block.type) {
+            case 'text':
+              return block.html ? (
+                <div key={block.id || idx} className="prose prose-sm dark:prose-invert max-w-none">
+                  <div dangerouslySetInnerHTML={{ __html: block.html }} />
+                </div>
+              ) : null;
+
+            case 'image':
+              return block.image_url ? (
+                <figure key={block.id || idx} className="space-y-2">
+                  <div className="rounded-lg overflow-hidden border bg-muted/30">
+                    <img
+                      src={block.image_url}
+                      alt={block.image_alt || block.image_caption || ''}
+                      className="w-full object-contain max-h-[500px] mx-auto"
+                    />
+                  </div>
+                  {block.image_caption && (
+                    <figcaption className="text-xs text-muted-foreground text-center">
+                      {block.image_caption}
+                    </figcaption>
+                  )}
+                </figure>
+              ) : null;
+
+            case 'video':
+              return block.video_url ? (
+                <div key={block.id || idx} className="space-y-2">
+                  <div className="aspect-video rounded-lg overflow-hidden bg-muted border">
+                    <video src={block.video_url} controls className="w-full h-full" controlsList="nodownload" />
+                  </div>
+                  {block.video_caption && (
+                    <p className="text-xs text-muted-foreground text-center">{block.video_caption}</p>
+                  )}
+                </div>
+              ) : null;
+
+            case 'audio':
+              return block.audio_url ? (
+                <div key={block.id || idx} className="space-y-2">
+                  <div className="p-4 rounded-lg border bg-muted/30">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Headphones className="h-5 w-5 text-primary" />
+                      <span className="text-sm font-medium">
+                        {block.audio_caption || (isAr ? 'مقطع صوتي' : 'Audio')}
+                      </span>
+                    </div>
+                    <audio src={block.audio_url} controls className="w-full" />
+                  </div>
+                </div>
+              ) : null;
+
+            default:
+              return null;
+          }
+        })}
+      </div>
+    );
+  }
+
+  // ─── Legacy flat content (backward compatible) ───
   const videoUrl = content.video_url || content.videoUrl;
   const audioUrl = content.audio_url || content.audioUrl;
   const pdfUrl = content.pdf_url || content.pdfUrl;
@@ -122,19 +202,12 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
 
       <Separator />
 
-      {/* Video */}
       {videoUrl && (
         <div className="aspect-video rounded-lg overflow-hidden bg-muted border">
-          <video
-            src={videoUrl}
-            controls
-            className="w-full h-full"
-            controlsList="nodownload"
-          />
+          <video src={videoUrl} controls className="w-full h-full" controlsList="nodownload" />
         </div>
       )}
 
-      {/* Audio */}
       {audioUrl && (
         <div className="p-4 rounded-lg border bg-muted/30">
           <div className="flex items-center gap-3 mb-3">
@@ -145,7 +218,6 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
         </div>
       )}
 
-      {/* PDF */}
       {pdfUrl && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
@@ -166,7 +238,6 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
         </div>
       )}
 
-      {/* External Link */}
       {externalUrl && (
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
@@ -186,7 +257,6 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
         </Card>
       )}
 
-      {/* Instructions */}
       {instructions && (
         <div className="p-4 rounded-lg border bg-primary/5 border-primary/20 space-y-2">
           <p className="text-xs font-semibold text-primary">{isAr ? 'التعليمات' : 'Instructions'}</p>
@@ -194,14 +264,12 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
         </div>
       )}
 
-      {/* Text content */}
       {textContent && (
         <div className="prose prose-sm dark:prose-invert max-w-none">
           <div dangerouslySetInnerHTML={{ __html: textContent }} />
         </div>
       )}
 
-      {/* Fallback: show content JSON if nothing specific rendered */}
       {!videoUrl && !audioUrl && !pdfUrl && !externalUrl && !textContent && !instructions && (
         <div className="p-6 rounded-lg border bg-muted/30 text-center space-y-2">
           <Icon className="h-10 w-10 mx-auto text-muted-foreground/40" />
