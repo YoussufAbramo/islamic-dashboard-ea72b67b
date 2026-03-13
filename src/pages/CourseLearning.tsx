@@ -788,7 +788,9 @@ const CourseLearning = () => {
                               ) : null}
                             </summary>
 
-                            <div className="ms-4 border-s border-border/30 space-y-px pb-0.5">
+                            <div className="grid transition-all duration-300 ease-out group-open/section:grid-rows-[1fr] grid-rows-[0fr]">
+                             <div className="overflow-hidden">
+                              <div className="ms-4 border-s border-border/30 space-y-px pb-0.5">
                               {lessonsForLs.length === 0 && (
                                 <p className="text-[10px] text-muted-foreground/40 px-3 py-1.5 italic">
                                   {isAr ? 'لا توجد دروس' : 'No lessons'}
