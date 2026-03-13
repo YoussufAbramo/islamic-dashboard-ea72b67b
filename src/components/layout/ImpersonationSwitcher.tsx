@@ -62,12 +62,12 @@ const ImpersonationSwitcher = () => {
       const { data: teachers } = await supabase
         .from('teachers')
         .select('user_id, profiles:user_id(id, full_name, email, avatar_url)')
-        .limit(50);
+        .limit(5);
 
       const { data: students } = await supabase
         .from('students')
         .select('user_id, profiles:user_id(id, full_name, email, avatar_url)')
-        .limit(50);
+        .limit(10);
 
       const allUsers: UserEntry[] = [];
 
@@ -194,7 +194,7 @@ const ImpersonationSwitcher = () => {
           </div>
         </div>
 
-        <ScrollArea className="max-h-[360px]">
+        <ScrollArea className="h-[360px]">
           {loading ? (
             <div className="p-3 space-y-2">
               {Array.from({ length: 4 }).map((_, i) => (
