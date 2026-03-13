@@ -316,6 +316,7 @@ const BackupsSettings = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       if (backupComment.trim()) saveComment(data.file, backupComment.trim());
+      logAction('add', 'Backup', `Created backup: ${data.file}`, undefined, `${data.total_records} records, format: ${backupFormat}`);
       toast.success(isAr ? `تم إنشاء النسخة الاحتياطية: ${data.file} (${data.total_records} سجل)` : `Backup created: ${data.file} (${data.total_records} records)`);
       setShowCreate(false);
       setBackupName('');
