@@ -899,12 +899,21 @@ const TeacherProfile = () => {
           <div className="space-y-4">
             <div className="space-y-1.5">
               <Label className="text-xs">{isAr ? 'الموضوع' : 'Subject'} *</Label>
-              <Input value={ticketForm.subject} onChange={e => setTicketForm({ ...ticketForm, subject: e.target.value })} placeholder={isAr ? 'موضوع التذكرة...' : 'Ticket subject...'} />
+              <Input
+                value={ticketForm.subject}
+                onChange={e => setTicketForm({ ...ticketForm, subject: e.target.value })}
+                placeholder={isAr ? 'موضوع التذكرة...' : 'Ticket subject...'}
+                disabled={ticketForm.subject.startsWith('Payout Request:')}
+              />
             </div>
             {departments.length > 0 && (
               <div className="space-y-1.5">
                 <Label className="text-xs">{isAr ? 'القسم' : 'Department'}</Label>
-                <Select value={ticketForm.department} onValueChange={v => setTicketForm({ ...ticketForm, department: v })}>
+                <Select
+                  value={ticketForm.department}
+                  onValueChange={v => setTicketForm({ ...ticketForm, department: v })}
+                  disabled={ticketForm.department === 'billing' && ticketForm.subject.startsWith('Payout Request:')}
+                >
                   <SelectTrigger><SelectValue placeholder={isAr ? 'اختر...' : 'Select...'} /></SelectTrigger>
                   <SelectContent>
                     {departments.map(d => (
