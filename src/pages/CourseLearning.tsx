@@ -237,6 +237,7 @@ const CourseLearning = () => {
   const [loading, setLoading] = useState(true);
   const [markingComplete, setMarkingComplete] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
 
   // Fetch everything
   useEffect(() => {
