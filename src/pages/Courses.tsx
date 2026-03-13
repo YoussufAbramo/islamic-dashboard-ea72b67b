@@ -254,9 +254,10 @@ const Courses = () => {
                   <div className="grid grid-cols-3 gap-3">
                     <div>
                       <Label>{isAr ? 'التصنيف' : 'Category'}</Label>
-                      <Select value={form.category_id} onValueChange={(v) => setForm({ ...form, category_id: v })}>
+                      <Select value={form.category_id || '__none__'} onValueChange={(v) => setForm({ ...form, category_id: v === '__none__' ? '' : v })}>
                         <SelectTrigger><SelectValue placeholder={isAr ? 'اختر التصنيف' : 'Select category'} /></SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="__none__">{isAr ? '— بدون تصنيف —' : '— No Category —'}</SelectItem>
                           {categories.map(c => <SelectItem key={c.id} value={c.id}>{isAr && c.title_ar ? c.title_ar : c.title}</SelectItem>)}
                         </SelectContent>
                       </Select>
