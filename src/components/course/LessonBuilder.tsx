@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import {
   Plus, Trash2, GripVertical, Type, Image, Video, Music,
-  ChevronUp, ChevronDown, Loader2, Save, FileEdit,
+  ChevronUp, ChevronDown, Loader2, Save, FileEdit, ChevronsUpDown,
   ListOrdered, BookOpen, Brain, RotateCcw, ClipboardList,
   Headphones, CheckCircle2, CheckSquare, ArrowUpDown, TextCursorInput, ToggleLeft, Ear,
 } from 'lucide-react';
