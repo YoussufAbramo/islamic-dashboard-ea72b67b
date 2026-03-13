@@ -276,126 +276,140 @@ const Courses = () => {
         </div>
       </div>
 
-      {/* Status Filters */}
-      <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-        <TabsList>
-          {Object.entries(statusCounts).map(([key, count]) => (
-            <TabsTrigger key={key} value={key} className="text-xs gap-1.5">
-              {key === 'all' ? (isAr ? 'الكل' : 'All') : getLabel(courseStatusLabels, key, isAr)}
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 min-w-[18px]">{count}</Badge>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      {showEmptyState ? (
+        <EmptyState
+          icon={BookOpen}
+          title={isAr ? 'لا توجد دورات بعد' : 'No courses yet'}
+          description={isAr
+            ? 'أنشئ أول دورة لبدء تنظيم المحتوى التعليمي.'
+            : 'Create your first course to start organizing your educational content.'}
+          actionLabel={canEdit ? (isAr ? 'دورة جديدة' : 'New Course') : undefined}
+          onAction={canEdit ? () => { setEditCourse(null); resetForm(); setDialogOpen(true); } : undefined}
+        />
+      ) : (
+        <>
+          {/* Status Filters */}
+          <Tabs value={statusFilter} onValueChange={setStatusFilter}>
+            <TabsList>
+              {Object.entries(statusCounts).map(([key, count]) => (
+                <TabsTrigger key={key} value={key} className="text-xs gap-1.5">
+                  {key === 'all' ? (isAr ? 'الكل' : 'All') : getLabel(courseStatusLabels, key, isAr)}
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 min-w-[18px]">{count}</Badge>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
 
-      {/* Grid View */}
-      {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {paginatedItems.map((course) => (
-            <Card key={course.id} className="overflow-hidden group cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/dashboard/courses/${course.id}`)}>
-              <div className="aspect-video bg-muted relative overflow-hidden">
-                {course.image_url ? (
-                  <img src={course.image_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-3xl font-bold text-muted-foreground/30">{course.title?.charAt(0)}</span>
-                  </div>
-                )}
-                <Badge variant={statusColor[course.status] as any} className="absolute top-2 end-2 text-[10px]">
-                  {getLabel(courseStatusLabels, course.status, isAr)}
-                </Badge>
-              </div>
-              <CardContent className="p-3 space-y-1.5">
-                <h3 className="font-semibold text-sm truncate">{isAr && course.title_ar ? course.title_ar : course.title}</h3>
-                {course.description && (
-                  <p className="text-xs text-muted-foreground line-clamp-2">{isAr && course.description_ar ? course.description_ar : course.description}</p>
-                )}
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {getCategoryLabel(course) && (
-                    <Badge variant="outline" className="text-[10px]">{getCategoryLabel(course)}</Badge>
-                  )}
-                  {getLevelLabel(course) && (
-                    <Badge variant="outline" className="text-[10px]">{getLevelLabel(course)}</Badge>
-                  )}
-                  {getTrackLabel(course) && (
-                    <Badge variant="outline" className="text-[10px]">{getTrackLabel(course)}</Badge>
-                  )}
-                  {course.duration_weeks && (
-                    <Badge variant="outline" className="text-[10px] gap-0.5">
-                      {course.duration_weeks} {isAr ? 'أسابيع' : 'weeks'}
+          {/* Grid View */}
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {paginatedItems.map((course) => (
+                <Card key={course.id} className="overflow-hidden group cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/dashboard/courses/${course.id}`)}>
+                  <div className="aspect-video bg-muted relative overflow-hidden">
+                    {course.image_url ? (
+                      <img src={course.image_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-3xl font-bold text-muted-foreground/30">{course.title?.charAt(0)}</span>
+                      </div>
+                    )}
+                    <Badge variant={statusColor[course.status] as any} className="absolute top-2 end-2 text-[10px]">
+                      {getLabel(courseStatusLabels, course.status, isAr)}
                     </Badge>
-                  )}
-                </div>
-                {canEdit && (
-                  <div className="flex gap-1 pt-1" onClick={(e) => e.stopPropagation()}>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(course)}><Settings className="h-3 w-3" /></Button>
-                    {role === 'admin' && <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(course.id)}><Trash2 className="h-3 w-3" /></Button>}
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-          {filtered.length === 0 && (
-            <div className="col-span-full">
-              <EmptyState
-                icon={BookOpen}
-                title={isAr ? 'لا توجد دورات' : 'No courses found'}
-                description={isAr ? 'أنشئ دورة جديدة للبدء' : 'Create a new course to get started'}
-              />
+                  <CardContent className="p-3 space-y-1.5">
+                    <h3 className="font-semibold text-sm truncate">{isAr && course.title_ar ? course.title_ar : course.title}</h3>
+                    {course.description && (
+                      <p className="text-xs text-muted-foreground line-clamp-2">{isAr && course.description_ar ? course.description_ar : course.description}</p>
+                    )}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {getCategoryLabel(course) && (
+                        <Badge variant="outline" className="text-[10px]">{getCategoryLabel(course)}</Badge>
+                      )}
+                      {getLevelLabel(course) && (
+                        <Badge variant="outline" className="text-[10px]">{getLevelLabel(course)}</Badge>
+                      )}
+                      {getTrackLabel(course) && (
+                        <Badge variant="outline" className="text-[10px]">{getTrackLabel(course)}</Badge>
+                      )}
+                      {course.duration_weeks && (
+                        <Badge variant="outline" className="text-[10px] gap-0.5">
+                          {course.duration_weeks} {isAr ? 'أسابيع' : 'weeks'}
+                        </Badge>
+                      )}
+                    </div>
+                    {canEdit && (
+                      <div className="flex gap-1 pt-1" onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(course)}><Settings className="h-3 w-3" /></Button>
+                        {role === 'admin' && <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(course.id)}><Trash2 className="h-3 w-3" /></Button>}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+              {paginatedItems.length === 0 && filtered.length === 0 && courses.length > 0 && (
+                <div className="col-span-full">
+                  <EmptyState
+                    icon={BookOpen}
+                    title={isAr ? 'لا توجد نتائج' : 'No results found'}
+                    description={isAr ? 'جرب تغيير معايير البحث' : 'Try adjusting your search criteria'}
+                  />
+                </div>
+              )}
+            </div>
+          ) : (
+            /* List View */
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t('courses.name')}</TableHead>
+                    <TableHead>{isAr ? 'التصنيف' : 'Category'}</TableHead>
+                    <TableHead>{isAr ? 'المسار' : 'Track'}</TableHead>
+                    <TableHead>{isAr ? 'المدة' : 'Duration'}</TableHead>
+                    <TableHead>{t('courses.status')}</TableHead>
+                    <TableHead>{t('common.actions')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedItems.map((course) => (
+                    <TableRow key={course.id}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          {course.image_url && <img src={course.image_url} alt="" className="h-8 w-8 rounded object-cover" />}
+                          {language === 'ar' && course.title_ar ? course.title_ar : course.title}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {getCategoryLabel(course) ? (
+                          <Badge variant="outline" className="text-xs">{getCategoryLabel(course)}</Badge>
+                        ) : '—'}
+                      </TableCell>
+                      <TableCell>
+                        {getTrackLabel(course) || '—'}
+                      </TableCell>
+                      <TableCell>
+                        {course.duration_weeks ? `${course.duration_weeks} ${isAr ? 'أسابيع' : 'weeks'}` : '—'}
+                      </TableCell>
+                      <TableCell><Badge variant={statusColor[course.status] as any}>{getLabel(courseStatusLabels, course.status, isAr)}</Badge></TableCell>
+                      <TableCell className="flex gap-1">
+                        <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => navigate(`/dashboard/courses/${course.id}`)}><Edit className={ACTION_ICON} /></Button>
+                        {canEdit && <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => openEdit(course)}><Settings className={ACTION_ICON} /></Button>}
+                        {role === 'admin' && <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteTarget(course.id)}><Trash2 className={ACTION_ICON} /></Button>}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {paginatedItems.length === 0 && filtered.length === 0 && courses.length > 0 && (
+                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">{isAr ? 'لا توجد نتائج للبحث' : 'No results found'}</TableCell></TableRow>
+                  )}
+                </TableBody>
+              </Table>
             </div>
           )}
-        </div>
-      ) : (
-        /* List View */
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('courses.name')}</TableHead>
-                <TableHead>{isAr ? 'التصنيف' : 'Category'}</TableHead>
-                <TableHead>{isAr ? 'المسار' : 'Track'}</TableHead>
-                <TableHead>{isAr ? 'المدة' : 'Duration'}</TableHead>
-                <TableHead>{t('courses.status')}</TableHead>
-                <TableHead>{t('common.actions')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedItems.map((course) => (
-                <TableRow key={course.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      {course.image_url && <img src={course.image_url} alt="" className="h-8 w-8 rounded object-cover" />}
-                      {language === 'ar' && course.title_ar ? course.title_ar : course.title}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {getCategoryLabel(course) ? (
-                      <Badge variant="outline" className="text-xs">{getCategoryLabel(course)}</Badge>
-                    ) : '—'}
-                  </TableCell>
-                  <TableCell>
-                    {getTrackLabel(course) || '—'}
-                  </TableCell>
-                  <TableCell>
-                    {course.duration_weeks ? `${course.duration_weeks} ${isAr ? 'أسابيع' : 'weeks'}` : '—'}
-                  </TableCell>
-                  <TableCell><Badge variant={statusColor[course.status] as any}>{getLabel(courseStatusLabels, course.status, isAr)}</Badge></TableCell>
-                  <TableCell className="flex gap-1">
-                    <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => navigate(`/dashboard/courses/${course.id}`)}><Edit className={ACTION_ICON} /></Button>
-                    {canEdit && <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => openEdit(course)}><Settings className={ACTION_ICON} /></Button>}
-                    {role === 'admin' && <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteTarget(course.id)}><Trash2 className={ACTION_ICON} /></Button>}
-                  </TableCell>
-                </TableRow>
-              ))}
-              {filtered.length === 0 && (
-                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">{t('common.noData')}</TableCell></TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      )}
 
-      <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
+          <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
+        </>
+      )}
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
