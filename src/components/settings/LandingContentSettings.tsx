@@ -26,6 +26,7 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, v
 import { CSS } from '@dnd-kit/utilities';
 import { DEFAULT_SECTION_ORDER, defaultSectionContent, defaultGeneralContent, defaultNavItems, defaultFooterContent, sectionMeta, type SectionKey, type NavItem, type FooterColumn } from '@/lib/landingDefaults';
 import CopyrightSettingsEditor from '@/components/settings/CopyrightSettingsEditor';
+import SaaSPricingSettings from '@/components/settings/SaaSPricingSettings';
 import type { CopyrightConfig } from '@/components/landing/CopyrightBar';
 import { defaultCopyrightConfig } from '@/components/landing/CopyrightBar';
 
