@@ -506,7 +506,7 @@ const BlockEditor = ({
               <div>
                 <Label className="text-xs mb-1.5 block">{isAr ? 'السُمك' : 'Thickness'}</Label>
                 <div className="flex flex-wrap gap-1.5">
-                  {[1, 2, 3, 4].map((t) => (
+                  {[1, 2, 3, 4, 6, 8].map((t) => (
                     <button key={t} type="button" onClick={() => onChange({ ...block, divider_thickness: t })}
                       className={cn("px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors min-w-[28px]",
                         (block.divider_thickness || 1) === t ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
