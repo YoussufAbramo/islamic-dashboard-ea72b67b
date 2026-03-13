@@ -15,7 +15,8 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree, Layers, FileText, Pencil, Route, MoreHorizontal, Settings2, Edit, HelpCircle, ChevronDown, Link2, GraduationCap, SlidersHorizontal, Check, X, MoveRight } from 'lucide-react';
+import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree, Layers, FileText, Pencil, Route, MoreHorizontal, Settings2, Edit, HelpCircle, ChevronDown, Link2, GraduationCap, SlidersHorizontal, Check, X, MoveRight, Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import PresetSections from '@/components/course/PresetSections';
 import LessonBuilder from '@/components/course/LessonBuilder';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -894,16 +895,25 @@ const CourseDetail = () => {
                   <Link2 className="h-3.5 w-3.5" />
                   {isAr ? 'الرابط المختصر (Slug)' : 'URL Slug'}
                 </Label>
-                <Input
-                  value={slugForm}
-                  onChange={(e) => setSlugForm(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-'))}
-                  placeholder="e.g. quran-memorization"
-                  className="mt-1 font-mono text-sm"
-                  dir="ltr"
-                />
-                <p className="text-[10px] text-muted-foreground mt-1">
-                  {isAr ? 'أحرف إنجليزية صغيرة وأرقام وشرطات فقط.' : 'Lowercase letters, numbers, and hyphens only.'}
-                </p>
+                <div className="relative mt-1">
+                  <Input
+                    value={slugForm}
+                    onChange={(e) => setSlugForm(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-'))}
+                    placeholder="e.g. quran-memorization"
+                    className="font-mono text-sm pe-9"
+                    dir="ltr"
+                  />
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="absolute end-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-help transition-colors">
+                        <Info className="h-4 w-4" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p>{isAr ? 'أحرف إنجليزية صغيرة وأرقام وشرطات فقط.' : 'Lowercase letters, numbers, and hyphens only.'}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               </div>
             </div>
           </div>
