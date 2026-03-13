@@ -671,7 +671,7 @@ const CourseLearning = () => {
             <AlertDialogCancel>{isAr ? 'متابعة التعلم' : 'Continue Learning'}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => navigate(`/dashboard/courses/${id}`)}
+              onClick={() => navigate('/dashboard/courses')}
             >
               {isAr ? 'مغادرة' : 'Leave'}
             </AlertDialogAction>

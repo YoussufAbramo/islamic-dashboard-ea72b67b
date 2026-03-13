@@ -99,6 +99,37 @@ const CourseDetail = () => {
   const [sectionForm, setSectionForm] = useState({ title: '', title_ar: '' });
   const [lessonForm, setLessonForm] = useState({ title: '', title_ar: '', lesson_type: 'read_listen' });
 
+  // Inline edit state
+  const [inlineEdit, setInlineEdit] = useState<{ id: string; type: 'topic' | 'section' | 'lesson'; field: string; value: string } | null>(null);
+
+  const handleInlineDoubleClick = (id: string, type: 'topic' | 'section' | 'lesson', currentValue: string) => {
+    if (!canEdit) return;
+    setInlineEdit({ id, type, field: 'title', value: currentValue });
+  };
+
+  const handleInlineSave = async () => {
+    if (!inlineEdit || !inlineEdit.value.trim()) return;
+    const { id: itemId, type, value } = inlineEdit;
+    const field = isAr ? 'title_ar' : 'title';
+    if (type === 'topic') {
+      await supabase.from('course_sections').update({ [field]: value }).eq('id', itemId);
+    } else if (type === 'section') {
+      await supabase.from('lesson_sections' as any).update({ [field]: value } as any).eq('id', itemId);
+    } else {
+      await supabase.from('lessons').update({ [field]: value }).eq('id', itemId);
+    }
+    toast.success(isAr ? 'تم التحديث' : 'Updated');
+    setInlineEdit(null);
+    fetchHierarchy();
+  };
+
+  const handleInlineCancel = () => setInlineEdit(null);
+
+  const handleInlineKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleInlineSave();
+    if (e.key === 'Escape') handleInlineCancel();
+  };
+
   const totalLessons = useMemo(() => {
     return Object.values(lessonItems).reduce((sum, arr) => sum + arr.length, 0);
   }, [lessonItems]);
