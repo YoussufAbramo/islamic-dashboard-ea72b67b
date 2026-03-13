@@ -77,31 +77,31 @@ const CourseDetail = () => {
   const [categories, setCategories] = useState<any[]>([]);
   const [levels, setLevels] = useState<any[]>([]);
   const [tracks, setTracks] = useState<any[]>([]);
-  const [lessons, setLessons] = useState<any[]>([]);
+  const [topics, setTopics] = useState<any[]>([]);
   const [sections, setSections] = useState<Record<string, any[]>>({});
-  const [contents, setContents] = useState<Record<string, any[]>>({});
+  const [lessonItems, setLessonItems] = useState<Record<string, any[]>>({});
 
   // Dialog states
-  const [lessonDialog, setLessonDialog] = useState(false);
+  const [topicDialog, setTopicDialog] = useState(false);
   const [sectionDialog, setSectionDialog] = useState(false);
-  const [contentDialog, setContentDialog] = useState(false);
-  const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+  const [lessonDialog, setLessonDialog] = useState(false);
+  const [activeTopicId, setActiveTopicId] = useState<string | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: 'lesson' | 'section' | 'content' } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: 'topic' | 'section' | 'lesson' } | null>(null);
 
   // Edit states
-  const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
+  const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
-  const [editingContentId, setEditingContentId] = useState<string | null>(null);
+  const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
 
   // Forms
-  const [lessonForm, setLessonForm] = useState({ title: '', title_ar: '' });
+  const [topicForm, setTopicForm] = useState({ title: '', title_ar: '' });
   const [sectionForm, setSectionForm] = useState({ title: '', title_ar: '' });
-  const [contentForm, setContentForm] = useState({ title: '', title_ar: '', lesson_type: 'read_listen' });
+  const [lessonForm, setLessonForm] = useState({ title: '', title_ar: '', lesson_type: 'read_listen' });
 
-  const totalContent = useMemo(() => {
-    return Object.values(contents).reduce((sum, arr) => sum + arr.length, 0);
-  }, [contents]);
+  const totalLessons = useMemo(() => {
+    return Object.values(lessonItems).reduce((sum, arr) => sum + arr.length, 0);
+  }, [lessonItems]);
 
   const fetchCourse = async () => {
     const [courseRes, catRes, lvlRes, trkRes] = await Promise.all([
@@ -117,28 +117,28 @@ const CourseDetail = () => {
   };
 
   const fetchHierarchy = async () => {
-    const { data: lessonData } = await supabase
+    const { data: topicData } = await supabase
       .from('course_sections')
       .select('*')
       .eq('course_id', id)
       .order('sort_order');
-    setLessons(lessonData || []);
+    setTopics(topicData || []);
 
-    if (!lessonData?.length) {
+    if (!topicData?.length) {
       setSections({});
-      setContents({});
+      setLessonItems({});
       return;
     }
 
-    const lessonIds = lessonData.map((l: any) => l.id);
+    const topicIds = topicData.map((t: any) => t.id);
     const { data: sectionData } = await supabase
       .from('lesson_sections' as any)
       .select('*')
-      .in('course_section_id', lessonIds)
+      .in('course_section_id', topicIds)
       .order('sort_order');
 
     const sectionMap: Record<string, any[]> = {};
-    for (const ls of lessonData) sectionMap[ls.id] = [];
+    for (const tp of topicData) sectionMap[tp.id] = [];
     for (const s of (sectionData || [])) {
       const key = (s as any).course_section_id;
       if (!sectionMap[key]) sectionMap[key] = [];
@@ -148,90 +148,90 @@ const CourseDetail = () => {
 
     const sectionIds = (sectionData || []).map((s: any) => s.id);
     if (!sectionIds.length) {
-      setContents({});
+      setLessonItems({});
       return;
     }
-    const { data: contentData } = await supabase
+    const { data: lessonData } = await supabase
       .from('lessons')
       .select('*')
       .in('section_id', sectionIds)
       .order('sort_order');
 
-    const contentMap: Record<string, any[]> = {};
-    for (const s of (sectionData || [])) contentMap[(s as any).id] = [];
-    for (const c of (contentData || [])) {
-      if (!contentMap[c.section_id]) contentMap[c.section_id] = [];
-      contentMap[c.section_id].push(c);
+    const lessonMap: Record<string, any[]> = {};
+    for (const s of (sectionData || [])) lessonMap[(s as any).id] = [];
+    for (const l of (lessonData || [])) {
+      if (!lessonMap[l.section_id]) lessonMap[l.section_id] = [];
+      lessonMap[l.section_id].push(l);
     }
-    setContents(contentMap);
+    setLessonItems(lessonMap);
   };
 
   useEffect(() => { fetchCourse(); fetchHierarchy(); }, [id]);
 
   // ─── Reorder helpers ───
-  const reorderLessons = useCallback(async (activeId: string, overId: string) => {
-    const oldIndex = lessons.findIndex(l => l.id === activeId);
-    const newIndex = lessons.findIndex(l => l.id === overId);
+  const reorderTopics = useCallback(async (activeId: string, overId: string) => {
+    const oldIndex = topics.findIndex(t => t.id === activeId);
+    const newIndex = topics.findIndex(t => t.id === overId);
     if (oldIndex === -1 || newIndex === -1) return;
-    const reordered = arrayMove(lessons, oldIndex, newIndex);
-    setLessons(reordered);
+    const reordered = arrayMove(topics, oldIndex, newIndex);
+    setTopics(reordered);
     const updates = reordered.map((item, i) =>
       supabase.from('course_sections').update({ sort_order: i }).eq('id', item.id)
     );
     await Promise.all(updates);
-  }, [lessons]);
+  }, [topics]);
 
-  const reorderSections = useCallback(async (lessonId: string, activeId: string, overId: string) => {
-    const list = sections[lessonId] || [];
+  const reorderSections = useCallback(async (topicId: string, activeId: string, overId: string) => {
+    const list = sections[topicId] || [];
     const oldIndex = list.findIndex(s => s.id === activeId);
     const newIndex = list.findIndex(s => s.id === overId);
     if (oldIndex === -1 || newIndex === -1) return;
     const reordered = arrayMove(list, oldIndex, newIndex);
-    setSections(prev => ({ ...prev, [lessonId]: reordered }));
+    setSections(prev => ({ ...prev, [topicId]: reordered }));
     const updates = reordered.map((item, i) =>
       supabase.from('lesson_sections' as any).update({ sort_order: i } as any).eq('id', item.id)
     );
     await Promise.all(updates);
   }, [sections]);
 
-  const reorderContents = useCallback(async (sectionId: string, activeId: string, overId: string) => {
-    const list = contents[sectionId] || [];
+  const reorderLessons = useCallback(async (sectionId: string, activeId: string, overId: string) => {
+    const list = lessonItems[sectionId] || [];
     const oldIndex = list.findIndex(c => c.id === activeId);
     const newIndex = list.findIndex(c => c.id === overId);
     if (oldIndex === -1 || newIndex === -1) return;
     const reordered = arrayMove(list, oldIndex, newIndex);
-    setContents(prev => ({ ...prev, [sectionId]: reordered }));
+    setLessonItems(prev => ({ ...prev, [sectionId]: reordered }));
     const updates = reordered.map((item, i) =>
       supabase.from('lessons').update({ sort_order: i }).eq('id', item.id)
     );
     await Promise.all(updates);
-  }, [contents]);
+  }, [lessonItems]);
 
-  // ─── CRUD: Lessons ───
-  const addLesson = async () => {
-    if (editingLessonId) {
+  // ─── CRUD: Topics (course_sections) ───
+  const addTopic = async () => {
+    if (editingTopicId) {
       await supabase.from('course_sections').update({
-        title: lessonForm.title,
-        title_ar: lessonForm.title_ar,
-      }).eq('id', editingLessonId);
-      setEditingLessonId(null);
-      toast.success(isAr ? 'تم تحديث الدرس' : 'Lesson updated');
+        title: topicForm.title,
+        title_ar: topicForm.title_ar,
+      }).eq('id', editingTopicId);
+      setEditingTopicId(null);
+      toast.success(isAr ? 'تم تحديث الموضوع' : 'Topic updated');
     } else {
-      await supabase.from('course_sections').insert({ ...lessonForm, course_id: id, sort_order: lessons.length });
-      toast.success(isAr ? 'تمت إضافة الدرس' : 'Lesson added');
+      await supabase.from('course_sections').insert({ ...topicForm, course_id: id, sort_order: topics.length });
+      toast.success(isAr ? 'تمت إضافة الموضوع' : 'Topic added');
     }
-    setLessonDialog(false);
-    setLessonForm({ title: '', title_ar: '' });
+    setTopicDialog(false);
+    setTopicForm({ title: '', title_ar: '' });
     fetchHierarchy();
   };
 
-  const openEditLesson = (lesson: any) => {
-    setEditingLessonId(lesson.id);
-    setLessonForm({ title: lesson.title, title_ar: lesson.title_ar || '' });
-    setLessonDialog(true);
+  const openEditTopic = (topic: any) => {
+    setEditingTopicId(topic.id);
+    setTopicForm({ title: topic.title, title_ar: topic.title_ar || '' });
+    setTopicDialog(true);
   };
 
-  // ─── CRUD: Sections ───
+  // ─── CRUD: Sections (lesson_sections) ───
   const addSection = async () => {
     if (editingSectionId) {
       await supabase.from('lesson_sections' as any).update({
@@ -241,10 +241,10 @@ const CourseDetail = () => {
       setEditingSectionId(null);
       toast.success(isAr ? 'تم تحديث القسم' : 'Section updated');
     } else {
-      if (!activeLessonId) return;
-      const currentSections = sections[activeLessonId] || [];
+      if (!activeTopicId) return;
+      const currentSections = sections[activeTopicId] || [];
       await supabase.from('lesson_sections' as any).insert([{
-        course_section_id: activeLessonId,
+        course_section_id: activeTopicId,
         title: sectionForm.title,
         title_ar: sectionForm.title_ar,
         sort_order: currentSections.length,
@@ -256,60 +256,60 @@ const CourseDetail = () => {
     fetchHierarchy();
   };
 
-  const openEditSection = (section: any, lessonId: string) => {
+  const openEditSection = (section: any, topicId: string) => {
     setEditingSectionId(section.id);
-    setActiveLessonId(lessonId);
+    setActiveTopicId(topicId);
     setSectionForm({ title: section.title, title_ar: section.title_ar || '' });
     setSectionDialog(true);
   };
 
-  // ─── CRUD: Content ───
-  const addContent = async () => {
-    if (editingContentId) {
+  // ─── CRUD: Lessons (lessons table) ───
+  const addLesson = async () => {
+    if (editingLessonId) {
       await supabase.from('lessons').update({
-        title: contentForm.title,
-        title_ar: contentForm.title_ar,
-        lesson_type: contentForm.lesson_type as any,
-      }).eq('id', editingContentId);
-      setEditingContentId(null);
-      toast.success(isAr ? 'تم تحديث المحتوى' : 'Content updated');
+        title: lessonForm.title,
+        title_ar: lessonForm.title_ar,
+        lesson_type: lessonForm.lesson_type as any,
+      }).eq('id', editingLessonId);
+      setEditingLessonId(null);
+      toast.success(isAr ? 'تم تحديث الدرس' : 'Lesson updated');
     } else {
       if (!activeSectionId) return;
-      const currentContents = contents[activeSectionId] || [];
+      const currentLessons = lessonItems[activeSectionId] || [];
       await supabase.from('lessons').insert([{
-        title: contentForm.title,
-        title_ar: contentForm.title_ar,
-        lesson_type: contentForm.lesson_type as any,
+        title: lessonForm.title,
+        title_ar: lessonForm.title_ar,
+        lesson_type: lessonForm.lesson_type as any,
         section_id: activeSectionId,
-        sort_order: currentContents.length,
+        sort_order: currentLessons.length,
       }]);
-      toast.success(isAr ? 'تمت إضافة المحتوى' : 'Content added');
+      toast.success(isAr ? 'تمت إضافة الدرس' : 'Lesson added');
     }
-    setContentDialog(false);
-    setContentForm({ title: '', title_ar: '', lesson_type: 'read_listen' });
+    setLessonDialog(false);
+    setLessonForm({ title: '', title_ar: '', lesson_type: 'read_listen' });
     fetchHierarchy();
   };
 
-  const openEditContent = (content: any, sectionId: string) => {
-    setEditingContentId(content.id);
+  const openEditLesson = (lesson: any, sectionId: string) => {
+    setEditingLessonId(lesson.id);
     setActiveSectionId(sectionId);
-    setContentForm({ title: content.title, title_ar: content.title_ar || '', lesson_type: content.lesson_type });
-    setContentDialog(true);
+    setLessonForm({ title: lesson.title, title_ar: lesson.title_ar || '', lesson_type: lesson.lesson_type });
+    setLessonDialog(true);
   };
 
   // ─── Delete ───
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
     const { id, type } = deleteTarget;
-    if (type === 'lesson') {
+    if (type === 'topic') {
       await supabase.from('course_sections').delete().eq('id', id);
-      toast.success(isAr ? 'تم حذف الدرس' : 'Lesson deleted');
+      toast.success(isAr ? 'تم حذف الموضوع' : 'Topic deleted');
     } else if (type === 'section') {
       await supabase.from('lesson_sections' as any).delete().eq('id', id);
       toast.success(isAr ? 'تم حذف القسم' : 'Section deleted');
     } else {
       await supabase.from('lessons').delete().eq('id', id);
-      toast.success(isAr ? 'تم حذف المحتوى' : 'Content deleted');
+      toast.success(isAr ? 'تم حذف الدرس' : 'Lesson deleted');
     }
     setDeleteTarget(null);
     fetchHierarchy();
@@ -408,7 +408,7 @@ const CourseDetail = () => {
                 )}
                 <Badge variant="secondary" className="gap-1 text-xs">
                   <BookOpen className="h-3 w-3" />
-                  {totalContent} {t('courses.content')}
+                  {totalLessons} {t('courses.lessons')}
                 </Badge>
                 <Button
                   size="sm"
@@ -451,12 +451,12 @@ const CourseDetail = () => {
                 <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
                   <div className="flex items-center gap-2 font-semibold text-foreground">
                     <BookOpen className="h-4 w-4 text-primary" />
-                    {isAr ? '١. الدروس' : '1. Lessons'}
+                    {isAr ? '١. المواضيع' : '1. Topics'}
                   </div>
                   <p className="text-xs leading-relaxed">
                     {isAr
-                      ? 'الدروس هي الوحدات الرئيسية للدورة. فكّر فيها كفصول في كتاب — كل درس يغطي موضوعاً مستقلاً.'
-                      : 'Lessons are the main units of the course. Think of them as chapters in a book — each lesson covers a standalone topic.'}
+                      ? 'المواضيع هي الوحدات الرئيسية للدورة. فكّر فيها كفصول في كتاب — كل موضوع يغطي مجالاً مستقلاً.'
+                      : 'Topics are the main units of the course. Think of them as chapters in a book — each topic covers a standalone subject area.'}
                   </p>
                 </div>
 
@@ -468,8 +468,8 @@ const CourseDetail = () => {
                   </div>
                   <p className="text-xs leading-relaxed">
                     {isAr
-                      ? 'كل درس يحتوي على أقسام. الأقسام تقسّم الدرس إلى أجزاء أصغر ومركزة ليسهل استيعابها.'
-                      : 'Each lesson contains sections. Sections break the lesson into smaller, focused parts that are easier to follow.'}
+                      ? 'كل موضوع يحتوي على أقسام. الأقسام تقسّم الموضوع إلى أجزاء أصغر ومركزة ليسهل استيعابها.'
+                      : 'Each topic contains sections. Sections break the topic into smaller, focused parts that are easier to follow.'}
                   </p>
                 </div>
 
@@ -477,12 +477,12 @@ const CourseDetail = () => {
                 <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
                   <div className="flex items-center gap-2 font-semibold text-foreground">
                     <FileText className="h-4 w-4 text-primary" />
-                    {isAr ? '٣. المحتوى' : '3. Content'}
+                    {isAr ? '٣. الدروس' : '3. Lessons'}
                   </div>
                   <p className="text-xs leading-relaxed">
                     {isAr
-                      ? 'داخل كل قسم، تضيف المحتوى الفعلي: نصوص للقراءة، تمارين تفاعلية، مراجعات، واجبات، وغيرها.'
-                      : 'Inside each section, you add the actual content: reading text, interactive exercises, revisions, homework, and more.'}
+                      ? 'داخل كل قسم، تضيف الدروس الفعلية: نصوص للقراءة، تمارين تفاعلية، مراجعات، واجبات، وغيرها.'
+                      : 'Inside each section, you add the actual lessons: reading text, interactive exercises, revisions, homework, and more.'}
                   </p>
                 </div>
               </div>
@@ -492,50 +492,50 @@ const CourseDetail = () => {
                   {isAr ? '📌 مثال عملي:' : '📌 Quick example:'}
                 </p>
                 <div className="text-xs leading-relaxed space-y-1">
-                  <p>{isAr ? '📖 الدرس: "الحروف العربية"' : '📖 Lesson: "Arabic Letters"'}</p>
+                  <p>{isAr ? '📖 الموضوع: "الحروف العربية"' : '📖 Topic: "Arabic Letters"'}</p>
                   <p className="ps-4">{isAr ? '📂 القسم: "حروف المد"' : '📂 Section: "Vowel Letters"'}</p>
-                  <p className="ps-8">{isAr ? '📝 المحتوى: "اقرأ واستمع — حرف الألف" + تمرين اختيار الإجابة الصحيحة' : '📝 Content: "Read & Listen — Letter Alif" + Choose Correct exercise'}</p>
+                  <p className="ps-8">{isAr ? '📝 الدرس: "اقرأ واستمع — حرف الألف" + تمرين اختيار الإجابة الصحيحة' : '📝 Lesson: "Read & Listen — Letter Alif" + Choose Correct exercise'}</p>
                 </div>
               </div>
 
               <p className="text-xs italic">
                 {isAr
-                  ? '💡 يمكنك إعادة ترتيب الدروس والأقسام والمحتوى بالسحب والإفلات. استخدم قائمة "المزيد" (⋯) لتعديل أو حذف أي عنصر.'
-                  : '💡 You can drag & drop to reorder lessons, sections, and content. Use the "More" menu (⋯) to edit or delete any item.'}
+                  ? '💡 يمكنك إعادة ترتيب المواضيع والأقسام والدروس بالسحب والإفلات. استخدم قائمة "المزيد" (⋯) لتعديل أو حذف أي عنصر.'
+                  : '💡 You can drag & drop to reorder topics, sections, and lessons. Use the "More" menu (⋯) to edit or delete any item.'}
               </p>
             </div>
           </CollapsibleContent>
         </Card>
       </Collapsible>
 
-      {/* Level 1: Lessons */}
+      {/* Level 1: Topics */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">{t('courses.lessons')}</h2>
+        <h2 className="text-xl font-semibold">{t('courses.topics')}</h2>
         {canEdit && (
-          <Button size="sm" onClick={() => { setEditingLessonId(null); setLessonForm({ title: '', title_ar: '' }); setLessonDialog(true); }}>
-            <Plus className="h-4 w-4 me-2" />{t('courses.addLesson')}
+          <Button size="sm" onClick={() => { setEditingTopicId(null); setTopicForm({ title: '', title_ar: '' }); setTopicDialog(true); }}>
+            <Plus className="h-4 w-4 me-2" />{t('courses.addTopic')}
           </Button>
         )}
       </div>
 
-      <SortableList items={lessons} onReorder={(a, o) => reorderLessons(a, o)}>
+      <SortableList items={topics} onReorder={(a, o) => reorderTopics(a, o)}>
         <Accordion type="multiple" className="space-y-2">
-          {lessons.map((lesson) => (
-            <SortableItem key={lesson.id} id={lesson.id} disabled={!canEdit}>
-              <AccordionItem value={lesson.id} className="border rounded-lg px-4">
+          {topics.map((topic) => (
+            <SortableItem key={topic.id} id={topic.id} disabled={!canEdit}>
+              <AccordionItem value={topic.id} className="border rounded-lg px-4">
                 <div className="flex items-center gap-1">
                   {canEdit && (
                     <ItemActionsMenu
-                      onEdit={() => openEditLesson(lesson)}
-                      onDelete={() => setDeleteTarget({ id: lesson.id, type: 'lesson' })}
+                      onEdit={() => openEditTopic(topic)}
+                      onDelete={() => setDeleteTarget({ id: topic.id, type: 'topic' })}
                     />
                   )}
                   <AccordionTrigger className="hover:no-underline flex-1 [&>svg]:ms-auto">
                     <div className="flex items-center gap-2 flex-1">
                       <BookOpen className="h-4 w-4 text-primary shrink-0" />
-                      <span>{isAr && lesson.title_ar ? lesson.title_ar : lesson.title}</span>
+                      <span>{isAr && topic.title_ar ? topic.title_ar : topic.title}</span>
                       <Badge variant="secondary" className="text-xs">
-                        {(sections[lesson.id] || []).length} {t('courses.sections')}
+                        {(sections[topic.id] || []).length} {t('courses.sections')}
                       </Badge>
                     </div>
                   </AccordionTrigger>
@@ -548,25 +548,25 @@ const CourseDetail = () => {
                         {t('courses.sections')}
                       </h3>
                       {canEdit && (
-                        <Button variant="outline" size="sm" onClick={() => { setActiveLessonId(lesson.id); setEditingSectionId(null); setSectionForm({ title: '', title_ar: '' }); setSectionDialog(true); }}>
+                        <Button variant="outline" size="sm" onClick={() => { setActiveTopicId(topic.id); setEditingSectionId(null); setSectionForm({ title: '', title_ar: '' }); setSectionDialog(true); }}>
                           <Plus className="h-3 w-3 me-1" />{t('courses.addSection')}
                         </Button>
                       )}
                     </div>
 
-                    {(sections[lesson.id] || []).length === 0 && (
+                    {(sections[topic.id] || []).length === 0 && (
                       <p className="text-xs text-muted-foreground text-center py-2">{t('common.noData')}</p>
                     )}
 
-                    <SortableList items={sections[lesson.id] || []} onReorder={(a, o) => reorderSections(lesson.id, a, o)}>
+                    <SortableList items={sections[topic.id] || []} onReorder={(a, o) => reorderSections(topic.id, a, o)}>
                       <Accordion type="multiple" className="space-y-1">
-                        {(sections[lesson.id] || []).map((section: any) => (
+                        {(sections[topic.id] || []).map((section: any) => (
                           <SortableItem key={section.id} id={section.id} disabled={!canEdit}>
                             <AccordionItem value={section.id} className="border rounded-md px-3 bg-muted/30">
                               <div className="flex items-center gap-1">
                                 {canEdit && (
                                   <ItemActionsMenu
-                                    onEdit={() => openEditSection(section, lesson.id)}
+                                    onEdit={() => openEditSection(section, topic.id)}
                                     onDelete={() => setDeleteTarget({ id: section.id, type: 'section' })}
                                   />
                                 )}
@@ -575,34 +575,34 @@ const CourseDetail = () => {
                                     <Layers className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                                     <span>{isAr && section.title_ar ? section.title_ar : section.title}</span>
                                     <Badge variant="outline" className="text-xs">
-                                      {(contents[section.id] || []).length} {t('courses.content')}
+                                      {(lessonItems[section.id] || []).length} {t('courses.lessons')}
                                     </Badge>
                                   </div>
                                 </AccordionTrigger>
                               </div>
                               <AccordionContent>
                                 <div className="space-y-2 pt-1">
-                                  <SortableList items={contents[section.id] || []} onReorder={(a, o) => reorderContents(section.id, a, o)}>
+                                  <SortableList items={lessonItems[section.id] || []} onReorder={(a, o) => reorderLessons(section.id, a, o)}>
                                     <div className="space-y-1">
-                                      {(contents[section.id] || []).map((content: any) => (
-                                        <SortableItem key={content.id} id={content.id} disabled={!canEdit}>
+                                      {(lessonItems[section.id] || []).map((lesson: any) => (
+                                        <SortableItem key={lesson.id} id={lesson.id} disabled={!canEdit}>
                                           <div className="flex items-center justify-between p-2 rounded bg-background border group">
                                             <div className="flex items-center gap-2 min-w-0 flex-1">
                                               <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                                              <span className="font-medium text-sm truncate">{isAr && content.title_ar ? content.title_ar : content.title}</span>
+                                              <span className="font-medium text-sm truncate">{isAr && lesson.title_ar ? lesson.title_ar : lesson.title}</span>
                                               <Badge variant="outline" className="text-xs shrink-0">
-                                                {allContentTypes.find(ct => ct.value === content.lesson_type)?.label || content.lesson_type}
+                                                {allContentTypes.find(ct => ct.value === lesson.lesson_type)?.label || lesson.lesson_type}
                                               </Badge>
                                             </div>
                                             {canEdit && (
                                               <div className="flex items-center gap-0.5 shrink-0">
-                                                <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted" onClick={(e) => { e.stopPropagation(); openEditContent(content, section.id); }}>
+                                                <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted" onClick={(e) => { e.stopPropagation(); openEditLesson(lesson, section.id); }}>
                                                   <Settings2 className="h-3.5 w-3.5" />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted" onClick={(e) => { e.stopPropagation(); /* edit content handler - to be implemented */ }}>
+                                                <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted" onClick={(e) => { e.stopPropagation(); /* edit lesson content handler */ }}>
                                                   <Edit className="h-3.5 w-3.5" />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-destructive/60 hover:text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: content.id, type: 'content' }); }}>
+                                                <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-destructive/60 hover:text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: lesson.id, type: 'lesson' }); }}>
                                                   <Trash2 className="h-3.5 w-3.5" />
                                                 </Button>
                                               </div>
@@ -614,8 +614,8 @@ const CourseDetail = () => {
                                   </SortableList>
 
                                   {canEdit && (
-                                    <Button variant="outline" size="sm" className="w-full" onClick={() => { setActiveSectionId(section.id); setEditingContentId(null); setContentForm({ title: '', title_ar: '', lesson_type: 'read_listen' }); setContentDialog(true); }}>
-                                      <Plus className="h-3 w-3 me-1" />{t('courses.addContent')}
+                                    <Button variant="outline" size="sm" className="w-full" onClick={() => { setActiveSectionId(section.id); setEditingLessonId(null); setLessonForm({ title: '', title_ar: '', lesson_type: 'read_listen' }); setLessonDialog(true); }}>
+                                      <Plus className="h-3 w-3 me-1" />{t('courses.addLesson')}
                                     </Button>
                                   )}
                                 </div>
@@ -633,26 +633,26 @@ const CourseDetail = () => {
         </Accordion>
       </SortableList>
 
-      {lessons.length === 0 && <p className="text-center text-muted-foreground py-8">{t('common.noData')}</p>}
+      {topics.length === 0 && <p className="text-center text-muted-foreground py-8">{t('common.noData')}</p>}
 
-      {/* ─── Lesson Dialog (Add/Edit) ─── */}
-      <Dialog open={lessonDialog} onOpenChange={(o) => { setLessonDialog(o); if (!o) { setEditingLessonId(null); setLessonForm({ title: '', title_ar: '' }); } }}>
+      {/* ─── Topic Dialog (Add/Edit) ─── */}
+      <Dialog open={topicDialog} onOpenChange={(o) => { setTopicDialog(o); if (!o) { setEditingTopicId(null); setTopicForm({ title: '', title_ar: '' }); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {editingLessonId ? <Pencil className="h-4 w-4 text-primary" /> : <Plus className="h-4 w-4 text-primary" />}
-              {editingLessonId ? (isAr ? 'تعديل الدرس' : 'Edit Lesson') : t('courses.addLesson')}
+              {editingTopicId ? <Pencil className="h-4 w-4 text-primary" /> : <Plus className="h-4 w-4 text-primary" />}
+              {editingTopicId ? (isAr ? 'تعديل الموضوع' : 'Edit Topic') : t('courses.addTopic')}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Title (EN)</Label><Input value={lessonForm.title} onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })} /></div>
-              <div><Label>Title (AR)</Label><Input value={lessonForm.title_ar} onChange={(e) => setLessonForm({ ...lessonForm, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
+              <div><Label>Title (EN)</Label><Input value={topicForm.title} onChange={(e) => setTopicForm({ ...topicForm, title: e.target.value })} /></div>
+              <div><Label>Title (AR)</Label><Input value={topicForm.title_ar} onChange={(e) => setTopicForm({ ...topicForm, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setLessonDialog(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
-            <Button onClick={addLesson} disabled={!lessonForm.title.trim()}>{t('common.save')}</Button>
+            <Button variant="outline" onClick={() => setTopicDialog(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
+            <Button onClick={addTopic} disabled={!topicForm.title.trim()}>{t('common.save')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -679,23 +679,23 @@ const CourseDetail = () => {
         </DialogContent>
       </Dialog>
 
-      {/* ─── Content Dialog (Add/Edit) ─── */}
-      <Dialog open={contentDialog} onOpenChange={(o) => { setContentDialog(o); if (!o) { setEditingContentId(null); setContentForm({ title: '', title_ar: '', lesson_type: 'read_listen' }); } }}>
+      {/* ─── Lesson Dialog (Add/Edit) ─── */}
+      <Dialog open={lessonDialog} onOpenChange={(o) => { setLessonDialog(o); if (!o) { setEditingLessonId(null); setLessonForm({ title: '', title_ar: '', lesson_type: 'read_listen' }); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {editingContentId ? <Settings2 className="h-4 w-4 text-primary" /> : <Plus className="h-4 w-4 text-primary" />}
-              {editingContentId ? (isAr ? 'تعديل المحتوى' : 'Edit Content') : t('courses.addContent')}
+              {editingLessonId ? <Settings2 className="h-4 w-4 text-primary" /> : <Plus className="h-4 w-4 text-primary" />}
+              {editingLessonId ? (isAr ? 'تعديل الدرس' : 'Edit Lesson') : t('courses.addLesson')}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Title (EN)</Label><Input value={contentForm.title} onChange={(e) => setContentForm({ ...contentForm, title: e.target.value })} /></div>
-              <div><Label>Title (AR)</Label><Input value={contentForm.title_ar} onChange={(e) => setContentForm({ ...contentForm, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
+              <div><Label>Title (EN)</Label><Input value={lessonForm.title} onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })} /></div>
+              <div><Label>Title (AR)</Label><Input value={lessonForm.title_ar} onChange={(e) => setLessonForm({ ...lessonForm, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
             </div>
             <div>
-              <Label>{t('courses.contentType')}</Label>
-              <Select value={contentForm.lesson_type} onValueChange={(v) => setContentForm({ ...contentForm, lesson_type: v })}>
+              <Label>{t('courses.lessonType')}</Label>
+              <Select value={lessonForm.lesson_type} onValueChange={(v) => setLessonForm({ ...lessonForm, lesson_type: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {contentTypeGroups.map((group) => (
@@ -711,8 +711,8 @@ const CourseDetail = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setContentDialog(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
-            <Button onClick={addContent} disabled={!contentForm.title.trim()}>{t('common.save')}</Button>
+            <Button variant="outline" onClick={() => setLessonDialog(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
+            <Button onClick={addLesson} disabled={!lessonForm.title.trim()}>{t('common.save')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
