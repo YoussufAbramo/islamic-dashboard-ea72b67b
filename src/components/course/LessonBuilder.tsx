@@ -198,31 +198,30 @@ const BlockEditor = ({
   );
 };
 
-// ─── Add Block Button ───
-const AddBlockButton = ({ isAr, onAdd }: { isAr: boolean; onAdd: (type: BlockType) => void }) => (
-  <DropdownMenu>
-    <DropdownMenuTrigger asChild>
-      <Button
-        variant="outline"
-        size="sm"
-        className="w-full border-dashed gap-1.5 text-muted-foreground hover:text-foreground"
-      >
-        <Plus className="h-3.5 w-3.5" />
-        {isAr ? 'إضافة كتلة محتوى' : 'Add Content Block'}
-      </Button>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent align="center" className="w-48">
-      {(Object.entries(blockMeta) as [BlockType, typeof blockMeta['text']][]).map(([type, meta]) => {
-        const Icon = meta.icon;
-        return (
-          <DropdownMenuItem key={type} onClick={() => onAdd(type)} className="gap-2">
-            <Icon className={cn("h-4 w-4", meta.color)} />
-            <span>{isAr ? meta.labelAr : meta.label}</span>
-          </DropdownMenuItem>
-        );
-      })}
-    </DropdownMenuContent>
-  </DropdownMenu>
+// ─── Add Block Buttons (shown inline) ───
+const AddBlockButtons = ({ isAr, onAdd, prominent }: { isAr: boolean; onAdd: (type: BlockType) => void; prominent?: boolean }) => (
+  <div className={cn(
+    "grid grid-cols-2 gap-2",
+    prominent && "sm:grid-cols-4"
+  )}>
+    {(Object.entries(blockMeta) as [BlockType, typeof blockMeta['text']][]).map(([type, meta]) => {
+      const Icon = meta.icon;
+      return (
+        <button
+          key={type}
+          type="button"
+          onClick={() => onAdd(type)}
+          className={cn(
+            "flex flex-col items-center gap-2 rounded-lg border-2 border-dashed p-4 transition-all hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-foreground",
+            prominent && "py-6"
+          )}
+        >
+          <Icon className={cn("h-5 w-5", meta.color)} />
+          <span className="text-xs font-medium">{isAr ? meta.labelAr : meta.label}</span>
+        </button>
+      );
+    })}
+  </div>
 );
 
 // ─── Main LessonBuilder Dialog ───
