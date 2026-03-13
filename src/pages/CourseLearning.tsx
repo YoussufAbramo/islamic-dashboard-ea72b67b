@@ -218,7 +218,14 @@ const CourseLearning = () => {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const { user } = useAuth();
+  const { topBarHidden, setTopBarHidden } = useOutletContext<{ topBarHidden: boolean; setTopBarHidden: (v: boolean) => void }>();
   const isAr = language === 'ar';
+
+  // Auto-hide top bar on mount, restore on unmount
+  useEffect(() => {
+    setTopBarHidden(true);
+    return () => setTopBarHidden(false);
+  }, [setTopBarHidden]);
 
   const [course, setCourse] = useState<any>(null);
   const [courseSections, setCourseSections] = useState<CourseSection[]>([]);
