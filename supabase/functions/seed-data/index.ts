@@ -1010,7 +1010,7 @@ Deno.serve(async (req) => {
         }
 
         // ── SUPPORT CONFIG (departments + priorities) ──
-        if (categories.includes('support_config') && budget.canAdd()) {
+        if (categories.includes('support_config')) {
           const deptRaw = [
             { name: 'Technical Support', name_ar: 'الدعم الفني', sort_order: 0 },
             { name: 'Billing', name_ar: 'الفواتير', sort_order: 1 },
