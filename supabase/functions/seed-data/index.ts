@@ -252,7 +252,7 @@ Deno.serve(async (req) => {
       const multiplier: number = Math.min(Math.max(Number(body.multiplier) || 3, 1), 10)
       if (categories.length === 0) return json({ error: 'No categories selected' }, 400)
 
-      const budget = new RecordBudget()
+      const budget = new RecordBudget(multiplier)
       const alloc = computeAllocation(multiplier, categories)
 
       // Create session
