@@ -654,8 +654,8 @@ const CourseLearning = () => {
 
   return (
     <div className={cn("flex flex-col", topBarHidden ? "h-[calc(100vh-2.5rem)]" : "h-[calc(100vh-6.5rem)]")}>
-      {/* Top bar */}
-      <div className="flex items-center gap-3 px-4 py-2.5 border-b bg-card shrink-0">
+      {/* ─── Top Header Bar ─── */}
+      <div className="flex items-center gap-3 px-4 py-2 border-b bg-card shrink-0">
         <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setLeaveDialogOpen(true)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
@@ -679,6 +679,15 @@ const CourseLearning = () => {
           <Button
             variant="ghost"
             size="icon"
+            className="h-8 w-8 shrink-0 hidden md:inline-flex"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            title={sidebarOpen ? (isAr ? 'إخفاء القائمة' : 'Hide Sidebar') : (isAr ? 'إظهار القائمة' : 'Show Sidebar')}
+          >
+            {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             className="h-8 w-8 shrink-0"
             onClick={() => setTopBarHidden(!topBarHidden)}
             title={topBarHidden ? (isAr ? 'إظهار الشريط العلوي' : 'Show Top Bar') : (isAr ? 'إخفاء الشريط العلوي' : 'Hide Top Bar')}
@@ -688,24 +697,45 @@ const CourseLearning = () => {
         </div>
       </div>
 
-      {/* Main content area */}
-      <div className="flex flex-1 min-h-0 overflow-hidden">
-        {/* Sidebar */}
+      {/* ─── Two-Panel Layout ─── */}
+      <div className="flex flex-1 min-h-0 overflow-hidden relative">
+
+        {/* ── Left Panel: Course Navigation ── */}
+        {/* Mobile overlay */}
+        {sidebarOpen && (
+          <div className="fixed inset-0 bg-black/40 z-30 md:hidden" onClick={() => setSidebarOpen(false)} />
+        )}
         <div className={cn(
-          "border-e bg-card shrink-0 transition-all duration-200 overflow-hidden flex flex-col",
-          sidebarOpen ? "w-80" : "w-0"
+          "bg-card border-e flex flex-col shrink-0 transition-all duration-300 z-40",
+          // Mobile: overlay drawer
+          "fixed inset-y-0 start-0 md:relative md:inset-auto",
+          sidebarOpen ? "w-72 md:w-80 translate-x-0" : "w-0 -translate-x-full md:translate-x-0 md:w-0"
         )}>
-          {/* Sidebar header */}
-          <div className="px-4 py-3 border-b shrink-0">
-            <h3 className="text-sm font-semibold truncate">{isAr ? 'محتوى الدورة' : 'Course Content'}</h3>
-            <p className="text-[10px] text-muted-foreground mt-0.5">
+          {/* Navigation header */}
+          <div className="px-4 py-3 border-b shrink-0 bg-muted/30">
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-primary shrink-0" />
+              <h3 className="text-sm font-bold truncate">{isAr ? 'محتوى الدورة' : 'Course Content'}</h3>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1 ms-6">
               {orderedLessons.length} {isAr ? 'درس' : 'lessons'} · {completedSet.size} {isAr ? 'مكتمل' : 'completed'}
             </p>
+            {/* Progress bar in sidebar */}
+            <div className="mt-2 ms-6">
+              <Progress value={progressPercent} className="h-1.5" />
+            </div>
           </div>
+
+          {/* Navigation tree */}
           <ScrollArea className="flex-1">
-            <div className="p-2 space-y-1">
-              {courseSections.map((cs, csIdx) => {
+            <div className="p-2 space-y-0.5">
+              {courseSections.map(cs => {
                 const lsForCs = lessonSections.filter(ls => ls.course_section_id === cs.id);
+                const topicLessons = lsForCs.flatMap(ls => lessons.filter(l => l.section_id === ls.id));
+                const topicCompleted = topicLessons.length > 0 && topicLessons.every(l => completedSet.has(l.id));
+                const topicProgress = topicLessons.length > 0
+                  ? Math.round((topicLessons.filter(l => completedSet.has(l.id)).length / topicLessons.length) * 100)
+                  : 0;
 
                 return (
                   <details key={cs.id} className="group/topic" open>
@@ -716,9 +746,15 @@ const CourseLearning = () => {
                       <span className="text-xs font-semibold truncate flex-1">
                         {isAr && cs.title_ar ? cs.title_ar : cs.title}
                       </span>
-                      <Badge variant="secondary" className="text-[9px] h-4 px-1.5 shrink-0">
-                        {lsForCs.reduce((acc, ls) => acc + lessons.filter(l => l.section_id === ls.id).length, 0)}
-                      </Badge>
+                      {topicCompleted ? (
+                        <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                      ) : topicProgress > 0 ? (
+                        <span className="text-[9px] text-muted-foreground shrink-0 font-mono">{topicProgress}%</span>
+                      ) : (
+                        <Badge variant="secondary" className="text-[9px] h-4 px-1.5 shrink-0">
+                          {topicLessons.length}
+                        </Badge>
+                      )}
                     </summary>
 
                     <div className="ms-3 border-s border-border/50 space-y-0.5 pb-1">
@@ -727,7 +763,7 @@ const CourseLearning = () => {
                           {isAr ? 'لا توجد أقسام' : 'No sections'}
                         </p>
                       )}
-                      {lsForCs.map((ls, lsIdx) => {
+                      {lsForCs.map(ls => {
                         const lessonsForLs = lessons.filter(l => l.section_id === ls.id);
                         const sectionCompleted = lessonsForLs.length > 0 && lessonsForLs.every(l => completedSet.has(l.id));
                         const sectionProgress = lessonsForLs.length > 0
@@ -763,7 +799,11 @@ const CourseLearning = () => {
                                 return (
                                   <button
                                     key={lesson.id}
-                                    onClick={() => setActiveLesson(lesson.id)}
+                                    onClick={() => {
+                                      setActiveLesson(lesson.id);
+                                      // Auto-close sidebar on mobile
+                                      if (window.innerWidth < 768) setSidebarOpen(false);
+                                    }}
                                     className={cn(
                                       "w-full flex items-center gap-2 px-3 py-1.5 ms-1 rounded-md text-start text-[11px] transition-all",
                                       isActive
@@ -798,15 +838,35 @@ const CourseLearning = () => {
           </ScrollArea>
         </div>
 
-        {/* Content area */}
+        {/* ── Right Panel: Lesson Content ── */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          {/* Lesson header strip */}
+          {currentLesson && (
+            <div className="flex items-center gap-3 px-5 py-2.5 border-b bg-muted/20 shrink-0">
+              <Badge variant="outline" className="text-[10px] gap-1 shrink-0">
+                {React.createElement(getContentIcon(currentLesson.lesson_type), { className: 'h-3 w-3' })}
+                {getContentLabel(currentLesson.lesson_type, isAr)}
+              </Badge>
+              <h2 className="text-sm font-semibold truncate flex-1">
+                {isAr && currentLesson.title_ar ? currentLesson.title_ar : currentLesson.title}
+              </h2>
+              {isCurrentCompleted && (
+                <Badge variant="default" className="gap-1 text-[10px] shrink-0">
+                  <CheckCircle2 className="h-3 w-3" />
+                  {isAr ? 'مكتمل' : 'Completed'}
+                </Badge>
+              )}
+            </div>
+          )}
+
+          {/* Main scrollable content */}
           <ScrollArea className="flex-1">
             <div className="max-w-3xl mx-auto p-6">
               <ContentViewer lesson={currentLesson} isAr={isAr} />
             </div>
           </ScrollArea>
 
-          {/* Bottom navigation */}
+          {/* Bottom navigation bar */}
           {orderedLessons.length > 0 && (
             <div className="flex items-center justify-between px-4 py-3 border-t bg-card shrink-0">
               <Button
@@ -828,7 +888,7 @@ const CourseLearning = () => {
                     className="gap-1.5"
                   >
                     <Settings2 className="h-3.5 w-3.5" />
-                    {isAr ? 'إدارة المحتوى' : 'Manage Content'}
+                    <span className="hidden sm:inline">{isAr ? 'إدارة المحتوى' : 'Manage Content'}</span>
                   </Button>
                 )}
                 {user && currentLesson && !isCurrentCompleted && (
@@ -844,12 +904,6 @@ const CourseLearning = () => {
                     )}
                     {isAr ? 'إكمال الدرس' : 'Mark Complete'}
                   </Button>
-                )}
-                {isCurrentCompleted && (
-                  <Badge variant="default" className="gap-1 text-xs">
-                    <CheckCircle2 className="h-3 w-3" />
-                    {isAr ? 'مكتمل' : 'Completed'}
-                  </Badge>
                 )}
               </div>
 
@@ -867,6 +921,7 @@ const CourseLearning = () => {
         </div>
       </div>
 
+      {/* Leave dialog */}
       <AlertDialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
