@@ -64,7 +64,7 @@ const CourseDetail = () => {
   // Forms
   const [topicForm, setTopicForm] = useState({ title: '', title_ar: '' });
   const [sectionForm, setSectionForm] = useState({ title: '', title_ar: '' });
-  const [lessonForm, setLessonForm] = useState({ title: '', title_ar: '', lesson_type: 'read_listen' });
+  const [lessonForm, setLessonForm] = useState({ title: '', title_ar: '' });
 
   // Inline edit state
   const [inlineEdit, setInlineEdit] = useState<{ id: string; type: 'topic' | 'section' | 'lesson'; field: string; value: string } | null>(null);
