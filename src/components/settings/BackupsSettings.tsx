@@ -25,15 +25,22 @@ interface BackupFile {
 }
 
 // ==================== Auto Backup Config Card ====================
+const HOURS_OPTIONS = Array.from({ length: 24 }, (_, i) => {
+  const h = i;
+  const label = h === 0 ? '12:00 AM' : h < 12 ? `${h}:00 AM` : h === 12 ? '12:00 PM' : `${h - 12}:00 PM`;
+  return { value: `${String(h).padStart(2, '0')}:00`, label };
+});
+
 const AutoBackupCard = ({ isAr }: { isAr: boolean }) => {
-  const [config, setConfig] = useState({ enabled: false, schedule: 'daily', retention_count: 7, format: 'json' });
+  const [config, setConfig] = useState({ enabled: false, schedule: 'daily', retention_count: 7, format: 'json', scheduled_time: '02:00' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [testing, setTesting] = useState(false);
 
   useEffect(() => {
     supabase.from('auto_backup_config').select('*').limit(1).single().then(({ data }) => {
-      if (data) { setConfig({ enabled: data.enabled, schedule: data.schedule, retention_count: data.retention_count, format: data.format }); }
+      if (data) { setConfig({ enabled: data.enabled, schedule: data.schedule, retention_count: data.retention_count, format: data.format, scheduled_time: (data as any).scheduled_time || '02:00' }); }
       setLoading(false);
     });
   }, []);
@@ -51,14 +58,27 @@ const AutoBackupCard = ({ isAr }: { isAr: boolean }) => {
         schedule: config.schedule,
         retention_count: config.retention_count,
         format: config.format,
+        scheduled_time: config.scheduled_time,
         updated_at: new Date().toISOString(),
-      }).neq('id', '00000000-0000-0000-0000-000000000000'); // update all rows (singleton)
+      } as any).neq('id', '00000000-0000-0000-0000-000000000000');
       if (error) throw error;
       toast.success(isAr ? 'تم حفظ إعدادات النسخ التلقائي' : 'Auto backup settings saved');
       setDirty(false);
     } catch (err: any) {
       toast.error(err.message || 'Failed to save');
     } finally { setSaving(false); }
+  };
+
+  const testBackup = async () => {
+    setTesting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('manage-backups', { body: { action: 'test_auto_backup' } });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(isAr ? `تم إنشاء نسخة تجريبية: ${data.fileName} (${data.totalRecords} سجل)` : `Test backup created: ${data.fileName} (${data.totalRecords} records)`);
+    } catch (err: any) {
+      toast.error(err.message || 'Test backup failed');
+    } finally { setTesting(false); }
   };
 
   if (loading) return null;
@@ -89,9 +109,9 @@ const AutoBackupCard = ({ isAr }: { isAr: boolean }) => {
           <Switch checked={config.enabled} onCheckedChange={v => update({ enabled: v })} />
         </div>
 
-        {/* Settings (visible regardless, but visually muted when off) */}
+        {/* Settings */}
         <div className={`space-y-4 ${!config.enabled ? 'opacity-50 pointer-events-none' : ''}`}>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Schedule */}
             <div className="space-y-2">
               <Label>{isAr ? 'الجدول الزمني' : 'Schedule'}</Label>
@@ -101,6 +121,19 @@ const AutoBackupCard = ({ isAr }: { isAr: boolean }) => {
                   <SelectItem value="daily">{isAr ? 'يومياً' : 'Daily'}</SelectItem>
                   <SelectItem value="weekly">{isAr ? 'أسبوعياً' : 'Weekly'}</SelectItem>
                   <SelectItem value="monthly">{isAr ? 'شهرياً' : 'Monthly'}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Time */}
+            <div className="space-y-2">
+              <Label>{isAr ? 'وقت التنفيذ (UTC)' : 'Run Time (UTC)'}</Label>
+              <Select value={config.scheduled_time} onValueChange={v => update({ scheduled_time: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {HOURS_OPTIONS.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -134,19 +167,25 @@ const AutoBackupCard = ({ isAr }: { isAr: boolean }) => {
 
           <p className="text-xs text-muted-foreground">
             {isAr
-              ? `سيتم إنشاء نسخة ${config.schedule === 'daily' ? 'يومياً' : config.schedule === 'weekly' ? 'كل يوم أحد' : 'في أول كل شهر'} والاحتفاظ بآخر ${config.retention_count} نسخة. النسخ القديمة تحذف تلقائياً.`
-              : `A backup will run ${config.schedule === 'daily' ? 'every day' : config.schedule === 'weekly' ? 'every Sunday' : 'on the 1st of each month'}, keeping the last ${config.retention_count}. Older auto-backups are deleted automatically.`}
+              ? `سيتم إنشاء نسخة ${config.schedule === 'daily' ? 'يومياً' : config.schedule === 'weekly' ? 'كل يوم أحد' : 'في أول كل شهر'} الساعة ${HOURS_OPTIONS.find(o => o.value === config.scheduled_time)?.label || config.scheduled_time} (UTC) والاحتفاظ بآخر ${config.retention_count} نسخة. النسخ القديمة تحذف تلقائياً.`
+              : `A backup will run ${config.schedule === 'daily' ? 'every day' : config.schedule === 'weekly' ? 'every Sunday' : 'on the 1st of each month'} at ${HOURS_OPTIONS.find(o => o.value === config.scheduled_time)?.label || config.scheduled_time} (UTC), keeping the last ${config.retention_count}. Older auto-backups are deleted automatically.`}
           </p>
         </div>
 
-        {dirty && (
-          <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          {config.enabled && (
+            <Button variant="outline" size="sm" onClick={testBackup} disabled={testing}>
+              {testing ? <Loader2 className="h-4 w-4 me-1 animate-spin" /> : <RefreshCw className="h-4 w-4 me-1" />}
+              {isAr ? 'تشغيل الآن' : 'Run Now'}
+            </Button>
+          )}
+          {dirty && (
             <Button size="sm" onClick={save} disabled={saving}>
               {saving ? <Loader2 className="h-4 w-4 me-1 animate-spin" /> : <Save className="h-4 w-4 me-1" />}
               {isAr ? 'حفظ الإعدادات' : 'Save Settings'}
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </CardContent>
     </Card>
   );
