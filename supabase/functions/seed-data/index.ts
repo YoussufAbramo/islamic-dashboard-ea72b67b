@@ -692,8 +692,8 @@ Deno.serve(async (req) => {
         }
 
         // ── COMMUNICATIONS (announcements + notifications) ──
-        if (categories.includes('communications') && budget.canAdd()) {
-          const commBudget = budget.cap(alloc.communications || 5)
+        if (categories.includes('communications')) {
+          const commBudget = budget.capMin(alloc.communications || 5)
           const numAnn = Math.max(1, Math.ceil(commBudget * 0.5))
           const numNotif = Math.max(1, commBudget - numAnn)
 
