@@ -311,7 +311,7 @@ const Courses = () => {
                 </div>
                 {canEdit && (
                   <div className="flex gap-1 pt-1" onClick={(e) => e.stopPropagation()}>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(course)}><Edit className="h-3 w-3" /></Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(course)}><Settings className="h-3 w-3" /></Button>
                     {role === 'admin' && <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(course.id)}><Trash2 className="h-3 w-3" /></Button>}
                   </div>
                 )}
