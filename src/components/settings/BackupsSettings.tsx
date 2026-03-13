@@ -273,7 +273,7 @@ const BackupsSettings = () => {
     { key: 'website_pages', label: 'Website Pages', labelAr: 'صفحات الموقع' },
     { key: 'policies', label: 'Policies', labelAr: 'السياسات' },
     { key: 'app_settings', label: 'App Settings', labelAr: 'إعدادات التطبيق' },
-    { key: 'auto_backup_config', label: 'Auto Backup Config', labelAr: 'إعدادات النسخ التلقائي' },
+    { key: 'payment_gateway_config', label: 'Payment Gateway', labelAr: 'بوابة الدفع' },
     { key: 'payment_gateway_config', label: 'Payment Gateway', labelAr: 'بوابة الدفع' },
     { key: 'audit_logs', label: 'Audit Logs', labelAr: 'سجل المراجعة' },
     { key: 'seed_sessions', label: 'Seed Sessions', labelAr: 'جلسات البيانات التجريبية' },
