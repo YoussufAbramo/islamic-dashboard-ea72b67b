@@ -87,6 +87,8 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, entryId, isAr, onSession
   const handleJoin = () => {
     if (!selected) return;
 
+    onPlatformSelected?.(selected);
+
     if (selected === 'dashboard') {
       setDashboardMeetingOpen(true);
       onSessionStart?.();
