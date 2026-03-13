@@ -186,6 +186,7 @@ const AutoBackupCard = ({ isAr }: { isAr: boolean }) => {
 };
 
 // ==================== Main Backups Component ====================
+  const [backupingSettings, setBackupingSettings] = useState(false);
 const BackupsSettings = () => {
   const { language } = useLanguage();
   const { pending } = useAppSettings();
