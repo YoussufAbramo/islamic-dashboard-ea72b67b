@@ -809,6 +809,16 @@ const LandingContentSettings = ({ initialTab }: { initialTab?: string }) => {
         <div className="space-y-1.5">
           <Label className="text-xs font-medium">{isAr ? 'عمود الهوية' : 'Branding in'}</Label>
           <div className="flex gap-1.5">
+            <button
+              onClick={() => updateFooterField('branding_column', -1)}
+              className={`h-9 px-3 rounded-lg border-2 text-xs font-medium transition-all ${
+                brandingColumn === -1
+                  ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                  : 'border-border text-muted-foreground hover:border-primary/40 hover:bg-muted'
+              }`}
+            >
+              {isAr ? 'إخفاء' : 'None'}
+            </button>
             {Array.from({ length: footerColumnsCount }, (_, i) => (
               <button
                 key={i}
