@@ -35,7 +35,7 @@ const Courses = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editCourse, setEditCourse] = useState<any>(null);
-  const [form, setForm] = useState({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft', image_url: '', category_id: '', level_id: '', track_id: '', duration_weeks: '' });
+  const [form, setForm] = useState({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft', image_url: '', category_id: '', level_id: '', track_id: '', duration_weeks: '', slug: '' });
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => (localStorage.getItem('courses_view') as any) || 'list');
