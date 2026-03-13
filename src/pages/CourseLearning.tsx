@@ -414,13 +414,20 @@ const CourseLearning = () => {
   const { language } = useLanguage();
   const { user, role } = useAuth();
   const { topBarHidden, setTopBarHidden } = useOutletContext<{ topBarHidden: boolean; setTopBarHidden: (v: boolean) => void }>();
+  const { open: sidebarOpen, setOpen: setSidebarOpen } = useSidebar();
   const isAr = language === 'ar';
 
-  // Auto-hide top bar on mount, restore on unmount
+  // Auto-hide top bar & collapse sidebar on mount, restore on unmount
   useEffect(() => {
     setTopBarHidden(true);
-    return () => setTopBarHidden(false);
-  }, [setTopBarHidden]);
+    const wasSidebarOpen = sidebarOpen;
+    if (sidebarOpen) setSidebarOpen(false);
+    return () => {
+      setTopBarHidden(false);
+      if (wasSidebarOpen) setSidebarOpen(true);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [course, setCourse] = useState<any>(null);
   const [courseSections, setCourseSections] = useState<CourseSection[]>([]);
