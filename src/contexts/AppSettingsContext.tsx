@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const DEFAULT_LOGO = '/system/logos/logo.png';
 const DEFAULT_DARK_LOGO = '/system/logos/logo-dark.png';
@@ -159,59 +160,192 @@ interface AppSettingsContextType {
   discardChanges: () => void;
 }
 
-
-
 const AppSettingsContext = createContext<AppSettingsContextType | null>(null);
 
-const SETTINGS_VERSION = '5';
-
-function loadSaved(): PendingSettings {
-  const storedVersion = localStorage.getItem('app_settings_version');
-  if (storedVersion !== SETTINGS_VERSION) {
-    const keysToReset = [
-      'app_currency', 'app_color_theme', 'app_name', 'app_description',
-      'app_logo', 'app_dark_logo', 'app_signature_image', 'app_stamp_image', 'app_signature_position',
-      'app_stamp_position', 'app_ltr_font', 'app_rtl_font', 'app_button_shape',
-      'app_currency_decimals', 'app_payment_gateway', 'app_default_language',
-      'app_default_timezone', 'app_favicon', 'app_active_gateways', 'app_sidebar_mode', 'app_time_format',
-      'app_social_links',
-    ];
-    keysToReset.forEach(k => localStorage.removeItem(k));
-    localStorage.setItem('app_settings_version', SETTINGS_VERSION);
-  }
-
+/** Build default settings object */
+function buildDefaults(): PendingSettings {
   return {
-    currency: (() => { try { const s = localStorage.getItem('app_currency'); return s ? JSON.parse(s) : CURRENCIES[0]; } catch { return CURRENCIES[0]; } })(),
-    colorTheme: (localStorage.getItem('app_color_theme') as ColorTheme) || 'emerald',
-    appName: localStorage.getItem('app_name') || DEFAULT_APP_NAME,
-    appDescription: localStorage.getItem('app_description') || DEFAULT_APP_DESCRIPTION,
-    appLogo: localStorage.getItem('app_logo') || DEFAULT_LOGO,
-    darkLogo: localStorage.getItem('app_dark_logo') || DEFAULT_DARK_LOGO,
-    signatureImage: localStorage.getItem('app_signature_image') || DEFAULT_SIGNATURE,
-    stampImage: localStorage.getItem('app_stamp_image') || DEFAULT_STAMP,
-    signaturePosition: (localStorage.getItem('app_signature_position') as FooterPosition) || 'left',
-    stampPosition: (localStorage.getItem('app_stamp_position') as FooterPosition) || 'right',
-    ltrFont: localStorage.getItem('app_ltr_font') || DEFAULT_LTR_FONT,
-    rtlFont: localStorage.getItem('app_rtl_font') || DEFAULT_RTL_FONT,
-    buttonShape: (localStorage.getItem('app_button_shape') as ButtonShape) || 'rounded',
-    currencyDecimals: parseInt(localStorage.getItem('app_currency_decimals') || '2', 10),
-    paymentGateway: localStorage.getItem('app_payment_gateway') || 'paypal',
-    defaultLanguage: (localStorage.getItem('app_default_language') as 'en' | 'ar') || 'en',
-    defaultTimezone: localStorage.getItem('app_default_timezone') || Intl.DateTimeFormat().resolvedOptions().timeZone,
-    sidebarMode: (localStorage.getItem('app_sidebar_mode') as SidebarMode) || 'dark',
-    timeFormat: (localStorage.getItem('app_time_format') as TimeFormat) || '12h',
-    developerMode: localStorage.getItem('app_developer_mode') !== 'false',
-    websiteMode: localStorage.getItem('app_website_mode') !== 'false',
-    socialLinks: (() => { try { const s = localStorage.getItem('app_social_links'); return s ? { ...DEFAULT_SOCIAL_LINKS, ...JSON.parse(s) } : DEFAULT_SOCIAL_LINKS; } catch { return DEFAULT_SOCIAL_LINKS; } })(),
-    teacherBadges: localStorage.getItem('app_teacher_badges') !== 'false',
-    studentBadges: localStorage.getItem('app_student_badges') !== 'false',
+    currency: CURRENCIES[0],
+    colorTheme: 'emerald',
+    appName: DEFAULT_APP_NAME,
+    appDescription: DEFAULT_APP_DESCRIPTION,
+    appLogo: DEFAULT_LOGO,
+    darkLogo: DEFAULT_DARK_LOGO,
+    signatureImage: DEFAULT_SIGNATURE,
+    stampImage: DEFAULT_STAMP,
+    signaturePosition: 'left',
+    stampPosition: 'right',
+    ltrFont: DEFAULT_LTR_FONT,
+    rtlFont: DEFAULT_RTL_FONT,
+    buttonShape: 'rounded',
+    currencyDecimals: 2,
+    paymentGateway: 'paypal',
+    defaultLanguage: 'en',
+    defaultTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    sidebarMode: 'dark',
+    timeFormat: '12h',
+    developerMode: true,
+    websiteMode: true,
+    socialLinks: { ...DEFAULT_SOCIAL_LINKS },
+    teacherBadges: true,
+    studentBadges: true,
   };
 }
 
+/** Merge DB JSON over defaults */
+function mergeFromDb(dbJson: Record<string, any>): PendingSettings {
+  const d = buildDefaults();
+  if (!dbJson || typeof dbJson !== 'object') return d;
+
+  return {
+    currency: dbJson.currency ?? d.currency,
+    colorTheme: dbJson.colorTheme ?? d.colorTheme,
+    appName: dbJson.appName ?? d.appName,
+    appDescription: dbJson.appDescription ?? d.appDescription,
+    appLogo: dbJson.appLogo ?? d.appLogo,
+    darkLogo: dbJson.darkLogo ?? d.darkLogo,
+    signatureImage: dbJson.signatureImage ?? d.signatureImage,
+    stampImage: dbJson.stampImage ?? d.stampImage,
+    signaturePosition: dbJson.signaturePosition ?? d.signaturePosition,
+    stampPosition: dbJson.stampPosition ?? d.stampPosition,
+    ltrFont: dbJson.ltrFont ?? d.ltrFont,
+    rtlFont: dbJson.rtlFont ?? d.rtlFont,
+    buttonShape: dbJson.buttonShape ?? d.buttonShape,
+    currencyDecimals: dbJson.currencyDecimals ?? d.currencyDecimals,
+    paymentGateway: dbJson.paymentGateway ?? d.paymentGateway,
+    defaultLanguage: dbJson.defaultLanguage ?? d.defaultLanguage,
+    defaultTimezone: dbJson.defaultTimezone ?? d.defaultTimezone,
+    sidebarMode: dbJson.sidebarMode ?? d.sidebarMode,
+    timeFormat: dbJson.timeFormat ?? d.timeFormat,
+    developerMode: dbJson.developerMode ?? d.developerMode,
+    websiteMode: dbJson.websiteMode ?? d.websiteMode,
+    socialLinks: dbJson.socialLinks ? { ...DEFAULT_SOCIAL_LINKS, ...dbJson.socialLinks } : d.socialLinks,
+    teacherBadges: dbJson.teacherBadges ?? d.teacherBadges,
+    studentBadges: dbJson.studentBadges ?? d.studentBadges,
+  };
+}
+
+/** Load from localStorage cache (fast startup) */
+function loadCached(): PendingSettings {
+  try {
+    const cached = localStorage.getItem('app_settings_cache');
+    if (cached) return mergeFromDb(JSON.parse(cached));
+  } catch { /* ignore */ }
+  return buildDefaults();
+}
+
 export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [saved, setSaved] = useState<PendingSettings>(loadSaved);
-  const [pending, setPending] = useState<PendingSettings>(loadSaved);
-  const [favicon, setFaviconState] = useState(() => localStorage.getItem('app_favicon') || DEFAULT_FAVICON);
+  const [saved, setSaved] = useState<PendingSettings>(loadCached);
+  const [pending, setPending] = useState<PendingSettings>(loadCached);
+  const [favicon, setFaviconState] = useState(() => {
+    try {
+      const cached = localStorage.getItem('app_settings_cache');
+      if (cached) { const p = JSON.parse(cached); return p.favicon || DEFAULT_FAVICON; }
+    } catch { /* ignore */ }
+    return DEFAULT_FAVICON;
+  });
+  const [settingsRowId, setSettingsRowId] = useState<string | null>(null);
+  const dbLoaded = useRef(false);
+
+  // Load settings from Supabase on mount
+  useEffect(() => {
+    const loadFromDb = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('app_settings')
+          .select('id, settings')
+          .limit(1)
+          .single();
+
+        if (error) {
+          console.warn('Could not load app settings from DB, using cached/defaults:', error.message);
+          return;
+        }
+
+        if (data) {
+          setSettingsRowId(data.id);
+          const dbSettings = data.settings as Record<string, any>;
+          const merged = mergeFromDb(dbSettings);
+          const dbFavicon = (dbSettings as any)?.favicon || DEFAULT_FAVICON;
+
+          // Cache in localStorage for fast subsequent loads
+          localStorage.setItem('app_settings_cache', JSON.stringify({ ...dbSettings }));
+
+          setSaved(merged);
+          setPending(merged);
+          setFaviconState(dbFavicon);
+          dbLoaded.current = true;
+        }
+      } catch (err) {
+        console.warn('Failed to load app settings from DB:', err);
+      }
+    };
+
+    loadFromDb();
+  }, []);
+
+  // Migrate: if we have old localStorage settings but DB is empty, push them to DB
+  useEffect(() => {
+    if (!settingsRowId || dbLoaded.current) return;
+
+    // Check if old localStorage keys exist (from pre-DB era)
+    const oldName = localStorage.getItem('app_name');
+    if (!oldName) return;
+
+    // Old settings exist — migrate them to DB
+    const migrateToDb = async () => {
+      const settingsJson: Record<string, any> = {};
+      // Gather all old localStorage settings
+      try { const s = localStorage.getItem('app_currency'); if (s) settingsJson.currency = JSON.parse(s); } catch {}
+      const strKeys: [string, string][] = [
+        ['app_color_theme', 'colorTheme'], ['app_name', 'appName'], ['app_description', 'appDescription'],
+        ['app_logo', 'appLogo'], ['app_dark_logo', 'darkLogo'], ['app_signature_image', 'signatureImage'],
+        ['app_stamp_image', 'stampImage'], ['app_signature_position', 'signaturePosition'],
+        ['app_stamp_position', 'stampPosition'], ['app_ltr_font', 'ltrFont'], ['app_rtl_font', 'rtlFont'],
+        ['app_button_shape', 'buttonShape'], ['app_payment_gateway', 'paymentGateway'],
+        ['app_default_language', 'defaultLanguage'], ['app_default_timezone', 'defaultTimezone'],
+        ['app_sidebar_mode', 'sidebarMode'], ['app_time_format', 'timeFormat'], ['app_favicon', 'favicon'],
+      ];
+      strKeys.forEach(([lsKey, jsonKey]) => {
+        const v = localStorage.getItem(lsKey);
+        if (v) settingsJson[jsonKey] = v;
+      });
+      const numV = localStorage.getItem('app_currency_decimals');
+      if (numV) settingsJson.currencyDecimals = parseInt(numV, 10);
+      const boolKeys: [string, string][] = [
+        ['app_developer_mode', 'developerMode'], ['app_website_mode', 'websiteMode'],
+        ['app_teacher_badges', 'teacherBadges'], ['app_student_badges', 'studentBadges'],
+      ];
+      boolKeys.forEach(([lsKey, jsonKey]) => {
+        const v = localStorage.getItem(lsKey);
+        if (v !== null) settingsJson[jsonKey] = v !== 'false';
+      });
+      try { const s = localStorage.getItem('app_social_links'); if (s) settingsJson.socialLinks = JSON.parse(s); } catch {}
+
+      if (Object.keys(settingsJson).length > 0) {
+        await supabase
+          .from('app_settings')
+          .update({ settings: settingsJson, updated_at: new Date().toISOString() })
+          .eq('id', settingsRowId);
+
+        // Clean up old localStorage keys
+        const oldKeys = [
+          'app_currency', 'app_color_theme', 'app_name', 'app_description', 'app_logo', 'app_dark_logo',
+          'app_signature_image', 'app_stamp_image', 'app_signature_position', 'app_stamp_position',
+          'app_ltr_font', 'app_rtl_font', 'app_button_shape', 'app_currency_decimals', 'app_payment_gateway',
+          'app_default_language', 'app_default_timezone', 'app_favicon', 'app_active_gateways',
+          'app_sidebar_mode', 'app_time_format', 'app_developer_mode', 'app_website_mode',
+          'app_social_links', 'app_teacher_badges', 'app_student_badges', 'app_settings_version',
+        ];
+        oldKeys.forEach(k => localStorage.removeItem(k));
+
+        // Update cache
+        localStorage.setItem('app_settings_cache', JSON.stringify(settingsJson));
+      }
+    };
+
+    migrateToDb();
+  }, [settingsRowId]);
 
   useEffect(() => {
     if (favicon) {
@@ -221,7 +355,7 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   }, [favicon]);
 
-  const setFavicon = useCallback((url: string) => { localStorage.setItem('app_favicon', url); setFaviconState(url); }, []);
+  const setFavicon = useCallback((url: string) => { setFaviconState(url); }, []);
 
   // Apply appearance changes from PENDING for instant preview
   useEffect(() => {
@@ -252,33 +386,57 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const hasPendingChanges = JSON.stringify(saved) !== JSON.stringify(pending);
 
-  const saveSettings = useCallback(() => {
-    localStorage.setItem('app_currency', JSON.stringify(pending.currency));
-    localStorage.setItem('app_color_theme', pending.colorTheme);
-    localStorage.setItem('app_name', pending.appName);
-    localStorage.setItem('app_description', pending.appDescription);
-    localStorage.setItem('app_logo', pending.appLogo);
-    localStorage.setItem('app_dark_logo', pending.darkLogo);
-    localStorage.setItem('app_signature_image', pending.signatureImage);
-    localStorage.setItem('app_stamp_image', pending.stampImage);
-    localStorage.setItem('app_signature_position', pending.signaturePosition);
-    localStorage.setItem('app_stamp_position', pending.stampPosition);
-    localStorage.setItem('app_ltr_font', pending.ltrFont);
-    localStorage.setItem('app_rtl_font', pending.rtlFont);
-    localStorage.setItem('app_button_shape', pending.buttonShape);
-    localStorage.setItem('app_currency_decimals', String(pending.currencyDecimals));
-    localStorage.setItem('app_payment_gateway', pending.paymentGateway);
-    localStorage.setItem('app_default_language', pending.defaultLanguage);
-    localStorage.setItem('app_default_timezone', pending.defaultTimezone);
-    localStorage.setItem('app_sidebar_mode', pending.sidebarMode);
-    localStorage.setItem('app_time_format', pending.timeFormat);
-    localStorage.setItem('app_developer_mode', String(pending.developerMode));
-    localStorage.setItem('app_website_mode', String(pending.websiteMode));
-    localStorage.setItem('app_social_links', JSON.stringify(pending.socialLinks));
-    localStorage.setItem('app_teacher_badges', String(pending.teacherBadges));
-    localStorage.setItem('app_student_badges', String(pending.studentBadges));
+  const saveSettings = useCallback(async () => {
+    // Build the full settings JSON to persist
+    const settingsJson: Record<string, any> = {
+      currency: pending.currency,
+      colorTheme: pending.colorTheme,
+      appName: pending.appName,
+      appDescription: pending.appDescription,
+      appLogo: pending.appLogo,
+      darkLogo: pending.darkLogo,
+      signatureImage: pending.signatureImage,
+      stampImage: pending.stampImage,
+      signaturePosition: pending.signaturePosition,
+      stampPosition: pending.stampPosition,
+      ltrFont: pending.ltrFont,
+      rtlFont: pending.rtlFont,
+      buttonShape: pending.buttonShape,
+      currencyDecimals: pending.currencyDecimals,
+      paymentGateway: pending.paymentGateway,
+      defaultLanguage: pending.defaultLanguage,
+      defaultTimezone: pending.defaultTimezone,
+      sidebarMode: pending.sidebarMode,
+      timeFormat: pending.timeFormat,
+      developerMode: pending.developerMode,
+      websiteMode: pending.websiteMode,
+      socialLinks: pending.socialLinks,
+      teacherBadges: pending.teacherBadges,
+      studentBadges: pending.studentBadges,
+      favicon,
+    };
+
+    // Save to Supabase
+    if (settingsRowId) {
+      const { error } = await supabase
+        .from('app_settings')
+        .update({
+          settings: settingsJson,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', settingsRowId);
+
+      if (error) {
+        console.error('Failed to save settings to DB:', error.message);
+        // Still update local state so UI stays consistent
+      }
+    }
+
+    // Update localStorage cache
+    localStorage.setItem('app_settings_cache', JSON.stringify(settingsJson));
+
     setSaved({ ...pending });
-  }, [pending]);
+  }, [pending, favicon, settingsRowId]);
 
   const discardChanges = useCallback(() => {
     setPending({ ...saved });
@@ -298,10 +456,10 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const setColorTheme = useCallback((t: ColorTheme) => { setPending(p => ({ ...p, colorTheme: t })); }, []);
   const setAppName = useCallback((n: string) => { setPending(p => ({ ...p, appName: n })); }, []);
   const setAppDescription = useCallback((d: string) => { setPending(p => ({ ...p, appDescription: d })); }, []);
-  const setAppLogo = useCallback((l: string) => { localStorage.setItem('app_logo', l); setSaved(s => ({ ...s, appLogo: l })); setPending(p => ({ ...p, appLogo: l })); }, []);
-  const setDarkLogo = useCallback((l: string) => { localStorage.setItem('app_dark_logo', l); setSaved(s => ({ ...s, darkLogo: l })); setPending(p => ({ ...p, darkLogo: l })); }, []);
-  const setSignatureImage = useCallback((s: string) => { localStorage.setItem('app_signature_image', s); setSaved(prev => ({ ...prev, signatureImage: s })); setPending(prev => ({ ...prev, signatureImage: s })); }, []);
-  const setStampImage = useCallback((s: string) => { localStorage.setItem('app_stamp_image', s); setSaved(prev => ({ ...prev, stampImage: s })); setPending(prev => ({ ...prev, stampImage: s })); }, []);
+  const setAppLogo = useCallback((l: string) => { setPending(p => ({ ...p, appLogo: l })); }, []);
+  const setDarkLogo = useCallback((l: string) => { setPending(p => ({ ...p, darkLogo: l })); }, []);
+  const setSignatureImage = useCallback((s: string) => { setPending(prev => ({ ...prev, signatureImage: s })); }, []);
+  const setStampImage = useCallback((s: string) => { setPending(prev => ({ ...prev, stampImage: s })); }, []);
   const setSignaturePosition = useCallback((p: FooterPosition) => { setPending(prev => ({ ...prev, signaturePosition: p })); }, []);
   const setStampPosition = useCallback((p: FooterPosition) => { setPending(prev => ({ ...prev, stampPosition: p })); }, []);
   const setLtrFont = useCallback((f: string) => { setPending(p => ({ ...p, ltrFont: f })); }, []);
