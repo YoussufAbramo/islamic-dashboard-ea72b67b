@@ -593,6 +593,31 @@ const CourseLearning = () => {
           )}
         </div>
       </div>
+
+      <AlertDialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              {isAr ? 'مغادرة صفحة التعلم؟' : 'Leave Learning Page?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {isAr
+                ? 'أي تقدم غير محفوظ قد يُفقد. تأكد من الضغط على "إكمال الدرس" قبل المغادرة للحفاظ على تقدمك.'
+                : 'Any unsaved progress may be lost. Make sure to click "Mark Complete" before leaving to save your progress.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{isAr ? 'متابعة التعلم' : 'Continue Learning'}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => navigate(`/dashboard/courses/${id}`)}
+            >
+              {isAr ? 'مغادرة' : 'Leave'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
