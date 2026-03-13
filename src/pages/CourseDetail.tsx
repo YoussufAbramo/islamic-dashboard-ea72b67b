@@ -562,9 +562,12 @@ const CourseDetail = () => {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">{t('courses.topics')}</h2>
         {canEdit && (
-          <Button size="sm" onClick={() => { setEditingTopicId(null); setTopicForm({ title: '', title_ar: '' }); setTopicDialog(true); }}>
-            <Plus className="h-4 w-4 me-2" />{t('courses.addTopic')}
-          </Button>
+          <div className="flex items-center gap-2">
+            <PresetSections courseId={id!} currentTopicCount={topics.length} onInserted={fetchHierarchy} />
+            <Button size="sm" onClick={() => { setEditingTopicId(null); setTopicForm({ title: '', title_ar: '' }); setTopicDialog(true); }}>
+              <Plus className="h-4 w-4 me-2" />{t('courses.addTopic')}
+            </Button>
+          </div>
         )}
       </div>
 
