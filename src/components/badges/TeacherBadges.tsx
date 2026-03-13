@@ -99,7 +99,7 @@ function BadgeSummaryCard({ data, isAr }: { data: BadgeCategoryData; isAr: boole
 export function BadgeIconsRow({ categories, isAr }: { categories: BadgeCategoryData[]; isAr: boolean }) {
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-2">
         {categories.map(cat => (
           <BadgeCategoryRow key={cat.category} data={cat} isAr={isAr} />
         ))}
@@ -113,14 +113,17 @@ function BadgeCategoryRow({ data, isAr }: { data: BadgeCategoryData; isAr: boole
   const Icon = CATEGORY_ICONS[data.category];
 
   return (
-    <div className="space-y-1.5">
+    <div className="rounded-lg border bg-muted/30 p-2.5 space-y-2">
       <div className="flex items-center gap-1.5">
-        <Icon className="h-3 w-3 text-muted-foreground" />
-        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+        <Icon className="h-3 w-3 text-muted-foreground shrink-0" />
+        <span className="text-[10px] font-semibold text-muted-foreground truncate">
           {isAr ? catMeta.ar : catMeta.en}
         </span>
+        <span className="text-[9px] text-muted-foreground/60 ms-auto shrink-0">
+          {data.totalEarned}/{data.milestones.length}
+        </span>
       </div>
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1">
         {data.milestones.map(m => (
           <TierBadgeIcon key={m.tier} milestone={m} category={data.category} isAr={isAr} />
         ))}
@@ -143,9 +146,9 @@ function TierBadgeIcon({ milestone, category, isAr }: { milestone: { tier: Badge
       <TooltipTrigger asChild>
         <div
           className={`
-            flex items-center justify-center w-8 h-8 rounded-full border-2 text-[10px] font-bold transition-all cursor-default
+            flex items-center justify-center w-7 h-7 rounded-full border-2 text-[9px] font-bold transition-all cursor-default
             ${milestone.earned
-              ? `${colors.bg} ${colors.text} ${colors.border} ring-2 ${colors.ring} scale-100`
+              ? `${colors.bg} ${colors.text} ${colors.border} ring-1 ${colors.ring}`
               : 'bg-muted/50 text-muted-foreground/40 border-muted-foreground/10 grayscale opacity-40'
             }
           `}

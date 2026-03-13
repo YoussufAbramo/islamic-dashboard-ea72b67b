@@ -22,7 +22,7 @@ import { useTeacherBadges } from '@/hooks/use-teacher-badges';
 import {
   Clock, DollarSign, TrendingUp, AlertTriangle, CheckCircle,
   Loader2, Percent, Mail, Phone, User, Briefcase, FileText,
-  ExternalLink, FileUp, Pencil, X, Save,
+  ExternalLink, FileUp, Pencil, X, Save, Award,
   CalendarDays, Wallet, Info, Eye, HeadphonesIcon, Receipt, Cake,
   Send,
 } from 'lucide-react';
@@ -376,6 +376,7 @@ const TeacherProfile = () => {
     { label: isAr ? 'الحصص المكتملة' : 'Completed Sessions', value: completedSessions.toString(), icon: CheckCircle, color: 'text-emerald-600' },
     { label: isAr ? 'حصص الغياب' : 'Absence Sessions', value: absentSessions.toString(), icon: AlertTriangle, color: 'text-red-600' },
     { label: isAr ? 'نسبة الحضور' : 'Attendance %', value: `${(completedSessions + absentSessions) > 0 ? Math.round((completedSessions / (completedSessions + absentSessions)) * 100) : 0}%`, icon: Percent, color: 'text-purple-600' },
+    { label: isAr ? 'الأوسمة المحصّلة' : 'Badges Collected', value: badgeCategories.reduce((s, c) => s + c.totalEarned, 0).toString(), icon: Award, color: 'text-amber-600' },
   ];
 
   const handleSubmitTicket = async () => {
@@ -671,7 +672,7 @@ const TeacherProfile = () => {
       </div>
 
       {/* Stats Grid - Row 2 */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {statCardsRow2.map((stat, i) => (
           <Card key={i} className="hover:shadow-md transition-shadow">
             <CardContent className="p-4 flex items-start gap-3">
