@@ -259,7 +259,7 @@ const translations: Record<Language, Record<string, string>> = {
     'courses.archived': 'مؤرشفة',
     'courses.sections': 'الأقسام',
     'courses.addSection': 'إضافة قسم',
-    'courses.topics': 'المواضيع',
+    'courses.topics': 'أدرج مواضيع الدورة الرئيسية',
     'courses.addTopic': 'إضافة موضوع',
     'courses.lessons': 'الدروس',
     'courses.addLesson': 'إضافة درس',
