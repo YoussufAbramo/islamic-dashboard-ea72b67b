@@ -19,7 +19,7 @@ interface DataManagementCardProps {
   isAr: boolean;
 }
 
-type SeedCategory = 'students' | 'teachers' | 'courses' | 'billing' | 'schedule' | 'communications' | 'support' | 'certificates' | 'website' | 'packages';
+type SeedCategory = 'students' | 'teachers' | 'courses' | 'billing' | 'schedule' | 'communications' | 'support' | 'certificates' | 'website' | 'packages' | 'expenses' | 'ebooks' | 'progress' | 'support_config';
 
 const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon: string; desc: string; descAr: string }[] = [
   { key: 'students', label: 'Students', labelAr: 'طلاب', icon: '👨‍🎓', desc: 'Auth users + profiles + student records', descAr: 'مستخدمون + ملفات + سجلات طلاب' },
@@ -29,7 +29,11 @@ const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon
   { key: 'schedule', label: 'Schedule', labelAr: 'جدول', icon: '📅', desc: 'Timetable entries & attendance', descAr: 'مواعيد وحضور' },
   { key: 'communications', label: 'Communications', labelAr: 'تواصل', icon: '📢', desc: 'Announcements & notifications', descAr: 'إعلانات وإشعارات' },
   { key: 'support', label: 'Support & Chats', labelAr: 'دعم ومحادثات', icon: '💬', desc: 'Chats, messages & support tickets', descAr: 'محادثات ورسائل وتذاكر دعم' },
+  { key: 'support_config', label: 'Support Config', labelAr: 'إعدادات الدعم', icon: '⚙️', desc: 'Departments & priorities', descAr: 'أقسام وأولويات الدعم' },
   { key: 'certificates', label: 'Certificates', labelAr: 'شهادات', icon: '🏅', desc: 'Student certificates', descAr: 'شهادات الطلاب' },
+  { key: 'progress', label: 'Progress & Reports', labelAr: 'تقدم وتقارير', icon: '📊', desc: 'Student progress & session reports', descAr: 'تقدم الطلاب وتقارير الحصص' },
+  { key: 'expenses', label: 'Expenses', labelAr: 'مصروفات', icon: '💰', desc: 'Expense categories & expense records', descAr: 'تصنيفات المصروفات والسجلات' },
+  { key: 'ebooks', label: 'E-Books', labelAr: 'كتب إلكترونية', icon: '📖', desc: 'E-books, views & downloads', descAr: 'كتب إلكترونية ومشاهدات وتنزيلات' },
   { key: 'website', label: 'Website Content', labelAr: 'محتوى الموقع', icon: '🌐', desc: 'Blog posts & pages', descAr: 'مقالات وصفحات' },
   { key: 'packages', label: 'Pricing Packages', labelAr: 'باقات الأسعار', icon: '📦', desc: 'Pricing packages', descAr: 'باقات الأسعار' },
 ];

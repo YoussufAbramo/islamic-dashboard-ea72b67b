@@ -459,7 +459,7 @@ const BackupsSettings = () => {
               finally { setBackupingSettings(false); }
             }} disabled={backupingSettings}>
               {backupingSettings ? <Loader2 className="h-4 w-4 me-1 animate-spin" /> : <Settings className="h-4 w-4 me-1" />}
-              {isAr ? 'إنشاء ملف نسخة إعدادات التطبيق' : 'Generate App Settings Backup File'}
+              {isAr ? 'إنشاء نسخة إعدادات التطبيق' : 'Generate App Settings Backup'}
             </Button>
           </CardContent>
         </Card>
@@ -467,58 +467,90 @@ const BackupsSettings = () => {
       </div>
 
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Plus className="h-5 w-5 text-primary" />{isAr ? 'إنشاء نسخة احتياطية' : 'Create Backup'}</DialogTitle>
-            <DialogDescription>{isAr ? 'سيتم تصدير جميع بيانات المنصة وحفظها في ملف نسخة احتياطية' : 'All platform data will be exported and saved as a backup file'}</DialogDescription>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-primary/10 text-primary">
+                <HardDrive className="h-5 w-5" />
+              </div>
+              {isAr ? 'إنشاء نسخة احتياطية' : 'Create Backup'}
+            </DialogTitle>
+            <DialogDescription>{isAr ? 'سيتم تصدير البيانات المحددة وحفظها كملف نسخة احتياطية' : 'Selected data will be exported and saved as a backup file'}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>{isAr ? 'اسم الملف' : 'File Name'}</Label>
-              <Input value={backupName} onChange={(e) => setBackupName(e.target.value)} placeholder={isAr ? 'اسم النسخة الاحتياطية' : 'Backup name'} />
-              <p className="text-xs text-muted-foreground">{isAr ? `المنطقة الزمنية: ${defaultTimezone}` : `Timezone: ${defaultTimezone}`}</p>
-            </div>
-            <div className="space-y-2">
-              <Label>{isAr ? 'تعليق (اختياري)' : 'Comment (optional)'}</Label>
-              <Textarea value={backupComment} onChange={(e) => setBackupComment(e.target.value)} placeholder={isAr ? 'أضف تعليقاً على هذه النسخة...' : 'Add a comment for this backup...'} rows={2} />
-            </div>
-            <div className="space-y-2">
-              <Label>{isAr ? 'التنسيق' : 'Format'}</Label>
-              <Select value={backupFormat} onValueChange={(v) => setBackupFormat(v as any)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="json"><span className="flex items-center gap-2"><FileJson className="h-4 w-4" /> JSON</span></SelectItem>
-                  <SelectItem value="sql"><span className="flex items-center gap-2"><Database className="h-4 w-4" /> SQL</span></SelectItem>
-                  <SelectItem value="csv"><span className="flex items-center gap-2"><FileText className="h-4 w-4" /> CSV</span></SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label>{isAr ? 'البيانات المشمولة' : 'Select Data to Backup'}</Label>
-                <div className="flex gap-2">
-                  <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={selectAll}>{isAr ? 'تحديد الكل' : 'Select All'}</Button>
-                  <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={deselectAll}>{isAr ? 'إلغاء الكل' : 'Deselect All'}</Button>
+          <div className="space-y-5">
+            {/* Top Row: Name + Format side by side */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="sm:col-span-2 space-y-2">
+                <Label className="text-xs font-medium">{isAr ? 'اسم الملف' : 'File Name'}</Label>
+                <Input value={backupName} onChange={(e) => setBackupName(e.target.value)} placeholder={isAr ? 'اسم النسخة الاحتياطية' : 'Backup name'} />
+                <p className="text-[10px] text-muted-foreground">{isAr ? `المنطقة الزمنية: ${defaultTimezone}` : `Timezone: ${defaultTimezone}`}</p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-medium">{isAr ? 'التنسيق' : 'Format'}</Label>
+                <div className="grid grid-cols-3 gap-1">
+                  {[
+                    { value: 'json', icon: FileJson, label: 'JSON' },
+                    { value: 'sql', icon: Database, label: 'SQL' },
+                    { value: 'csv', icon: FileText, label: 'CSV' },
+                  ].map(fmt => {
+                    const Icon = fmt.icon;
+                    const isSelected = backupFormat === fmt.value;
+                    return (
+                      <button
+                        key={fmt.value}
+                        onClick={() => setBackupFormat(fmt.value as any)}
+                        className={`flex flex-col items-center gap-1 p-2 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${
+                          isSelected ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:bg-muted/50'
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                        {fmt.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-1.5 max-h-[200px] overflow-y-auto p-3 rounded-lg border border-border bg-muted/30">
+            </div>
+
+            {/* Comment */}
+            <div className="space-y-2">
+              <Label className="text-xs font-medium">{isAr ? 'تعليق (اختياري)' : 'Comment (optional)'}</Label>
+              <Textarea value={backupComment} onChange={(e) => setBackupComment(e.target.value)} placeholder={isAr ? 'أضف تعليقاً على هذه النسخة...' : 'Add a comment for this backup...'} rows={2} className="resize-none" />
+            </div>
+
+            {/* Table Selection */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-medium">{isAr ? 'البيانات المشمولة' : 'Data to Include'}</Label>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="sm" className="text-[10px] h-6 px-2 text-primary" onClick={selectAll}>{isAr ? 'تحديد الكل' : 'Select All'}</Button>
+                  <Button variant="ghost" size="sm" className="text-[10px] h-6 px-2 text-muted-foreground" onClick={deselectAll}>{isAr ? 'إلغاء الكل' : 'None'}</Button>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-[240px] overflow-y-auto p-3 rounded-lg border border-border bg-muted/20">
                 {ALL_BACKUP_TABLES.map(t => (
-                  <label key={t.key} className="flex items-center gap-2 py-1 cursor-pointer text-sm hover:text-foreground">
+                  <label key={t.key} className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer text-xs transition-colors ${
+                    selectedTables[t.key] ? 'bg-primary/5 text-foreground' : 'text-muted-foreground hover:bg-muted/50'
+                  }`}>
                     <Checkbox checked={selectedTables[t.key]} onCheckedChange={() => toggleTable(t.key)} />
-                    <span className={selectedTables[t.key] ? 'text-foreground' : 'text-muted-foreground'}>{isAr ? t.labelAr : t.label}</span>
+                    <span>{isAr ? t.labelAr : t.label}</span>
                   </label>
                 ))}
               </div>
-              <p className="text-xs text-muted-foreground">
-                {isAr ? `${Object.values(selectedTables).filter(Boolean).length} من ${ALL_BACKUP_TABLES.length} جدول محدد` : `${Object.values(selectedTables).filter(Boolean).length} of ${ALL_BACKUP_TABLES.length} tables selected`}
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] text-muted-foreground">
+                  {isAr ? `${Object.values(selectedTables).filter(Boolean).length} من ${ALL_BACKUP_TABLES.length} جدول محدد` : `${Object.values(selectedTables).filter(Boolean).length} of ${ALL_BACKUP_TABLES.length} tables selected`}
+                </p>
+                <Badge variant="outline" className="text-[10px] uppercase font-mono">{backupFormat}</Badge>
+              </div>
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setShowCreate(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
             <Button onClick={handleCreate} disabled={creating || !backupName.trim()}>
               {creating && <Loader2 className="h-4 w-4 me-1 animate-spin" />}
-              {isAr ? 'إنشاء الآن' : 'Create Now'}
+              <HardDrive className="h-4 w-4 me-1" />
+              {isAr ? 'إنشاء الآن' : 'Create Backup'}
             </Button>
           </DialogFooter>
         </DialogContent>

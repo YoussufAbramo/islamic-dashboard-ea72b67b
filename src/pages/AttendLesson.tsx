@@ -59,7 +59,7 @@ const formatReportDuration = (seconds: number): string => {
 const AttendLesson = () => {
   const { language } = useLanguage();
   const { role, user } = useAuth();
-  const { activeSessionId, startSession, clearSession, setPendingAttend } = useSession();
+  const { activeSessionId, startSession, clearSession } = useSession();
   const isAr = language === 'ar';
   const [entries, setEntries] = useState<LessonEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -207,27 +207,8 @@ const AttendLesson = () => {
 
   useEffect(() => { fetchEntries(); }, []);
 
-  // Update pending attend in context for TopBar
-  useEffect(() => {
-    if (activeSessionId) {
-      setPendingAttend(null);
-      return;
-    }
-    // Find the first entry that can be attended
-    const attendable = entries.find(e => isAttendEnabled(e));
-    if (attendable) {
-      setPendingAttend({
-        id: attendable.id,
-        courseTitle: attendable.course_title,
-        studentName: attendable.student_name,
-        scheduledAt: attendable.scheduled_at,
-        onAttend: () => handleAttendClick(attendable),
-      });
-    } else {
-      setPendingAttend(null);
-    }
-    return () => setPendingAttend(null);
-  }, [entries, activeSessionId, now]);
+  // The global useUpcomingAttend hook in DashboardLayout handles
+  // setting pendingAttend for the TopBar. No local logic needed here.
 
   const getLessonStatus = (entry: LessonEntry): { label: string; variant: string; className: string; isLive: boolean } => {
     const scheduledTime = new Date(entry.scheduled_at);

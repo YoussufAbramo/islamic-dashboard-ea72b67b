@@ -608,6 +608,114 @@ Deno.serve(async (req) => {
           counts.packages = pkgIds.length
         }
 
+        // ── EXPENSES (categories + records) ──
+        if (categories.includes('expenses')) {
+          const expCatInsert = [
+            { title: 'Office Supplies', title_ar: 'لوازم مكتبية', color: '#6366f1', sort_order: 0 },
+            { title: 'Software', title_ar: 'برمجيات', color: '#8b5cf6', sort_order: 1 },
+            { title: 'Marketing', title_ar: 'تسويق', color: '#ec4899', sort_order: 2 },
+          ].slice(0, Math.max(1, Math.ceil(multiplier * 0.3)))
+          const { data: createdExpCats } = await admin.from('expense_categories').insert(expCatInsert).select('id')
+          const expCatIds = (createdExpCats || []).map(c => c.id)
+          await trackRecords(admin, sessionId, 'expense_categories', expCatIds)
+          counts.expense_categories = expCatIds.length
+
+          if (expCatIds.length > 0) {
+            const expInsert = Array.from({ length: Math.max(1, multiplier) }, (_, i) => ({
+              title: `Sample Expense ${i + 1}`, title_ar: `مصروف تجريبي ${i + 1}`,
+              amount: [50, 120, 300, 75, 200][i % 5],
+              category_id: expCatIds[i % expCatIds.length],
+              expense_date: randomDateOnly(30, 0),
+              status: ['pending', 'approved', 'rejected'][i % 3],
+              created_by: callerId,
+              notes: 'Sample expense for testing',
+            }))
+            const { data: createdExp } = await admin.from('expenses').insert(expInsert).select('id')
+            const expIds = (createdExp || []).map(e => e.id)
+            await trackRecords(admin, sessionId, 'expenses', expIds)
+            counts.expenses = expIds.length
+          }
+        }
+
+        // ── EBOOKS ──
+        if (categories.includes('ebooks')) {
+          const ebookInsert = Array.from({ length: Math.max(1, Math.ceil(multiplier * 0.5)) }, (_, i) => ({
+            title: `Sample E-Book ${i + 1}`, title_ar: `كتاب إلكتروني تجريبي ${i + 1}`,
+            description: `Description for sample e-book ${i + 1}`,
+            description_ar: `وصف الكتاب الإلكتروني التجريبي ${i + 1}`,
+            pdf_url: `https://example.com/sample-ebook-${i + 1}.pdf`,
+            created_by: callerId,
+          }))
+          const { data: createdEbooks } = await admin.from('ebooks').insert(ebookInsert).select('id')
+          const ebookIds = (createdEbooks || []).map(e => e.id)
+          await trackRecords(admin, sessionId, 'ebooks', ebookIds)
+          counts.ebooks = ebookIds.length
+        }
+
+        // ── PROGRESS & REPORTS ──
+        if (categories.includes('progress') && sIds.length > 0 && tIds.length > 0) {
+          // Student progress (needs lesson IDs)
+          const { data: existingLessons } = await admin.from('lessons').select('id').limit(10)
+          const lessonIdsForProgress = (existingLessons || []).map(l => l.id)
+          if (lessonIdsForProgress.length > 0) {
+            const progressInsert = Array.from({ length: Math.min(multiplier * 2, sIds.length * lessonIdsForProgress.length) }, (_, i) => ({
+              student_id: sIds[i % sIds.length],
+              lesson_id: lessonIdsForProgress[i % lessonIdsForProgress.length],
+              completed: i % 3 !== 0,
+              completed_at: i % 3 !== 0 ? randomDate(14, 0) : null,
+              score: i % 3 !== 0 ? Math.floor(Math.random() * 40) + 60 : null,
+            }))
+            const { data: createdProgress } = await admin.from('student_progress').insert(progressInsert).select('id')
+            const progressIds = (createdProgress || []).map(p => p.id)
+            await trackRecords(admin, sessionId, 'student_progress', progressIds)
+            counts.student_progress = progressIds.length
+          }
+
+          // Session reports (needs timetable entries)
+          const { data: completedEntries } = await admin.from('timetable_entries').select('id, teacher_id, student_id, course_id').eq('status', 'completed').limit(multiplier)
+          if (completedEntries && completedEntries.length > 0) {
+            const reportInsert = completedEntries.map((entry, i) => ({
+              timetable_entry_id: entry.id,
+              teacher_id: entry.teacher_id,
+              student_id: entry.student_id,
+              course_id: entry.course_id,
+              summary: `Sample session summary ${i + 1}`,
+              observations: 'Student showed good progress',
+              performance_remarks: pick(['Excellent', 'Good', 'Needs improvement', 'Outstanding']),
+              session_duration_seconds: [1800, 2700, 3600][i % 3],
+              started_at: randomDate(14, 0),
+              created_by: callerId,
+            }))
+            const { data: createdReports } = await admin.from('session_reports').insert(reportInsert).select('id')
+            const reportIds = (createdReports || []).map(r => r.id)
+            await trackRecords(admin, sessionId, 'session_reports', reportIds)
+            counts.session_reports = reportIds.length
+          }
+        }
+
+        // ── SUPPORT CONFIG (departments + priorities) ──
+        if (categories.includes('support_config')) {
+          const deptInsert = [
+            { name: 'Technical Support', name_ar: 'الدعم الفني', sort_order: 0 },
+            { name: 'Billing', name_ar: 'الفواتير', sort_order: 1 },
+            { name: 'General', name_ar: 'عام', sort_order: 2 },
+          ]
+          const { data: createdDepts } = await admin.from('support_departments').insert(deptInsert).select('id')
+          const deptIds = (createdDepts || []).map(d => d.id)
+          await trackRecords(admin, sessionId, 'support_departments', deptIds)
+          counts.support_departments = deptIds.length
+
+          const prioInsert = [
+            { name: 'Low', name_ar: 'منخفض', color: '#22c55e', sort_order: 0 },
+            { name: 'Medium', name_ar: 'متوسط', color: '#f59e0b', sort_order: 1 },
+            { name: 'High', name_ar: 'مرتفع', color: '#ef4444', sort_order: 2 },
+          ]
+          const { data: createdPrios } = await admin.from('support_priorities').insert(prioInsert).select('id')
+          const prioIds = (createdPrios || []).map(p => p.id)
+          await trackRecords(admin, sessionId, 'support_priorities', prioIds)
+          counts.support_priorities = prioIds.length
+        }
+
         // Finalize session
         const totalRecords = Object.values(counts).reduce((a, b) => a + b, 0)
         await admin.from('seed_sessions').update({
@@ -656,7 +764,8 @@ Deno.serve(async (req) => {
         'courses', 'course_tracks', 'course_categories', 'course_levels',
         'ebook_downloads', 'ebook_views', 'ebooks',
         'blog_posts', 'website_pages', 'pricing_packages',
-        'payout_requests', 'expenses',
+        'payout_requests', 'expenses', 'expense_categories',
+        'support_departments', 'support_priorities',
         'students', 'teachers', 'profiles', 'user_roles',
       ]
 

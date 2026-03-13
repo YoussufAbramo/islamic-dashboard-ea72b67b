@@ -11,6 +11,7 @@ import { Bug } from 'lucide-react';
 import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { useUpcomingAttend } from '@/hooks/use-upcoming-attend';
 
 const DashboardSkeleton = () =>
 <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-300">
@@ -113,6 +114,7 @@ const FloatingButtons = () => {
 const DashboardLayout = () => {
   const { user, loading } = useAuth();
   const { dir } = useLanguage();
+  useUpcomingAttend();
 
   if (loading) {
     return (
