@@ -70,6 +70,8 @@ const StudentReports = () => {
   const [sessionReports, setSessionReports] = useState<SessionReport[]>([]);
   const [historyStudent, setHistoryStudent] = useState<StudentRow | null>(null);
   const [lessonReportEntry, setLessonReportEntry] = useState<TimetableRow | null>(null);
+  const [monthlyReportStudent, setMonthlyReportStudent] = useState<StudentRow | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<string>(() => format(new Date(), 'yyyy-MM'));
 
   useEffect(() => {
     const fetchData = async () => {
