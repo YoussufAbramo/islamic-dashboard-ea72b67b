@@ -648,7 +648,7 @@ const TeacherProfile = () => {
                 </div>
 
                 {/* Badge Icons — Personal Info Section */}
-                {!badgesLoading && (
+                {teacherBadgesEnabled && !badgesLoading && (
                   <div>
                     <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2.5 font-medium">
                       {isAr ? 'الأوسمة والإنجازات' : 'Badges & Achievements'}
