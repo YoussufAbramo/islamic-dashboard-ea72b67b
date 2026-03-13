@@ -197,7 +197,7 @@ const Settings = () => {
           {activeTab === 'appearance' && <AppearanceSettings />}
           {activeTab === 'education' && <EducationSystemSettings />}
           {activeTab === 'website' && isAdmin && <WebsiteModeSettings />}
-          {activeTab === 'pricing' && isAdmin && <SaaSPricingSettings />}
+          
           {activeTab === 'auth' && isAdmin && <AuthenticationSettings />}
           {activeTab === 'payment' && isAdmin && <PaymentGatewayCard isAr={isAr} />}
           {activeTab === 'data' && isAdmin && <DataManagementCard isAr={isAr} />}
