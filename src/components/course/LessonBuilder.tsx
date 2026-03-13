@@ -377,7 +377,7 @@ const BlockEditor = ({
             <div><Label className="text-xs">{isAr ? 'التسمية التوضيحية' : 'Caption'}</Label><Input value={block.video_caption || ''} onChange={(e) => onChange({ ...block, video_caption: e.target.value })} className="mt-1" /></div>
           </div>
           );
-        )}
+        })()}
 
         {block.type === 'audio' && (
           <div className="space-y-3">
