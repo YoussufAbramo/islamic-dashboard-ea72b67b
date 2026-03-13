@@ -207,6 +207,9 @@ const TeacherProfile = () => {
   const canAccess = role === 'admin' || isOwner;
   const canEdit = role === 'admin';
 
+  // Badges / Achievements
+  const { categories: badgeCategories, loading: badgesLoading } = useTeacherBadges(id, teacher?.user_id);
+
   const actualLoggedHours = totalLoggedSeconds / 3600;
   const remainingHours = Math.max(0, requiredMonthlyHours - actualLoggedHours);
   const attendancePercentage = scheduledSessions > 0
