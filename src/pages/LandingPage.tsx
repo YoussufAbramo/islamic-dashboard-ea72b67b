@@ -215,7 +215,7 @@ const LandingPage = () => {
           </div>
         );
 
-        const renderColumn = (col: FooterColumn, ci: number) => (
+        const renderColumn = (col: FooterColumn, ci: number, skipSocial = false) => (
           <div key={ci}>
             {(isAr ? (col.title_ar || col.title) : col.title) && (
               <h4 className="text-sm font-semibold text-foreground mb-3">{isAr ? (col.title_ar || col.title) : col.title}</h4>
@@ -241,7 +241,7 @@ const LandingPage = () => {
                 </li>
               ))}
             </ul>
-            {socialCol === ci && renderSocialIcons()}
+            {!skipSocial && socialCol === ci && renderSocialIcons()}
           </div>
         );
 
