@@ -493,6 +493,8 @@ const BlockEditor = ({
                     { value: 'dashed' as const, label: isAr ? 'متقطع' : 'Dashed' },
                     { value: 'dotted' as const, label: isAr ? 'منقط' : 'Dotted' },
                     { value: 'double' as const, label: isAr ? 'مزدوج' : 'Double' },
+                    { value: 'groove' as const, label: isAr ? 'محفور' : 'Groove' },
+                    { value: 'ridge' as const, label: isAr ? 'بارز' : 'Ridge' },
                   ] as const).map((s) => (
                     <button key={s.value} type="button" onClick={() => onChange({ ...block, divider_style: s.value })}
                       className={cn("px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
