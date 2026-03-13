@@ -45,7 +45,29 @@ const SEED_CATEGORIES: { key: SeedCategory; label: string; labelAr: string; icon
 
 const MAX_TOTAL_RECORDS = 1000;
 
-const getEstimatedTotal = (m: number) => Math.min(MAX_TOTAL_RECORDS, m * 100);
+const CATEGORY_BASE_RECORDS: Record<SeedCategory, number> = {
+  students: 10,
+  teachers: 5,
+  courses: 8,
+  billing: 12,
+  schedule: 10,
+  communications: 8,
+  support: 6,
+  support_config: 3,
+  certificates: 5,
+  progress: 10,
+  expenses: 6,
+  ebooks: 4,
+  website: 4,
+  packages: 3,
+  payouts: 4,
+  badges: 3,
+};
+
+const getCategoryEstimate = (cat: SeedCategory, m: number) => Math.max(1, Math.round(CATEGORY_BASE_RECORDS[cat] * m));
+
+const getEstimatedTotal = (m: number, selected: SeedCategory[]) =>
+  Math.min(MAX_TOTAL_RECORDS, selected.reduce((sum, cat) => sum + getCategoryEstimate(cat, m), 0));
 
 interface SeedSession {
   id: string;
