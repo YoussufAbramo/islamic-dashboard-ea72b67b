@@ -22,6 +22,7 @@ interface JoinMeetingDialogProps {
   entryId?: string;
   isAr: boolean;
   onSessionStart?: () => void;
+  onPlatformSelected?: (platform: string) => void;
 }
 
 const maskUrl = (url: string): string => {
@@ -45,7 +46,7 @@ const platforms: { id: JoinMethod; label: string; labelAr: string; icon: string;
   { id: 'vconnct', label: 'Vconnct', labelAr: 'Vconnct', icon: '/system/logos/vconnct.ico', iconType: 'img' },
 ];
 
-const JoinMeetingDialog = ({ open, onOpenChange, entry, entryId, isAr, onSessionStart }: JoinMeetingDialogProps) => {
+const JoinMeetingDialog = ({ open, onOpenChange, entry, entryId, isAr, onSessionStart, onPlatformSelected }: JoinMeetingDialogProps) => {
   const [selected, setSelected] = useState<JoinMethod | null>(null);
   const [vconnctUrl, setVconnctUrl] = useState('');
   const [iframeOpen, setIframeOpen] = useState(false);
@@ -85,6 +86,8 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, entryId, isAr, onSession
 
   const handleJoin = () => {
     if (!selected) return;
+
+    onPlatformSelected?.(selected);
 
     if (selected === 'dashboard') {
       setDashboardMeetingOpen(true);
