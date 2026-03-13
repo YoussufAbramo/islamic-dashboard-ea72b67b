@@ -176,7 +176,10 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
                 width: `${block.divider_width || 100}%`,
                 borderStyle: block.divider_style || 'solid',
                 borderWidth: `${block.divider_thickness || 1}px 0 0 0`,
-                borderColor: 'hsl(var(--border))',
+                borderColor: (() => {
+                  const m: Record<string, string> = { border: 'hsl(var(--border))', primary: 'hsl(var(--primary))', muted: 'hsl(var(--muted-foreground))', destructive: 'hsl(var(--destructive))', gold: 'hsl(var(--gold, 45 80% 50%))' };
+                  return m[block.divider_color || 'border'] || 'hsl(var(--border))';
+                })(),
               }} />
             </div>
           );
