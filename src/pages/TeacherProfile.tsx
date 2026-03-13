@@ -187,6 +187,18 @@ const TeacherProfile = () => {
     setLoading(false);
   };
 
+  useEffect(() => {
+    const fetchMeta = async () => {
+      const [{ data: deptData }, { data: prioData }] = await Promise.all([
+        supabase.from('support_departments').select('id, name, name_ar').eq('is_active', true).order('sort_order'),
+        supabase.from('support_priorities').select('id, name, name_ar, color').eq('is_active', true).order('sort_order'),
+      ]);
+      setDepartments(deptData || []);
+      setPriorities(prioData || []);
+    };
+    fetchMeta();
+  }, []);
+
   useEffect(() => { fetchData(); }, [id]);
 
   const isOwner = teacher && user && teacher.user_id === user.id;
