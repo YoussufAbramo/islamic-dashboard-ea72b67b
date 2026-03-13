@@ -264,9 +264,10 @@ const Courses = () => {
                     </div>
                     <div>
                       <Label>{isAr ? 'المستوى' : 'Level'}</Label>
-                      <Select value={form.level_id} onValueChange={(v) => setForm({ ...form, level_id: v })}>
+                      <Select value={form.level_id || '__none__'} onValueChange={(v) => setForm({ ...form, level_id: v === '__none__' ? '' : v })}>
                         <SelectTrigger><SelectValue placeholder={isAr ? 'اختر المستوى' : 'Select level'} /></SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="__none__">{isAr ? '— بدون مستوى —' : '— No Level —'}</SelectItem>
                           {levels.map(l => <SelectItem key={l.id} value={l.id}>{isAr && l.title_ar ? l.title_ar : l.title}</SelectItem>)}
                         </SelectContent>
                       </Select>
