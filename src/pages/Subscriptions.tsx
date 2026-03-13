@@ -522,7 +522,7 @@ const Subscriptions = () => {
                       )}
                     </div>
                     <div className="flex items-center gap-2.5 p-2.5 rounded-lg border bg-card min-w-0">
-                      <img src="/icons/zoom.png" alt="Zoom" className="h-5 w-5 shrink-0" />
+                      <img src="/system/logos/zoom.png" alt="Zoom" className="h-5 w-5 shrink-0" />
                       {editing ? (
                         <Input type="url" placeholder="https://zoom.us/j/..." value={editForm.zoom_url} onChange={(e) => setEditForm({ ...editForm, zoom_url: e.target.value })} className="h-7 text-xs flex-1 min-w-0" />
                       ) : (
