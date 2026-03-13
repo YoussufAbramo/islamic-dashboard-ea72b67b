@@ -975,8 +975,8 @@ Deno.serve(async (req) => {
         }
 
         // ── PROGRESS ──
-        if (categories.includes('progress') && sIds.length > 0 && budget.canAdd()) {
-          const progBudget = budget.cap(alloc.progress || 5)
+        if (categories.includes('progress') && sIds.length > 0) {
+          const progBudget = budget.capMin(alloc.progress || 5)
           const { data: existingLessons } = await admin.from('lessons').select('id').limit(20)
           const lessonIdsForProgress = (existingLessons || []).map(l => l.id)
           if (lessonIdsForProgress.length > 0) {
