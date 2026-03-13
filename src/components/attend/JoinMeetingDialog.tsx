@@ -40,9 +40,9 @@ const maskUrl = (url: string): string => {
 
 const platforms: { id: JoinMethod; label: string; labelAr: string; icon: string; iconType: 'img' | 'lucide' }[] = [
   { id: 'dashboard', label: 'CodeCom Meeting', labelAr: 'اجتماع كودكوم', icon: 'video', iconType: 'lucide' },
-  { id: 'google_meet', label: 'Google Meet', labelAr: 'Google Meet', icon: '/icons/google-meet.png', iconType: 'img' },
-  { id: 'zoom', label: 'Zoom', labelAr: 'Zoom', icon: '/icons/zoom.png', iconType: 'img' },
-  { id: 'vconnct', label: 'Vconnct', labelAr: 'Vconnct', icon: '/icons/vconnct.ico', iconType: 'img' },
+  { id: 'google_meet', label: 'Google Meet', labelAr: 'Google Meet', icon: '/system/logos/google-meet.png', iconType: 'img' },
+  { id: 'zoom', label: 'Zoom', labelAr: 'Zoom', icon: '/system/logos/zoom.png', iconType: 'img' },
+  { id: 'vconnct', label: 'Vconnct', labelAr: 'Vconnct', icon: '/system/logos/vconnct.ico', iconType: 'img' },
 ];
 
 const JoinMeetingDialog = ({ open, onOpenChange, entry, entryId, isAr, onSessionStart }: JoinMeetingDialogProps) => {
@@ -284,7 +284,7 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, entryId, isAr, onSession
         <DialogContent className="max-w-[95vw] w-[95vw] h-[90vh] p-0 gap-0 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-2.5 border-b bg-muted/30">
             <div className="flex items-center gap-2">
-              <img src="/icons/vconnct.ico" alt="Vconnct" className="h-5 w-5 rounded" />
+              <img src="/system/logos/vconnct.ico" alt="Vconnct" className="h-5 w-5 rounded" />
               <span className="text-sm font-semibold">Vconnct</span>
               <span className="text-[10px] text-muted-foreground truncate max-w-[300px]">{maskUrl(iframeSrc)}</span>
             </div>
