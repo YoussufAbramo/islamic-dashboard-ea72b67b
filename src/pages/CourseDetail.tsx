@@ -522,9 +522,9 @@ const CourseDetail = () => {
                       onDelete={() => setDeleteTarget({ id: lesson.id, type: 'lesson' })}
                     />
                   )}
-                  <AccordionTrigger className="hover:no-underline flex-1">
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="h-4 w-4 text-primary" />
+                  <AccordionTrigger className="hover:no-underline flex-1 [&>svg]:ms-auto">
+                    <div className="flex items-center gap-2 flex-1">
+                      <BookOpen className="h-4 w-4 text-primary shrink-0" />
                       <span>{isAr && lesson.title_ar ? lesson.title_ar : lesson.title}</span>
                       <Badge variant="secondary" className="text-xs">
                         {(sections[lesson.id] || []).length} {t('courses.sections')}
