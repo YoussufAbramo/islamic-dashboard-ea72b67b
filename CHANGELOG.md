@@ -2,6 +2,26 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.2.0] - 2026-03-13
+
+### Added
+- **Global Attend button** — TopBar now shows an "Attend" button across all dashboard pages when a session is starting within 15 minutes, using a new `useUpcomingAttend` hook that polls every 30 seconds
+- **Expanded sample data categories** — seed system now covers all database areas: Expenses (categories + records), E-Books, Student Progress & Session Reports, Support Config (departments + priorities)
+- **Realistic session data in seeding** — schedule category now generates attended sessions with session reports (logged time, summaries, observations, performance remarks), cancelled sessions with reasons, and proper attendance records
+- **Session report details in seed data** — reports include realistic duration with ±2min variance, proper `started_at`/`ended_at` timestamps, subscription linking, and varied summaries/observations
+
+### Changed
+- **Backup dialog redesigned** — expanded to `max-w-2xl` with 3-column table selection grid and visual toggle cards for format selection (JSON, SQL, CSV)
+- **Renamed backup buttons** — "Run a Full Backup Now" → "Generate Full Backup"; "Backup Settings" → "Generate App Settings Backup"
+- **Sample data deduplication** — seeding multiple times now adds new data without duplicating fixed-pool records (tracks, categories, levels, courses, announcements, packages, etc.)
+- **Session-unique dynamic records** — expenses, blogs, and pages use session ID slices in titles to ensure uniqueness across runs
+
+### Improved
+- **Schedule seeding distribution** — ~40% completed (with attendance + reports), ~15% cancelled (with reasons), remaining scheduled for future dates
+- **Clear all sample data** — cleanup process updated to handle all new tables in proper FK-safe deletion order
+
+---
+
 ## [5.1.0] - 2026-03-13
 
 ### Changed
