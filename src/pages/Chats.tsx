@@ -10,10 +10,10 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Send, Ban, CheckCircle, Trash2, Plus, Search, ArrowDown, ArrowUp, Users, UserPlus, MoreVertical, LogIn, Check, CheckCheck } from 'lucide-react';
+import { Send, Ban, CheckCircle, Trash2, Plus, Search, ArrowDown, ArrowUp, MoreVertical, LogIn, Check, CheckCheck } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
@@ -39,26 +39,21 @@ const Chats = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [studentsList, setStudentsList] = useState<any[]>([]);
   const [teachersList, setTeachersList] = useState<any[]>([]);
-  const [subscriptionsList, setSubscriptionsList] = useState<any[]>([]);
   const [createForm, setCreateForm] = useState({ student_id: '', teacher_id: '' });
   const [createLoading, setCreateLoading] = useState(false);
-
-  // Group members state (for viewing existing group chats)
-  const [groupMembers, setGroupMembers] = useState<any[]>([]);
-  const [addMemberKey, setAddMemberKey] = useState(0);
 
   const fetchChats = async () => {
     setLoading(true);
     const { data } = await supabase
       .from('chats')
       .select('*, teachers:teacher_id(user_id, profiles:teachers_user_id_profiles_fkey(full_name)), students:student_id(user_id, profiles:students_user_id_profiles_fkey(full_name))')
+      .eq('is_group', false)
       .order('created_at', { ascending: false });
     setChats(data || []);
     setLoading(false);
   };
 
   const [senderRoles, setSenderRoles] = useState<Record<string, string>>({});
-  const [readReceipts, setReadReceipts] = useState<{ user_id: string; last_read_at: string }[]>([]);
 
   const fetchMessages = async (chatId: string) => {
     const { data } = await supabase
@@ -87,42 +82,46 @@ const Chats = () => {
       (roles || []).forEach((r: any) => { roleMap[r.user_id] = r.role; });
       setSenderRoles(roleMap);
     }
+
+    // Mark messages as read by current user
+    if (user && data && data.length > 0) {
+      markMessagesAsRead(chatId, user.id);
+    }
   };
 
-  const fetchReadReceipts = async (chatId: string) => {
-    const { data } = await supabase
-      .from('chat_read_receipts')
-      .select('user_id, last_read_at')
-      .eq('chat_id', chatId);
-    setReadReceipts(data || []);
-  };
+  // Mark all messages in a chat as read by adding current user to read_by jsonb
+  const markMessagesAsRead = async (chatId: string, userId: string) => {
+    // We use an RPC or direct update. Since read_by is jsonb, we update messages
+    // where the user is NOT already in read_by array.
+    // For simplicity, fetch unread message IDs and batch update them.
+    const { data: unreadMsgs } = await supabase
+      .from('chat_messages')
+      .select('id, read_by')
+      .eq('chat_id', chatId)
+      .neq('sender_id', userId);
 
-  const upsertReadReceipt = async (chatId: string) => {
-    if (!user) return;
+    if (!unreadMsgs || unreadMsgs.length === 0) return;
+
     const now = new Date().toISOString();
-    await supabase.from('chat_read_receipts').upsert(
-      { chat_id: chatId, user_id: user.id, last_read_at: now },
-      { onConflict: 'chat_id,user_id' }
-    );
-  };
-
-  const fetchGroupMembers = async (chatId: string) => {
-    const { data } = await supabase
-      .from('chat_members')
-      .select('*, profiles:user_id(full_name)')
-      .eq('chat_id', chatId);
-    setGroupMembers(data || []);
+    for (const msg of unreadMsgs) {
+      const readBy = (msg.read_by as any[]) || [];
+      const alreadyRead = readBy.some((r: any) => r.user_id === userId);
+      if (!alreadyRead) {
+        const updatedReadBy = [...readBy, { user_id: userId, read_at: now }];
+        await supabase.from('chat_messages')
+          .update({ read_by: updatedReadBy } as any)
+          .eq('id', msg.id);
+      }
+    }
   };
 
   const fetchFormData = async () => {
-    const [s, te, subs] = await Promise.all([
+    const [s, te] = await Promise.all([
       supabase.from('students').select('id, user_id, profiles:students_user_id_profiles_fkey(full_name)'),
       supabase.from('teachers').select('id, user_id, profiles:teachers_user_id_profiles_fkey(full_name)'),
-      supabase.from('subscriptions').select('id, courses:course_id(title), students:student_id(user_id, profiles:students_user_id_profiles_fkey(full_name))').eq('status', 'active'),
     ]);
     setStudentsList(s.data || []);
     setTeachersList(te.data || []);
-    setSubscriptionsList(subs.data || []);
   };
 
   useEffect(() => { fetchChats(); }, []);
@@ -130,13 +129,8 @@ const Chats = () => {
   useEffect(() => {
     if (selectedChat) {
       fetchMessages(selectedChat.id);
-      fetchReadReceipts(selectedChat.id);
-      upsertReadReceipt(selectedChat.id);
-      if (selectedChat.is_group) fetchGroupMembers(selectedChat.id);
       const interval = setInterval(() => {
         fetchMessages(selectedChat.id);
-        fetchReadReceipts(selectedChat.id);
-        upsertReadReceipt(selectedChat.id);
       }, 5000);
       localStorage.setItem('chat_last_check', new Date().toISOString());
       return () => clearInterval(interval);
@@ -178,36 +172,6 @@ const Chats = () => {
     setSelectedChat({ ...selectedChat, is_suspended: newStatus });
     fetchChats();
     toast.success(newStatus ? t('chats.suspended') : t('chats.unsuspend'));
-  };
-
-  const addGroupMember = async (userId: string, memberRole: string) => {
-    // Check DB directly to avoid stale state issues
-    const { data: existingRows } = await supabase
-      .from('chat_members')
-      .select('id')
-      .eq('chat_id', selectedChat.id)
-      .eq('user_id', userId)
-      .maybeSingle();
-    if (existingRows) {
-      toast.error(isAr ? 'هذا العضو موجود بالفعل' : 'This member already exists');
-      setAddMemberKey(prev => prev + 1);
-      return;
-    }
-    const { error } = await supabase.from('chat_members').insert({
-      chat_id: selectedChat.id,
-      user_id: userId,
-      role: memberRole,
-    });
-    if (error) { notifyError({ error, isAr, rawMessage: error.message }); return; }
-    toast.success(isAr ? 'تمت إضافة العضو' : 'Member added');
-    setAddMemberKey(prev => prev + 1);
-    fetchGroupMembers(selectedChat.id);
-  };
-
-  const removeGroupMember = async (memberId: string) => {
-    await supabase.from('chat_members').delete().eq('id', memberId);
-    toast.success(isAr ? 'تمت إزالة العضو' : 'Member removed');
-    fetchGroupMembers(selectedChat.id);
   };
 
   const handleCreateChat = async () => {
@@ -268,7 +232,6 @@ const Chats = () => {
   };
 
   const getChatLabel = (chat: any) => {
-    if (chat.is_group && chat.name) return chat.name;
     const teacher = chat.teachers?.profiles?.full_name || '';
     const student = chat.students?.profiles?.full_name || '';
     return `${teacher}${teacher && student ? ' ↔ ' : ''}${student}` || (isAr ? 'محادثة' : 'Chat');
@@ -288,9 +251,6 @@ const Chats = () => {
   }, [chats, searchQuery, sortOrder]);
 
   const { currentPage, totalPages, paginatedItems: paginatedChats, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filteredChats);
-
-  const toggleMultiSelect = (arr: string[], value: string) =>
-    arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value];
 
   if (loading) return <ChatSkeleton />;
 
@@ -337,7 +297,7 @@ const Chats = () => {
                   onClick={() => { setSelectedChat(chat); localStorage.setItem(`chat_read_${chat.id}`, new Date().toISOString()); }}
                 >
                   <Avatar className="h-8 w-8 shrink-0">
-                    <AvatarFallback className={`text-xs font-medium ${chat.is_group ? 'bg-accent text-accent-foreground' : 'bg-primary/10 text-primary'}`}>
+                    <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
                       {getChatLabel(chat).charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -349,7 +309,6 @@ const Chats = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      {chat.is_group && <Badge variant="outline" className="text-[9px] h-4 px-1.5">{isAr ? 'مجموعة' : 'Group'}</Badge>}
                       {chat.is_suspended && <Badge variant="destructive" className="text-[9px] h-4 px-1.5">{t('chats.suspended')}</Badge>}
                     </div>
                   </div>
@@ -382,94 +341,12 @@ const Chats = () => {
                   <div>
                     <CardTitle className="text-sm">{getChatLabel(selectedChat)}</CardTitle>
                     <p className="text-[10px] text-muted-foreground">
-                      {selectedChat.is_group
-                        ? `${isAr ? 'مجموعة' : 'Group'} • ${groupMembers.length} ${isAr ? 'عضو' : 'members'}`
-                        : (isAr ? 'محادثة مباشرة' : 'Direct Chat')}
+                      {isAr ? 'محادثة مباشرة' : 'Direct Chat'}
                     </p>
                   </div>
                   {selectedChat.is_suspended && <Badge variant="destructive" className="text-xs">{t('chats.suspended')}</Badge>}
                 </div>
                 <div className="flex items-center gap-1">
-                  {selectedChat.is_group && (
-                    <Dialog onOpenChange={(open) => { if (open) { fetchFormData(); fetchGroupMembers(selectedChat.id); } }}>
-                      <DialogTrigger asChild>
-                        <Button variant="ghost" size="sm" className="gap-1 text-xs">
-                          <Users className="h-3 w-3" />
-                          {isAr ? 'الأعضاء' : 'Members'}
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-sm">
-                        <DialogHeader><DialogTitle>{isAr ? 'أعضاء المجموعة' : 'Group Members'}</DialogTitle></DialogHeader>
-                        <div className="space-y-3">
-                          {/* Members from chat_members table */}
-                          <div className="space-y-2">
-                            {groupMembers.map(member => {
-                              const roleLabelMap: Record<string, string> = {
-                                admin: isAr ? 'مشرف' : 'Admin',
-                                teacher: isAr ? 'معلم' : 'Teacher',
-                                student: isAr ? 'طالب' : 'Student',
-                                member: isAr ? 'عضو' : 'Member',
-                              };
-                              return (
-                                <div key={member.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/50">
-                                  <div className="flex items-center gap-2">
-                                    <Avatar className="h-7 w-7"><AvatarFallback className="text-xs bg-primary/10 text-primary">{(member.profiles?.full_name || '?').charAt(0).toUpperCase()}</AvatarFallback></Avatar>
-                                    <div>
-                                      <p className="text-sm font-medium">{member.profiles?.full_name || member.user_id}</p>
-                                      <p className="text-[10px] text-muted-foreground">{roleLabelMap[member.role] || member.role}</p>
-                                    </div>
-                                  </div>
-                                  {role === 'admin' && member.user_id !== user?.id && (
-                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={() => removeGroupMember(member.id)}>
-                                      <Trash2 className="h-3 w-3" />
-                                    </Button>
-                                  )}
-                                </div>
-                              );
-                            })}
-                            {groupMembers.length === 0 && (
-                              <p className="text-sm text-muted-foreground text-center py-2">{isAr ? 'لا يوجد أعضاء' : 'No members yet'}</p>
-                            )}
-                          </div>
-
-                          {/* Add Members (admin only) */}
-                          {role === 'admin' && (
-                            <div className="border-t border-border pt-3 space-y-3">
-                              <p className="text-xs font-medium text-muted-foreground flex items-center gap-1"><UserPlus className="h-3 w-3" />{isAr ? 'إضافة أعضاء' : 'Add Members'}</p>
-                              <div className="space-y-1">
-                                <Label className="text-xs">{isAr ? 'إضافة معلم' : 'Add Teacher'}</Label>
-                                <Select key={`teacher-add-${addMemberKey}`} onValueChange={async (v) => {
-                                  const teacher = teachersList.find(t => t.id === v);
-                                  if (teacher) await addGroupMember(teacher.user_id, 'teacher');
-                                }}>
-                                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder={isAr ? 'اختر معلم...' : 'Select teacher...'} /></SelectTrigger>
-                                  <SelectContent>
-                                    {teachersList.filter(t => !groupMembers.some(m => m.user_id === t.user_id)).map(t => (
-                                      <SelectItem key={t.id} value={t.id}>{t.profiles?.full_name || t.id}</SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <div className="space-y-1">
-                                <Label className="text-xs">{isAr ? 'إضافة طالب' : 'Add Student'}</Label>
-                                <Select key={`student-add-${addMemberKey}`} onValueChange={async (v) => {
-                                  const student = studentsList.find(s => s.id === v);
-                                  if (student) await addGroupMember(student.user_id, 'student');
-                                }}>
-                                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder={isAr ? 'اختر طالب...' : 'Select student...'} /></SelectTrigger>
-                                  <SelectContent>
-                                    {studentsList.filter(s => !groupMembers.some(m => m.user_id === s.user_id)).map(s => (
-                                      <SelectItem key={s.id} value={s.id}>{s.profiles?.full_name || s.id}</SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  )}
                   {role === 'admin' && (
                     <Button variant="outline" size="sm" onClick={toggleSuspend}>
                       {selectedChat.is_suspended ? <CheckCircle className="h-3 w-3 me-1" /> : <Ban className="h-3 w-3 me-1" />}
@@ -513,6 +390,11 @@ const Chats = () => {
                           ? (isAr ? 'أمس' : 'Yesterday')
                           : format(msgDate, 'dd MMM yyyy');
                       const isSystemMsg = msg.message.startsWith('[SYSTEM]');
+
+                      // Read receipt: check if the other party has read this message
+                      const readBy = (msg.read_by as any[]) || [];
+                      const seenByOthers = isOwn && readBy.some((r: any) => r.user_id !== user?.id);
+
                       return (
                         <div key={msg.id}>
                           {showDateSep && (
@@ -565,14 +447,11 @@ const Chats = () => {
                                 <p className="leading-snug flex-1">{msg.message}</p>
                                 <span className={`flex items-center gap-0.5 text-[8px] shrink-0 whitespace-nowrap ${isOwn ? 'text-primary-foreground/60' : 'text-muted-foreground/60'}`}>
                                   {format(msgDate, 'hh:mm a')}
-                                  {isOwn && !msg.is_deleted && (() => {
-                                    const seenByOthers = readReceipts.some(
-                                      r => r.user_id !== user?.id && new Date(r.last_read_at) >= msgDate
-                                    );
-                                    return seenByOthers
+                                  {isOwn && !msg.is_deleted && (
+                                    seenByOthers
                                       ? <CheckCheck className="h-3 w-3 text-blue-400" />
-                                      : <Check className="h-3 w-3" />;
-                                  })()}
+                                      : <Check className="h-3 w-3" />
+                                  )}
                                 </span>
                               </div>
                             </div>
