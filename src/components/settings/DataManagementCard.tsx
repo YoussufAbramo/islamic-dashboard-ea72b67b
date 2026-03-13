@@ -232,6 +232,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       if (error || serverError) throw new Error(serverError || error?.message);
       
       setLastSeedResult(data);
+      logAction('add', 'Sample Data', `Seeded ${data.total_records} records (${multiplier}x)`, data.session_id, `Categories: ${selectedCategories.join(', ')}`);
       toast.success(
         isAr
           ? `تم إضافة ${data.total_records} سجل تجريبي بنجاح`
