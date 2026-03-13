@@ -22,7 +22,7 @@ import { useTeacherBadges } from '@/hooks/use-teacher-badges';
 import {
   Clock, DollarSign, TrendingUp, AlertTriangle, CheckCircle,
   Loader2, Percent, Mail, Phone, User, Briefcase, FileText,
-  ExternalLink, FileUp, Pencil, X, Save, Award,
+  ExternalLink, FileUp, Pencil, X, Save, Award, Maximize2, Minimize2,
   CalendarDays, Wallet, Info, Eye, HeadphonesIcon, Receipt, Cake,
   Send,
 } from 'lucide-react';
