@@ -64,7 +64,9 @@ const AttendLesson = () => {
   const [entries, setEntries] = useState<LessonEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(new Date());
-  const [testMode, setTestMode] = useState(false);
+  const [testMode, setTestMode] = useState(() => {
+    try { return localStorage.getItem('attend_test_mode') === 'true'; } catch { return false; }
+  });
   const [joinOpen, setJoinOpen] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<LessonEntry | null>(null);
 

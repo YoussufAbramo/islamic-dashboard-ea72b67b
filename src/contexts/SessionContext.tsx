@@ -13,6 +13,7 @@ interface PendingAttendEntry {
   id: string;
   courseTitle: string;
   studentName: string;
+  scheduledAt: string;
   onAttend: () => void;
 }
 
