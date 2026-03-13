@@ -7,12 +7,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { GraduationCap, Users, CreditCard, UserX, TrendingUp, AlertTriangle, Eye, CheckCircle, XCircle, Clock, FileText } from 'lucide-react';
+import { GraduationCap, Users, CreditCard, UserX, TrendingUp, AlertTriangle, Eye, CheckCircle, XCircle, Clock, FileText, CalendarDays } from 'lucide-react';
 import { TableSkeleton } from '@/components/PageSkeleton';
 import EmptyState from '@/components/EmptyState';
 import { format } from 'date-fns';
 import { getLabel, timetableStatusLabels } from '@/lib/statusLabels';
+import { ACTION_BTN, ACTION_ICON } from '@/lib/actionBtnClass';
 
 const CHART_COLORS = ['hsl(var(--primary))', 'hsl(var(--destructive))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
@@ -53,6 +55,8 @@ interface SessionReport {
   session_duration_seconds: number;
   started_at: string;
   ended_at: string;
+  course_id: string | null;
+  teacher_id: string | null;
 }
 
 const StudentReports = () => {
@@ -66,6 +70,8 @@ const StudentReports = () => {
   const [sessionReports, setSessionReports] = useState<SessionReport[]>([]);
   const [historyStudent, setHistoryStudent] = useState<StudentRow | null>(null);
   const [lessonReportEntry, setLessonReportEntry] = useState<TimetableRow | null>(null);
+  const [monthlyReportStudent, setMonthlyReportStudent] = useState<StudentRow | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<string>(() => format(new Date(), 'yyyy-MM'));
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,7 +80,7 @@ const StudentReports = () => {
         supabase.from('students').select('id, user_id, profiles:user_id(full_name, email)'),
         supabase.from('subscriptions').select('id, student_id, course_id, status, start_date, renewal_date, auto_renew, courses:course_id(title), teachers:teacher_id(profiles:user_id(full_name))'),
         supabase.from('timetable_entries').select('id, scheduled_at, duration_minutes, status, student_id, course_id, teacher_id').order('scheduled_at', { ascending: false }),
-        supabase.from('session_reports').select('id, timetable_entry_id, summary, observations, performance_remarks, session_duration_seconds, started_at, ended_at'),
+        supabase.from('session_reports').select('id, timetable_entry_id, summary, observations, performance_remarks, session_duration_seconds, started_at, ended_at, course_id, teacher_id'),
       ]);
 
       if (studentsRes.data) {
@@ -429,9 +435,14 @@ const StudentReports = () => {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-end">
-                          <Button variant="outline" size="sm" onClick={() => setHistoryStudent(student)}>
-                            <Eye className="h-3.5 w-3.5 me-1.5" />{isAr ? 'السجل' : 'History'}
-                          </Button>
+                          <div className="flex items-center justify-end gap-1">
+                            <Button className={ACTION_BTN} variant="ghost" size="icon" title={isAr ? 'التقرير الشهري' : 'Monthly Report'} onClick={() => { setMonthlyReportStudent(student); setSelectedMonth(format(new Date(), 'yyyy-MM')); }}>
+                              <CalendarDays className={ACTION_ICON} />
+                            </Button>
+                            <Button className={ACTION_BTN} variant="ghost" size="icon" title={isAr ? 'السجل' : 'History'} onClick={() => setHistoryStudent(student)}>
+                              <Eye className={ACTION_ICON} />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
@@ -533,6 +544,134 @@ const StudentReports = () => {
                   <div>
                     <p className="text-sm font-semibold mb-1">{isAr ? 'ملاحظات الأداء' : 'Performance Remarks'}</p>
                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">{report.performance_remarks}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Monthly Report Dialog ── */}
+      <Dialog open={!!monthlyReportStudent} onOpenChange={() => setMonthlyReportStudent(null)}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {isAr ? `التقرير الشهري — ${monthlyReportStudent?.profile.full_name}` : `Monthly Report — ${monthlyReportStudent?.profile.full_name}`}
+            </DialogTitle>
+          </DialogHeader>
+
+          {/* Month Picker */}
+          <div className="flex items-center gap-2">
+            <CalendarDays className="h-4 w-4 text-muted-foreground" />
+            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="w-[180px] h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {(() => {
+                  const months: string[] = [];
+                  const now = new Date();
+                  for (let i = 0; i < 12; i++) {
+                    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                    months.push(format(d, 'yyyy-MM'));
+                  }
+                  return months.map(m => (
+                    <SelectItem key={m} value={m}>
+                      {format(new Date(m + '-01'), 'MMMM yyyy')}
+                    </SelectItem>
+                  ));
+                })()}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {(() => {
+            if (!monthlyReportStudent) return null;
+            const studentEntries = timetableEntries.filter(e => e.student_id === monthlyReportStudent.id && e.scheduled_at.startsWith(selectedMonth));
+            const monthReports = studentEntries
+              .map(entry => {
+                const report = sessionReports.find(r => r.timetable_entry_id === entry.id);
+                if (!report) return null;
+                const courseName = subscriptions.find(s => s.course_id === entry.course_id)?.course_title || '-';
+                const teacherName = (() => {
+                  const sub = subscriptions.find(s => s.course_id === entry.course_id && s.student_id === monthlyReportStudent.id);
+                  return sub?.teacher_name || '-';
+                })();
+                return { ...report, entry, courseName, teacherName };
+              })
+              .filter(Boolean) as any[];
+
+            const totalSessions = studentEntries.length;
+            const completedSessions = studentEntries.filter(e => e.status === 'completed').length;
+            const absentSessions = studentEntries.filter(e => e.status === 'not_attend' || e.status === 'teacher_not_attend' || e.status === 'student_not_attend').length;
+            const totalMinutes = monthReports.reduce((sum: number, r: any) => sum + Math.floor(r.session_duration_seconds / 60), 0);
+
+            return (
+              <div className="space-y-4">
+                {/* Summary Stats */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="rounded-lg border p-3 text-center">
+                    <p className="text-lg font-bold">{totalSessions}</p>
+                    <p className="text-[11px] text-muted-foreground">{isAr ? 'إجمالي الجلسات' : 'Total Sessions'}</p>
+                  </div>
+                  <div className="rounded-lg border p-3 text-center">
+                    <p className="text-lg font-bold text-emerald-600">{completedSessions}</p>
+                    <p className="text-[11px] text-muted-foreground">{isAr ? 'حضور' : 'Attended'}</p>
+                  </div>
+                  <div className="rounded-lg border p-3 text-center">
+                    <p className="text-lg font-bold text-rose-600">{absentSessions}</p>
+                    <p className="text-[11px] text-muted-foreground">{isAr ? 'غياب' : 'Absent'}</p>
+                  </div>
+                  <div className="rounded-lg border p-3 text-center">
+                    <p className="text-lg font-bold">{totalMinutes}</p>
+                    <p className="text-[11px] text-muted-foreground">{isAr ? 'دقائق التعلم' : 'Learning Min'}</p>
+                  </div>
+                </div>
+
+                {/* Session Reports List */}
+                {monthReports.length === 0 ? (
+                  <div className="text-center py-8 text-sm text-muted-foreground">
+                    {isAr ? 'لا توجد تقارير لهذا الشهر' : 'No session reports for this month'}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {monthReports.map((r: any) => {
+                      const mins = Math.floor(r.session_duration_seconds / 60);
+                      return (
+                        <Card key={r.id} className="overflow-hidden">
+                          <CardContent className="p-4 space-y-2.5">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 text-sm">
+                                <Badge variant="outline" className="text-[10px]">{format(new Date(r.started_at), 'MMM dd')}</Badge>
+                                <span className="font-medium">{r.courseName}</span>
+                                <span className="text-muted-foreground">•</span>
+                                <span className="text-muted-foreground text-xs">{r.teacherName}</span>
+                              </div>
+                              <Badge variant="secondary" className="text-[10px] shrink-0">
+                                <Clock className="h-3 w-3 me-1" />{mins} {isAr ? 'د' : 'min'}
+                              </Badge>
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-muted-foreground mb-0.5">{isAr ? 'الملخص' : 'Summary'}</p>
+                              <p className="text-sm whitespace-pre-wrap">{r.summary || '-'}</p>
+                            </div>
+                            {r.observations && (
+                              <div>
+                                <p className="text-xs font-semibold text-muted-foreground mb-0.5">{isAr ? 'الملاحظات' : 'Observations'}</p>
+                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{r.observations}</p>
+                              </div>
+                            )}
+                            {r.performance_remarks && (
+                              <div>
+                                <p className="text-xs font-semibold text-muted-foreground mb-0.5">{isAr ? 'ملاحظات الأداء' : 'Performance'}</p>
+                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{r.performance_remarks}</p>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
                   </div>
                 )}
               </div>

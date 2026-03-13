@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ExternalLink, X, Check, Link2, Plus, Video, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { ComponentType } from 'react';
@@ -242,7 +243,10 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, entryId, isAr, onSession
                 >
                   {renderPlatformIcon(p)}
                   <div className="text-start flex-1 min-w-0">
-                    <p className="text-sm font-semibold">{isAr ? p.labelAr : p.label}</p>
+                    <p className="text-sm font-semibold flex items-center gap-1.5">
+                      {isAr ? p.labelAr : p.label}
+                      {p.id === 'dashboard' && <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 font-medium">Beta</Badge>}
+                    </p>
                     <p className="text-[10px] text-muted-foreground truncate">
                       {p.id === 'dashboard'
                         ? (isAr ? 'مكالمة فيديو مباشرة داخل المنصة' : 'Direct video call inside the dashboard')

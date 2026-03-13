@@ -2,6 +2,25 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.17.0] - 2026-03-13
+
+### Added
+- **Monthly Student Report** — new per-student monthly report view in Students Reports showing all teacher session reports for a selected month with summary stats (total sessions, attended, absent, learning minutes) and detailed report cards
+- **Monthly report dialog** — month picker with last 12 months, session reports grouped by date with course, teacher, summary, observations, and performance remarks
+- **Beta badge on CodeCom Meeting** — added Beta badge to the CodeCom Meeting option in the Join Meeting platform selection dialog
+
+### Improved
+- **Teacher RLS security hardening** — replaced blanket `USING(true)` SELECT policy on teachers table with scoped policies: teachers view own record, students view assigned teacher only, admins retain full access
+- **Public teacher data** — created `get_public_teachers()` security-definer RPC to safely expose only non-sensitive fields for the landing page
+- **Duplicate email handling** — Teachers and Students creation now shows a clear localized error toast when attempting to register an already-existing email
+- **Payout support tickets** — Submit Ticket from payout request details now auto-locks subject and department (billing) fields
+- **Document preview** — added Download button to the CV/Contract PDF preview dialog
+
+### Security
+- **Teachers table RLS** — sensitive fields (hourly_rate, cv_url, contract_url, date_of_birth, gender) no longer exposed to students via overly permissive SELECT policy
+
+---
+
 ## [4.16.0] - 2026-03-12
 
 ### Added
