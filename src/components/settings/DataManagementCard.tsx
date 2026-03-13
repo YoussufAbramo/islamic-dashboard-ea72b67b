@@ -408,8 +408,6 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
           </CardContent>
         </Card>
 
-        {/* Clear Logs Card */}
-        <ClearLogsCard isAr={isAr} />
 
         {/* System Reset — Danger Zone */}
         <Collapsible>
