@@ -15,11 +15,13 @@ import {
   ChevronUp, ChevronDown, Loader2, Save, FileEdit, ChevronsUpDown,
   ListOrdered, BookOpen, Brain, RotateCcw, ClipboardList,
   Headphones, CheckCircle2, CheckSquare, ArrowUpDown, TextCursorInput, ToggleLeft, Ear,
+  Minus, FileStack, Columns,
 } from 'lucide-react';
 
 // ─── Block Types ───
 export type BlockType =
   | 'text' | 'image' | 'video' | 'audio'
+  | 'divider' | 'page_break' | 'split_screen'
   | 'table_of_content' | 'read_listen' | 'memorization' | 'revision' | 'homework'
   | 'exercise_listen_choose' | 'exercise_text_match' | 'exercise_choose_correct'
   | 'exercise_choose_multiple' | 'exercise_rearrange' | 'exercise_missing_text' | 'exercise_true_false';
@@ -58,6 +60,18 @@ export interface ContentBlock {
   toc_style?: 'default' | 'striped' | 'bordered' | 'minimal';
   toc_size?: 'sm' | 'md' | 'lg' | 'xl';
   toc_rows?: { en: string; ar: string }[];
+  // divider
+  divider_width?: number; // percentage 25-100
+  divider_style?: 'solid' | 'dashed' | 'dotted' | 'double';
+  divider_thickness?: number; // 1-6 px
+  divider_color?: string;
+  // page break (no extra fields needed, acts as marker)
+  page_label?: string;
+  page_label_ar?: string;
+  // split screen
+  split_left_html?: string;
+  split_right_html?: string;
+  split_active_side?: 'left' | 'right';
 }
 const generateId = () => Math.random().toString(36).substring(2, 10);
 
@@ -75,6 +89,9 @@ const blockMeta: Record<BlockType, BlockMetaItem> = {
   image: { icon: Image, label: 'Image', labelAr: 'صورة', color: 'text-green-500', group: 'media' },
   video: { icon: Video, label: 'Video', labelAr: 'فيديو', color: 'text-red-500', group: 'media' },
   audio: { icon: Music, label: 'Audio', labelAr: 'صوت', color: 'text-amber-500', group: 'media' },
+  divider: { icon: Minus, label: 'Divider', labelAr: 'فاصل', color: 'text-gray-400', group: 'media' },
+  page_break: { icon: FileStack, label: 'New Page', labelAr: 'صفحة جديدة', color: 'text-yellow-500', group: 'media' },
+  split_screen: { icon: Columns, label: 'Split Screen', labelAr: 'شاشة مقسمة', color: 'text-cyan-600', group: 'media' },
   // Content Types
   table_of_content: { icon: ListOrdered, label: 'Table of Content', labelAr: 'فهرس المحتويات', color: 'text-indigo-500', group: 'content' },
   read_listen:      { icon: BookOpen, label: 'Read & Listen', labelAr: 'قراءة واستماع', color: 'text-teal-500', group: 'content' },
@@ -92,7 +109,7 @@ const blockMeta: Record<BlockType, BlockMetaItem> = {
 };
 
 const blockGroups: { key: string; label: string; labelAr: string; types: BlockType[] }[] = [
-  { key: 'media', label: '📁 Media', labelAr: '📁 الوسائط', types: ['text', 'image', 'video', 'audio'] },
+  { key: 'media', label: '📁 Media', labelAr: '📁 الوسائط', types: ['text', 'image', 'video', 'audio', 'divider', 'page_break', 'split_screen'] },
   { key: 'content', label: '📖 Content', labelAr: '📖 المحتوى', types: ['table_of_content', 'read_listen', 'memorization', 'revision', 'homework'] },
   { key: 'exercise', label: '✏️ Exercises', labelAr: '✏️ التمارين', types: ['exercise_listen_choose', 'exercise_text_match', 'exercise_choose_correct', 'exercise_choose_multiple', 'exercise_rearrange', 'exercise_missing_text', 'exercise_true_false'] },
 ];
@@ -406,6 +423,135 @@ const BlockEditor = ({
             <div><Label className="text-xs">{isAr ? 'التسمية التوضيحية' : 'Caption'}</Label><Input value={block.audio_caption || ''} onChange={(e) => onChange({ ...block, audio_caption: e.target.value })} className="mt-1" /></div>
           </div>
         )}
+
+        {/* ── Divider ── */}
+        {block.type === 'divider' && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <Label className="text-xs mb-1.5 block">{isAr ? 'العرض' : 'Width'}</Label>
+                <div className="flex flex-wrap gap-1.5">
+                  {[25, 50, 75, 100].map((w) => (
+                    <button key={w} type="button" onClick={() => onChange({ ...block, divider_width: w })}
+                      className={cn("px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
+                        (block.divider_width || 100) === w ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+                      )}>{w}%</button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs mb-1.5 block">{isAr ? 'النمط' : 'Style'}</Label>
+                <div className="flex flex-wrap gap-1.5">
+                  {([
+                    { value: 'solid' as const, label: isAr ? 'متصل' : 'Solid' },
+                    { value: 'dashed' as const, label: isAr ? 'متقطع' : 'Dashed' },
+                    { value: 'dotted' as const, label: isAr ? 'منقط' : 'Dotted' },
+                    { value: 'double' as const, label: isAr ? 'مزدوج' : 'Double' },
+                  ] as const).map((s) => (
+                    <button key={s.value} type="button" onClick={() => onChange({ ...block, divider_style: s.value })}
+                      className={cn("px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
+                        (block.divider_style || 'solid') === s.value ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+                      )}>{s.label}</button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs mb-1.5 block">{isAr ? 'السُمك' : 'Thickness'}</Label>
+                <div className="flex flex-wrap gap-1.5">
+                  {[1, 2, 3, 4].map((t) => (
+                    <button key={t} type="button" onClick={() => onChange({ ...block, divider_thickness: t })}
+                      className={cn("px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors min-w-[28px]",
+                        (block.divider_thickness || 1) === t ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+                      )}>{t}px</button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            {/* Preview */}
+            <div className="flex justify-center p-3 rounded-lg bg-muted/20">
+              <hr style={{
+                width: `${block.divider_width || 100}%`,
+                borderStyle: block.divider_style || 'solid',
+                borderWidth: `${block.divider_thickness || 1}px 0 0 0`,
+                borderColor: 'hsl(var(--border))',
+              }} />
+            </div>
+          </div>
+        )}
+
+        {/* ── Page Break ── */}
+        {block.type === 'page_break' && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">{isAr ? 'عنوان الصفحة (EN)' : 'Page Label (EN)'}</Label>
+                <Input value={block.page_label || ''} onChange={(e) => onChange({ ...block, page_label: e.target.value })} placeholder="Page 2" className="mt-1 text-xs" />
+              </div>
+              <div>
+                <Label className="text-xs">{isAr ? 'عنوان الصفحة (AR)' : 'Page Label (AR)'}</Label>
+                <Input dir="rtl" value={block.page_label_ar || ''} onChange={(e) => onChange({ ...block, page_label_ar: e.target.value })} placeholder="الصفحة ٢" className="mt-1 text-xs" />
+              </div>
+            </div>
+            <div className="flex items-center justify-center gap-2 py-2 border rounded-lg bg-muted/20 border-dashed">
+              <FileStack className="h-4 w-4 text-yellow-500" />
+              <span className="text-xs text-muted-foreground">{isAr ? 'فاصل صفحة — المحتوى التالي يظهر في صفحة جديدة' : 'Page Break — Content below appears on a new page'}</span>
+            </div>
+          </div>
+        )}
+
+        {/* ── Split Screen ── */}
+        {block.type === 'split_screen' && (() => {
+          const activeSide = block.split_active_side || 'left';
+          return (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Label className="text-xs font-medium">{isAr ? 'تعديل الجانب' : 'Edit Side'}</Label>
+                <div className="flex gap-1">
+                  <button type="button" onClick={() => onChange({ ...block, split_active_side: 'left' })}
+                    className={cn("px-3 py-1 rounded-md text-xs font-medium border transition-colors",
+                      activeSide === 'left' ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+                    )}>{isAr ? 'يسار' : 'Left'}</button>
+                  <button type="button" onClick={() => onChange({ ...block, split_active_side: 'right' })}
+                    className={cn("px-3 py-1 rounded-md text-xs font-medium border transition-colors",
+                      activeSide === 'right' ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+                    )}>{isAr ? 'يمين' : 'Right'}</button>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-0.5 rounded-lg border overflow-hidden bg-border">
+                <div className={cn("bg-card p-1 transition-opacity", activeSide !== 'left' && "opacity-40")}>
+                  <div className="text-[10px] font-medium text-center text-muted-foreground mb-1">{isAr ? 'يسار' : 'Left'}</div>
+                  {activeSide === 'left' ? (
+                    <ContentEditor
+                      value={block.split_left_html || ''}
+                      onChange={(val) => onChange({ ...block, split_left_html: val })}
+                      placeholder={isAr ? 'محتوى الجانب الأيسر...' : 'Left side content...'}
+                      minHeight="120px"
+                    />
+                  ) : (
+                    <div className="prose prose-sm dark:prose-invert max-w-none p-2 min-h-[120px] text-xs">
+                      {block.split_left_html ? <div dangerouslySetInnerHTML={{ __html: block.split_left_html }} /> : <p className="text-muted-foreground italic text-[10px]">{isAr ? 'فارغ' : 'Empty'}</p>}
+                    </div>
+                  )}
+                </div>
+                <div className={cn("bg-card p-1 transition-opacity", activeSide !== 'right' && "opacity-40")}>
+                  <div className="text-[10px] font-medium text-center text-muted-foreground mb-1">{isAr ? 'يمين' : 'Right'}</div>
+                  {activeSide === 'right' ? (
+                    <ContentEditor
+                      value={block.split_right_html || ''}
+                      onChange={(val) => onChange({ ...block, split_right_html: val })}
+                      placeholder={isAr ? 'محتوى الجانب الأيمن...' : 'Right side content...'}
+                      minHeight="120px"
+                    />
+                  ) : (
+                    <div className="prose prose-sm dark:prose-invert max-w-none p-2 min-h-[120px] text-xs">
+                      {block.split_right_html ? <div dangerouslySetInnerHTML={{ __html: block.split_right_html }} /> : <p className="text-muted-foreground italic text-[10px]">{isAr ? 'فارغ' : 'Empty'}</p>}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── Table of Content (structured rows) ── */}
         {block.type === 'table_of_content' && (() => {
