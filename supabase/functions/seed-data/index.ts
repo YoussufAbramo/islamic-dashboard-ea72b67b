@@ -638,14 +638,19 @@ Deno.serve(async (req) => {
             { title: 'Growth', title_ar: 'نمو', subtitle: 'Growing institutions', subtitle_ar: 'المؤسسات النامية', regular_price: 79, sale_price: 69, max_courses: 10, max_students: 30, max_teachers: 5, is_featured: true },
             { title: 'Enterprise', title_ar: 'مؤسسات', subtitle: 'For organizations', subtitle_ar: 'للمؤسسات', regular_price: 199, sale_price: null, max_courses: 50, max_students: 200, max_teachers: 15, is_featured: false },
           ]
-          const pkgInsert = pkgs.slice(0, qty.packages).map((p, i) => ({
+          const pkgRaw = pkgs.slice(0, qty.packages).map((p, i) => ({
             ...p, billing_cycle: 'monthly', is_active: true, sort_order: 100 + i,
             features: JSON.stringify([{ text: `${p.max_courses} Courses`, text_ar: `${p.max_courses} دورات` }, { text: 'Support', text_ar: 'دعم' }])
           }))
-          const { data: createdPkgs } = await admin.from('pricing_packages').insert(pkgInsert).select('id')
-          const pkgIds = (createdPkgs || []).map(p => p.id)
-          await trackRecords(admin, sessionId, 'pricing_packages', pkgIds)
-          counts.packages = pkgIds.length
+          const pkgInsert = await dedup(admin, 'pricing_packages', pkgRaw)
+          if (pkgInsert.length > 0) {
+            const { data: createdPkgs } = await admin.from('pricing_packages').insert(pkgInsert).select('id')
+            const pkgIds = (createdPkgs || []).map(p => p.id)
+            await trackRecords(admin, sessionId, 'pricing_packages', pkgIds)
+            counts.packages = pkgIds.length
+          } else {
+            counts.packages = 0
+          }
         }
 
         // ── EXPENSES (categories + records) ──
