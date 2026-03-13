@@ -1041,7 +1041,7 @@ const CourseLearning = () => {
                     className="gap-1 h-7 text-xs flex-1"
                   >
                     <Settings2 className="h-3 w-3" />
-                    {isAr ? 'إدارة' : 'Manage'}
+                    {isAr ? 'تعديل الدرس' : 'Edit Lesson'}
                   </Button>
                 )}
                 {user && currentLesson && !isCurrentCompleted && (

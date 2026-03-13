@@ -844,9 +844,12 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
   const [saving, setSaving] = useState(false);
   const initialized = useRef<string | null>(null);
 
-  // Initialize blocks when lesson changes
-  if (lesson && initialized.current !== lesson.id) {
-    initialized.current = lesson.id;
+  // Build a fingerprint from lesson id + content to detect changes
+  const lessonFingerprint = lesson ? `${lesson.id}:${JSON.stringify(lesson.content?.blocks?.length ?? 0)}` : null;
+
+  // Initialize blocks when lesson or its content changes
+  if (lesson && initialized.current !== lessonFingerprint) {
+    initialized.current = lessonFingerprint;
     const content = lesson.content || {};
     if (Array.isArray(content.blocks) && content.blocks.length > 0) {
       setBlocks(content.blocks.map((b: any) => ({ ...b, id: b.id || generateId() })));
