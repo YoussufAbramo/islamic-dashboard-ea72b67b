@@ -103,6 +103,8 @@ const CourseDetail = () => {
 
   // Inline edit state
   const [inlineEdit, setInlineEdit] = useState<{ id: string; type: 'topic' | 'section' | 'lesson'; field: string; value: string } | null>(null);
+  const [builderLesson, setBuilderLesson] = useState<any | null>(null);
+  const [builderOpen, setBuilderOpen] = useState(false);
 
   const handleInlineDoubleClick = (id: string, type: 'topic' | 'section' | 'lesson', currentValue: string) => {
     if (!canEdit) return;
