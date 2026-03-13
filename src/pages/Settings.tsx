@@ -208,6 +208,33 @@ const Settings = () => {
           {activeTab === 'seo' && isAdmin && <SeoSettings />}
           {activeTab === 'supabase' && isAdmin && <SupabaseStatusSettings />}
           {activeTab === 'developer' && isAdmin && <DeveloperSettings />}
+          {activeTab === 'webhooks' && isAdmin && (
+            <ComingSoonOverlay
+              icon={Webhook}
+              title="Webhooks"
+              titleAr="الويب هوك"
+              description="Webhook settings will allow you to configure endpoints, manage API keys, and monitor integration activity."
+              descriptionAr="إعدادات الويب هوك ستتيح لك تكوين نقاط النهاية وإدارة مفاتيح API ومراقبة نشاط التكامل."
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle>{isAr ? 'إعدادات الويب هوك' : 'Webhook Settings'}</CardTitle>
+                  <CardDescription>{isAr ? 'إدارة نقاط النهاية والتكاملات الخارجية' : 'Manage endpoints and external integrations'}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="rounded-lg border p-4 space-y-2">
+                    <p className="text-sm font-medium">{isAr ? 'الميزات القادمة:' : 'Upcoming Features:'}</p>
+                    <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
+                      <li>{isAr ? 'إدارة نقاط النهاية (Endpoints)' : 'Endpoint management'}</li>
+                      <li>{isAr ? 'مفاتيح API والمصادقة' : 'API keys & authentication'}</li>
+                      <li>{isAr ? 'إعادة المحاولة التلقائية' : 'Automatic retry logic'}</li>
+                      <li>{isAr ? 'فلترة الأحداث' : 'Event filtering'}</li>
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
+            </ComingSoonOverlay>
+          )}
         </div>
       </div>
 
