@@ -105,6 +105,22 @@ async function trackRecords(
   }
 }
 
+// ─── dedup helper: filter out items whose title/name already exists ────
+async function dedup<T extends Record<string, any>>(
+  adminClient: any,
+  table: string,
+  items: T[],
+  field: string = 'title'
+): Promise<T[]> {
+  if (items.length === 0) return []
+  const titles = items.map(i => i[field]).filter(Boolean)
+  if (titles.length === 0) return items
+  const { data: existing } = await adminClient.from(table).select(field).in(field, titles)
+  if (!existing || existing.length === 0) return items
+  const existingSet = new Set(existing.map((e: any) => e[field]))
+  return items.filter(i => !existingSet.has(i[field]))
+}
+
 // ─── main handler ──────────────────────────────────────────────────────
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -279,44 +295,63 @@ Deno.serve(async (req) => {
         let cIds: string[] = []
         if (categories.includes('courses')) {
           // Tracks
-          const tracksInsert = pickN(TRACK_TITLES, qty.tracks).map((t, i) => ({
+          const tracksRaw = pickN(TRACK_TITLES, qty.tracks).map((t, i) => ({
             title: t.en, title_ar: t.ar, sort_order: i,
             description: `${t.en} description`, description_ar: `وصف ${t.ar}`,
           }))
-          const { data: createdTracks } = await admin.from('course_tracks').insert(tracksInsert).select('id')
+          const tracksInsert = await dedup(admin, 'course_tracks', tracksRaw)
+          const { data: createdTracks } = tracksInsert.length > 0
+            ? await admin.from('course_tracks').insert(tracksInsert).select('id')
+            : { data: [] }
           const trackIds = (createdTracks || []).map(t => t.id)
+          // Also get existing track IDs for FK references
+          const { data: allTrackRows } = await admin.from('course_tracks').select('id').limit(50)
+          const allTrackIds = (allTrackRows || []).map(t => t.id)
           await trackRecords(admin, sessionId, 'course_tracks', trackIds)
           counts.tracks = trackIds.length
 
           // Categories
-          const catsInsert = pickN(CAT_TITLES, qty.categories).map((c, i) => ({
+          const catsRaw = pickN(CAT_TITLES, qty.categories).map((c, i) => ({
             title: c.en, title_ar: c.ar, sort_order: i,
             description: `${c.en} courses`, description_ar: `دورات ${c.ar}`,
           }))
-          const { data: createdCats } = await admin.from('course_categories').insert(catsInsert).select('id')
+          const catsInsert = await dedup(admin, 'course_categories', catsRaw)
+          const { data: createdCats } = catsInsert.length > 0
+            ? await admin.from('course_categories').insert(catsInsert).select('id')
+            : { data: [] }
           const catIds = (createdCats || []).map(c => c.id)
+          const { data: allCatRows } = await admin.from('course_categories').select('id').limit(50)
+          const allCatIds = (allCatRows || []).map(c => c.id)
           await trackRecords(admin, sessionId, 'course_categories', catIds)
           counts.categories = catIds.length
 
           // Levels
-          const levelsInsert = pickN(LEVEL_TITLES, qty.levels).map((l, i) => ({
+          const levelsRaw = pickN(LEVEL_TITLES, qty.levels).map((l, i) => ({
             title: l.en, title_ar: l.ar, sort_order: i,
             description: `For ${l.en.toLowerCase()} learners`, description_ar: `للمتعلمين ${l.ar}`,
           }))
-          const { data: createdLevels } = await admin.from('course_levels').insert(levelsInsert).select('id')
+          const levelsInsert = await dedup(admin, 'course_levels', levelsRaw)
+          const { data: createdLevels } = levelsInsert.length > 0
+            ? await admin.from('course_levels').insert(levelsInsert).select('id')
+            : { data: [] }
           const levelIds = (createdLevels || []).map(l => l.id)
+          const { data: allLevelRows } = await admin.from('course_levels').select('id').limit(50)
+          const allLevelIds = (allLevelRows || []).map(l => l.id)
           await trackRecords(admin, sessionId, 'course_levels', levelIds)
           counts.levels = levelIds.length
 
           // Courses
-          const coursesInsert = pickN(COURSE_TITLES, qty.courses).map((c, i) => ({
+          const coursesRaw = pickN(COURSE_TITLES, qty.courses).map((c, i) => ({
             title: c.en, title_ar: c.ar, status: 'active', created_by: callerId,
             description: `Complete course: ${c.en}`, description_ar: `دورة كاملة: ${c.ar}`,
-            category_id: catIds.length > 0 ? catIds[i % catIds.length] : null,
-            level_id: levelIds.length > 0 ? levelIds[i % levelIds.length] : null,
-            track_id: trackIds.length > 0 ? trackIds[i % trackIds.length] : null,
+            category_id: allCatIds.length > 0 ? allCatIds[i % allCatIds.length] : null,
+            level_id: allLevelIds.length > 0 ? allLevelIds[i % allLevelIds.length] : null,
+            track_id: allTrackIds.length > 0 ? allTrackIds[i % allTrackIds.length] : null,
           }))
-          const { data: createdCourses } = await admin.from('courses').insert(coursesInsert).select('id')
+          const coursesInsert = await dedup(admin, 'courses', coursesRaw)
+          const { data: createdCourses } = coursesInsert.length > 0
+            ? await admin.from('courses').insert(coursesInsert).select('id')
+            : { data: [] }
           cIds = (createdCourses || []).map(c => c.id)
           await trackRecords(admin, sessionId, 'courses', cIds)
           counts.courses = cIds.length
@@ -471,17 +506,22 @@ Deno.serve(async (req) => {
 
         // ── COMMUNICATIONS (announcements + notifications) ──
         if (categories.includes('communications')) {
-          const annInsert = pickN(ANNOUNCEMENT_TITLES, qty.announcements).map(a => ({
+          const annRaw = pickN(ANNOUNCEMENT_TITLES, qty.announcements).map(a => ({
             title: a.en, title_ar: a.ar,
             content: `${a.en} - details and information.`,
             content_ar: `${a.ar} - تفاصيل ومعلومات.`,
             target_audience: pick(['all', 'students', 'teachers']),
             created_by: callerId, is_active: true,
           }))
-          const { data: createdAnn } = await admin.from('announcements').insert(annInsert).select('id')
-          const annIds = (createdAnn || []).map(a => a.id)
-          await trackRecords(admin, sessionId, 'announcements', annIds)
-          counts.announcements = annIds.length
+          const annInsert = await dedup(admin, 'announcements', annRaw)
+          if (annInsert.length > 0) {
+            const { data: createdAnn } = await admin.from('announcements').insert(annInsert).select('id')
+            const annIds = (createdAnn || []).map(a => a.id)
+            await trackRecords(admin, sessionId, 'announcements', annIds)
+            counts.announcements = annIds.length
+          } else {
+            counts.announcements = 0
+          }
 
           const notifInsert = Array.from({ length: qty.notifications }, (_, i) => ({
             user_id: callerId,
@@ -598,33 +638,46 @@ Deno.serve(async (req) => {
             { title: 'Growth', title_ar: 'نمو', subtitle: 'Growing institutions', subtitle_ar: 'المؤسسات النامية', regular_price: 79, sale_price: 69, max_courses: 10, max_students: 30, max_teachers: 5, is_featured: true },
             { title: 'Enterprise', title_ar: 'مؤسسات', subtitle: 'For organizations', subtitle_ar: 'للمؤسسات', regular_price: 199, sale_price: null, max_courses: 50, max_students: 200, max_teachers: 15, is_featured: false },
           ]
-          const pkgInsert = pkgs.slice(0, qty.packages).map((p, i) => ({
+          const pkgRaw = pkgs.slice(0, qty.packages).map((p, i) => ({
             ...p, billing_cycle: 'monthly', is_active: true, sort_order: 100 + i,
             features: JSON.stringify([{ text: `${p.max_courses} Courses`, text_ar: `${p.max_courses} دورات` }, { text: 'Support', text_ar: 'دعم' }])
           }))
-          const { data: createdPkgs } = await admin.from('pricing_packages').insert(pkgInsert).select('id')
-          const pkgIds = (createdPkgs || []).map(p => p.id)
-          await trackRecords(admin, sessionId, 'pricing_packages', pkgIds)
-          counts.packages = pkgIds.length
+          const pkgInsert = await dedup(admin, 'pricing_packages', pkgRaw)
+          if (pkgInsert.length > 0) {
+            const { data: createdPkgs } = await admin.from('pricing_packages').insert(pkgInsert).select('id')
+            const pkgIds = (createdPkgs || []).map(p => p.id)
+            await trackRecords(admin, sessionId, 'pricing_packages', pkgIds)
+            counts.packages = pkgIds.length
+          } else {
+            counts.packages = 0
+          }
         }
 
         // ── EXPENSES (categories + records) ──
         if (categories.includes('expenses')) {
-          const expCatInsert = [
+          const expCatRaw = [
             { title: 'Office Supplies', title_ar: 'لوازم مكتبية', color: '#6366f1', sort_order: 0 },
             { title: 'Software', title_ar: 'برمجيات', color: '#8b5cf6', sort_order: 1 },
             { title: 'Marketing', title_ar: 'تسويق', color: '#ec4899', sort_order: 2 },
           ].slice(0, Math.max(1, Math.ceil(multiplier * 0.3)))
-          const { data: createdExpCats } = await admin.from('expense_categories').insert(expCatInsert).select('id')
-          const expCatIds = (createdExpCats || []).map(c => c.id)
-          await trackRecords(admin, sessionId, 'expense_categories', expCatIds)
+          const expCatInsert = await dedup(admin, 'expense_categories', expCatRaw)
+          let expCatIds: string[] = []
+          if (expCatInsert.length > 0) {
+            const { data: createdExpCats } = await admin.from('expense_categories').insert(expCatInsert).select('id')
+            expCatIds = (createdExpCats || []).map(c => c.id)
+            await trackRecords(admin, sessionId, 'expense_categories', expCatIds)
+          }
+          // Use all existing categories for FK refs
+          const { data: allExpCatRows } = await admin.from('expense_categories').select('id').limit(50)
+          const allExpCatIds = (allExpCatRows || []).map(c => c.id)
           counts.expense_categories = expCatIds.length
 
-          if (expCatIds.length > 0) {
+          if (allExpCatIds.length > 0) {
+            // Use session-unique titles to avoid duplicates
             const expInsert = Array.from({ length: Math.max(1, multiplier) }, (_, i) => ({
-              title: `Sample Expense ${i + 1}`, title_ar: `مصروف تجريبي ${i + 1}`,
+              title: `Sample Expense ${sessionId.slice(0,6)}-${i + 1}`, title_ar: `مصروف تجريبي ${sessionId.slice(0,6)}-${i + 1}`,
               amount: [50, 120, 300, 75, 200][i % 5],
-              category_id: expCatIds[i % expCatIds.length],
+              category_id: allExpCatIds[i % allExpCatIds.length],
               expense_date: randomDateOnly(30, 0),
               status: ['pending', 'approved', 'rejected'][i % 3],
               created_by: callerId,
@@ -639,81 +692,115 @@ Deno.serve(async (req) => {
 
         // ── EBOOKS ──
         if (categories.includes('ebooks')) {
-          const ebookInsert = Array.from({ length: Math.max(1, Math.ceil(multiplier * 0.5)) }, (_, i) => ({
+          const ebookRaw = Array.from({ length: Math.max(1, Math.ceil(multiplier * 0.5)) }, (_, i) => ({
             title: `Sample E-Book ${i + 1}`, title_ar: `كتاب إلكتروني تجريبي ${i + 1}`,
             description: `Description for sample e-book ${i + 1}`,
             description_ar: `وصف الكتاب الإلكتروني التجريبي ${i + 1}`,
             pdf_url: `https://example.com/sample-ebook-${i + 1}.pdf`,
             created_by: callerId,
           }))
-          const { data: createdEbooks } = await admin.from('ebooks').insert(ebookInsert).select('id')
-          const ebookIds = (createdEbooks || []).map(e => e.id)
-          await trackRecords(admin, sessionId, 'ebooks', ebookIds)
-          counts.ebooks = ebookIds.length
+          const ebookInsert = await dedup(admin, 'ebooks', ebookRaw)
+          if (ebookInsert.length > 0) {
+            const { data: createdEbooks } = await admin.from('ebooks').insert(ebookInsert).select('id')
+            const ebookIds = (createdEbooks || []).map(e => e.id)
+            await trackRecords(admin, sessionId, 'ebooks', ebookIds)
+            counts.ebooks = ebookIds.length
+          } else {
+            counts.ebooks = 0
+          }
         }
 
         // ── PROGRESS & REPORTS ──
         if (categories.includes('progress') && sIds.length > 0 && tIds.length > 0) {
-          // Student progress (needs lesson IDs)
+          // Student progress (needs lesson IDs) — skip combos that already exist
           const { data: existingLessons } = await admin.from('lessons').select('id').limit(10)
           const lessonIdsForProgress = (existingLessons || []).map(l => l.id)
           if (lessonIdsForProgress.length > 0) {
-            const progressInsert = Array.from({ length: Math.min(multiplier * 2, sIds.length * lessonIdsForProgress.length) }, (_, i) => ({
+            // Check existing progress combos
+            const { data: existingProgress } = await admin.from('student_progress').select('student_id, lesson_id')
+            const existingComboSet = new Set((existingProgress || []).map((p: any) => `${p.student_id}|${p.lesson_id}`))
+            
+            const progressCandidates = Array.from({ length: Math.min(multiplier * 2, sIds.length * lessonIdsForProgress.length) }, (_, i) => ({
               student_id: sIds[i % sIds.length],
               lesson_id: lessonIdsForProgress[i % lessonIdsForProgress.length],
               completed: i % 3 !== 0,
               completed_at: i % 3 !== 0 ? randomDate(14, 0) : null,
               score: i % 3 !== 0 ? Math.floor(Math.random() * 40) + 60 : null,
             }))
-            const { data: createdProgress } = await admin.from('student_progress').insert(progressInsert).select('id')
-            const progressIds = (createdProgress || []).map(p => p.id)
-            await trackRecords(admin, sessionId, 'student_progress', progressIds)
-            counts.student_progress = progressIds.length
+            const progressInsert = progressCandidates.filter(p => !existingComboSet.has(`${p.student_id}|${p.lesson_id}`))
+            
+            if (progressInsert.length > 0) {
+              const { data: createdProgress } = await admin.from('student_progress').insert(progressInsert).select('id')
+              const progressIds = (createdProgress || []).map(p => p.id)
+              await trackRecords(admin, sessionId, 'student_progress', progressIds)
+              counts.student_progress = progressIds.length
+            } else {
+              counts.student_progress = 0
+            }
           }
 
-          // Session reports (needs timetable entries)
+          // Session reports — skip entries that already have a report
           const { data: completedEntries } = await admin.from('timetable_entries').select('id, teacher_id, student_id, course_id').eq('status', 'completed').limit(multiplier)
           if (completedEntries && completedEntries.length > 0) {
-            const reportInsert = completedEntries.map((entry, i) => ({
-              timetable_entry_id: entry.id,
-              teacher_id: entry.teacher_id,
-              student_id: entry.student_id,
-              course_id: entry.course_id,
-              summary: `Sample session summary ${i + 1}`,
-              observations: 'Student showed good progress',
-              performance_remarks: pick(['Excellent', 'Good', 'Needs improvement', 'Outstanding']),
-              session_duration_seconds: [1800, 2700, 3600][i % 3],
-              started_at: randomDate(14, 0),
-              created_by: callerId,
-            }))
-            const { data: createdReports } = await admin.from('session_reports').insert(reportInsert).select('id')
-            const reportIds = (createdReports || []).map(r => r.id)
-            await trackRecords(admin, sessionId, 'session_reports', reportIds)
-            counts.session_reports = reportIds.length
+            const entryIds = completedEntries.map(e => e.id)
+            const { data: existingReports } = await admin.from('session_reports').select('timetable_entry_id').in('timetable_entry_id', entryIds)
+            const reportedSet = new Set((existingReports || []).map((r: any) => r.timetable_entry_id))
+            const unreportedEntries = completedEntries.filter(e => !reportedSet.has(e.id))
+            
+            if (unreportedEntries.length > 0) {
+              const reportInsert = unreportedEntries.map((entry, i) => ({
+                timetable_entry_id: entry.id,
+                teacher_id: entry.teacher_id,
+                student_id: entry.student_id,
+                course_id: entry.course_id,
+                summary: `Sample session summary ${i + 1}`,
+                observations: 'Student showed good progress',
+                performance_remarks: pick(['Excellent', 'Good', 'Needs improvement', 'Outstanding']),
+                session_duration_seconds: [1800, 2700, 3600][i % 3],
+                started_at: randomDate(14, 0),
+                created_by: callerId,
+              }))
+              const { data: createdReports } = await admin.from('session_reports').insert(reportInsert).select('id')
+              const reportIds = (createdReports || []).map(r => r.id)
+              await trackRecords(admin, sessionId, 'session_reports', reportIds)
+              counts.session_reports = reportIds.length
+            } else {
+              counts.session_reports = 0
+            }
           }
         }
 
         // ── SUPPORT CONFIG (departments + priorities) ──
         if (categories.includes('support_config')) {
-          const deptInsert = [
+          const deptRaw = [
             { name: 'Technical Support', name_ar: 'الدعم الفني', sort_order: 0 },
             { name: 'Billing', name_ar: 'الفواتير', sort_order: 1 },
             { name: 'General', name_ar: 'عام', sort_order: 2 },
           ]
-          const { data: createdDepts } = await admin.from('support_departments').insert(deptInsert).select('id')
-          const deptIds = (createdDepts || []).map(d => d.id)
-          await trackRecords(admin, sessionId, 'support_departments', deptIds)
-          counts.support_departments = deptIds.length
+          const deptInsert = await dedup(admin, 'support_departments', deptRaw, 'name')
+          if (deptInsert.length > 0) {
+            const { data: createdDepts } = await admin.from('support_departments').insert(deptInsert).select('id')
+            const deptIds = (createdDepts || []).map(d => d.id)
+            await trackRecords(admin, sessionId, 'support_departments', deptIds)
+            counts.support_departments = deptIds.length
+          } else {
+            counts.support_departments = 0
+          }
 
-          const prioInsert = [
+          const prioRaw = [
             { name: 'Low', name_ar: 'منخفض', color: '#22c55e', sort_order: 0 },
             { name: 'Medium', name_ar: 'متوسط', color: '#f59e0b', sort_order: 1 },
             { name: 'High', name_ar: 'مرتفع', color: '#ef4444', sort_order: 2 },
           ]
-          const { data: createdPrios } = await admin.from('support_priorities').insert(prioInsert).select('id')
-          const prioIds = (createdPrios || []).map(p => p.id)
-          await trackRecords(admin, sessionId, 'support_priorities', prioIds)
-          counts.support_priorities = prioIds.length
+          const prioInsert = await dedup(admin, 'support_priorities', prioRaw, 'name')
+          if (prioInsert.length > 0) {
+            const { data: createdPrios } = await admin.from('support_priorities').insert(prioInsert).select('id')
+            const prioIds = (createdPrios || []).map(p => p.id)
+            await trackRecords(admin, sessionId, 'support_priorities', prioIds)
+            counts.support_priorities = prioIds.length
+          } else {
+            counts.support_priorities = 0
+          }
         }
 
         // Finalize session
