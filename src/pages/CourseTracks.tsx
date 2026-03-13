@@ -374,16 +374,16 @@ const CourseTracks = () => {
                           <BookOpen className="h-8 w-8 mx-auto text-muted-foreground/40" />
                           <div>
                             <p className="text-sm text-muted-foreground">{isAr ? 'لا توجد دورات مرتبطة بهذا المسار' : 'No courses assigned to this track'}</p>
-                            <p className="text-xs text-muted-foreground/60 mt-1">{isAr ? 'اربط الدورات من صفحة إدارة الدورات' : 'Link courses from the course management page'}</p>
+                            <p className="text-xs text-muted-foreground/60 mt-1">{isAr ? 'أضف دورات موجودة إلى هذا المسار' : 'Add existing courses to this track'}</p>
                           </div>
                           <Button
                             variant="outline"
                             size="sm"
                             className="gap-1.5"
-                            onClick={() => navigate('/dashboard/courses')}
+                            onClick={() => openAssignDialog(t.id)}
                           >
-                            <ExternalLink className="h-3.5 w-3.5" />
-                            {isAr ? 'إدارة الدورات' : 'Manage Courses'}
+                            <LinkIcon className="h-3.5 w-3.5" />
+                            {isAr ? 'ربط دورات' : 'Assign Courses'}
                           </Button>
                         </div>
                       ) : (
