@@ -753,25 +753,35 @@ Deno.serve(async (req) => {
 
         // ── SUPPORT CONFIG (departments + priorities) ──
         if (categories.includes('support_config')) {
-          const deptInsert = [
+          const deptRaw = [
             { name: 'Technical Support', name_ar: 'الدعم الفني', sort_order: 0 },
             { name: 'Billing', name_ar: 'الفواتير', sort_order: 1 },
             { name: 'General', name_ar: 'عام', sort_order: 2 },
           ]
-          const { data: createdDepts } = await admin.from('support_departments').insert(deptInsert).select('id')
-          const deptIds = (createdDepts || []).map(d => d.id)
-          await trackRecords(admin, sessionId, 'support_departments', deptIds)
-          counts.support_departments = deptIds.length
+          const deptInsert = await dedup(admin, 'support_departments', deptRaw, 'name')
+          if (deptInsert.length > 0) {
+            const { data: createdDepts } = await admin.from('support_departments').insert(deptInsert).select('id')
+            const deptIds = (createdDepts || []).map(d => d.id)
+            await trackRecords(admin, sessionId, 'support_departments', deptIds)
+            counts.support_departments = deptIds.length
+          } else {
+            counts.support_departments = 0
+          }
 
-          const prioInsert = [
+          const prioRaw = [
             { name: 'Low', name_ar: 'منخفض', color: '#22c55e', sort_order: 0 },
             { name: 'Medium', name_ar: 'متوسط', color: '#f59e0b', sort_order: 1 },
             { name: 'High', name_ar: 'مرتفع', color: '#ef4444', sort_order: 2 },
           ]
-          const { data: createdPrios } = await admin.from('support_priorities').insert(prioInsert).select('id')
-          const prioIds = (createdPrios || []).map(p => p.id)
-          await trackRecords(admin, sessionId, 'support_priorities', prioIds)
-          counts.support_priorities = prioIds.length
+          const prioInsert = await dedup(admin, 'support_priorities', prioRaw, 'name')
+          if (prioInsert.length > 0) {
+            const { data: createdPrios } = await admin.from('support_priorities').insert(prioInsert).select('id')
+            const prioIds = (createdPrios || []).map(p => p.id)
+            await trackRecords(admin, sessionId, 'support_priorities', prioIds)
+            counts.support_priorities = prioIds.length
+          } else {
+            counts.support_priorities = 0
+          }
         }
 
         // Finalize session
