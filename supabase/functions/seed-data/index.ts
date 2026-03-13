@@ -154,12 +154,16 @@ const MAX_TOTAL_RECORDS = 1000
 
 class RecordBudget {
   private used = 0
+  private _minPerCat: number
+  constructor(multiplier: number = 1) {
+    this._minPerCat = multiplier <= 3 ? 1 : multiplier <= 6 ? 2 : 3
+  }
   remaining() { return Math.max(0, MAX_TOTAL_RECORDS - this.used) }
   canAdd() { return this.used < MAX_TOTAL_RECORDS }
   consume(n: number) { this.used += n }
   cap(desired: number) { return Math.min(desired, this.remaining()) }
-  // Guarantee at least minCount even if budget is exhausted
-  capMin(desired: number, minCount = 1) { return Math.max(minCount, Math.min(desired, this.remaining())) }
+  // Guarantee at least scaled minimum even if budget is exhausted
+  capMin(desired: number, minCount?: number) { return Math.max(minCount ?? this._minPerCat, Math.min(desired, this.remaining())) }
   total() { return this.used }
 }
 
@@ -248,7 +252,7 @@ Deno.serve(async (req) => {
       const multiplier: number = Math.min(Math.max(Number(body.multiplier) || 3, 1), 10)
       if (categories.length === 0) return json({ error: 'No categories selected' }, 400)
 
-      const budget = new RecordBudget()
+      const budget = new RecordBudget(multiplier)
       const alloc = computeAllocation(multiplier, categories)
 
       // Create session

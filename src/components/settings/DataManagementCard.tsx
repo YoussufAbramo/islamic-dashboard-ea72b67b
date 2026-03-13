@@ -388,7 +388,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
                   </div>
                   <div className="p-2 rounded-md bg-muted/30 border border-border">
                     <p className="text-[10px] text-muted-foreground">{isAr ? 'الحد الأدنى' : 'Min/category'}</p>
-                    <p className="text-sm font-semibold">1</p>
+                    <p className="text-sm font-semibold">{multiplier <= 3 ? 1 : multiplier <= 6 ? 2 : 3}</p>
                   </div>
                 </div>
               </div>
@@ -495,20 +495,34 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
         {/* Clear Logs Card */}
         <ClearLogsCard isAr={isAr} />
 
-        {/* System Reset - Collapsible Accordion */}
+        {/* System Reset — Danger Zone */}
         <Collapsible>
-          <CollapsibleTrigger asChild>
-            <button className="w-full flex items-center justify-between p-3 rounded-lg border border-destructive/30 bg-destructive/5 hover:bg-destructive/10 transition-colors">
-              <span className="flex items-center gap-2 text-sm font-medium text-destructive">
-                <AlertTriangle className="h-4 w-4" />
-                {isAr ? 'إعادة تعيين النظام' : 'System Reset'}
-              </span>
-              <ChevronDown className="h-4 w-4 text-destructive" />
-            </button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-2">
-            <SystemResetCard isAr={isAr} />
-          </CollapsibleContent>
+          <Card className="border-destructive/20 overflow-hidden">
+            <CollapsibleTrigger asChild>
+              <button className="w-full flex items-center justify-between p-4 text-start hover:bg-destructive/5 transition-colors group">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
+                    <AlertTriangle className="h-4 w-4 text-destructive" />
+                  </div>
+                  <div>
+                    <span className="text-sm font-semibold text-destructive block">
+                      {isAr ? 'منطقة الخطر' : 'Danger Zone'}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">
+                      {isAr ? 'إعادة تعيين النظام بالكامل' : 'Full system reset'}
+                    </span>
+                  </div>
+                </div>
+                <ChevronDown className="h-4 w-4 text-destructive/60 transition-transform group-data-[state=open]:rotate-180" />
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <Separator className="bg-destructive/10" />
+              <div className="p-4">
+                <SystemResetCard isAr={isAr} />
+              </div>
+            </CollapsibleContent>
+          </Card>
         </Collapsible>
       </div>
 
