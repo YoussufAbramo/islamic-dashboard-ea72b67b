@@ -2,6 +2,16 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.9.2] - 2026-03-13
+
+### Added
+- **Clear All Content** — new card in Data Management that permanently deletes ALL data (not just seeded) from selected categories: Blog Posts, Website Pages, Courses & Curriculum, Expenses, Pricing Packages, and Support System (tickets, departments, priorities)
+- **Clear Logs** — new card with checkboxes to selectively clear Audit Logs (database), Seed Log (sessions + records), and Error Log (localStorage), with confirmation dialogs
+- **`clear_content` edge function action** — deletes all rows from selected content table groups respecting FK order
+- **`clear_logs` edge function action** — deletes audit_logs and/or seed_sessions/seed_records from database
+
+---
+
 ## [5.9.1] - 2026-03-13
 
 ### Changed — Database Consolidation

@@ -1246,6 +1246,81 @@ Deno.serve(async (req) => {
     }
 
     // ══════════════════════════════════════════════════════════════════
+    // CLEAR ALL CONTENT — delete all rows from selected content tables
+    // ══════════════════════════════════════════════════════════════════
+    if (action === 'clear_content') {
+      const tables = body.tables as string[] | undefined
+      if (!tables || tables.length === 0) {
+        return json({ error: 'No tables specified' }, 400)
+      }
+
+      const ALLOWED_TABLES: Record<string, string[]> = {
+        'blogs': ['blog_posts'],
+        'pages': ['website_pages'],
+        'courses': ['student_progress', 'lessons', 'lesson_sections', 'course_sections', 'teacher_courses', 'courses', 'course_tracks', 'course_categories', 'course_levels'],
+        'expenses': ['expenses', 'expense_categories'],
+        'pricing': ['pricing_packages'],
+        'support': ['support_tickets', 'support_departments', 'support_priorities'],
+      }
+
+      const deletedCounts: Record<string, number> = {}
+      const errors: string[] = []
+
+      for (const key of tables) {
+        const dbTables = ALLOWED_TABLES[key]
+        if (!dbTables) { errors.push(`Unknown table group: ${key}`); continue }
+        for (const table of dbTables) {
+          try {
+            const { count, error } = await admin.from(table).delete({ count: 'exact' }).neq('id', '00000000-0000-0000-0000-000000000000')
+            if (error) throw error
+            deletedCounts[table] = count || 0
+          } catch (e: any) {
+            errors.push(`${table}: ${e.message}`)
+            deletedCounts[table] = -1
+          }
+        }
+      }
+
+      const totalDeleted = Object.values(deletedCounts).filter(v => v > 0).reduce((a, b) => a + b, 0)
+      return json({ success: true, counts: deletedCounts, total_deleted: totalDeleted, errors })
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // CLEAR LOGS — delete audit_logs, seed_sessions/seed_records
+    // ══════════════════════════════════════════════════════════════════
+    if (action === 'clear_logs') {
+      const logTypes = body.log_types as string[] | undefined
+      if (!logTypes || logTypes.length === 0) {
+        return json({ error: 'No log types specified' }, 400)
+      }
+
+      const deletedCounts: Record<string, number> = {}
+      const errors: string[] = []
+
+      for (const logType of logTypes) {
+        if (logType === 'audit_logs') {
+          try {
+            const { count, error } = await admin.from('audit_logs').delete({ count: 'exact' }).neq('id', '00000000-0000-0000-0000-000000000000')
+            if (error) throw error
+            deletedCounts['audit_logs'] = count || 0
+          } catch (e: any) { errors.push(`audit_logs: ${e.message}`) }
+        }
+        if (logType === 'seed_log') {
+          try {
+            const { count: c1 } = await admin.from('seed_records').delete({ count: 'exact' }).neq('id', '00000000-0000-0000-0000-000000000000')
+            const { count: c2 } = await admin.from('seed_sessions').delete({ count: 'exact' }).neq('id', '00000000-0000-0000-0000-000000000000')
+            deletedCounts['seed_records'] = c1 || 0
+            deletedCounts['seed_sessions'] = c2 || 0
+          } catch (e: any) { errors.push(`seed_log: ${e.message}`) }
+        }
+        // error_log is localStorage — handled client-side
+      }
+
+      const totalDeleted = Object.values(deletedCounts).filter(v => v > 0).reduce((a, b) => a + b, 0)
+      return json({ success: true, counts: deletedCounts, total_deleted: totalDeleted, errors })
+    }
+
+    // ══════════════════════════════════════════════════════════════════
     // SYSTEM RESET — restore platform to fresh-install state
     // ══════════════════════════════════════════════════════════════════
     if (action === 'system_reset') {
