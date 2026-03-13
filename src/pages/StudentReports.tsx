@@ -80,7 +80,7 @@ const StudentReports = () => {
         supabase.from('students').select('id, user_id, profiles:user_id(full_name, email)'),
         supabase.from('subscriptions').select('id, student_id, course_id, status, start_date, renewal_date, auto_renew, courses:course_id(title), teachers:teacher_id(profiles:user_id(full_name))'),
         supabase.from('timetable_entries').select('id, scheduled_at, duration_minutes, status, student_id, course_id, teacher_id').order('scheduled_at', { ascending: false }),
-        supabase.from('session_reports').select('id, timetable_entry_id, summary, observations, performance_remarks, session_duration_seconds, started_at, ended_at'),
+        supabase.from('session_reports').select('id, timetable_entry_id, summary, observations, performance_remarks, session_duration_seconds, started_at, ended_at, course_id, teacher_id'),
       ]);
 
       if (studentsRes.data) {
