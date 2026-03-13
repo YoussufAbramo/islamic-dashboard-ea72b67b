@@ -156,10 +156,10 @@ const DashboardLayout = () => {
       <div className="flex min-h-screen w-full" dir={dir}>
         <AppSidebar />
         <SidebarInset className="flex flex-col">
-          <TopBar />
-          <ImpersonationBanner />
-          <main className="flex-1 p-4 md:p-6 overflow-auto">
-            <Outlet />
+          {showTopBar && <TopBar />}
+          {showTopBar && <ImpersonationBanner />}
+          <main className={cn("flex-1 overflow-auto", isLearnPage ? "p-0" : "p-4 md:p-6")}>
+            <Outlet context={{ topBarHidden, setTopBarHidden }} />
           </main>
           <footer className="p-3 border-t border-border flex items-center justify-between gap-3">
             <TooltipProvider>
