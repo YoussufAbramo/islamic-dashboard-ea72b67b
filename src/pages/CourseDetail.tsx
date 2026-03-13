@@ -474,10 +474,17 @@ const CourseDetail = () => {
                                               </Badge>
                                             </div>
                                             {canEdit && (
-                                              <ItemActionsMenu
-                                                onEdit={() => openEditContent(content, section.id)}
-                                                onDelete={() => setDeleteTarget({ id: content.id, type: 'content' })}
-                                              />
+                                              <div className="flex items-center gap-0.5 shrink-0">
+                                                <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted" onClick={(e) => { e.stopPropagation(); openEditContent(content, section.id); }}>
+                                                  <Settings2 className="h-3.5 w-3.5" />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted" onClick={(e) => { e.stopPropagation(); /* edit content handler - to be implemented */ }}>
+                                                  <Edit className="h-3.5 w-3.5" />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-destructive/60 hover:text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: content.id, type: 'content' }); }}>
+                                                  <Trash2 className="h-3.5 w-3.5" />
+                                                </Button>
+                                              </div>
                                             )}
                                           </div>
                                         </SortableItem>
