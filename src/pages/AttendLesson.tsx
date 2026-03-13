@@ -220,6 +220,7 @@ const AttendLesson = () => {
         id: attendable.id,
         courseTitle: attendable.course_title,
         studentName: attendable.student_name,
+        scheduledAt: attendable.scheduled_at,
         onAttend: () => handleAttendClick(attendable),
       });
     } else {
