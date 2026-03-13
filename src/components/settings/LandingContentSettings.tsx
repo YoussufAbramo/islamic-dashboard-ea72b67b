@@ -866,26 +866,28 @@ const LandingContentSettings = ({ initialTab }: { initialTab?: string }) => {
     </div>
   );
 
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-6">
-      {/* Tab navigation */}
-      <div className="flex items-center gap-1 p-1 rounded-lg bg-muted w-fit">
-        <button onClick={() => setActiveTab('header')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'header' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-          <LayoutTemplate className="h-4 w-4" />
-          {isAr ? 'الهيدر' : 'Header'}
-        </button>
-        <button onClick={() => setActiveTab('sections')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'sections' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-          <Layers className="h-4 w-4" />
-          {isAr ? 'الأقسام' : 'Sections'}
-        </button>
-        <button onClick={() => setActiveTab('footer')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'footer' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-          <PanelBottom className="h-4 w-4" />
-          {isAr ? 'الفوتر' : 'Footer'}
-        </button>
-        <button onClick={() => setActiveTab('copyright')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'copyright' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-          <Shield className="h-4 w-4" />
-          {isAr ? 'حقوق النشر' : 'Copyright'}
-        </button>
+      {/* Unified tab navigation: Header / Sections / Pricing / Footer / Copyright */}
+      <div className="flex items-center gap-1 p-1 rounded-lg bg-muted w-fit flex-wrap">
+        {([
+          { key: 'header' as const, icon: LayoutTemplate, label: 'Header', labelAr: 'الهيدر' },
+          { key: 'sections' as const, icon: Layers, label: 'Sections', labelAr: 'الأقسام' },
+          { key: 'pricing' as const, icon: CreditCard, label: 'Pricing Packages', labelAr: 'باقات الأسعار' },
+          { key: 'footer' as const, icon: PanelBottom, label: 'Footer', labelAr: 'الفوتر' },
+          { key: 'copyright' as const, icon: Shield, label: 'Copyright', labelAr: 'حقوق النشر' },
+        ]).map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === tab.key ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            <tab.icon className="h-4 w-4" />
+            {isAr ? tab.labelAr : tab.label}
+          </button>
+        ))}
       </div>
 
       {activeTab === 'header' ? (
@@ -896,6 +898,8 @@ const LandingContentSettings = ({ initialTab }: { initialTab?: string }) => {
           </CardHeader>
           <CardContent>{renderHeaderTab()}</CardContent>
         </Card>
+      ) : activeTab === 'pricing' ? (
+        <SaaSPricingSettings />
       ) : activeTab === 'footer' ? (
         <Card>
           <CardHeader>
@@ -920,30 +924,56 @@ const LandingContentSettings = ({ initialTab }: { initialTab?: string }) => {
           </CardContent>
         </Card>
       ) : (
+        /* Sections — Split-view layout */
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">{isAr ? 'اسحب لإعادة الترتيب • اضغط على العين للإظهار/الإخفاء • اضغط القلم للتحرير' : 'Drag to reorder • Click eye to show/hide • Click pencil to edit'}</p>
             <Badge variant="outline">{sectionsOrder.length} {isAr ? 'أقسام' : 'sections'}</Badge>
           </div>
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={sectionsOrder} strategy={verticalListSortingStrategy}>
-              <div className="space-y-2">
-                {sectionsOrder.map(key => (
-                  <SortableSectionCard
-                    key={key}
-                    sectionKey={key}
-                    isAr={isAr}
-                    visible={sectionsVisible[key] !== false}
-                    expanded={expandedSection === key}
-                    onToggleVisible={() => toggleSectionVisibility(key)}
-                    onToggleExpand={() => setExpandedSection(expandedSection === key ? null : key)}
-                  >
-                    {renderEditor(key)}
-                  </SortableSectionCard>
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
+          <div className={`grid gap-4 ${expandedSection ? 'grid-cols-1 lg:grid-cols-[320px_1fr]' : 'grid-cols-1'}`}>
+            {/* Left: Section list */}
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={sectionsOrder} strategy={verticalListSortingStrategy}>
+                <div className="space-y-1.5">
+                  {sectionsOrder.map(key => {
+                    const meta = sectionMeta[key];
+                    const Icon = iconMap[meta.iconName] || BookOpen;
+                    const isSelected = expandedSection === key;
+                    const isVisible = sectionsVisible[key] !== false;
+                    return (
+                      <SortableSectionListItem
+                        key={key}
+                        sectionKey={key}
+                        isAr={isAr}
+                        isSelected={isSelected}
+                        isVisible={isVisible}
+                        onToggleVisible={() => toggleSectionVisibility(key)}
+                        onSelect={() => setExpandedSection(isSelected ? null : key)}
+                      />
+                    );
+                  })}
+                </div>
+              </SortableContext>
+            </DndContext>
+
+            {/* Right: Content editor */}
+            {expandedSection && (
+              <Card className="self-start">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      {(() => { const Icon = iconMap[sectionMeta[expandedSection as SectionKey]?.iconName] || BookOpen; return <Icon className="h-4 w-4 text-primary" />; })()}
+                      {isAr ? sectionMeta[expandedSection as SectionKey]?.labelAr : sectionMeta[expandedSection as SectionKey]?.label}
+                    </CardTitle>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setExpandedSection(null)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>{renderEditor(expandedSection as SectionKey)}</CardContent>
+              </Card>
+            )}
+          </div>
         </div>
       )}
 
