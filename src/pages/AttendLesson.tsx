@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSession } from '@/contexts/SessionContext';
@@ -8,11 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import JoinMeetingDialog from '@/components/attend/JoinMeetingDialog';
 import SessionReportDialog from '@/components/attend/SessionReportDialog';
-import SessionReportsList from '@/components/attend/SessionReportsList';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format, differenceInMinutes, isToday, isTomorrow, addDays, startOfWeek, endOfWeek } from 'date-fns';
-import { Video, Clock, MonitorPlay, AlertCircle, CalendarDays, FileText, CheckCircle2, XCircle, FlaskConical, Timer } from 'lucide-react';
+import { Video, Clock, MonitorPlay, AlertCircle, CalendarDays, FileText, XCircle, FlaskConical, Timer, User, BookOpen } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { TableSkeleton } from '@/components/PageSkeleton';
@@ -36,6 +35,27 @@ interface LessonEntry {
   has_report?: boolean;
 }
 
+interface SessionReportView {
+  id: string;
+  session_duration_seconds: number;
+  summary: string;
+  observations: string;
+  performance_remarks: string;
+  started_at: string;
+  ended_at: string;
+  student_name: string;
+  teacher_name: string;
+  course_title: string;
+}
+
+const formatReportDuration = (seconds: number): string => {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h}h ${m}m ${s}s`;
+  return `${m}m ${s}s`;
+};
+
 const AttendLesson = () => {
   const { language } = useLanguage();
   const { role, user } = useAuth();
@@ -47,6 +67,9 @@ const AttendLesson = () => {
   const [testMode, setTestMode] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<LessonEntry | null>(null);
+
+  // Track which platform was used to join so "Open Meeting" can skip selection
+  const lastJoinedPlatformRef = useRef<string | null>(null);
 
   // Session report state
   const [reportOpen, setReportOpen] = useState(false);
@@ -62,7 +85,8 @@ const AttendLesson = () => {
   // Set of entry IDs that already have reports
   const [reportedEntryIds, setReportedEntryIds] = useState<Set<string>>(new Set());
   const [reportDurations, setReportDurations] = useState<Map<string, number>>(new Map());
-  const [viewReportEntry, setViewReportEntry] = useState<LessonEntry | null>(null);
+  const [viewReport, setViewReport] = useState<SessionReportView | null>(null);
+  const [viewReportLoading, setViewReportLoading] = useState(false);
   const [cancelEntry, setCancelEntry] = useState<LessonEntry | null>(null);
   const [cancelReason, setCancelReason] = useState('');
 
@@ -207,27 +231,27 @@ const AttendLesson = () => {
     const endTime = new Date(scheduledTime.getTime() + entry.duration_minutes * 60000);
 
     if (activeSessionId === entry.id) {
-      return { label: isAr ? '🟢 جلسة نشطة' : '🟢 In Session', variant: 'default', className: 'bg-emerald-600 text-white', isLive: true };
+      return { label: isAr ? 'جلسة نشطة' : 'In Session', variant: 'default', className: 'bg-emerald-600 text-white border-emerald-600', isLive: true };
     }
     if (entry.status === 'teacher_not_attend' || entry.status === 'student_not_attend' || entry.status === 'not_attend') {
-      return { label: isAr ? 'غياب' : 'Absence', variant: 'outline', className: 'border-rose-500/40 bg-rose-500/10 text-rose-600 dark:text-rose-400', isLive: false };
+      return { label: isAr ? 'غياب' : 'Absence', variant: 'outline', className: 'border-destructive/40 text-destructive bg-destructive/5', isLive: false };
     }
     if (entry.status === 'postponed') {
-      return { label: isAr ? 'مؤجل' : 'Postponed', variant: 'outline', className: 'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400', isLive: false };
+      return { label: isAr ? 'مؤجل' : 'Postponed', variant: 'outline', className: 'border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/5', isLive: false };
     }
     if (entry.status === 'cancelled') {
-      return { label: isAr ? 'ملغى' : 'Cancelled', variant: 'outline', className: 'border-red-500/40 bg-red-500/10 text-red-600 dark:text-red-400', isLive: false };
+      return { label: isAr ? 'ملغى' : 'Cancelled', variant: 'outline', className: 'border-muted-foreground/30 text-muted-foreground bg-muted/50 line-through', isLive: false };
     }
     if (entry.status === 'completed' || entry.has_report) {
-      return { label: isAr ? 'انتهى' : 'Ended', variant: 'outline', className: 'border-muted-foreground/30 bg-muted text-muted-foreground', isLive: false };
+      return { label: isAr ? 'انتهى' : 'Ended', variant: 'outline', className: 'border-muted-foreground/30 text-muted-foreground bg-muted/50', isLive: false };
     }
     if (now > endTime) {
-      return { label: isAr ? 'انتهى' : 'Ended', variant: 'outline', className: 'border-muted-foreground/30 bg-muted text-muted-foreground', isLive: false };
+      return { label: isAr ? 'انتهى' : 'Ended', variant: 'outline', className: 'border-muted-foreground/30 text-muted-foreground bg-muted/50', isLive: false };
     }
     if (now >= scheduledTime && now <= endTime) {
-      return { label: isAr ? '🔴 جلسة جارية' : '🔴 In Session', variant: 'default', className: 'bg-destructive text-destructive-foreground', isLive: true };
+      return { label: isAr ? 'جلسة جارية' : 'In Session', variant: 'default', className: 'bg-destructive text-destructive-foreground border-destructive animate-pulse', isLive: true };
     }
-    return { label: isAr ? 'قادم' : 'Upcoming', variant: 'outline', className: 'border-sky-500/40 bg-sky-500/10 text-sky-600 dark:text-sky-400', isLive: false };
+    return { label: isAr ? 'قادم' : 'Upcoming', variant: 'outline', className: 'border-primary/40 text-primary bg-primary/5', isLive: false };
   };
 
   // In test mode, the first non-completed/cancelled entry has all restrictions lifted
@@ -263,7 +287,6 @@ const AttendLesson = () => {
     if (terminalStatuses.includes(entry.status)) return false;
     const scheduledTime = new Date(entry.scheduled_at);
     const endTime = new Date(scheduledTime.getTime() + entry.duration_minutes * 60000);
-    // Show only for future entries
     return now < endTime;
   };
 
@@ -292,6 +315,25 @@ const AttendLesson = () => {
     setJoinOpen(true);
   };
 
+  /** "Open Meeting" for active session — reopen the same platform directly */
+  const handleOpenMeeting = (entry: LessonEntry) => {
+    const platform = lastJoinedPlatformRef.current;
+
+    if (platform === 'google_meet' && entry.google_meet_url) {
+      window.open(entry.google_meet_url, '_blank', 'noopener,noreferrer');
+      toast.success(isAr ? 'تم فتح Google Meet' : 'Opening Google Meet');
+      return;
+    }
+    if (platform === 'zoom' && entry.zoom_url) {
+      window.open(entry.zoom_url, '_blank', 'noopener,noreferrer');
+      toast.success(isAr ? 'تم فتح Zoom' : 'Opening Zoom');
+      return;
+    }
+    // Fallback: open platform list
+    setSelectedEntry(entry);
+    setJoinOpen(true);
+  };
+
   const handleSessionStart = useCallback((entryId: string) => {
     const entry = entries.find(e => e.id === entryId);
     startSession({
@@ -310,10 +352,48 @@ const AttendLesson = () => {
     if (activeSessionId) {
       setReportedEntryIds(prev => new Set([...prev, activeSessionId]));
     }
+    lastJoinedPlatformRef.current = null;
     clearSession();
     setReportSessionData(null);
     fetchEntries();
   }, [activeSessionId, clearSession]);
+
+  const handleViewReport = async (entry: LessonEntry) => {
+    setViewReportLoading(true);
+    setViewReport(null);
+
+    const { data } = await supabase
+      .from('session_reports' as any)
+      .select('*')
+      .eq('timetable_entry_id', entry.id)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (data && (data as any[]).length > 0) {
+      const r = (data as any[])[0];
+
+      // Fetch names in parallel
+      const [studentRes, teacherRes, courseRes] = await Promise.all([
+        r.student_id ? supabase.from('students').select('profiles:students_user_id_profiles_fkey(full_name)').eq('id', r.student_id).single() : { data: null },
+        r.teacher_id ? supabase.from('teachers').select('profiles:teachers_user_id_profiles_fkey(full_name)').eq('id', r.teacher_id).single() : { data: null },
+        r.course_id ? supabase.from('courses').select('title').eq('id', r.course_id).single() : { data: null },
+      ]);
+
+      setViewReport({
+        id: r.id,
+        session_duration_seconds: r.session_duration_seconds,
+        summary: r.summary || '',
+        observations: r.observations || '',
+        performance_remarks: r.performance_remarks || '',
+        started_at: r.started_at,
+        ended_at: r.ended_at,
+        student_name: (studentRes.data as any)?.profiles?.full_name || entry.student_name,
+        teacher_name: (teacherRes.data as any)?.profiles?.full_name || entry.teacher_name,
+        course_title: (courseRes.data as any)?.title || entry.course_title,
+      });
+    }
+    setViewReportLoading(false);
+  };
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
@@ -494,9 +574,15 @@ const AttendLesson = () => {
                         <span className="text-sm">{entry.duration_minutes} {isAr ? 'د' : 'min'}</span>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={status.variant as any} className={`${status.className} ${status.isLive && !isActiveEntry ? 'animate-pulse' : ''}`}>
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border ${status.className}`}>
+                          {status.isLive && (
+                            <span className="relative flex h-1.5 w-1.5">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-current" />
+                              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-current" />
+                            </span>
+                          )}
                           {status.label}
-                        </Badge>
+                        </span>
                       </TableCell>
                       <TableCell>
                         {hasReport ? (
@@ -504,7 +590,7 @@ const AttendLesson = () => {
                             variant="ghost"
                             size="sm"
                             className="gap-1 px-2 h-auto py-1 border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] hover:bg-emerald-500/20"
-                            onClick={() => setViewReportEntry(entry)}
+                            onClick={() => handleViewReport(entry)}
                           >
                             <Timer className="h-3 w-3" />
                             {reportDurations.get(entry.id) != null
@@ -521,7 +607,7 @@ const AttendLesson = () => {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleAttendClick(entry)}
+                              onClick={() => handleOpenMeeting(entry)}
                               className="gap-1.5 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20"
                             >
                               <Video className="h-3.5 w-3.5" />
@@ -577,6 +663,9 @@ const AttendLesson = () => {
             handleSessionStart(selectedEntry.id);
           }
         }}
+        onPlatformSelected={(platform) => {
+          lastJoinedPlatformRef.current = platform;
+        }}
       />
 
       {/* Session Report Dialog — closing does NOT end session */}
@@ -591,26 +680,93 @@ const AttendLesson = () => {
         onReportSubmitted={handleReportSubmitted}
       />
 
-      {/* View Report Dialog */}
-      <Dialog open={!!viewReportEntry} onOpenChange={(val) => !val && setViewReportEntry(null)}>
-        <DialogContent className="max-w-lg">
+      {/* View Report Dialog — direct detail view */}
+      <Dialog open={!!viewReport || viewReportLoading} onOpenChange={(val) => { if (!val) { setViewReport(null); } }}>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
               {isAr ? 'تقرير الجلسة' : 'Session Report'}
-              {viewReportEntry && (
-                <span className="text-xs font-normal text-muted-foreground">
-                  — {viewReportEntry.course_title}
-                </span>
-              )}
             </DialogTitle>
           </DialogHeader>
-          {viewReportEntry && (
-            <SessionReportsList
-              isAr={isAr}
-              timetableEntryId={viewReportEntry.id}
-              limit={1}
-            />
+          {viewReportLoading ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">{isAr ? 'جاري التحميل...' : 'Loading...'}</p>
+          ) : viewReport ? (
+            <div className="space-y-4">
+              {/* Duration + Course */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center gap-2.5 p-3 rounded-xl border bg-card">
+                  <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Clock className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-muted-foreground">{isAr ? 'المدة' : 'Duration'}</p>
+                    <p className="text-sm font-semibold">{formatReportDuration(viewReport.session_duration_seconds)}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5 p-3 rounded-xl border bg-card">
+                  <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-muted-foreground">{isAr ? 'الدورة' : 'Course'}</p>
+                    <p className="text-sm font-semibold truncate">{viewReport.course_title}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Student + Teacher */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center gap-2.5 p-3 rounded-xl border bg-card">
+                  <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-muted-foreground">{isAr ? 'الطالب' : 'Student'}</p>
+                    <p className="text-sm font-medium truncate">{viewReport.student_name}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5 p-3 rounded-xl border bg-card">
+                  <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-muted-foreground">{isAr ? 'المعلم' : 'Teacher'}</p>
+                    <p className="text-sm font-medium truncate">{viewReport.teacher_name}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Time range */}
+              <p className="text-xs text-muted-foreground text-center">
+                {format(new Date(viewReport.started_at), 'MMM d, yyyy — h:mm a')} → {format(new Date(viewReport.ended_at), 'h:mm a')}
+              </p>
+
+              {/* Report Fields */}
+              {viewReport.summary && (
+                <div className="space-y-1.5">
+                  <p className="text-xs font-semibold text-muted-foreground">{isAr ? 'الملخص' : 'Summary'}</p>
+                  <p className="text-sm bg-muted/50 p-3 rounded-xl leading-relaxed">{viewReport.summary}</p>
+                </div>
+              )}
+              {viewReport.observations && (
+                <div className="space-y-1.5">
+                  <p className="text-xs font-semibold text-muted-foreground">{isAr ? 'الملاحظات' : 'Observations'}</p>
+                  <p className="text-sm bg-muted/50 p-3 rounded-xl leading-relaxed">{viewReport.observations}</p>
+                </div>
+              )}
+              {viewReport.performance_remarks && (
+                <div className="space-y-1.5">
+                  <p className="text-xs font-semibold text-muted-foreground">{isAr ? 'ملاحظات الأداء' : 'Performance Remarks'}</p>
+                  <p className="text-sm bg-muted/50 p-3 rounded-xl leading-relaxed">{viewReport.performance_remarks}</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-8 space-y-2">
+              <FileText className="h-8 w-8 text-muted-foreground/40 mx-auto" />
+              <p className="text-sm text-muted-foreground">{isAr ? 'لا توجد تقارير جلسات بعد' : 'No session reports yet'}</p>
+            </div>
           )}
         </DialogContent>
       </Dialog>
