@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree, Layers, FileText, Pencil, Route, MoreHorizontal, Settings2, Edit, HelpCircle, ChevronDown, Link2, GraduationCap } from 'lucide-react';
+import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree, Layers, FileText, Pencil, Route, MoreHorizontal, Settings2, Edit, HelpCircle, ChevronDown, Link2, GraduationCap, SlidersHorizontal, Check, X } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 import { arrayMove } from '@dnd-kit/sortable';
@@ -98,6 +98,37 @@ const CourseDetail = () => {
   const [topicForm, setTopicForm] = useState({ title: '', title_ar: '' });
   const [sectionForm, setSectionForm] = useState({ title: '', title_ar: '' });
   const [lessonForm, setLessonForm] = useState({ title: '', title_ar: '', lesson_type: 'read_listen' });
+
+  // Inline edit state
+  const [inlineEdit, setInlineEdit] = useState<{ id: string; type: 'topic' | 'section' | 'lesson'; field: string; value: string } | null>(null);
+
+  const handleInlineDoubleClick = (id: string, type: 'topic' | 'section' | 'lesson', currentValue: string) => {
+    if (!canEdit) return;
+    setInlineEdit({ id, type, field: 'title', value: currentValue });
+  };
+
+  const handleInlineSave = async () => {
+    if (!inlineEdit || !inlineEdit.value.trim()) return;
+    const { id: itemId, type, value } = inlineEdit;
+    const field = isAr ? 'title_ar' : 'title';
+    if (type === 'topic') {
+      await supabase.from('course_sections').update({ [field]: value }).eq('id', itemId);
+    } else if (type === 'section') {
+      await supabase.from('lesson_sections' as any).update({ [field]: value } as any).eq('id', itemId);
+    } else {
+      await supabase.from('lessons').update({ [field]: value }).eq('id', itemId);
+    }
+    toast.success(isAr ? 'تم التحديث' : 'Updated');
+    setInlineEdit(null);
+    fetchHierarchy();
+  };
+
+  const handleInlineCancel = () => setInlineEdit(null);
+
+  const handleInlineKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleInlineSave();
+    if (e.key === 'Escape') handleInlineCancel();
+  };
 
   const totalLessons = useMemo(() => {
     return Object.values(lessonItems).reduce((sum, arr) => sum + arr.length, 0);
@@ -357,22 +388,32 @@ const CourseDetail = () => {
               <img src={course.image_url} alt={course.title} className="h-20 w-20 rounded-lg object-cover shrink-0" />
             )}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <CardTitle>{isAr && course.title_ar ? course.title_ar : course.title}</CardTitle>
-                {canEdit && (
-                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-muted-foreground hover:text-foreground shrink-0" onClick={() => {
-                    setSlugForm(course.slug || '');
-                    setSettingsForm({
-                      title: course.title || '', title_ar: course.title_ar || '',
-                      description: course.description || '', description_ar: course.description_ar || '',
-                      category_id: course.category_id || '', level_id: course.level_id || '',
-                      track_id: course.track_id || '', duration_weeks: course.duration_weeks?.toString() || '',
-                    });
-                    setCourseSettingsOpen(true);
-                  }}>
-                    <Settings2 className="h-4 w-4" />
-                  </Button>
-                )}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <CardTitle>{isAr && course.title_ar ? course.title_ar : course.title}</CardTitle>
+                  {canEdit && (
+                    <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-muted-foreground hover:text-foreground shrink-0" onClick={() => {
+                      setSlugForm(course.slug || '');
+                      setSettingsForm({
+                        title: course.title || '', title_ar: course.title_ar || '',
+                        description: course.description || '', description_ar: course.description_ar || '',
+                        category_id: course.category_id || '', level_id: course.level_id || '',
+                        track_id: course.track_id || '', duration_weeks: course.duration_weeks?.toString() || '',
+                      });
+                      setCourseSettingsOpen(true);
+                    }}>
+                      <SlidersHorizontal className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                <Button
+                  size="sm"
+                  className="gap-1.5 shrink-0"
+                  onClick={() => navigate(`/dashboard/courses/${id}/learn`)}
+                >
+                  <GraduationCap className="h-4 w-4" />
+                  {isAr ? 'ابدأ التعلم' : 'Learn Now'}
+                </Button>
               </div>
               <p className="text-muted-foreground mt-1">{isAr && course.description_ar ? course.description_ar : course.description}</p>
               <div className="flex flex-wrap items-center gap-2 mt-3">
@@ -410,19 +451,95 @@ const CourseDetail = () => {
                   <BookOpen className="h-3 w-3" />
                   {totalLessons} {t('courses.lessons')}
                 </Badge>
-                <Button
-                  size="sm"
-                  className="gap-1.5"
-                  onClick={() => navigate(`/dashboard/courses/${id}/learn`)}
-                >
-                  <GraduationCap className="h-4 w-4" />
-                  {isAr ? 'ابدأ التعلم' : 'Learn Now'}
-                </Button>
               </div>
             </div>
           </div>
         </CardHeader>
       </Card>
+
+      {/* Course Structure Documentation */}
+      <Collapsible>
+        <Card className="border-dashed">
+          <CollapsibleTrigger asChild>
+            <button className="w-full flex items-center justify-between p-4 text-start hover:bg-muted/50 rounded-lg transition-colors group">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <HelpCircle className="h-4 w-4 shrink-0" />
+                <span className="text-sm font-medium">
+                  {isAr ? 'كيف يتم تنظيم الدورة؟' : 'How is the course structured?'}
+                </span>
+              </div>
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="animate-accordion-down data-[state=closed]:animate-accordion-up">
+            <div className="px-4 pb-4 space-y-4 text-sm text-muted-foreground">
+              <p>
+                {isAr
+                  ? 'يتم تنظيم كل دورة في ثلاث طبقات متداخلة لتسهيل التعلم وتنظيم المحتوى:'
+                  : 'Every course is organized into three nested layers to make learning easy and content well-structured:'}
+              </p>
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                {/* Layer 1 */}
+                <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
+                  <div className="flex items-center gap-2 font-semibold text-foreground">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                    {isAr ? '١. المواضيع' : '1. Topics'}
+                  </div>
+                  <p className="text-xs leading-relaxed">
+                    {isAr
+                      ? 'المواضيع هي الوحدات الرئيسية للدورة. فكّر فيها كفصول في كتاب — كل موضوع يغطي مجالاً مستقلاً.'
+                      : 'Topics are the main units of the course. Think of them as chapters in a book — each topic covers a standalone subject area.'}
+                  </p>
+                </div>
+
+                {/* Layer 2 */}
+                <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
+                  <div className="flex items-center gap-2 font-semibold text-foreground">
+                    <Layers className="h-4 w-4" style={{ color: 'hsl(var(--gold))' }} />
+                    {isAr ? '٢. الأقسام' : '2. Sections'}
+                  </div>
+                  <p className="text-xs leading-relaxed">
+                    {isAr
+                      ? 'كل موضوع يحتوي على أقسام. الأقسام تقسّم الموضوع إلى أجزاء أصغر ومركزة ليسهل استيعابها.'
+                      : 'Each topic contains sections. Sections break the topic into smaller, focused parts that are easier to follow.'}
+                  </p>
+                </div>
+
+                {/* Layer 3 */}
+                <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
+                  <div className="flex items-center gap-2 font-semibold text-foreground">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    {isAr ? '٣. الدروس' : '3. Lessons'}
+                  </div>
+                  <p className="text-xs leading-relaxed">
+                    {isAr
+                      ? 'داخل كل قسم، تضيف الدروس الفعلية: نصوص للقراءة، تمارين تفاعلية، مراجعات، واجبات، وغيرها.'
+                      : 'Inside each section, you add the actual lessons: reading text, interactive exercises, revisions, homework, and more.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-lg border bg-muted/20 p-3 space-y-2">
+                <p className="font-medium text-foreground text-xs">
+                  {isAr ? '📌 مثال عملي:' : '📌 Quick example:'}
+                </p>
+                <div className="text-xs leading-relaxed space-y-1">
+                  <p>{isAr ? '📖 الموضوع: "الحروف العربية"' : '📖 Topic: "Arabic Letters"'}</p>
+                  <p className="ps-4">{isAr ? '📂 القسم: "حروف المد"' : '📂 Section: "Vowel Letters"'}</p>
+                  <p className="ps-8">{isAr ? '📝 الدرس: "اقرأ واستمع — حرف الألف" + تمرين اختيار الإجابة الصحيحة' : '📝 Lesson: "Read & Listen — Letter Alif" + Choose Correct exercise'}</p>
+                </div>
+              </div>
+
+              <p className="text-xs italic">
+                {isAr
+                  ? '💡 يمكنك إعادة ترتيب المواضيع والأقسام والدروس بالسحب والإفلات. انقر مرتين على أي عنوان لتعديله مباشرة. استخدم قائمة "المزيد" (⋯) لتعديل أو حذف أي عنصر.'
+                  : '💡 You can drag & drop to reorder topics, sections, and lessons. Double-click any title to rename it inline. Use the "More" menu (⋯) to edit or delete any item.'}
+              </p>
+            </div>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
 
       {/* Course Structure Legend */}
       <div className="flex items-center gap-4 px-1 text-xs text-muted-foreground">
@@ -463,7 +580,27 @@ const CourseDetail = () => {
                     </div>
                     <CollapsibleTrigger className="flex items-center gap-2 flex-1 min-w-0 text-start group">
                       <BookOpen className="h-4 w-4 text-primary shrink-0" />
-                      <span className="font-semibold truncate">{isAr && topic.title_ar ? topic.title_ar : topic.title}</span>
+                      {inlineEdit?.id === topic.id && inlineEdit?.type === 'topic' ? (
+                        <div className="flex items-center gap-1 flex-1" onClick={(e) => e.stopPropagation()}>
+                          <Input
+                            value={inlineEdit.value}
+                            onChange={(e) => setInlineEdit({ ...inlineEdit, value: e.target.value })}
+                            onKeyDown={handleInlineKeyDown}
+                            autoFocus
+                            className="h-7 text-sm font-semibold"
+                            onClick={(e) => e.preventDefault()}
+                          />
+                          <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 text-primary" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleInlineSave(); }}><Check className="h-3.5 w-3.5" /></Button>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 text-muted-foreground" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleInlineCancel(); }}><X className="h-3.5 w-3.5" /></Button>
+                        </div>
+                      ) : (
+                        <span
+                          className="font-semibold truncate cursor-text"
+                          onDoubleClick={(e) => { e.stopPropagation(); handleInlineDoubleClick(topic.id, 'topic', isAr && topic.title_ar ? topic.title_ar : topic.title); }}
+                        >
+                          {isAr && topic.title_ar ? topic.title_ar : topic.title}
+                        </span>
+                      )}
                       <Badge variant="secondary" className="text-[10px] shrink-0">
                         {(sections[topic.id] || []).length} {isAr ? 'قسم' : 'sec'}
                       </Badge>
@@ -476,7 +613,7 @@ const CourseDetail = () => {
                       />
                     )}
                   </div>
-                  <CollapsibleContent>
+                  <CollapsibleContent className="animate-accordion-down data-[state=closed]:animate-accordion-up">
                     <div className="p-4 space-y-3">
                       {/* Sections within this Topic */}
                       <SortableList items={sections[topic.id] || []} onReorder={(a, o) => reorderSections(topic.id, a, o)}>
@@ -490,7 +627,27 @@ const CourseDetail = () => {
                                     <span className="text-[10px] font-bold text-muted-foreground tabular-nums shrink-0">{topicIdx + 1}.{secIdx + 1}</span>
                                     <CollapsibleTrigger className="flex items-center gap-2 flex-1 min-w-0 text-start group">
                                       <Layers className="h-3.5 w-3.5 shrink-0" style={{ color: 'hsl(var(--gold))' }} />
-                                      <span className="text-sm font-medium truncate">{isAr && section.title_ar ? section.title_ar : section.title}</span>
+                                      {inlineEdit?.id === section.id && inlineEdit?.type === 'section' ? (
+                                        <div className="flex items-center gap-1 flex-1" onClick={(e) => e.stopPropagation()}>
+                                          <Input
+                                            value={inlineEdit.value}
+                                            onChange={(e) => setInlineEdit({ ...inlineEdit, value: e.target.value })}
+                                            onKeyDown={handleInlineKeyDown}
+                                            autoFocus
+                                            className="h-6 text-xs font-medium"
+                                            onClick={(e) => e.preventDefault()}
+                                          />
+                                          <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-primary" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleInlineSave(); }}><Check className="h-3 w-3" /></Button>
+                                          <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-muted-foreground" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleInlineCancel(); }}><X className="h-3 w-3" /></Button>
+                                        </div>
+                                      ) : (
+                                        <span
+                                          className="text-sm font-medium truncate cursor-text"
+                                          onDoubleClick={(e) => { e.stopPropagation(); handleInlineDoubleClick(section.id, 'section', isAr && section.title_ar ? section.title_ar : section.title); }}
+                                        >
+                                          {isAr && section.title_ar ? section.title_ar : section.title}
+                                        </span>
+                                      )}
                                       <Badge variant="outline" className="text-[10px] shrink-0">
                                         {(lessonItems[section.id] || []).length} {isAr ? 'درس' : 'les'}
                                       </Badge>
@@ -503,7 +660,7 @@ const CourseDetail = () => {
                                       />
                                     )}
                                   </div>
-                                  <CollapsibleContent>
+                                  <CollapsibleContent className="animate-accordion-down data-[state=closed]:animate-accordion-up">
                                     <div className="px-3 pb-3 pt-2 space-y-1.5">
                                       {/* Lessons within this Section */}
                                       <SortableList items={lessonItems[section.id] || []} onReorder={(a, o) => reorderLessons(section.id, a, o)}>
@@ -514,7 +671,25 @@ const CourseDetail = () => {
                                                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                                   <span className="text-[10px] font-mono text-muted-foreground tabular-nums shrink-0">{topicIdx + 1}.{secIdx + 1}.{lesIdx + 1}</span>
                                                   <FileText className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
-                                                  <span className="text-sm truncate">{isAr && lesson.title_ar ? lesson.title_ar : lesson.title}</span>
+                                                  <span
+                                                    className="text-sm truncate cursor-text"
+                                                    onDoubleClick={(e) => { e.stopPropagation(); handleInlineDoubleClick(lesson.id, 'lesson', isAr && lesson.title_ar ? lesson.title_ar : lesson.title); }}
+                                                  >
+                                                    {inlineEdit?.id === lesson.id && inlineEdit?.type === 'lesson' ? null : (isAr && lesson.title_ar ? lesson.title_ar : lesson.title)}
+                                                  </span>
+                                                  {inlineEdit?.id === lesson.id && inlineEdit?.type === 'lesson' && (
+                                                    <div className="flex items-center gap-1 flex-1" onClick={(e) => e.stopPropagation()}>
+                                                      <Input
+                                                        value={inlineEdit.value}
+                                                        onChange={(e) => setInlineEdit({ ...inlineEdit, value: e.target.value })}
+                                                        onKeyDown={handleInlineKeyDown}
+                                                        autoFocus
+                                                        className="h-6 text-xs"
+                                                      />
+                                                      <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-primary" onClick={(e) => { e.stopPropagation(); handleInlineSave(); }}><Check className="h-3 w-3" /></Button>
+                                                      <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-muted-foreground" onClick={(e) => { e.stopPropagation(); handleInlineCancel(); }}><X className="h-3 w-3" /></Button>
+                                                    </div>
+                                                  )}
                                                   <Badge variant="outline" className="text-[10px] font-normal shrink-0 bg-background">
                                                     {allContentTypes.find(ct => ct.value === lesson.lesson_type)?.label || lesson.lesson_type}
                                                   </Badge>

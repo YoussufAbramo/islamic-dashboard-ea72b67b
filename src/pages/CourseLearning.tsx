@@ -240,7 +240,7 @@ const CourseLearning = () => {
   const [activeLesson, setActiveLesson] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [markingComplete, setMarkingComplete] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // collapsed by default
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState<Record<string, string>>({});
@@ -671,7 +671,7 @@ const CourseLearning = () => {
             <AlertDialogCancel>{isAr ? 'متابعة التعلم' : 'Continue Learning'}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => navigate(`/dashboard/courses/${id}`)}
+              onClick={() => navigate('/dashboard/courses')}
             >
               {isAr ? 'مغادرة' : 'Leave'}
             </AlertDialogAction>
