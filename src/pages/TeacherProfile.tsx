@@ -17,6 +17,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import ImagePickerField from '@/components/media/ImagePickerField';
+import { BadgeSummaryCards, BadgeIconsRow } from '@/components/badges/TeacherBadges';
+import { useTeacherBadges } from '@/hooks/use-teacher-badges';
 import {
   Clock, DollarSign, TrendingUp, AlertTriangle, CheckCircle,
   Loader2, Percent, Mail, Phone, User, Briefcase, FileText,
