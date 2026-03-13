@@ -99,6 +99,8 @@ interface PendingSettings {
   developerMode: boolean;
   websiteMode: boolean;
   socialLinks: SocialLinks;
+  teacherBadges: boolean;
+  studentBadges: boolean;
 }
 
 interface AppSettingsContextType {
