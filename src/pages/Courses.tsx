@@ -117,7 +117,7 @@ const Courses = () => {
     fetchCourses();
   };
 
-  const resetForm = () => setForm({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft', image_url: '', category_id: '', level_id: '', track_id: '', duration_weeks: '' });
+  const resetForm = () => setForm({ title: '', title_ar: '', description: '', description_ar: '', status: 'draft', image_url: '', category_id: '', level_id: '', track_id: '', duration_weeks: '', slug: '' });
 
   const openEdit = (course: any) => {
     setEditCourse(course);
