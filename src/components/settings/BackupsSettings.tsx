@@ -429,7 +429,7 @@ const BackupsSettings = () => {
               finally { setCreating(false); }
             }} disabled={creating}>
               {creating ? <Loader2 className="h-4 w-4 me-1 animate-spin" /> : <Database className="h-4 w-4 me-1" />}
-              {isAr ? 'تشغيل الآن' : 'Run a Full Backup Now'}
+              {isAr ? 'إنشاء نسخة احتياطية كاملة' : 'Generate Full Backup'}
             </Button>
           </CardContent>
         </Card>
