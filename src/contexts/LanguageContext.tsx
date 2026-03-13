@@ -69,7 +69,7 @@ const translations: Record<Language, Record<string, string>> = {
     'courses.archived': 'Archived',
     'courses.sections': 'Sections',
     'courses.addSection': 'Add Section',
-    'courses.topics': 'Topics',
+    'courses.topics': 'Insert Main Course Topics',
     'courses.addTopic': 'Add Topic',
     'courses.lessons': 'Lessons',
     'courses.addLesson': 'Add Lesson',
