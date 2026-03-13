@@ -148,6 +148,10 @@ interface AppSettingsContextType {
   setDeveloperMode: (d: boolean) => void;
   websiteMode: boolean;
   setWebsiteMode: (w: boolean) => void;
+  teacherBadges: boolean;
+  setTeacherBadges: (b: boolean) => void;
+  studentBadges: boolean;
+  setStudentBadges: (b: boolean) => void;
   pending: PendingSettings;
   updatePending: (partial: Partial<PendingSettings>) => void;
   saveSettings: () => void;
