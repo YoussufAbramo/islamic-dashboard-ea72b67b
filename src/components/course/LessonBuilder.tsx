@@ -67,7 +67,7 @@ export interface ContentBlock {
   toc_rows?: { en: string; ar: string }[];
   // divider
   divider_width?: number; // percentage 25-100
-  divider_style?: 'solid' | 'dashed' | 'dotted' | 'double';
+  divider_style?: 'solid' | 'dashed' | 'dotted' | 'double' | 'groove' | 'ridge';
   divider_thickness?: number; // 1-6 px
   divider_color?: string;
   // page break (no extra fields needed, acts as marker)
@@ -493,6 +493,8 @@ const BlockEditor = ({
                     { value: 'dashed' as const, label: isAr ? 'متقطع' : 'Dashed' },
                     { value: 'dotted' as const, label: isAr ? 'منقط' : 'Dotted' },
                     { value: 'double' as const, label: isAr ? 'مزدوج' : 'Double' },
+                    { value: 'groove' as const, label: isAr ? 'محفور' : 'Groove' },
+                    { value: 'ridge' as const, label: isAr ? 'بارز' : 'Ridge' },
                   ] as const).map((s) => (
                     <button key={s.value} type="button" onClick={() => onChange({ ...block, divider_style: s.value })}
                       className={cn("px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
@@ -504,7 +506,7 @@ const BlockEditor = ({
               <div>
                 <Label className="text-xs mb-1.5 block">{isAr ? 'السُمك' : 'Thickness'}</Label>
                 <div className="flex flex-wrap gap-1.5">
-                  {[1, 2, 3, 4].map((t) => (
+                  {[1, 2, 3, 4, 6, 8].map((t) => (
                     <button key={t} type="button" onClick={() => onChange({ ...block, divider_thickness: t })}
                       className={cn("px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors min-w-[28px]",
                         (block.divider_thickness || 1) === t ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
@@ -517,11 +519,11 @@ const BlockEditor = ({
               <Label className="text-xs mb-1.5 block">{isAr ? 'اللون' : 'Color'}</Label>
               <div className="flex flex-wrap gap-1.5">
                 {([
-                  { value: 'border', label: isAr ? 'افتراضي' : 'Default', css: 'hsl(var(--border))' },
-                  { value: 'primary', label: isAr ? 'رئيسي' : 'Primary', css: 'hsl(var(--primary))' },
-                  { value: 'muted', label: isAr ? 'باهت' : 'Muted', css: 'hsl(var(--muted-foreground))' },
-                  { value: 'destructive', label: isAr ? 'أحمر' : 'Red', css: 'hsl(var(--destructive))' },
-                  { value: 'gold', label: isAr ? 'ذهبي' : 'Gold', css: 'hsl(var(--gold, 45 80% 50%))' },
+                  { value: 'border', label: isAr ? 'افتراضي' : 'Default', css: 'hsl(var(--border) / 0.15)' },
+                  { value: 'primary', label: isAr ? 'رئيسي' : 'Primary', css: 'hsl(var(--primary) / 0.15)' },
+                  { value: 'muted', label: isAr ? 'باهت' : 'Muted', css: 'hsl(var(--muted-foreground) / 0.15)' },
+                  { value: 'destructive', label: isAr ? 'أحمر' : 'Red', css: 'hsl(var(--destructive) / 0.15)' },
+                  { value: 'gold', label: isAr ? 'ذهبي' : 'Gold', css: 'hsl(var(--gold, 45 80% 50%) / 0.15)' },
                 ] as const).map((c) => (
                   <button key={c.value} type="button" onClick={() => onChange({ ...block, divider_color: c.value })}
                     className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
@@ -541,13 +543,13 @@ const BlockEditor = ({
                 borderWidth: `${block.divider_thickness || 1}px 0 0 0`,
                 borderColor: (() => {
                   const colorMap: Record<string, string> = {
-                    border: 'hsl(var(--border))',
-                    primary: 'hsl(var(--primary))',
-                    muted: 'hsl(var(--muted-foreground))',
-                    destructive: 'hsl(var(--destructive))',
-                    gold: 'hsl(var(--gold, 45 80% 50%))',
+                    border: 'hsl(var(--border) / 0.15)',
+                    primary: 'hsl(var(--primary) / 0.15)',
+                    muted: 'hsl(var(--muted-foreground) / 0.15)',
+                    destructive: 'hsl(var(--destructive) / 0.15)',
+                    gold: 'hsl(var(--gold, 45 80% 50%) / 0.15)',
                   };
-                  return colorMap[block.divider_color || 'border'] || 'hsl(var(--border))';
+                  return colorMap[block.divider_color || 'border'] || 'hsl(var(--border) / 0.15)';
                 })(),
               }} />
             </div>
