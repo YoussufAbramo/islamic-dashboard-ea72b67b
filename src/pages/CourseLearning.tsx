@@ -17,7 +17,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import {
   ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Circle,
   BookOpen, Play, FileText, Headphones, ExternalLink, FileDown,
-  Menu, X, GraduationCap, Loader2, PanelTop, PanelTopClose, AlertTriangle,
+  Menu, X, GraduationCap, Loader2, PanelTop, PanelTopClose, AlertTriangle, Settings2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
