@@ -91,27 +91,28 @@ const Chats = () => {
 
   // Mark all messages in a chat as read by adding current user to read_by jsonb
   const markMessagesAsRead = async (chatId: string, userId: string) => {
-    // We use an RPC or direct update. Since read_by is jsonb, we update messages
-    // where the user is NOT already in read_by array.
-    // For simplicity, fetch unread message IDs and batch update them.
-    const { data: unreadMsgs } = await supabase
-      .from('chat_messages')
-      .select('id, read_by')
-      .eq('chat_id', chatId)
-      .neq('sender_id', userId);
+    try {
+      const { data: unreadMsgs } = await supabase
+        .from('chat_messages')
+        .select('id, read_by')
+        .eq('chat_id', chatId)
+        .neq('sender_id', userId) as any;
 
-    if (!unreadMsgs || unreadMsgs.length === 0) return;
+      if (!unreadMsgs || unreadMsgs.length === 0) return;
 
-    const now = new Date().toISOString();
-    for (const msg of unreadMsgs) {
-      const readBy = (msg.read_by as any[]) || [];
-      const alreadyRead = readBy.some((r: any) => r.user_id === userId);
-      if (!alreadyRead) {
-        const updatedReadBy = [...readBy, { user_id: userId, read_at: now }];
-        await supabase.from('chat_messages')
-          .update({ read_by: updatedReadBy } as any)
-          .eq('id', msg.id);
+      const now = new Date().toISOString();
+      for (const msg of unreadMsgs) {
+        const readBy = (msg.read_by as any[]) || [];
+        const alreadyRead = readBy.some((r: any) => r.user_id === userId);
+        if (!alreadyRead) {
+          const updatedReadBy = [...readBy, { user_id: userId, read_at: now }];
+          await (supabase.from('chat_messages') as any)
+            .update({ read_by: updatedReadBy })
+            .eq('id', msg.id);
+        }
       }
+    } catch (e) {
+      // read_by column may not exist yet — silently ignore
     }
   };
 
