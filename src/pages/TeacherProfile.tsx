@@ -836,7 +836,7 @@ const TeacherProfile = () => {
                     <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'ملاحظات المشرف' : 'Admin Notes'}</span><span className="text-xs max-w-[200px] text-end">{quickViewReq.admin_notes}</span></div>
                   )}
                 </div>
-                <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => { setQuickViewReq(null); setTicketForm({ subject: `Payout Request: ${quickViewReq.transaction_ref}`, message: '', department: '', priority: '' }); setTicketOpen(true); }}>
+                <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => { setQuickViewReq(null); setTicketForm({ subject: `Payout Request: ${quickViewReq.transaction_ref}`, message: '', department: 'billing', priority: '' }); setTicketOpen(true); }}>
                   <HeadphonesIcon className="h-3.5 w-3.5" />
                   {isAr ? 'تقديم تذكرة دعم' : 'Submit Support Ticket'}
                 </Button>
@@ -899,12 +899,21 @@ const TeacherProfile = () => {
           <div className="space-y-4">
             <div className="space-y-1.5">
               <Label className="text-xs">{isAr ? 'الموضوع' : 'Subject'} *</Label>
-              <Input value={ticketForm.subject} onChange={e => setTicketForm({ ...ticketForm, subject: e.target.value })} placeholder={isAr ? 'موضوع التذكرة...' : 'Ticket subject...'} />
+              <Input
+                value={ticketForm.subject}
+                onChange={e => setTicketForm({ ...ticketForm, subject: e.target.value })}
+                placeholder={isAr ? 'موضوع التذكرة...' : 'Ticket subject...'}
+                disabled={ticketForm.subject.startsWith('Payout Request:')}
+              />
             </div>
             {departments.length > 0 && (
               <div className="space-y-1.5">
                 <Label className="text-xs">{isAr ? 'القسم' : 'Department'}</Label>
-                <Select value={ticketForm.department} onValueChange={v => setTicketForm({ ...ticketForm, department: v })}>
+                <Select
+                  value={ticketForm.department}
+                  onValueChange={v => setTicketForm({ ...ticketForm, department: v })}
+                  disabled={ticketForm.department === 'billing' && ticketForm.subject.startsWith('Payout Request:')}
+                >
                   <SelectTrigger><SelectValue placeholder={isAr ? 'اختر...' : 'Select...'} /></SelectTrigger>
                   <SelectContent>
                     {departments.map(d => (
@@ -969,6 +978,14 @@ const TeacherProfile = () => {
                 title={docPreview.label}
               />
             )}
+          </div>
+          <div className="flex justify-end gap-2 shrink-0 pt-2">
+            <Button variant="outline" size="sm" asChild>
+              <a href={docPreview?.url} download title={isAr ? 'تحميل' : 'Download'}>
+                <FileUp className="h-3.5 w-3.5 me-1.5" />
+                {isAr ? 'تحميل' : 'Download'}
+              </a>
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
