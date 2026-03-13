@@ -4,7 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { Button } from '@/components/ui/button';
-import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, DollarSign, HardDrive, GraduationCap, BarChart3, Code, Search as SearchIcon, Cloud } from 'lucide-react';
+import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, HardDrive, GraduationCap, BarChart3, Code, Search as SearchIcon, Cloud } from 'lucide-react';
 import { toast } from 'sonner';
 import AppearanceSettings from '@/components/settings/AppearanceSettings';
 import PaymentGatewayCard from '@/components/settings/PaymentGatewayCard';
