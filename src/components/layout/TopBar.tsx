@@ -32,6 +32,36 @@ const formatTimer = (seconds: number): string => {
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 };
 
+/** Attend button that shows "Now" or countdown to lesson start */
+const PendingAttendButton = ({ pendingAttend, isAr }: { pendingAttend: { scheduledAt: string; onAttend: () => void }; isAr: boolean }) => {
+  const [label, setLabel] = useState('');
+
+  useEffect(() => {
+    const update = () => {
+      const diff = new Date(pendingAttend.scheduledAt).getTime() - Date.now();
+      if (diff <= 0) {
+        setLabel(isAr ? 'الآن' : 'Now');
+      } else {
+        const mins = Math.ceil(diff / 60000);
+        setLabel(mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`);
+      }
+    };
+    update();
+    const iv = setInterval(update, 10000);
+    return () => clearInterval(iv);
+  }, [pendingAttend.scheduledAt, isAr]);
+
+  return (
+    <Button size="sm" className="gap-1.5 h-8" onClick={pendingAttend.onAttend}>
+      <Video className="h-3.5 w-3.5" />
+      <span>{isAr ? 'حضور' : 'Attend'}</span>
+      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 font-mono">
+        {label}
+      </Badge>
+    </Button>
+  );
+};
+
 const TopBar = () => {
   const { user, role } = useAuth();
   const { t, language, setLanguage } = useLanguage();
