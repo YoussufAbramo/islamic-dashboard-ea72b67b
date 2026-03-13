@@ -83,11 +83,19 @@ const Students = () => {
       return;
     }
     setAddLoading(true);
-    const { error } = await supabase.functions.invoke('manage-users', {
+    const { data, error } = await supabase.functions.invoke('manage-users', {
       body: { action: 'create', role: 'student', email: addForm.email, password: addForm.password, full_name: addForm.full_name, phone: addForm.phone },
     });
     setAddLoading(false);
-    if (error) { notifyError({ error, isAr, rawMessage: error.message }); } else {
+    const serverError = data?.error;
+    if (error || serverError) {
+      const msg = serverError || error?.message || '';
+      if (msg.includes('already been registered')) {
+        toast.error(isAr ? 'هذا البريد الإلكتروني مسجل بالفعل' : 'A user with this email already exists');
+      } else {
+        notifyError({ error: error || msg, isAr, rawMessage: msg });
+      }
+    } else {
       toast.success(isAr ? 'تم إضافة الطالب' : 'Student added successfully');
       setAddOpen(false);
       setAddForm({ full_name: '', email: '', password: '', phone: '' });
