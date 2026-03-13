@@ -17,16 +17,6 @@ import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { format } from 'date-fns';
 import { logAction } from '@/lib/actionsQueue';
-import { Slider } from '@/components/ui/slider';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { notifyError } from '@/lib/notifyError';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { format } from 'date-fns';
-import { logAction } from '@/lib/actionsQueue';
 
 interface DataManagementCardProps {
   isAr: boolean;
