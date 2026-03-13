@@ -269,10 +269,37 @@ const Subscriptions = () => {
             <Input placeholder={t('common.search')} value={search} onChange={(e) => setSearch(e.target.value)} className="ps-9 w-48 sm:w-64" />
           </div>
           {isAdmin && (
-            <Button onClick={() => { setCreateOpen(true); fetchFormData(); }}>
-              <Plus className="h-4 w-4 me-2" />
-              {isAr ? 'إنشاء اشتراك' : 'Create Subscription'}
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={checkingSubscriptions}
+                onClick={async () => {
+                  setCheckingSubscriptions(true);
+                  try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    const { data, error } = await supabase.functions.invoke('check-subscriptions', {
+                      headers: { Authorization: `Bearer ${session?.access_token}` },
+                    });
+                    if (error) throw error;
+                    toast.success(isAr ? `تم المعالجة: ${data?.renewed || 0} تجديد، ${data?.expired || 0} منتهي` : `Processed: ${data?.renewed || 0} renewed, ${data?.expired || 0} expired`);
+                    fetchSubscriptions();
+                  } catch (err: any) {
+                    notifyError({ error: err, isAr, rawMessage: err?.message });
+                  } finally {
+                    setCheckingSubscriptions(false);
+                  }
+                }}
+                className="gap-1"
+              >
+                <RefreshCw className={cn("h-3.5 w-3.5", checkingSubscriptions && "animate-spin")} />
+                {isAr ? 'فحص الاشتراكات' : 'Check Subscriptions'}
+              </Button>
+              <Button onClick={() => { setCreateOpen(true); fetchFormData(); }}>
+                <Plus className="h-4 w-4 me-2" />
+                {isAr ? 'إنشاء اشتراك' : 'Create Subscription'}
+              </Button>
+            </>
           )}
         </div>
       </div>
