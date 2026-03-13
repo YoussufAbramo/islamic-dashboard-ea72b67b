@@ -340,6 +340,8 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       timeFormat: saved.timeFormat, setTimeFormat,
       developerMode: saved.developerMode, setDeveloperMode,
       websiteMode: saved.websiteMode, setWebsiteMode,
+      teacherBadges: saved.teacherBadges, setTeacherBadges,
+      studentBadges: saved.studentBadges, setStudentBadges,
       pending, updatePending, saveSettings, hasPendingChanges, discardChanges,
     }}>
       {children}
