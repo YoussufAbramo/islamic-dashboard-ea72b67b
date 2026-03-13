@@ -24,42 +24,6 @@ import { arrayMove } from '@dnd-kit/sortable';
 import SortableItem from '@/components/course/SortableItem';
 import SortableList from '@/components/course/SortableList';
 
-const contentTypeGroups = [
-  {
-    label: '📄 Text',
-    items: [
-      { value: 'table_of_content', label: 'Table of Content' },
-      { value: 'read_listen', label: 'Read & Listen' },
-      { value: 'memorization', label: 'Memorization' },
-    ],
-  },
-  {
-    label: '🎧 Audio',
-    items: [
-      { value: 'exercise_listen_choose', label: 'Listen & Choose' },
-    ],
-  },
-  {
-    label: '✏️ Exercises',
-    items: [
-      { value: 'exercise_text_match', label: 'Text Match' },
-      { value: 'exercise_choose_correct', label: 'Choose Correct' },
-      { value: 'exercise_choose_multiple', label: 'Choose Multiple' },
-      { value: 'exercise_rearrange', label: 'Rearrange Words' },
-      { value: 'exercise_missing_text', label: 'Missing Text' },
-      { value: 'exercise_true_false', label: 'True / False' },
-    ],
-  },
-  {
-    label: '📚 Other',
-    items: [
-      { value: 'revision', label: 'Revision' },
-      { value: 'homework', label: 'Homework' },
-    ],
-  },
-];
-
-const allContentTypes = contentTypeGroups.flatMap((g) => g.items);
 
 const CourseDetail = () => {
   const { id } = useParams();
