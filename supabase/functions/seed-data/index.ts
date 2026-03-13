@@ -158,6 +158,8 @@ class RecordBudget {
   canAdd() { return this.used < MAX_TOTAL_RECORDS }
   consume(n: number) { this.used += n }
   cap(desired: number) { return Math.min(desired, this.remaining()) }
+  // Guarantee at least minCount even if budget is exhausted
+  capMin(desired: number, minCount = 1) { return Math.max(minCount, Math.min(desired, this.remaining())) }
   total() { return this.used }
 }
 
