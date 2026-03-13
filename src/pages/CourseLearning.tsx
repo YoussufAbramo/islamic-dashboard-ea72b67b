@@ -140,7 +140,7 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
             <div key={block.id || idx} className="space-y-2">
               <div className="aspect-video rounded-lg overflow-hidden bg-muted border">
                 {block.video_type === 'embed' && block.video_embed ? (
-                  <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.video_embed, { ADD_TAGS: ['iframe'], ADD_ATTR: ['allowfullscreen', 'frameborder', 'allow'] }) }} />
+                  <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.video_embed, { ADD_TAGS: ['iframe'], ADD_ATTR: ['allowfullscreen', 'frameborder', 'allow', 'src', 'width', 'height', 'title', 'referrerpolicy'] }) }} />
                 ) : block.video_type === 'youtube' && block.video_url ? (
                   <iframe src={(() => { const m = block.video_url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?\s]+)/); return m ? `https://www.youtube.com/embed/${m[1]}` : block.video_url; })()} className="w-full h-full" allowFullScreen />
                 ) : block.video_type === 'vimeo' && block.video_url ? (
