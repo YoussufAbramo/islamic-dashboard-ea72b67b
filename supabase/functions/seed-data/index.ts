@@ -295,44 +295,63 @@ Deno.serve(async (req) => {
         let cIds: string[] = []
         if (categories.includes('courses')) {
           // Tracks
-          const tracksInsert = pickN(TRACK_TITLES, qty.tracks).map((t, i) => ({
+          const tracksRaw = pickN(TRACK_TITLES, qty.tracks).map((t, i) => ({
             title: t.en, title_ar: t.ar, sort_order: i,
             description: `${t.en} description`, description_ar: `وصف ${t.ar}`,
           }))
-          const { data: createdTracks } = await admin.from('course_tracks').insert(tracksInsert).select('id')
+          const tracksInsert = await dedup(admin, 'course_tracks', tracksRaw)
+          const { data: createdTracks } = tracksInsert.length > 0
+            ? await admin.from('course_tracks').insert(tracksInsert).select('id')
+            : { data: [] }
           const trackIds = (createdTracks || []).map(t => t.id)
+          // Also get existing track IDs for FK references
+          const { data: allTrackRows } = await admin.from('course_tracks').select('id').limit(50)
+          const allTrackIds = (allTrackRows || []).map(t => t.id)
           await trackRecords(admin, sessionId, 'course_tracks', trackIds)
           counts.tracks = trackIds.length
 
           // Categories
-          const catsInsert = pickN(CAT_TITLES, qty.categories).map((c, i) => ({
+          const catsRaw = pickN(CAT_TITLES, qty.categories).map((c, i) => ({
             title: c.en, title_ar: c.ar, sort_order: i,
             description: `${c.en} courses`, description_ar: `دورات ${c.ar}`,
           }))
-          const { data: createdCats } = await admin.from('course_categories').insert(catsInsert).select('id')
+          const catsInsert = await dedup(admin, 'course_categories', catsRaw)
+          const { data: createdCats } = catsInsert.length > 0
+            ? await admin.from('course_categories').insert(catsInsert).select('id')
+            : { data: [] }
           const catIds = (createdCats || []).map(c => c.id)
+          const { data: allCatRows } = await admin.from('course_categories').select('id').limit(50)
+          const allCatIds = (allCatRows || []).map(c => c.id)
           await trackRecords(admin, sessionId, 'course_categories', catIds)
           counts.categories = catIds.length
 
           // Levels
-          const levelsInsert = pickN(LEVEL_TITLES, qty.levels).map((l, i) => ({
+          const levelsRaw = pickN(LEVEL_TITLES, qty.levels).map((l, i) => ({
             title: l.en, title_ar: l.ar, sort_order: i,
             description: `For ${l.en.toLowerCase()} learners`, description_ar: `للمتعلمين ${l.ar}`,
           }))
-          const { data: createdLevels } = await admin.from('course_levels').insert(levelsInsert).select('id')
+          const levelsInsert = await dedup(admin, 'course_levels', levelsRaw)
+          const { data: createdLevels } = levelsInsert.length > 0
+            ? await admin.from('course_levels').insert(levelsInsert).select('id')
+            : { data: [] }
           const levelIds = (createdLevels || []).map(l => l.id)
+          const { data: allLevelRows } = await admin.from('course_levels').select('id').limit(50)
+          const allLevelIds = (allLevelRows || []).map(l => l.id)
           await trackRecords(admin, sessionId, 'course_levels', levelIds)
           counts.levels = levelIds.length
 
           // Courses
-          const coursesInsert = pickN(COURSE_TITLES, qty.courses).map((c, i) => ({
+          const coursesRaw = pickN(COURSE_TITLES, qty.courses).map((c, i) => ({
             title: c.en, title_ar: c.ar, status: 'active', created_by: callerId,
             description: `Complete course: ${c.en}`, description_ar: `دورة كاملة: ${c.ar}`,
-            category_id: catIds.length > 0 ? catIds[i % catIds.length] : null,
-            level_id: levelIds.length > 0 ? levelIds[i % levelIds.length] : null,
-            track_id: trackIds.length > 0 ? trackIds[i % trackIds.length] : null,
+            category_id: allCatIds.length > 0 ? allCatIds[i % allCatIds.length] : null,
+            level_id: allLevelIds.length > 0 ? allLevelIds[i % allLevelIds.length] : null,
+            track_id: allTrackIds.length > 0 ? allTrackIds[i % allTrackIds.length] : null,
           }))
-          const { data: createdCourses } = await admin.from('courses').insert(coursesInsert).select('id')
+          const coursesInsert = await dedup(admin, 'courses', coursesRaw)
+          const { data: createdCourses } = coursesInsert.length > 0
+            ? await admin.from('courses').insert(coursesInsert).select('id')
+            : { data: [] }
           cIds = (createdCourses || []).map(c => c.id)
           await trackRecords(admin, sessionId, 'courses', cIds)
           counts.courses = cIds.length
