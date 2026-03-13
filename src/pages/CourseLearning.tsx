@@ -127,7 +127,7 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
           return block.image_url ? (
             <div key={block.id || idx} className="space-y-2">
               <div className="rounded-lg overflow-hidden border bg-muted/20">
-                <img src={block.image_url} alt={block.image_alt || ''} className="max-h-96 mx-auto object-contain" loading="lazy" />
+                <img src={block.image_url} alt={block.image_alt || ''} className={cn("max-h-96 mx-auto w-full", `object-${block.image_fit || 'contain'}`)} loading="lazy" />
               </div>
               {(block.image_caption || block.image_alt) && (
                 <p className="text-xs text-muted-foreground text-center italic">{block.image_caption || block.image_alt}</p>
