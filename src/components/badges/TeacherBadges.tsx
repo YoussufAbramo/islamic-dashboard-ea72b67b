@@ -53,13 +53,18 @@ function BadgeSummaryCard({ data, isAr }: { data: BadgeCategoryData; isAr: boole
   const tierLabel = data.highestEarned ? TIER_LABELS[data.highestEarned] : null;
   const accent = CARD_ACCENTS[data.category];
 
-  // Progress to next milestone
+  // Progress: each earned badge = one segment, plus partial progress within next segment
+  const totalMilestones = data.milestones.length;
+  const segmentSize = 100 / totalMilestones;
   const nextMilestone = data.milestones.find(m => !m.earned);
   const prevThreshold = data.totalEarned > 0 ? data.milestones[data.totalEarned - 1].threshold : 0;
   const nextThreshold = nextMilestone?.threshold || prevThreshold;
   const range = nextThreshold - prevThreshold;
+  const intraProgress = nextMilestone && range > 0
+    ? Math.min(1, Math.max(0, (data.currentValue - prevThreshold) / range))
+    : 0;
   const progressPercent = nextMilestone
-    ? (range > 0 ? Math.min(100, Math.max(0, Math.round(((data.currentValue - prevThreshold) / range) * 100))) : 0)
+    ? Math.min(100, Math.round((data.totalEarned + intraProgress) * segmentSize))
     : 100;
 
   return (
