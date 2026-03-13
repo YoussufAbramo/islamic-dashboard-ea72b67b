@@ -906,8 +906,8 @@ Deno.serve(async (req) => {
         }
 
         // ── EXPENSES (categories + records) ──
-        if (categories.includes('expenses') && budget.canAdd()) {
-          const expBudget = budget.cap(alloc.expenses || 5)
+        if (categories.includes('expenses')) {
+          const expBudget = budget.capMin(alloc.expenses || 5)
           const expCatRaw = [
             { title: 'Office Supplies', title_ar: 'لوازم مكتبية', color: '#6366f1', sort_order: 0 },
             { title: 'Software', title_ar: 'برمجيات', color: '#8b5cf6', sort_order: 1 },
