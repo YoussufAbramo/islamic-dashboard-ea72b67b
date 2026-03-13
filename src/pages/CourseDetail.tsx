@@ -353,7 +353,13 @@ const CourseDetail = () => {
               <img src={course.image_url} alt={course.title} className="h-20 w-20 rounded-lg object-cover shrink-0" />
             )}
             <div className="flex-1 min-w-0">
-              <CardTitle>{isAr && course.title_ar ? course.title_ar : course.title}</CardTitle>
+              <div className="flex items-center gap-2">
+                <CardTitle>{isAr && course.title_ar ? course.title_ar : course.title}</CardTitle>
+                {canEdit && (
+                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-muted-foreground hover:text-foreground shrink-0" onClick={() => { setSlugForm(course.slug || ''); setCourseSettingsOpen(true); }}>
+                    <Settings2 className="h-4 w-4" />
+                  </Button>
+                )}
               <p className="text-muted-foreground mt-1">{isAr && course.description_ar ? course.description_ar : course.description}</p>
               <div className="flex flex-wrap items-center gap-2 mt-3">
                 {categoryLabel && (
