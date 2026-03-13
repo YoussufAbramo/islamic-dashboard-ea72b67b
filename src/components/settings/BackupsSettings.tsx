@@ -73,6 +73,7 @@ const AutoBackupCard = ({ isAr }: { isAr: boolean }) => {
       const merged = { ...currentSettings, backup_config: { enabled: config.enabled, schedule: config.schedule, retention_count: config.retention_count, format: config.format, scheduled_time: config.scheduled_time } };
       const { error } = await supabase.from('app_settings').update({ settings: merged, updated_at: new Date().toISOString() }).eq('id', current.id);
       if (error) throw error;
+      logAction('modify', 'Cron Job', `Auto backup ${config.enabled ? 'enabled' : 'disabled'} — ${config.schedule} at ${config.scheduled_time} UTC`, undefined, `Format: ${config.format}, Retention: ${config.retention_count}`);
       toast.success(isAr ? 'تم حفظ إعدادات النسخ التلقائي' : 'Auto backup settings saved');
       setDirty(false);
     } catch (err: any) {
