@@ -391,7 +391,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
               </>
             )}
           </div>
-        </ScrollArea>
+        </div>
 
         <Separator />
 
