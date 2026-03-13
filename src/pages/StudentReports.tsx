@@ -435,9 +435,14 @@ const StudentReports = () => {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-end">
-                          <Button variant="outline" size="sm" onClick={() => setHistoryStudent(student)}>
-                            <Eye className="h-3.5 w-3.5 me-1.5" />{isAr ? 'السجل' : 'History'}
-                          </Button>
+                          <div className="flex items-center justify-end gap-1">
+                            <Button className={ACTION_BTN} variant="ghost" size="icon" title={isAr ? 'التقرير الشهري' : 'Monthly Report'} onClick={() => { setMonthlyReportStudent(student); setSelectedMonth(format(new Date(), 'yyyy-MM')); }}>
+                              <CalendarDays className={ACTION_ICON} />
+                            </Button>
+                            <Button className={ACTION_BTN} variant="ghost" size="icon" title={isAr ? 'السجل' : 'History'} onClick={() => setHistoryStudent(student)}>
+                              <Eye className={ACTION_ICON} />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
