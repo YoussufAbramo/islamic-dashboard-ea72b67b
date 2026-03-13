@@ -52,9 +52,11 @@ export interface ContentBlock {
   missing_word?: string;
   missing_word_ar?: string;
   pairs?: { left: string; left_ar?: string; right: string; right_ar?: string }[]; // for text_match
-  // table of content rows
+  // table of content
   toc_header_en?: string;
   toc_header_ar?: string;
+  toc_style?: 'default' | 'striped' | 'bordered' | 'minimal';
+  toc_size?: 'sm' | 'md' | 'lg' | 'xl';
   toc_rows?: { en: string; ar: string }[];
 }
 const generateId = () => Math.random().toString(36).substring(2, 10);
@@ -424,6 +426,60 @@ const BlockEditor = ({
           };
           return (
             <div className="space-y-3">
+              {/* Style & Size selectors */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs font-medium mb-1.5 block">{isAr ? 'نمط الجدول' : 'Table Style'}</Label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {([
+                      { value: 'default' as const, label: isAr ? 'افتراضي' : 'Default' },
+                      { value: 'striped' as const, label: isAr ? 'مخطط' : 'Striped' },
+                      { value: 'bordered' as const, label: isAr ? 'محاط' : 'Bordered' },
+                      { value: 'minimal' as const, label: isAr ? 'بسيط' : 'Minimal' },
+                    ] as const).map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => onChange({ ...block, toc_style: opt.value })}
+                        className={cn(
+                          "px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
+                          (block.toc_style || 'default') === opt.value
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+                        )}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium mb-1.5 block">{isAr ? 'حجم الجدول' : 'Table Size'}</Label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {([
+                      { value: 'sm' as const, label: 'S' },
+                      { value: 'md' as const, label: 'M' },
+                      { value: 'lg' as const, label: 'L' },
+                      { value: 'xl' as const, label: 'XL' },
+                    ] as const).map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => onChange({ ...block, toc_size: opt.value })}
+                        className={cn(
+                          "px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors min-w-[32px]",
+                          (block.toc_size || 'md') === opt.value
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+                        )}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <Separator />
               <div>
                 <Label className="text-xs font-medium mb-1.5 block">{isAr ? 'عناوين الأعمدة' : 'Column Headers'}</Label>
                 <div className="grid grid-cols-2 gap-2">
