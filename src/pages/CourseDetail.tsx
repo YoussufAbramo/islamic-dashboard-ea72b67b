@@ -541,6 +541,11 @@ const CourseDetail = () => {
                   ? '💡 يمكنك إعادة ترتيب المواضيع والأقسام والدروس بالسحب والإفلات. انقر مرتين على أي عنوان لتعديله مباشرة. استخدم قائمة "المزيد" (⋯) لتعديل أو حذف أي عنصر.'
                   : '💡 You can drag & drop to reorder topics, sections, and lessons. Double-click any title to rename it inline. Use the "More" menu (⋯) to edit or delete any item.'}
               </p>
+
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setDocsDialogOpen(true)}>
+                <BookOpen className="h-3.5 w-3.5" />
+                {isAr ? 'التوثيق الكامل' : 'Full Documentation'}
+              </Button>
             </div>
           </CollapsibleContent>
         </Card>
