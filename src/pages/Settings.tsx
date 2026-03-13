@@ -4,7 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { Button } from '@/components/ui/button';
-import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, HardDrive, GraduationCap, BarChart3, Code, Search as SearchIcon, Cloud } from 'lucide-react';
+import { Save, Undo2, Palette, CreditCard, Database, ShieldCheck, Settings2, Globe, HardDrive, GraduationCap, BarChart3, Code, Search as SearchIcon, Cloud, Webhook } from 'lucide-react';
 import { toast } from 'sonner';
 import AppearanceSettings from '@/components/settings/AppearanceSettings';
 import PaymentGatewayCard from '@/components/settings/PaymentGatewayCard';
@@ -21,6 +21,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import ComingSoonOverlay from '@/components/ComingSoonOverlay';
 
 const DeveloperSettings = () => {
   const { language } = useLanguage();
@@ -107,7 +108,7 @@ const WebsiteModeSettings = () => {
   );
 };
 
-type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'backups' | 'education' | 'pixels' | 'seo' | 'supabase' | 'developer' | 'website';
+type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'backups' | 'education' | 'pixels' | 'seo' | 'supabase' | 'developer' | 'website' | 'webhooks';
 
 const Settings = () => {
   const { language } = useLanguage();
@@ -118,7 +119,7 @@ const Settings = () => {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<SettingsTab>(() => {
     const tab = searchParams.get('tab');
-    return tab && ['general','appearance','auth','payment','data','backups','education','pixels','seo','supabase','developer','website'].includes(tab) ? tab as SettingsTab : 'general';
+    return tab && ['general','appearance','auth','payment','data','backups','education','pixels','seo','supabase','developer','website','webhooks'].includes(tab) ? tab as SettingsTab : 'general';
   });
 
   // Auto-discard pending changes when leaving settings - use ref to avoid re-running on discardChanges change
@@ -149,6 +150,7 @@ const Settings = () => {
     { value: 'backups', label: 'Backups', labelAr: 'النسخ الاحتياطية', icon: HardDrive, adminOnly: true },
     { value: 'supabase', label: 'Supabase', labelAr: 'Supabase', icon: Cloud, adminOnly: true },
     { value: 'developer', label: 'Developer', labelAr: 'المطور', icon: Code, adminOnly: true },
+    { value: 'webhooks', label: 'Webhooks', labelAr: 'الويب هوك', icon: Webhook, adminOnly: true },
   ];
 
   const visibleTabs = tabs.filter(t => !t.adminOnly || isAdmin);
@@ -206,6 +208,33 @@ const Settings = () => {
           {activeTab === 'seo' && isAdmin && <SeoSettings />}
           {activeTab === 'supabase' && isAdmin && <SupabaseStatusSettings />}
           {activeTab === 'developer' && isAdmin && <DeveloperSettings />}
+          {activeTab === 'webhooks' && isAdmin && (
+            <ComingSoonOverlay
+              icon={Webhook}
+              title="Webhooks"
+              titleAr="الويب هوك"
+              description="Webhook settings will allow you to configure endpoints, manage API keys, and monitor integration activity."
+              descriptionAr="إعدادات الويب هوك ستتيح لك تكوين نقاط النهاية وإدارة مفاتيح API ومراقبة نشاط التكامل."
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle>{isAr ? 'إعدادات الويب هوك' : 'Webhook Settings'}</CardTitle>
+                  <CardDescription>{isAr ? 'إدارة نقاط النهاية والتكاملات الخارجية' : 'Manage endpoints and external integrations'}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="rounded-lg border p-4 space-y-2">
+                    <p className="text-sm font-medium">{isAr ? 'الميزات القادمة:' : 'Upcoming Features:'}</p>
+                    <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
+                      <li>{isAr ? 'إدارة نقاط النهاية (Endpoints)' : 'Endpoint management'}</li>
+                      <li>{isAr ? 'مفاتيح API والمصادقة' : 'API keys & authentication'}</li>
+                      <li>{isAr ? 'إعادة المحاولة التلقائية' : 'Automatic retry logic'}</li>
+                      <li>{isAr ? 'فلترة الأحداث' : 'Event filtering'}</li>
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
+            </ComingSoonOverlay>
+          )}
         </div>
       </div>
 
