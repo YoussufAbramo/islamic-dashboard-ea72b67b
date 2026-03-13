@@ -437,7 +437,7 @@ const CourseLearning = () => {
   const [activeLesson, setActiveLesson] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [markingComplete, setMarkingComplete] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false); // collapsed by default
+  const [sidebarOpen, setSidebarOpen] = useState(true); // visible by default
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [builderOpen, setBuilderOpen] = useState(false);
   const canManage = role === 'admin' || role === 'teacher';
