@@ -343,20 +343,6 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
 
   return (
     <div className="space-y-6">
-      {/* Lesson header */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-[10px] gap-1">
-            <Icon className="h-3 w-3" />
-            {getContentLabel(lesson.lesson_type, isAr)}
-          </Badge>
-        </div>
-        <h2 className="text-xl font-bold">
-          {isAr && lesson.title_ar ? lesson.title_ar : lesson.title}
-        </h2>
-      </div>
-
-      <Separator />
 
       {videoUrl && (
         <div className="aspect-video rounded-lg overflow-hidden bg-muted border">
