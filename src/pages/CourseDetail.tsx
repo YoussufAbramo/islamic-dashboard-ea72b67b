@@ -634,7 +634,7 @@ const CourseDetail = () => {
                                         </span>
                                       )}
                                       <Badge variant="outline" className="text-[10px] shrink-0">
-                                        {(lessonItems[section.id] || []).length} {isAr ? 'درس' : 'les'}
+                                        {(lessonItems[section.id] || []).length} {isAr ? 'درس' : 'lessons'}
                                       </Badge>
                                       <ChevronDown className="h-3.5 w-3.5 text-muted-foreground ms-auto transition-transform group-data-[state=open]:rotate-180 shrink-0" />
                                     </CollapsibleTrigger>
