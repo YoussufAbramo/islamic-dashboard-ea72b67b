@@ -22,6 +22,7 @@ import {
   Loader2, Percent, Mail, Phone, User, Briefcase, FileText,
   ExternalLink, FileUp, Pencil, X, Save,
   CalendarDays, Wallet, Info, Eye, HeadphonesIcon, Receipt, Cake,
+  Send,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ACTION_BTN, ACTION_ICON } from '@/lib/actionBtnClass';
@@ -45,6 +46,13 @@ const TeacherProfile = () => {
   const [quickViewReq, setQuickViewReq] = useState<any>(null);
   const [adminProfiles, setAdminProfiles] = useState<Record<string, string>>({});
   const [authInfo, setAuthInfo] = useState<{ created_at?: string; last_sign_in_at?: string } | null>(null);
+
+  // Support ticket dialog
+  const [ticketOpen, setTicketOpen] = useState(false);
+  const [ticketForm, setTicketForm] = useState({ subject: '', message: '', department: '', priority: '' });
+  const [ticketLoading, setTicketLoading] = useState(false);
+  const [departments, setDepartments] = useState<any[]>([]);
+  const [priorities, setPriorities] = useState<any[]>([]);
 
   // Avatar
   const [resolvedAvatar, setResolvedAvatar] = useState('');
@@ -178,6 +186,18 @@ const TeacherProfile = () => {
 
     setLoading(false);
   };
+
+  useEffect(() => {
+    const fetchMeta = async () => {
+      const [{ data: deptData }, { data: prioData }] = await Promise.all([
+        supabase.from('support_departments').select('id, name, name_ar').eq('is_active', true).order('sort_order'),
+        supabase.from('support_priorities').select('id, name, name_ar, color').eq('is_active', true).order('sort_order'),
+      ]);
+      setDepartments(deptData || []);
+      setPriorities(prioData || []);
+    };
+    fetchMeta();
+  }, []);
 
   useEffect(() => { fetchData(); }, [id]);
 
@@ -340,16 +360,43 @@ const TeacherProfile = () => {
 
   const initials = (profile?.full_name || '?').charAt(0).toUpperCase();
 
-  const statCards = [
+  const statCardsRow1 = [
     { label: isAr ? 'الساعات المطلوبة (شهرياً)' : 'Required Hours (Monthly)', value: `${requiredMonthlyHours}h`, icon: Clock, color: 'text-blue-600' },
     { label: isAr ? 'الساعات المسجلة' : 'Actual Logged Hours', value: `${actualLoggedHours.toFixed(1)}h`, icon: TrendingUp, color: 'text-emerald-600' },
     { label: isAr ? 'الساعات المتبقية' : 'Remaining Hours', value: `${remainingHours.toFixed(1)}h`, icon: Clock, color: 'text-amber-600' },
-    { label: isAr ? 'الحصص المكتملة' : 'Completed Sessions', value: completedSessions.toString(), icon: CheckCircle, color: 'text-emerald-600' },
-    { label: isAr ? 'نسبة الحضور' : 'Attendance %', value: `${attendancePercentage}%`, icon: Percent, color: 'text-purple-600' },
-    { label: isAr ? 'حصص الغياب' : 'Absence Sessions', value: absentSessions.toString(), icon: AlertTriangle, color: 'text-red-600' },
-    { label: isAr ? 'سعر الساعة' : 'Hourly Rate', value: `$${hourlyRate}`, icon: DollarSign, color: 'text-primary' },
-    { label: isAr ? 'الراتب المتوقع' : 'Expected Salary', value: `$${expectedSalary.toFixed(2)}`, icon: DollarSign, color: 'text-blue-600' },
+    { label: isAr ? 'إجمالي الراتب' : 'Total Salary', value: `$${expectedSalary.toFixed(2)}`, icon: DollarSign, color: 'text-blue-600' },
   ];
+
+  const statCardsRow2 = [
+    { label: isAr ? 'الحصص المكتملة' : 'Completed Sessions', value: completedSessions.toString(), icon: CheckCircle, color: 'text-emerald-600' },
+    { label: isAr ? 'حصص الغياب' : 'Absence Sessions', value: absentSessions.toString(), icon: AlertTriangle, color: 'text-red-600' },
+    { label: isAr ? 'نسبة الحضور' : 'Attendance %', value: `${(completedSessions + absentSessions) > 0 ? Math.round((completedSessions / (completedSessions + absentSessions)) * 100) : 0}%`, icon: Percent, color: 'text-purple-600' },
+  ];
+
+  const handleSubmitTicket = async () => {
+    if (!ticketForm.subject.trim() || !ticketForm.message.trim()) {
+      toast.error(isAr ? 'الموضوع والرسالة مطلوبان' : 'Subject and message are required');
+      return;
+    }
+    setTicketLoading(true);
+    const { error } = await supabase.from('support_tickets').insert({
+      name: profile?.full_name || '',
+      email: profile?.email || '',
+      subject: ticketForm.subject,
+      message: ticketForm.message,
+      department: ticketForm.department || (departments[0]?.name || 'general'),
+      priority: ticketForm.priority || (priorities[0]?.name || 'medium'),
+      user_id: user?.id,
+    });
+    setTicketLoading(false);
+    if (error) {
+      toast.error(isAr ? 'فشل في إرسال التذكرة' : 'Failed to submit ticket');
+    } else {
+      toast.success(isAr ? 'تم إرسال التذكرة بنجاح' : 'Ticket submitted successfully');
+      setTicketOpen(false);
+      setTicketForm({ subject: '', message: '', department: '', priority: '' });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -518,22 +565,6 @@ const TeacherProfile = () => {
                   </Button>
                 </div>
 
-                {/* Payout Policy Note */}
-                <div className="w-full mt-2 rounded-xl border border-border bg-muted/40 p-3 space-y-2">
-                  <div className="flex items-center gap-1.5">
-                    <Info className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-                    <p className="text-[11px] font-semibold text-foreground">{isAr ? 'سياسة الصرف' : 'Payout Policy'}</p>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    {isAr
-                      ? 'يتم صرف المستحقات وفقاً لسياسات الصرف الخاصة بنا. إذا كان طلبك مخالفاً لسياساتنا، سيتم رفض الطلب وإعادة المبلغ إلى رصيدك.'
-                      : 'Payouts are processed following our payout policies. If your request violates our policies, it will be rejected and the amount will be returned to your balance.'}
-                  </p>
-                  <Link to="/policies/payout-policy" className="inline-flex items-center gap-1 text-[11px] text-primary font-medium hover:underline">
-                    {isAr ? 'اطلع على سياسة الصرف' : 'View Payout Policy'}
-                    <ExternalLink className="h-3 w-3" />
-                  </Link>
-                </div>
               </div>
 
               <Separator orientation="vertical" className="hidden md:block h-auto" />
@@ -544,6 +575,7 @@ const TeacherProfile = () => {
                   <InfoCard icon={<Mail className="h-3.5 w-3.5" />} label={isAr ? 'البريد الإلكتروني' : 'Email'} value={profile?.email || '-'} small />
                   <InfoCard icon={<Phone className="h-3.5 w-3.5" />} label={isAr ? 'الهاتف' : 'Phone'} value={profile?.phone || '-'} small />
                   <InfoCard icon={<Briefcase className="h-3.5 w-3.5" />} label={isAr ? 'التخصص' : 'Specialization'} value={teacher?.specialization || '-'} small />
+                  <InfoCard icon={<DollarSign className="h-3.5 w-3.5" />} label={isAr ? 'سعر الساعة' : 'Hourly Rate'} value={`$${hourlyRate}`} small />
                   <InfoCard icon={<User className="h-3.5 w-3.5" />} label={isAr ? 'الجنس' : 'Gender'} value={(teacher as any)?.gender ? ((teacher as any).gender === 'male' ? (isAr ? 'ذكر' : 'Male') : (isAr ? 'أنثى' : 'Female')) : '-'} small />
                   <InfoCard icon={<Cake className="h-3.5 w-3.5" />} label={isAr ? 'العمر' : 'Age'} value={(teacher as any)?.date_of_birth ? `${Math.floor((Date.now() - new Date((teacher as any).date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))} ${isAr ? 'سنة' : 'years'}` : '-'} small />
                   <InfoCard icon={<CalendarDays className="h-3.5 w-3.5" />} label={isAr ? 'تاريخ إنشاء الحساب' : 'Account Created'} value={authInfo?.created_at ? format(new Date(authInfo.created_at), 'dd/MM/yyyy HH:mm') : '-'} small />
@@ -589,9 +621,26 @@ const TeacherProfile = () => {
         </CardContent>
       </Card>
 
-      {/* Stats Grid */}
+      {/* Stats Grid - Row 1 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {statCards.map((stat, i) => (
+        {statCardsRow1.map((stat, i) => (
+          <Card key={i} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4 flex items-start gap-3">
+              <div className={`rounded-lg p-2 bg-muted ${stat.color}`}>
+                <stat.icon className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground truncate">{stat.label}</p>
+                <p className="text-lg font-bold">{stat.value}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Stats Grid - Row 2 */}
+      <div className="grid grid-cols-3 gap-4">
+        {statCardsRow2.map((stat, i) => (
           <Card key={i} className="hover:shadow-md transition-shadow">
             <CardContent className="p-4 flex items-start gap-3">
               <div className={`rounded-lg p-2 bg-muted ${stat.color}`}>
@@ -741,11 +790,11 @@ const TeacherProfile = () => {
                   {quickViewReq.decline_reason && (
                     <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'سبب الرفض' : 'Decline Reason'}</span><span className="text-destructive text-xs max-w-[200px] text-end">{quickViewReq.decline_reason}</span></div>
                   )}
-                  {quickViewReq.admin_notes && (
+                  {role === 'admin' && quickViewReq.admin_notes && (
                     <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'ملاحظات المشرف' : 'Admin Notes'}</span><span className="text-xs max-w-[200px] text-end">{quickViewReq.admin_notes}</span></div>
                   )}
                 </div>
-                <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => { setQuickViewReq(null); navigate('/dashboard/support'); }}>
+                <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => { setQuickViewReq(null); setTicketForm({ subject: `Payout Request: ${quickViewReq.transaction_ref}`, message: '', department: '', priority: '' }); setTicketOpen(true); }}>
                   <HeadphonesIcon className="h-3.5 w-3.5" />
                   {isAr ? 'تقديم تذكرة دعم' : 'Submit Support Ticket'}
                 </Button>
@@ -791,6 +840,61 @@ const TeacherProfile = () => {
             <Button onClick={handleRequestPayout} disabled={payoutLoading}>
               {payoutLoading && <Loader2 className="h-4 w-4 me-2 animate-spin" />}
               {isAr ? 'تأكيد الطلب' : 'Confirm Request'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Support Ticket Dialog */}
+      <Dialog open={ticketOpen} onOpenChange={setTicketOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <HeadphonesIcon className="h-5 w-5 text-primary" />
+              {isAr ? 'تقديم تذكرة دعم' : 'Submit Support Ticket'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs">{isAr ? 'الموضوع' : 'Subject'} *</Label>
+              <Input value={ticketForm.subject} onChange={e => setTicketForm({ ...ticketForm, subject: e.target.value })} placeholder={isAr ? 'موضوع التذكرة...' : 'Ticket subject...'} />
+            </div>
+            {departments.length > 0 && (
+              <div className="space-y-1.5">
+                <Label className="text-xs">{isAr ? 'القسم' : 'Department'}</Label>
+                <Select value={ticketForm.department} onValueChange={v => setTicketForm({ ...ticketForm, department: v })}>
+                  <SelectTrigger><SelectValue placeholder={isAr ? 'اختر...' : 'Select...'} /></SelectTrigger>
+                  <SelectContent>
+                    {departments.map(d => (
+                      <SelectItem key={d.id} value={d.name}>{isAr ? (d.name_ar || d.name) : d.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            {priorities.length > 0 && (
+              <div className="space-y-1.5">
+                <Label className="text-xs">{isAr ? 'الأولوية' : 'Priority'}</Label>
+                <Select value={ticketForm.priority} onValueChange={v => setTicketForm({ ...ticketForm, priority: v })}>
+                  <SelectTrigger><SelectValue placeholder={isAr ? 'اختر...' : 'Select...'} /></SelectTrigger>
+                  <SelectContent>
+                    {priorities.map(p => (
+                      <SelectItem key={p.id} value={p.name}>{isAr ? (p.name_ar || p.name) : p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div className="space-y-1.5">
+              <Label className="text-xs">{isAr ? 'الرسالة' : 'Message'} *</Label>
+              <Textarea value={ticketForm.message} onChange={e => setTicketForm({ ...ticketForm, message: e.target.value })} placeholder={isAr ? 'اشرح مشكلتك...' : 'Describe your issue...'} rows={4} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTicketOpen(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
+            <Button onClick={handleSubmitTicket} disabled={ticketLoading}>
+              {ticketLoading ? <Loader2 className="h-4 w-4 me-2 animate-spin" /> : <Send className="h-4 w-4 me-2" />}
+              {isAr ? 'إرسال' : 'Submit'}
             </Button>
           </DialogFooter>
         </DialogContent>
