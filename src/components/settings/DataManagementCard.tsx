@@ -460,14 +460,24 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
           </CardContent>
         </Card>
 
-        {/* Clear All Content Card */}
-        <ClearContentCard isAr={isAr} />
-
         {/* Clear Logs Card */}
         <ClearLogsCard isAr={isAr} />
 
-        {/* System Reset */}
-        <SystemResetCard isAr={isAr} />
+        {/* System Reset - Collapsible Accordion */}
+        <Collapsible>
+          <CollapsibleTrigger asChild>
+            <button className="w-full flex items-center justify-between p-3 rounded-lg border border-destructive/30 bg-destructive/5 hover:bg-destructive/10 transition-colors">
+              <span className="flex items-center gap-2 text-sm font-medium text-destructive">
+                <AlertTriangle className="h-4 w-4" />
+                {isAr ? 'إعادة تعيين النظام' : 'System Reset'}
+              </span>
+              <ChevronDown className="h-4 w-4 text-destructive" />
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-2">
+            <SystemResetCard isAr={isAr} />
+          </CollapsibleContent>
+        </Collapsible>
       </div>
 
       {/* Confirm Clear Dialog */}
