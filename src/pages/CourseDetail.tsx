@@ -457,6 +457,90 @@ const CourseDetail = () => {
         </CardHeader>
       </Card>
 
+      {/* Course Structure Documentation */}
+      <Collapsible>
+        <Card className="border-dashed">
+          <CollapsibleTrigger asChild>
+            <button className="w-full flex items-center justify-between p-4 text-start hover:bg-muted/50 rounded-lg transition-colors group">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <HelpCircle className="h-4 w-4 shrink-0" />
+                <span className="text-sm font-medium">
+                  {isAr ? 'كيف يتم تنظيم الدورة؟' : 'How is the course structured?'}
+                </span>
+              </div>
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="animate-accordion-down data-[state=closed]:animate-accordion-up">
+            <div className="px-4 pb-4 space-y-4 text-sm text-muted-foreground">
+              <p>
+                {isAr
+                  ? 'يتم تنظيم كل دورة في ثلاث طبقات متداخلة لتسهيل التعلم وتنظيم المحتوى:'
+                  : 'Every course is organized into three nested layers to make learning easy and content well-structured:'}
+              </p>
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                {/* Layer 1 */}
+                <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
+                  <div className="flex items-center gap-2 font-semibold text-foreground">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                    {isAr ? '١. المواضيع' : '1. Topics'}
+                  </div>
+                  <p className="text-xs leading-relaxed">
+                    {isAr
+                      ? 'المواضيع هي الوحدات الرئيسية للدورة. فكّر فيها كفصول في كتاب — كل موضوع يغطي مجالاً مستقلاً.'
+                      : 'Topics are the main units of the course. Think of them as chapters in a book — each topic covers a standalone subject area.'}
+                  </p>
+                </div>
+
+                {/* Layer 2 */}
+                <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
+                  <div className="flex items-center gap-2 font-semibold text-foreground">
+                    <Layers className="h-4 w-4" style={{ color: 'hsl(var(--gold))' }} />
+                    {isAr ? '٢. الأقسام' : '2. Sections'}
+                  </div>
+                  <p className="text-xs leading-relaxed">
+                    {isAr
+                      ? 'كل موضوع يحتوي على أقسام. الأقسام تقسّم الموضوع إلى أجزاء أصغر ومركزة ليسهل استيعابها.'
+                      : 'Each topic contains sections. Sections break the topic into smaller, focused parts that are easier to follow.'}
+                  </p>
+                </div>
+
+                {/* Layer 3 */}
+                <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
+                  <div className="flex items-center gap-2 font-semibold text-foreground">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    {isAr ? '٣. الدروس' : '3. Lessons'}
+                  </div>
+                  <p className="text-xs leading-relaxed">
+                    {isAr
+                      ? 'داخل كل قسم، تضيف الدروس الفعلية: نصوص للقراءة، تمارين تفاعلية، مراجعات، واجبات، وغيرها.'
+                      : 'Inside each section, you add the actual lessons: reading text, interactive exercises, revisions, homework, and more.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-lg border bg-muted/20 p-3 space-y-2">
+                <p className="font-medium text-foreground text-xs">
+                  {isAr ? '📌 مثال عملي:' : '📌 Quick example:'}
+                </p>
+                <div className="text-xs leading-relaxed space-y-1">
+                  <p>{isAr ? '📖 الموضوع: "الحروف العربية"' : '📖 Topic: "Arabic Letters"'}</p>
+                  <p className="ps-4">{isAr ? '📂 القسم: "حروف المد"' : '📂 Section: "Vowel Letters"'}</p>
+                  <p className="ps-8">{isAr ? '📝 الدرس: "اقرأ واستمع — حرف الألف" + تمرين اختيار الإجابة الصحيحة' : '📝 Lesson: "Read & Listen — Letter Alif" + Choose Correct exercise'}</p>
+                </div>
+              </div>
+
+              <p className="text-xs italic">
+                {isAr
+                  ? '💡 يمكنك إعادة ترتيب المواضيع والأقسام والدروس بالسحب والإفلات. انقر مرتين على أي عنوان لتعديله مباشرة. استخدم قائمة "المزيد" (⋯) لتعديل أو حذف أي عنصر.'
+                  : '💡 You can drag & drop to reorder topics, sections, and lessons. Double-click any title to rename it inline. Use the "More" menu (⋯) to edit or delete any item.'}
+              </p>
+            </div>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
       {/* Course Structure Legend */}
       <div className="flex items-center gap-4 px-1 text-xs text-muted-foreground">
         <div className="flex items-center gap-1.5">
