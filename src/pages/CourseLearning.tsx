@@ -14,6 +14,7 @@ import {
   ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Circle,
   BookOpen, Play, FileText, Headphones, ExternalLink, FileDown,
   Menu, X, GraduationCap, Loader2, PanelTop, PanelTopClose, AlertTriangle, Settings2,
+  ChevronDown, FolderTree, Layers,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -554,59 +555,106 @@ const CourseLearning = () => {
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Sidebar */}
         <div className={cn(
-          "border-e bg-card shrink-0 transition-all duration-200 overflow-hidden",
-          sidebarOpen ? "w-72" : "w-0"
+          "border-e bg-card shrink-0 transition-all duration-200 overflow-hidden flex flex-col",
+          sidebarOpen ? "w-80" : "w-0"
         )}>
-          <ScrollArea className="h-full">
-            <div className="p-3 space-y-1">
-              {courseSections.map(cs => {
+          {/* Sidebar header */}
+          <div className="px-4 py-3 border-b shrink-0">
+            <h3 className="text-sm font-semibold truncate">{isAr ? 'محتوى الدورة' : 'Course Content'}</h3>
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              {orderedLessons.length} {isAr ? 'درس' : 'lessons'} · {completedSet.size} {isAr ? 'مكتمل' : 'completed'}
+            </p>
+          </div>
+          <ScrollArea className="flex-1">
+            <div className="p-2 space-y-1">
+              {courseSections.map((cs, csIdx) => {
                 const lsForCs = lessonSections.filter(ls => ls.course_section_id === cs.id);
-                if (lsForCs.length === 0) return null;
 
                 return (
-                  <div key={cs.id} className="space-y-0.5">
-                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-2 pt-3 pb-1">
-                      {isAr && cs.title_ar ? cs.title_ar : cs.title}
-                    </p>
-                    {lsForCs.map(ls => {
-                      const lessonsForLs = lessons.filter(l => l.section_id === ls.id);
-                      if (lessonsForLs.length === 0) return null;
-                      return (
-                        <div key={ls.id} className="space-y-0.5">
-                          <p className="text-[10px] text-muted-foreground/70 px-2 pt-1.5">
-                            {isAr && ls.title_ar ? ls.title_ar : ls.title}
-                          </p>
-                          {lessonsForLs.map(lesson => {
-                            const isActive = activeLesson === lesson.id;
-                            const isDone = completedSet.has(lesson.id);
-                            const LessonIcon = getContentIcon(lesson.lesson_type);
-                            return (
-                              <button
-                                key={lesson.id}
-                                onClick={() => setActiveLesson(lesson.id)}
-                                className={cn(
-                                  "w-full flex items-center gap-2 px-2.5 py-2 rounded-md text-start text-xs transition-colors",
-                                  isActive
-                                    ? "bg-primary/10 text-primary font-medium"
-                                    : "text-foreground hover:bg-muted"
-                                )}
-                              >
-                                {isDone ? (
-                                  <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
-                                ) : (
-                                  <Circle className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
-                                )}
-                                <LessonIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                                <span className="truncate">
-                                  {isAr && lesson.title_ar ? lesson.title_ar : lesson.title}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <details key={cs.id} className="group/topic" open>
+                    {/* Topic (L1) */}
+                    <summary className="flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer select-none hover:bg-muted/60 transition-colors list-none [&::-webkit-details-marker]:hidden">
+                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0 transition-transform group-open/topic:rotate-0 -rotate-90" />
+                      <FolderTree className="h-3.5 w-3.5 shrink-0 text-primary" />
+                      <span className="text-xs font-semibold truncate flex-1">
+                        {isAr && cs.title_ar ? cs.title_ar : cs.title}
+                      </span>
+                      <Badge variant="secondary" className="text-[9px] h-4 px-1.5 shrink-0">
+                        {lsForCs.reduce((acc, ls) => acc + lessons.filter(l => l.section_id === ls.id).length, 0)}
+                      </Badge>
+                    </summary>
+
+                    <div className="ms-3 border-s border-border/50 space-y-0.5 pb-1">
+                      {lsForCs.length === 0 && (
+                        <p className="text-[10px] text-muted-foreground/50 px-4 py-2 italic">
+                          {isAr ? 'لا توجد أقسام' : 'No sections'}
+                        </p>
+                      )}
+                      {lsForCs.map((ls, lsIdx) => {
+                        const lessonsForLs = lessons.filter(l => l.section_id === ls.id);
+                        const sectionCompleted = lessonsForLs.length > 0 && lessonsForLs.every(l => completedSet.has(l.id));
+                        const sectionProgress = lessonsForLs.length > 0
+                          ? Math.round((lessonsForLs.filter(l => completedSet.has(l.id)).length / lessonsForLs.length) * 100)
+                          : 0;
+
+                        return (
+                          <details key={ls.id} className="group/section" open>
+                            {/* Section (L2) */}
+                            <summary className="flex items-center gap-2 px-3 py-2 ms-1 rounded-md cursor-pointer select-none hover:bg-muted/40 transition-colors list-none [&::-webkit-details-marker]:hidden">
+                              <ChevronDown className="h-3 w-3 text-muted-foreground/60 shrink-0 transition-transform group-open/section:rotate-0 -rotate-90" />
+                              <Layers className="h-3 w-3 shrink-0" style={{ color: 'hsl(var(--gold, var(--primary)))' }} />
+                              <span className="text-[11px] font-medium truncate flex-1">
+                                {isAr && ls.title_ar ? ls.title_ar : ls.title}
+                              </span>
+                              {sectionCompleted ? (
+                                <CheckCircle2 className="h-3 w-3 text-primary shrink-0" />
+                              ) : sectionProgress > 0 ? (
+                                <span className="text-[9px] text-muted-foreground shrink-0">{sectionProgress}%</span>
+                              ) : null}
+                            </summary>
+
+                            <div className="ms-4 border-s border-border/30 space-y-px pb-0.5">
+                              {lessonsForLs.length === 0 && (
+                                <p className="text-[10px] text-muted-foreground/40 px-3 py-1.5 italic">
+                                  {isAr ? 'لا توجد دروس' : 'No lessons'}
+                                </p>
+                              )}
+                              {lessonsForLs.map(lesson => {
+                                const isActive = activeLesson === lesson.id;
+                                const isDone = completedSet.has(lesson.id);
+                                const LessonIcon = getContentIcon(lesson.lesson_type);
+                                return (
+                                  <button
+                                    key={lesson.id}
+                                    onClick={() => setActiveLesson(lesson.id)}
+                                    className={cn(
+                                      "w-full flex items-center gap-2 px-3 py-1.5 ms-1 rounded-md text-start text-[11px] transition-all",
+                                      isActive
+                                        ? "bg-primary/10 text-primary font-medium shadow-sm"
+                                        : isDone
+                                          ? "text-muted-foreground hover:bg-muted/40"
+                                          : "text-foreground hover:bg-muted/40"
+                                    )}
+                                  >
+                                    {isDone ? (
+                                      <CheckCircle2 className="h-3 w-3 text-primary shrink-0" />
+                                    ) : isActive ? (
+                                      <Play className="h-3 w-3 text-primary shrink-0 fill-primary" />
+                                    ) : (
+                                      <Circle className="h-3 w-3 text-muted-foreground/30 shrink-0" />
+                                    )}
+                                    <span className={cn("truncate flex-1", isDone && !isActive && "line-through opacity-60")}>
+                                      {isAr && lesson.title_ar ? lesson.title_ar : lesson.title}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </details>
+                        );
+                      })}
+                    </div>
+                  </details>
                 );
               })}
             </div>
