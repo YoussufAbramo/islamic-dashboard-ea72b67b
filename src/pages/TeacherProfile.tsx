@@ -621,9 +621,26 @@ const TeacherProfile = () => {
         </CardContent>
       </Card>
 
-      {/* Stats Grid */}
+      {/* Stats Grid - Row 1 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {statCards.map((stat, i) => (
+        {statCardsRow1.map((stat, i) => (
+          <Card key={i} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4 flex items-start gap-3">
+              <div className={`rounded-lg p-2 bg-muted ${stat.color}`}>
+                <stat.icon className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground truncate">{stat.label}</p>
+                <p className="text-lg font-bold">{stat.value}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Stats Grid - Row 2 */}
+      <div className="grid grid-cols-3 gap-4">
+        {statCardsRow2.map((stat, i) => (
           <Card key={i} className="hover:shadow-md transition-shadow">
             <CardContent className="p-4 flex items-start gap-3">
               <div className={`rounded-lg p-2 bg-muted ${stat.color}`}>
