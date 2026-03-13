@@ -118,16 +118,20 @@ Deno.serve(async (req) => {
     // ==================== RUN AUTO BACKUP (called by cron) ====================
     if (action === 'run_auto_backup') {
       // Accept: x-backup-secret header OR Authorization with anon/service key
-      // This is safe because the action only runs if auto_backup_config.enabled is true
       const cronSecret = Deno.env.get('BACKUP_CRON_SECRET')
       const providedSecret = req.headers.get('x-backup-secret')
       const authHeader = req.headers.get('Authorization') || ''
       
+      console.log('Auth debug:', { 
+        hasSecret: !!providedSecret, 
+        secretMatch: cronSecret && providedSecret === cronSecret,
+        authHeaderPrefix: authHeader.substring(0, 20),
+        anonKeyPrefix: anonKey.substring(0, 20),
+        anonKeyMatch: authHeader === `Bearer ${anonKey}`,
+      })
+      
       const secretValid = cronSecret && providedSecret === cronSecret
-      // Check if auth header contains the anon key (handles proxy header modifications)
-      const anonKeyShort = anonKey.slice(-20)
-      const serviceKeyShort = serviceRoleKey.slice(-20)
-      const keyValid = authHeader.includes(anonKeyShort) || authHeader.includes(serviceKeyShort)
+      const keyValid = authHeader === `Bearer ${anonKey}` || authHeader === `Bearer ${serviceRoleKey}`
       
       if (!secretValid && !keyValid) {
         return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
