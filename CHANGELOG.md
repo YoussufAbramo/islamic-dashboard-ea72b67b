@@ -2,6 +2,17 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.18.0] - 2026-03-13
+
+### Fixed
+- **Critical: Users disappearing from dashboard** — the `has_role()` database function was missing its `EXECUTE` grant to `authenticated` and `anon` roles, causing all RLS policies that depend on it (admin access to profiles, students, teachers, etc.) to silently fail and return empty results
+- **Root cause** — a previous migration that recreated the `has_role()` function via `CREATE OR REPLACE` dropped the implicit EXECUTE grant, making every `has_role()` call in RLS policies evaluate to `false`
+
+### Security
+- Restored `GRANT EXECUTE` on `has_role(uuid, app_role)` to `authenticated` and `anon` roles
+
+---
+
 ## [4.17.0] - 2026-03-13
 
 ### Added
