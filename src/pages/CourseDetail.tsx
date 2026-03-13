@@ -730,9 +730,9 @@ const CourseDetail = () => {
                                                     <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted" onClick={(e) => { e.stopPropagation(); openEditLesson(lesson, section.id); }}>
                                                       <Settings2 className="h-3.5 w-3.5" />
                                                     </Button>
-                                                    <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted" onClick={(e) => { e.stopPropagation(); }}>
-                                                      <Edit className="h-3.5 w-3.5" />
-                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted" onClick={(e) => { e.stopPropagation(); setBuilderLesson(lesson); setBuilderOpen(true); }}>
+                                                       <Edit className="h-3.5 w-3.5" />
+                                                     </Button>
                                                     <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-destructive/60 hover:text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: lesson.id, type: 'lesson' }); }}>
                                                       <Trash2 className="h-3.5 w-3.5" />
                                                     </Button>
