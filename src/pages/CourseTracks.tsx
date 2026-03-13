@@ -534,6 +534,65 @@ const CourseTracks = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Assign Courses Dialog */}
+      <Dialog open={!!assignTrackId} onOpenChange={(open) => { if (!open) setAssignTrackId(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <LinkIcon className="h-4 w-4" />
+              {isAr ? 'ربط دورات بالمسار' : 'Assign Courses to Track'}
+            </DialogTitle>
+            <DialogDescription>
+              {isAr
+                ? `اختر الدورات غير المرتبطة لإضافتها إلى مسار "${tracks.find(t => t.id === assignTrackId)?.title || ''}"`
+                : `Select unassigned courses to add to "${tracks.find(t => t.id === assignTrackId)?.title || ''}" track`}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 max-h-[300px] overflow-y-auto">
+            {unassignedCourses.length === 0 ? (
+              <div className="text-center py-6 text-sm text-muted-foreground">
+                {isAr ? 'جميع الدورات مرتبطة بمسارات' : 'All courses are already assigned to tracks'}
+              </div>
+            ) : (
+              unassignedCourses.map(course => (
+                <label
+                  key={course.id}
+                  className={cn(
+                    'flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-colors',
+                    assignSelected.has(course.id) ? 'border-primary/30 bg-primary/5' : 'border-border hover:bg-muted/50'
+                  )}
+                >
+                  <Checkbox
+                    checked={assignSelected.has(course.id)}
+                    onCheckedChange={(checked) => {
+                      setAssignSelected(prev => {
+                        const next = new Set(prev);
+                        if (checked) next.add(course.id); else next.delete(course.id);
+                        return next;
+                      });
+                    }}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <span className="text-sm font-medium truncate block">{isAr ? (course.title_ar || course.title) : course.title}</span>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] shrink-0">
+                    {course.status === 'published' ? (isAr ? 'منشور' : 'Published') : (isAr ? 'مسودة' : 'Draft')}
+                  </Badge>
+                </label>
+              ))
+            )}
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setAssignTrackId(null)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
+            <Button onClick={handleAssignCourses} disabled={assignSelected.size === 0 || assignLoading}>
+              {assignLoading
+                ? (isAr ? 'جارٍ الربط...' : 'Assigning...')
+                : (isAr ? `ربط ${assignSelected.size} دورة` : `Assign ${assignSelected.size} Course(s)`)}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
