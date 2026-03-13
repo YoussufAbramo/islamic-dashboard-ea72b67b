@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import {
   ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Circle,
   BookOpen, Play, FileText, Headphones, ExternalLink, FileDown,
-  Menu, X, GraduationCap, Loader2,
+  Menu, X, GraduationCap, Loader2, PanelTop, PanelTopClose,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -218,7 +218,14 @@ const CourseLearning = () => {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const { user } = useAuth();
+  const { topBarHidden, setTopBarHidden } = useOutletContext<{ topBarHidden: boolean; setTopBarHidden: (v: boolean) => void }>();
   const isAr = language === 'ar';
+
+  // Auto-hide top bar on mount, restore on unmount
+  useEffect(() => {
+    setTopBarHidden(true);
+    return () => setTopBarHidden(false);
+  }, [setTopBarHidden]);
 
   const [course, setCourse] = useState<any>(null);
   const [courseSections, setCourseSections] = useState<CourseSection[]>([]);
@@ -429,7 +436,7 @@ const CourseLearning = () => {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
+    <div className={cn("flex flex-col", topBarHidden ? "h-[calc(100vh-2.5rem)]" : "h-[calc(100vh-6.5rem)]")}>
       {/* Top bar */}
       <div className="flex items-center gap-3 px-4 py-2.5 border-b bg-card shrink-0">
         <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => navigate(`/dashboard/courses/${id}`)}>
@@ -452,6 +459,15 @@ const CourseLearning = () => {
             <GraduationCap className="h-3 w-3" />
             {completedSet.size}/{orderedLessons.length}
           </Badge>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0"
+            onClick={() => setTopBarHidden(!topBarHidden)}
+            title={topBarHidden ? (isAr ? 'إظهار الشريط العلوي' : 'Show Top Bar') : (isAr ? 'إخفاء الشريط العلوي' : 'Hide Top Bar')}
+          >
+            {topBarHidden ? <PanelTop className="h-4 w-4" /> : <PanelTopClose className="h-4 w-4" />}
+          </Button>
         </div>
       </div>
 

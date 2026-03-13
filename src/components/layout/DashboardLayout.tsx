@@ -1,4 +1,4 @@
-import { Outlet, Navigate } from 'react-router-dom';
+import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { useUpcomingAttend } from '@/hooks/use-upcoming-attend';
+import { cn } from '@/lib/utils';
 
 const DashboardSkeleton = () =>
 <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-300">
@@ -114,6 +115,10 @@ const FloatingButtons = () => {
 const DashboardLayout = () => {
   const { user, loading } = useAuth();
   const { dir } = useLanguage();
+  const location = useLocation();
+  const [topBarHidden, setTopBarHidden] = useState(false);
+  const isLearnPage = /\/courses\/[^/]+\/learn/.test(location.pathname);
+  const showTopBar = !(isLearnPage && topBarHidden);
   useUpcomingAttend();
 
   if (loading) {
@@ -152,10 +157,10 @@ const DashboardLayout = () => {
       <div className="flex min-h-screen w-full" dir={dir}>
         <AppSidebar />
         <SidebarInset className="flex flex-col">
-          <TopBar />
-          <ImpersonationBanner />
-          <main className="flex-1 p-4 md:p-6 overflow-auto">
-            <Outlet />
+          {showTopBar && <TopBar />}
+          {showTopBar && <ImpersonationBanner />}
+          <main className={cn("flex-1 overflow-auto", isLearnPage ? "p-0" : "p-4 md:p-6")}>
+            <Outlet context={{ topBarHidden, setTopBarHidden }} />
           </main>
           <footer className="p-3 border-t border-border flex items-center justify-between gap-3">
             <TooltipProvider>
