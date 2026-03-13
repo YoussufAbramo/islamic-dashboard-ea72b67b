@@ -360,6 +360,7 @@ const CourseDetail = () => {
                     <Settings2 className="h-4 w-4" />
                   </Button>
                 )}
+              </div>
               <p className="text-muted-foreground mt-1">{isAr && course.description_ar ? course.description_ar : course.description}</p>
               <div className="flex flex-wrap items-center gap-2 mt-3">
                 {categoryLabel && (
