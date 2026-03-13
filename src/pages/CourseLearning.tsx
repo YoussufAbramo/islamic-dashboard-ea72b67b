@@ -14,6 +14,7 @@ import {
   ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Circle,
   BookOpen, Play, FileText, Headphones, ExternalLink, FileDown,
   Menu, X, GraduationCap, Loader2, PanelTop, PanelTopClose, AlertTriangle, Settings2,
+  ChevronDown, FolderTree, Layers,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
