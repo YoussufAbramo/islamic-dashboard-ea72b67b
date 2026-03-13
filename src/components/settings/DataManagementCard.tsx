@@ -260,6 +260,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
       const serverError = data?.error;
       if (error || serverError) throw new Error(serverError || error?.message);
       
+      logAction('delete', 'Sample Data', `Cleared ${data.total_deleted} seed records`, sessionId, clearAll ? 'Cleared all sessions' : `Session: ${sessionId}`);
       toast.success(
         isAr
           ? `تم حذف ${data.total_deleted} سجل تجريبي`
