@@ -607,6 +607,17 @@ const CourseLearning = () => {
               </Button>
 
               <div className="flex items-center gap-2">
+                {canManage && currentLesson && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={openEditDialog}
+                    className="gap-1.5"
+                  >
+                    <Settings2 className="h-3.5 w-3.5" />
+                    {isAr ? 'إدارة المحتوى' : 'Manage Content'}
+                  </Button>
+                )}
                 {user && currentLesson && !isCurrentCompleted && (
                   <Button
                     size="sm"
