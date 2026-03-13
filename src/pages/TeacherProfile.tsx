@@ -17,6 +17,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import ImagePickerField from '@/components/media/ImagePickerField';
+import { BadgeSummaryCards, BadgeIconsRow } from '@/components/badges/TeacherBadges';
+import { useTeacherBadges } from '@/hooks/use-teacher-badges';
 import {
   Clock, DollarSign, TrendingUp, AlertTriangle, CheckCircle,
   Loader2, Percent, Mail, Phone, User, Briefcase, FileText,
@@ -204,6 +206,9 @@ const TeacherProfile = () => {
   const isOwner = teacher && user && teacher.user_id === user.id;
   const canAccess = role === 'admin' || isOwner;
   const canEdit = role === 'admin';
+
+  // Badges / Achievements
+  const { categories: badgeCategories, loading: badgesLoading } = useTeacherBadges(id, teacher?.user_id);
 
   const actualLoggedHours = totalLoggedSeconds / 3600;
   const remainingHours = Math.max(0, requiredMonthlyHours - actualLoggedHours);
@@ -632,6 +637,16 @@ const TeacherProfile = () => {
                     />
                   </div>
                 </div>
+
+                {/* Badge Icons — Personal Info Section */}
+                {!badgesLoading && (
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2.5 font-medium">
+                      {isAr ? 'الأوسمة والإنجازات' : 'Badges & Achievements'}
+                    </p>
+                    <BadgeIconsRow categories={badgeCategories} isAr={isAr} />
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -671,6 +686,9 @@ const TeacherProfile = () => {
           </Card>
         ))}
       </div>
+
+      {/* Achievements Summary Cards */}
+      {!badgesLoading && <BadgeSummaryCards categories={badgeCategories} isAr={isAr} />}
 
       {/* Assigned Subscriptions */}
       <Card>
