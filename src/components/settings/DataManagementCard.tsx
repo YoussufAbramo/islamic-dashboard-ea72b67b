@@ -380,38 +380,46 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
                   </div>
                 </div>
 
-                {/* Estimated records bar */}
-                <div className="flex items-center gap-3 p-2.5 rounded-md bg-muted/40 border border-border">
-                  <div className="flex-1 space-y-1.5">
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-muted-foreground font-medium">{isAr ? 'السجلات المُقدرة' : 'Estimated records'}</span>
-                      <span className="font-mono font-semibold text-foreground">
-                        ~{getEstimatedTotal(multiplier)} <span className="text-muted-foreground font-normal">/ {MAX_TOTAL_RECORDS}</span>
-                      </span>
-                    </div>
-                    <div className="h-2 rounded-full bg-muted overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-primary transition-all duration-300"
-                        style={{ width: `${(getEstimatedTotal(multiplier) / MAX_TOTAL_RECORDS) * 100}%` }}
-                      />
-                    </div>
+                {/* Estimated records breakdown */}
+                <div className="p-2.5 rounded-md bg-muted/40 border border-border space-y-2.5">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-muted-foreground font-medium">{isAr ? 'السجلات المُقدرة' : 'Estimated records'}</span>
+                    <span className="font-mono font-semibold text-foreground">
+                      ~{getEstimatedTotal(multiplier, selectedCategories)} <span className="text-muted-foreground font-normal">/ {MAX_TOTAL_RECORDS}</span>
+                    </span>
                   </div>
-                </div>
+                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-primary transition-all duration-300"
+                      style={{ width: `${(getEstimatedTotal(multiplier, selectedCategories) / MAX_TOTAL_RECORDS) * 100}%` }}
+                    />
+                  </div>
 
-                {/* Quick info */}
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="p-2 rounded-md bg-muted/30 border border-border">
-                    <p className="text-[10px] text-muted-foreground">{isAr ? 'الفئات' : 'Categories'}</p>
-                    <p className="text-sm font-semibold">{selectedCategories.length}</p>
-                  </div>
-                  <div className="p-2 rounded-md bg-muted/30 border border-border">
-                    <p className="text-[10px] text-muted-foreground">{isAr ? 'لكل فئة' : 'Per category'}</p>
-                    <p className="text-sm font-semibold">~{selectedCategories.length > 0 ? Math.round(getEstimatedTotal(multiplier) / selectedCategories.length) : 0}</p>
-                  </div>
-                  <div className="p-2 rounded-md bg-muted/30 border border-border">
-                    <p className="text-[10px] text-muted-foreground">{isAr ? 'الحد الأدنى' : 'Min/category'}</p>
-                    <p className="text-sm font-semibold">{multiplier <= 3 ? 1 : multiplier <= 6 ? 2 : 3}</p>
-                  </div>
+                  {/* Per-category breakdown */}
+                  {selectedCategories.length > 0 && (
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 pt-1 border-t border-border/50">
+                      {selectedCategories.map(catKey => {
+                        const cat = SEED_CATEGORIES.find(c => c.key === catKey);
+                        if (!cat) return null;
+                        const est = getCategoryEstimate(catKey, multiplier);
+                        return (
+                          <div key={catKey} className="flex items-center justify-between text-[10px] py-0.5">
+                            <span className="flex items-center gap-1 text-muted-foreground truncate">
+                              <span>{cat.icon}</span>
+                              <span className="truncate">{isAr ? cat.labelAr : cat.label}</span>
+                            </span>
+                            <span className="font-mono font-medium text-foreground shrink-0 ms-1">~{est}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {selectedCategories.length === 0 && (
+                    <p className="text-[10px] text-muted-foreground/60 italic text-center py-1">
+                      {isAr ? 'لم يتم اختيار أي فئة' : 'No categories selected'}
+                    </p>
+                  )}
                 </div>
               </div>
 
