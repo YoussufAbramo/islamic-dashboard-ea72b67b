@@ -101,13 +101,6 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
   if (Array.isArray(content.blocks) && content.blocks.length > 0) {
     return (
       <div className="space-y-6">
-        {/* Lesson header */}
-        <div className="space-y-2">
-          <h2 className="text-xl font-bold">
-            {isAr && lesson.title_ar ? lesson.title_ar : lesson.title}
-          </h2>
-        </div>
-        <Separator />
 
         {content.blocks.map((block: any, idx: number) => {
           switch (block.type) {
