@@ -160,21 +160,45 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
             case 'table_of_content': {
               const tocRows = block.toc_rows;
               if (tocRows && tocRows.length > 0) {
+                const tocStyle = block.toc_style || 'default';
+                const tocSize = block.toc_size || 'md';
+                const sizeClasses: Record<string, { cell: string; text: string; header: string }> = {
+                  sm: { cell: 'px-2.5 py-1.5', text: 'text-xs', header: 'text-[10px]' },
+                  md: { cell: 'px-4 py-2.5', text: 'text-sm', header: 'text-xs' },
+                  lg: { cell: 'px-5 py-3.5', text: 'text-base', header: 'text-sm' },
+                  xl: { cell: 'px-6 py-4.5', text: 'text-lg', header: 'text-base' },
+                };
+                const sz = sizeClasses[tocSize] || sizeClasses.md;
+                const tableClass = cn(
+                  "w-full",
+                  tocStyle === 'bordered' && "border-collapse [&_td]:border [&_th]:border [&_td]:border-border [&_th]:border-border",
+                  tocStyle === 'minimal' && "[&_thead]:hidden"
+                );
+                const rowClass = (rIdx: number) => cn(
+                  "border-b last:border-b-0 transition-colors",
+                  tocStyle === 'striped' && rIdx % 2 === 1 && "bg-muted/30",
+                  tocStyle !== 'minimal' && "hover:bg-muted/20"
+                );
+                const wrapClass = cn(
+                  "rounded-lg overflow-hidden",
+                  tocStyle !== 'minimal' && "border",
+                  tocStyle === 'minimal' && "border-b"
+                );
                 return (
                   <div key={block.id || idx} className="space-y-3">
-                    <div className="rounded-lg border overflow-hidden">
-                      <table className="w-full text-sm">
+                    <div className={wrapClass}>
+                      <table className={tableClass}>
                         <thead>
                           <tr className="bg-muted/50 border-b">
-                            <th className="px-4 py-2 text-start font-medium text-xs text-muted-foreground" dir="ltr">{block.toc_header_en || 'English'}</th>
-                            <th className="px-4 py-2 text-start font-medium text-xs text-muted-foreground" dir="rtl">{block.toc_header_ar || 'العربية'}</th>
+                            <th className={cn(sz.cell, sz.header, "text-start font-medium text-muted-foreground")} dir="ltr">{block.toc_header_en || 'English'}</th>
+                            <th className={cn(sz.cell, sz.header, "text-start font-medium text-muted-foreground")} dir="rtl">{block.toc_header_ar || 'العربية'}</th>
                           </tr>
                         </thead>
                         <tbody>
                           {tocRows.map((row: { en: string; ar: string }, rIdx: number) => (
-                            <tr key={rIdx} className="border-b last:border-b-0 hover:bg-muted/20 transition-colors">
-                              <td className="px-4 py-2.5 text-sm" dir="ltr">{row.en}</td>
-                              <td className="px-4 py-2.5 text-sm font-[var(--font-arabic)]" dir="rtl">{row.ar}</td>
+                            <tr key={rIdx} className={rowClass(rIdx)}>
+                              <td className={cn(sz.cell, sz.text)} dir="ltr">{row.en}</td>
+                              <td className={cn(sz.cell, sz.text, "font-[var(--font-arabic)]")} dir="rtl">{row.ar}</td>
                             </tr>
                           ))}
                         </tbody>
