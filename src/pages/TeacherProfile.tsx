@@ -941,6 +941,37 @@ const TeacherProfile = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Document Preview Dialog */}
+      <Dialog open={!!docPreview} onOpenChange={(open) => { if (!open) { setDocPreview(null); setDocFullscreen(false); } }}>
+        <DialogContent className={docFullscreen ? 'max-w-[95vw] h-[95vh] flex flex-col' : 'max-w-3xl h-[80vh] flex flex-col'}>
+          <DialogHeader className="flex-row items-center justify-between gap-2 space-y-0 shrink-0">
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              {docPreview?.label}
+            </DialogTitle>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDocFullscreen(f => !f)} title={docFullscreen ? (isAr ? 'تصغير' : 'Minimize') : (isAr ? 'تكبير' : 'Fullscreen')}>
+                {docFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                <a href={docPreview?.url} target="_blank" rel="noopener noreferrer" title={isAr ? 'فتح في نافذة جديدة' : 'Open in new tab'}>
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </Button>
+            </div>
+          </DialogHeader>
+          <div className="flex-1 min-h-0 rounded-md border overflow-hidden bg-muted/30">
+            {docPreview && (
+              <iframe
+                src={docPreview.url}
+                className="w-full h-full border-0"
+                title={docPreview.label}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
