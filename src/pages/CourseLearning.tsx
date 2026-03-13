@@ -346,6 +346,7 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
   const externalUrl = content.external_url || content.externalUrl || content.link;
   const textContent = content.text || content.body || content.html || content.description;
   const instructions = content.instructions;
+  const tocRows = content.toc_rows;
 
   return (
     <div className="space-y-6">
@@ -426,13 +427,34 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
         </div>
       )}
 
+      {tocRows && Array.isArray(tocRows) && tocRows.length > 0 && (
+        <div className="rounded-lg border overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-muted/50 border-b">
+                <th className="px-4 py-2 text-start font-medium text-xs text-muted-foreground" dir="ltr">English</th>
+                <th className="px-4 py-2 text-start font-medium text-xs text-muted-foreground" dir="rtl">العربية</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tocRows.map((row: { en: string; ar: string }, rIdx: number) => (
+                <tr key={rIdx} className="border-b last:border-b-0 hover:bg-muted/20 transition-colors">
+                  <td className="px-4 py-2.5 text-sm" dir="ltr">{row.en}</td>
+                  <td className="px-4 py-2.5 text-sm font-[var(--font-arabic)]" dir="rtl">{row.ar}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       {textContent && (
         <div className="prose prose-sm dark:prose-invert max-w-none">
           <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(textContent) }} />
         </div>
       )}
 
-      {!videoUrl && !audioUrl && !pdfUrl && !externalUrl && !textContent && !instructions && (
+      {!videoUrl && !audioUrl && !pdfUrl && !externalUrl && !textContent && !instructions && !(tocRows && tocRows.length > 0) && (
         <div className="p-6 rounded-lg border bg-muted/30 text-center space-y-2">
           <Icon className="h-10 w-10 mx-auto text-muted-foreground/40" />
           <p className="text-sm text-muted-foreground">
