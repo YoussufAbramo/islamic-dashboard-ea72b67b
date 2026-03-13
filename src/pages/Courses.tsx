@@ -241,7 +241,7 @@ const Courses = () => {
                 <Button><Plus className="h-4 w-4 me-2" />{t('courses.create')}</Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-                <DialogHeader><DialogTitle>{editCourse ? t('courses.edit') : t('courses.create')}</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle>{editCourse ? (isAr ? 'إعدادات الدورة' : 'Course Settings') : t('courses.create')}</DialogTitle></DialogHeader>
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div><Label>{t('courses.name')} (EN)</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
