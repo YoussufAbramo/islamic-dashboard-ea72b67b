@@ -169,20 +169,23 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
           ) : null;
 
         // ── Divider ──
-        case 'divider':
+        case 'divider': {
+          const divColor = (() => {
+            const m: Record<string, string> = { border: 'hsl(var(--border) / 0.15)', primary: 'hsl(var(--primary) / 0.15)', muted: 'hsl(var(--muted-foreground) / 0.15)', destructive: 'hsl(var(--destructive) / 0.15)', gold: 'hsl(var(--gold, 45 80% 50%) / 0.15)' };
+            return m[block.divider_color || 'border'] || 'hsl(var(--border) / 0.15)';
+          })();
+          const divStyle = { borderStyle: block.divider_style || 'solid' as string, borderWidth: `${block.divider_thickness || 1}px 0 0 0`, borderColor: divColor };
+          const fontSize = `${Math.max(10, (block.divider_thickness || 1) * 3 + 8)}px`;
           return (
-            <div key={block.id || idx} className="flex justify-center py-2">
-              <hr style={{
-                width: `${block.divider_width || 100}%`,
-                borderStyle: block.divider_style || 'solid',
-                borderWidth: `${block.divider_thickness || 1}px 0 0 0`,
-                borderColor: (() => {
-                  const m: Record<string, string> = { border: 'hsl(var(--border) / 0.15)', primary: 'hsl(var(--primary) / 0.15)', muted: 'hsl(var(--muted-foreground) / 0.15)', destructive: 'hsl(var(--destructive) / 0.15)', gold: 'hsl(var(--gold, 45 80% 50%) / 0.15)' };
-                  return m[block.divider_color || 'border'] || 'hsl(var(--border))';
-                })(),
-              }} />
+            <div key={block.id || idx} className="flex items-center justify-center gap-3 py-2" style={{ width: `${block.divider_width || 100}%`, margin: '0 auto' }}>
+              <hr className="flex-1" style={divStyle} />
+              {block.divider_text && (
+                <span className="shrink-0 text-muted-foreground whitespace-nowrap" style={{ fontSize }}>{block.divider_text}</span>
+              )}
+              {block.divider_text && <hr className="flex-1" style={divStyle} />}
             </div>
           );
+        }
 
         // ── Split Screen ──
         case 'split_screen':
