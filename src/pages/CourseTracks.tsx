@@ -451,6 +451,12 @@ const CourseTracks = () => {
                               </div>
                             );
                           })}
+                          <div className="mt-3 pt-3 border-t border-dashed">
+                            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => openAssignDialog(t.id)}>
+                              <LinkIcon className="h-3.5 w-3.5" />
+                              {isAr ? 'ربط دورات إضافية' : 'Assign More Courses'}
+                            </Button>
+                          </div>
                         </div>
                       )}
                     </CardContent>
