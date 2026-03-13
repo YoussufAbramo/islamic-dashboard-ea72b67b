@@ -21,6 +21,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import ComingSoonOverlay from '@/components/ComingSoonOverlay';
 
 const DeveloperSettings = () => {
   const { language } = useLanguage();

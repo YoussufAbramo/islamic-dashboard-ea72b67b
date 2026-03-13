@@ -28,54 +28,60 @@ const WebhookLog = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Webhook className="h-6 w-6 text-primary" />
-          {isAr ? 'سجل الويب هوك' : 'Webhook Log'}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {isAr ? 'سجل جميع طلبات الويب هوك الواردة' : 'Log of all incoming webhook requests'}
-        </p>
-      </div>
+    <ComingSoonOverlay
+      icon={Webhook}
+      description="Webhook Log will track all incoming webhook requests and integration history."
+      descriptionAr="سجل الويب هوك سيتتبع جميع طلبات الويب هوك الواردة وتاريخ التكامل."
+    >
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <Webhook className="h-6 w-6 text-primary" />
+            {isAr ? 'سجل الويب هوك' : 'Webhook Log'}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {isAr ? 'سجل جميع طلبات الويب هوك الواردة' : 'Log of all incoming webhook requests'}
+          </p>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{isAr ? 'الطلبات الأخيرة' : 'Recent Requests'}</CardTitle>
-          <CardDescription>{isAr ? 'آخر طلبات الويب هوك المستلمة' : 'Latest webhook requests received'}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {logs.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Webhook className="h-12 w-12 mx-auto mb-3 opacity-30" />
-              <p>{isAr ? 'لا توجد سجلات' : 'No webhook logs yet'}</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {logs.map(log => (
-                <div key={log.id} className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
-                  {getStatusIcon(log.status)}
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="outline" className="text-[10px] font-mono">{log.method}</Badge>
-                      <span className="text-sm font-mono truncate">{log.endpoint}</span>
-                      {getStatusBadge(log.status)}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{isAr ? 'الطلبات الأخيرة' : 'Recent Requests'}</CardTitle>
+            <CardDescription>{isAr ? 'آخر طلبات الويب هوك المستلمة' : 'Latest webhook requests received'}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {logs.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <Webhook className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                <p>{isAr ? 'لا توجد سجلات' : 'No webhook logs yet'}</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {logs.map(log => (
+                  <div key={log.id} className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors">
+                    {getStatusIcon(log.status)}
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant="outline" className="text-[10px] font-mono">{log.method}</Badge>
+                        <span className="text-sm font-mono truncate">{log.endpoint}</span>
+                        {getStatusBadge(log.status)}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        {new Date(log.timestamp).toLocaleString()}
+                      </div>
+                      <pre className="text-[11px] text-muted-foreground bg-muted/50 rounded p-2 overflow-x-auto max-w-full">
+                        {log.payload}
+                      </pre>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      {new Date(log.timestamp).toLocaleString()}
-                    </div>
-                    <pre className="text-[11px] text-muted-foreground bg-muted/50 rounded p-2 overflow-x-auto max-w-full">
-                      {log.payload}
-                    </pre>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </ComingSoonOverlay>
   );
 };
 
