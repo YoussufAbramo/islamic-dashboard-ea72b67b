@@ -1369,10 +1369,35 @@ Deno.serve(async (req) => {
         'landing_content',
         // Audit / logs
         'audit_logs',
+        // Payment config
+        'payment_gateway_config',
+        // App settings
+        'app_settings',
         // Users (order matters: students/teachers before profiles)
         'students', 'teachers',
-        'user_roles', 'profiles',
       ]
+
+      // For user_roles: delete all EXCEPT the current admin's 'admin' role
+      try {
+        const { count, error } = await admin.from('user_roles').delete({ count: 'exact' })
+          .not('user_id', 'eq', caller.id)
+        if (error) throw error
+        deletedCounts['user_roles'] = count || 0
+      } catch (e: any) {
+        errors.push(`user_roles: ${e.message}`)
+        deletedCounts['user_roles'] = -1
+      }
+
+      // For profiles: delete all EXCEPT the current admin's profile
+      try {
+        const { count, error } = await admin.from('profiles').delete({ count: 'exact' })
+          .neq('id', caller.id)
+        if (error) throw error
+        deletedCounts['profiles'] = count || 0
+      } catch (e: any) {
+        errors.push(`profiles: ${e.message}`)
+        deletedCounts['profiles'] = -1
+      }
 
       // Delete all rows from each table
       for (const table of RESET_ORDER) {
