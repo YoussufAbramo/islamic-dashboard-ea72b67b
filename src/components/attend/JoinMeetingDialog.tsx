@@ -69,7 +69,7 @@ const JoinMeetingDialog = ({ open, onOpenChange, entry, entryId, isAr, onSession
   };
 
   const isPlatformAvailable = (id: JoinMethod): boolean => {
-    if (id === 'dashboard') return true;
+    if (id === 'dashboard') return false; // CodeCom Meeting disabled (coming soon)
     if (!entry) return false;
     if (id === 'google_meet') return !!entry.google_meet_url;
     if (id === 'zoom') return !!entry.zoom_url;
