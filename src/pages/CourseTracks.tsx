@@ -4,7 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { Route, Plus, Pencil, Trash2, Search, ChevronDown, BookOpen, GripVertical, Layers, Hash, ExternalLink } from 'lucide-react';
+import { Route, Plus, Pencil, Trash2, Search, ChevronDown, BookOpen, GripVertical, Layers, Hash, ExternalLink, LinkIcon, Unlink } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 import SortableList from '@/components/course/SortableList';
 import SortableItem from '@/components/course/SortableItem';
 import { cn } from '@/lib/utils';
@@ -62,6 +63,9 @@ const CourseTracks = () => {
   const [editing, setEditing] = useState<Track | null>(null);
   const [form, setForm] = useState({ title: '', title_ar: '', description: '', description_ar: '' });
   const [expandedTracks, setExpandedTracks] = useState<Set<string>>(new Set());
+  const [assignTrackId, setAssignTrackId] = useState<string | null>(null);
+  const [assignSelected, setAssignSelected] = useState<Set<string>>(new Set());
+  const [assignLoading, setAssignLoading] = useState(false);
 
   const { data: tracks = [], isLoading } = useQuery({
     queryKey: ['course_tracks'],
@@ -158,6 +162,41 @@ const CourseTracks = () => {
     setDialogOpen(false);
     setEditing(null);
   };
+
+  const openAssignDialog = (trackId: string) => {
+    setAssignTrackId(trackId);
+    setAssignSelected(new Set());
+  };
+
+  const handleAssignCourses = async () => {
+    if (!assignTrackId || assignSelected.size === 0) return;
+    setAssignLoading(true);
+    try {
+      for (const courseId of assignSelected) {
+        const { error } = await supabase.from('courses').update({ track_id: assignTrackId }).eq('id', courseId);
+        if (error) throw error;
+      }
+      const track = tracks.find(t => t.id === assignTrackId);
+      logAction('modify', 'Course Track', `Assigned ${assignSelected.size} course(s) to track: ${track?.title || assignTrackId}`, assignTrackId);
+      toast.success(isAr ? `تم ربط ${assignSelected.size} دورة بالمسار` : `Assigned ${assignSelected.size} course(s) to track`);
+      qc.invalidateQueries({ queryKey: ['courses_for_tracks'] });
+      setAssignTrackId(null);
+    } catch {
+      toast.error(isAr ? 'حدث خطأ' : 'An error occurred');
+    } finally {
+      setAssignLoading(false);
+    }
+  };
+
+  const handleUnlinkCourse = async (courseId: string) => {
+    const { error } = await supabase.from('courses').update({ track_id: null }).eq('id', courseId);
+    if (error) { toast.error(isAr ? 'حدث خطأ' : 'Error'); return; }
+    logAction('modify', 'Course', 'Unlinked course from track', courseId);
+    toast.success(isAr ? 'تم إلغاء الربط' : 'Course unlinked');
+    qc.invalidateQueries({ queryKey: ['courses_for_tracks'] });
+  };
+
+  const unassignedCourses = courses.filter(c => !c.track_id || c.track_id === '');
 
   const toggleTrack = (id: string) => {
     setExpandedTracks(prev => {
@@ -335,16 +374,16 @@ const CourseTracks = () => {
                           <BookOpen className="h-8 w-8 mx-auto text-muted-foreground/40" />
                           <div>
                             <p className="text-sm text-muted-foreground">{isAr ? 'لا توجد دورات مرتبطة بهذا المسار' : 'No courses assigned to this track'}</p>
-                            <p className="text-xs text-muted-foreground/60 mt-1">{isAr ? 'اربط الدورات من صفحة إدارة الدورات' : 'Link courses from the course management page'}</p>
+                            <p className="text-xs text-muted-foreground/60 mt-1">{isAr ? 'أضف دورات موجودة إلى هذا المسار' : 'Add existing courses to this track'}</p>
                           </div>
                           <Button
                             variant="outline"
                             size="sm"
                             className="gap-1.5"
-                            onClick={() => navigate('/dashboard/courses')}
+                            onClick={() => openAssignDialog(t.id)}
                           >
-                            <ExternalLink className="h-3.5 w-3.5" />
-                            {isAr ? 'إدارة الدورات' : 'Manage Courses'}
+                            <LinkIcon className="h-3.5 w-3.5" />
+                            {isAr ? 'ربط دورات' : 'Assign Courses'}
                           </Button>
                         </div>
                       ) : (
@@ -385,22 +424,25 @@ const CourseTracks = () => {
                                               {course.status === 'published' ? (isAr ? 'منشور' : 'Published') : (isAr ? 'مسودة' : 'Draft')}
                                             </Badge>
                                           </div>
-                                          <Select
-                                            value={course.level_id || '__none__'}
-                                            onValueChange={val => handleChangeCourseLevel(course.id, val)}
-                                          >
-                                            <SelectTrigger className="w-32 h-7 text-xs shrink-0">
-                                              <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              <SelectItem value="__none__">{isAr ? 'بدون مستوى' : 'No Level'}</SelectItem>
-                                              {levels.map(l => (
-                                                <SelectItem key={l.id} value={l.id}>
-                                                  {isAr ? (l.title_ar || l.title) : l.title}
-                                                </SelectItem>
-                                              ))}
-                                            </SelectContent>
-                                          </Select>
+                                          <div className="flex items-center gap-1.5 shrink-0">
+                                            <Select
+                                              value={course.level_id || '__none__'}
+                                              onValueChange={val => handleChangeCourseLevel(course.id, val)}
+                                            >
+                                              <SelectTrigger className="w-32 h-7 text-xs">
+                                                <SelectValue />
+                                              </SelectTrigger>
+                                              <SelectContent>
+                                                <SelectItem value="__none__">{isAr ? 'بدون مستوى' : 'No Level'}</SelectItem>
+                                                {levels.map(l => (
+                                                  <SelectItem key={l.id} value={l.id}>
+                                                    {isAr ? (l.title_ar || l.title) : l.title}
+                                                  </SelectItem>
+                                                ))}
+                                              </SelectContent>
+                                            </Select>
+                                            <ActionButton icon={Unlink} label={isAr ? 'إلغاء الربط' : 'Unlink'} destructive onClick={() => handleUnlinkCourse(course.id)} />
+                                          </div>
                                         </div>
                                       </SortableItem>
                                     ))}
@@ -409,6 +451,12 @@ const CourseTracks = () => {
                               </div>
                             );
                           })}
+                          <div className="mt-3 pt-3 border-t border-dashed">
+                            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => openAssignDialog(t.id)}>
+                              <LinkIcon className="h-3.5 w-3.5" />
+                              {isAr ? 'ربط دورات إضافية' : 'Assign More Courses'}
+                            </Button>
+                          </div>
                         </div>
                       )}
                     </CardContent>
@@ -486,6 +534,65 @@ const CourseTracks = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Assign Courses Dialog */}
+      <Dialog open={!!assignTrackId} onOpenChange={(open) => { if (!open) setAssignTrackId(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <LinkIcon className="h-4 w-4" />
+              {isAr ? 'ربط دورات بالمسار' : 'Assign Courses to Track'}
+            </DialogTitle>
+            <DialogDescription>
+              {isAr
+                ? `اختر الدورات غير المرتبطة لإضافتها إلى مسار "${tracks.find(t => t.id === assignTrackId)?.title || ''}"`
+                : `Select unassigned courses to add to "${tracks.find(t => t.id === assignTrackId)?.title || ''}" track`}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 max-h-[300px] overflow-y-auto">
+            {unassignedCourses.length === 0 ? (
+              <div className="text-center py-6 text-sm text-muted-foreground">
+                {isAr ? 'جميع الدورات مرتبطة بمسارات' : 'All courses are already assigned to tracks'}
+              </div>
+            ) : (
+              unassignedCourses.map(course => (
+                <label
+                  key={course.id}
+                  className={cn(
+                    'flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-colors',
+                    assignSelected.has(course.id) ? 'border-primary/30 bg-primary/5' : 'border-border hover:bg-muted/50'
+                  )}
+                >
+                  <Checkbox
+                    checked={assignSelected.has(course.id)}
+                    onCheckedChange={(checked) => {
+                      setAssignSelected(prev => {
+                        const next = new Set(prev);
+                        if (checked) next.add(course.id); else next.delete(course.id);
+                        return next;
+                      });
+                    }}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <span className="text-sm font-medium truncate block">{isAr ? (course.title_ar || course.title) : course.title}</span>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] shrink-0">
+                    {course.status === 'published' ? (isAr ? 'منشور' : 'Published') : (isAr ? 'مسودة' : 'Draft')}
+                  </Badge>
+                </label>
+              ))
+            )}
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setAssignTrackId(null)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
+            <Button onClick={handleAssignCourses} disabled={assignSelected.size === 0 || assignLoading}>
+              {assignLoading
+                ? (isAr ? 'جارٍ الربط...' : 'Assigning...')
+                : (isAr ? `ربط ${assignSelected.size} دورة` : `Assign ${assignSelected.size} Course(s)`)}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
