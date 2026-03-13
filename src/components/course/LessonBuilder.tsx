@@ -286,20 +286,98 @@ const BlockEditor = ({
           </div>
         )}
 
-        {block.type === 'video' && (
+        {block.type === 'video' && (() => {
+          const vType = block.video_type || 'url';
+          const getEmbedUrl = (url: string, type: string) => {
+            if (type === 'youtube') {
+              const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?\s]+)/);
+              return m ? `https://www.youtube.com/embed/${m[1]}` : url;
+            }
+            if (type === 'vimeo') {
+              const m = url.match(/vimeo\.com\/(\d+)/);
+              return m ? `https://player.vimeo.com/video/${m[1]}` : url;
+            }
+            return url;
+          };
+          return (
           <div className="space-y-3">
             <div>
-              <Label className="text-xs">{isAr ? 'رابط الفيديو' : 'Video URL'}</Label>
-              <Input placeholder="https://..." value={block.video_url || ''} onChange={(e) => onChange({ ...block, video_url: e.target.value })} className="mt-1" />
-              <p className="text-[10px] text-muted-foreground mt-1">{isAr ? 'يدعم MP4 أو روابط مباشرة للفيديو' : 'Supports MP4 or direct video URLs'}</p>
+              <Label className="text-xs mb-1.5 block">{isAr ? 'نوع الفيديو' : 'Video Type'}</Label>
+              <div className="flex flex-wrap gap-1.5">
+                {([
+                  { value: 'url' as const, label: isAr ? 'رابط مباشر' : 'Direct URL' },
+                  { value: 'youtube' as const, label: 'YouTube' },
+                  { value: 'vimeo' as const, label: 'Vimeo' },
+                  { value: 'embed' as const, label: isAr ? 'كود تضمين' : 'Embed Code' },
+                ] as const).map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => onChange({ ...block, video_type: opt.value })}
+                    className={cn(
+                      "px-3 py-1 rounded-md text-xs font-medium border transition-colors",
+                      vType === opt.value
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            {block.video_url && (
-              <div className="aspect-video rounded-lg overflow-hidden bg-muted border">
-                <video src={block.video_url} controls className="w-full h-full" />
+
+            {vType !== 'embed' ? (
+              <div>
+                <Label className="text-xs">
+                  {vType === 'youtube' ? (isAr ? 'رابط YouTube' : 'YouTube URL')
+                    : vType === 'vimeo' ? (isAr ? 'رابط Vimeo' : 'Vimeo URL')
+                    : (isAr ? 'رابط الفيديو' : 'Video URL')}
+                </Label>
+                <Input
+                  placeholder={vType === 'youtube' ? 'https://youtube.com/watch?v=...' : vType === 'vimeo' ? 'https://vimeo.com/...' : 'https://...'}
+                  value={block.video_url || ''}
+                  onChange={(e) => onChange({ ...block, video_url: e.target.value })}
+                  className="mt-1"
+                />
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  {vType === 'youtube' ? (isAr ? 'الصق رابط فيديو YouTube' : 'Paste a YouTube video link')
+                    : vType === 'vimeo' ? (isAr ? 'الصق رابط فيديو Vimeo' : 'Paste a Vimeo video link')
+                    : (isAr ? 'يدعم MP4 أو روابط مباشرة للفيديو' : 'Supports MP4 or direct video URLs')}
+                </p>
+              </div>
+            ) : (
+              <div>
+                <Label className="text-xs">{isAr ? 'كود التضمين' : 'Embed Code'}</Label>
+                <textarea
+                  placeholder={isAr ? '<iframe src="..." ...></iframe>' : '<iframe src="..." ...></iframe>'}
+                  value={block.video_embed || ''}
+                  onChange={(e) => onChange({ ...block, video_embed: e.target.value })}
+                  className="mt-1 w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-xs font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  dir="ltr"
+                />
+                <p className="text-[10px] text-muted-foreground mt-1">{isAr ? 'الصق كود iframe أو كود التضمين' : 'Paste an iframe or embed code snippet'}</p>
               </div>
             )}
+
+            {block.video_url && vType !== 'embed' && (
+              <div className="aspect-video rounded-lg overflow-hidden bg-muted border">
+                {vType === 'url' ? (
+                  <video src={block.video_url} controls className="w-full h-full" />
+                ) : (
+                  <iframe src={getEmbedUrl(block.video_url, vType)} className="w-full h-full" allowFullScreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
+                )}
+              </div>
+            )}
+
+            {block.video_embed && vType === 'embed' && (
+              <div className="aspect-video rounded-lg overflow-hidden bg-muted border" dangerouslySetInnerHTML={{ __html: block.video_embed }} />
+            )}
+
             <div><Label className="text-xs">{isAr ? 'التسمية التوضيحية' : 'Caption'}</Label><Input value={block.video_caption || ''} onChange={(e) => onChange({ ...block, video_caption: e.target.value })} className="mt-1" /></div>
           </div>
+          );
+        })()
         )}
 
         {block.type === 'audio' && (
