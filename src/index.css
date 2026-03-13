@@ -1,5 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@300;400;500;600;700&family=Cairo:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
+/* Quran-specific fonts for Course Learning */
+@font-face { font-family: 'Quran Symbols'; src: url('/fonts/Quran_Symbols.woff2') format('woff2'); font-display: swap; }
+@font-face { font-family: 'Surah Header'; src: url('/fonts/Surah_Header.woff2') format('woff2'); font-display: swap; }
+@font-face { font-family: 'Surah Name V4'; src: url('/fonts/Surah_Name_V4.woff2') format('woff2'); font-display: swap; }
+@font-face { font-family: 'Indopak Nastaleeq'; src: url('/fonts/Indopak_Nastaleeq.woff2') format('woff2'); font-display: swap; }
+@font-face { font-family: 'KFGQPC Nastaleeq'; src: url('/fonts/KFGQPC_Nastaleeq.woff2') format('woff2'); font-display: swap; }
+@font-face { font-family: 'QPC V4 Tajweed'; src: url('/fonts/QPC_V4_Tajweed.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'QPC V2'; src: url('/fonts/QPC_V2.woff2') format('woff2'); font-display: swap; }
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
