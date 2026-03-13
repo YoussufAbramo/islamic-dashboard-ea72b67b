@@ -672,7 +672,7 @@ const TeacherProfile = () => {
       </div>
 
       {/* Stats Grid - Row 2 */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {statCardsRow2.map((stat, i) => (
           <Card key={i} className="hover:shadow-md transition-shadow">
             <CardContent className="p-4 flex items-start gap-3">

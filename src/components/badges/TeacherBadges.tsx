@@ -99,7 +99,7 @@ function BadgeSummaryCard({ data, isAr }: { data: BadgeCategoryData; isAr: boole
 export function BadgeIconsRow({ categories, isAr }: { categories: BadgeCategoryData[]; isAr: boolean }) {
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-2">
         {categories.map(cat => (
           <BadgeCategoryRow key={cat.category} data={cat} isAr={isAr} />
         ))}
@@ -113,14 +113,17 @@ function BadgeCategoryRow({ data, isAr }: { data: BadgeCategoryData; isAr: boole
   const Icon = CATEGORY_ICONS[data.category];
 
   return (
-    <div className="space-y-1.5">
+    <div className="rounded-lg border bg-muted/30 p-2.5 space-y-2">
       <div className="flex items-center gap-1.5">
-        <Icon className="h-3 w-3 text-muted-foreground" />
-        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+        <Icon className="h-3 w-3 text-muted-foreground shrink-0" />
+        <span className="text-[10px] font-semibold text-muted-foreground truncate">
           {isAr ? catMeta.ar : catMeta.en}
         </span>
+        <span className="text-[9px] text-muted-foreground/60 ms-auto shrink-0">
+          {data.totalEarned}/{data.milestones.length}
+        </span>
       </div>
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1">
         {data.milestones.map(m => (
           <TierBadgeIcon key={m.tier} milestone={m} category={data.category} isAr={isAr} />
         ))}
