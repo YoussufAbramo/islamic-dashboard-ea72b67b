@@ -166,8 +166,8 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="bg-muted/50 border-b">
-                            <th className="px-4 py-2 text-start font-medium text-xs text-muted-foreground" dir="ltr">English</th>
-                            <th className="px-4 py-2 text-start font-medium text-xs text-muted-foreground" dir="rtl">العربية</th>
+                            <th className="px-4 py-2 text-start font-medium text-xs text-muted-foreground" dir="ltr">{block.toc_header_en || 'English'}</th>
+                            <th className="px-4 py-2 text-start font-medium text-xs text-muted-foreground" dir="rtl">{block.toc_header_ar || 'العربية'}</th>
                           </tr>
                         </thead>
                         <tbody>
