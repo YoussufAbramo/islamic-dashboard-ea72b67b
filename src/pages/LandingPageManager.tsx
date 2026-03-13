@@ -9,6 +9,15 @@ const LandingPageManager = () => {
   const isAr = language === 'ar';
   const [activeTab, setActiveTab] = useState<'content' | 'pricing'>('content');
 
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail === 'pricing') setActiveTab('pricing');
+    };
+    window.addEventListener('switch-landing-tab', handler);
+    return () => window.removeEventListener('switch-landing-tab', handler);
+  }, []);
+
   return (
     <div className="space-y-6">
       <div>
