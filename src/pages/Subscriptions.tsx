@@ -764,7 +764,7 @@ const Subscriptions = () => {
                   {createForm.subscription_type === 'monthly'
                     ? (isAr ? 'يتجدد كل 28 يومًا' : 'Renews every 28 days')
                     : createForm.subscription_type === 'quarterly'
-                      ? (isAr ? 'يتجدد كل 84 يومًا (3 أشهر)' : 'Renews every 84 days (3 months)')
+                      ? (isAr ? 'يتجدد كل 88 يومًا (3 أشهر)' : 'Renews every 88 days (3 months)')
                       : (isAr ? 'يتجدد كل 365 يومًا' : 'Renews every 365 days')}
                 </p>
               </div>

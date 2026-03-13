@@ -376,14 +376,33 @@ Deno.serve(async (req) => {
         // ── BILLING (subscriptions + invoices) ──
         let createdSubIds: string[] = []
         if (categories.includes('billing') && sIds.length > 0 && cIds.length > 0 && tIds.length > 0) {
-          const subsInsert = sIds.slice(0, Math.min(sIds.length, qty.invoices)).map((sid, i) => ({
-            student_id: sid, course_id: cIds[i % cIds.length], teacher_id: tIds[i % tIds.length],
-            status: i === 0 ? 'expired' : 'active',
-            subscription_type: ['monthly', '3-month', 'yearly'][i % 3],
-            price: [50, 100, 75, 120, 80][i % 5],
-            start_date: randomDateOnly(30, 0),
-            renewal_date: randomDateOnly(0, 60),
-          }))
+          const MEET_URLS = [
+            'https://meet.google.com/abc-defg-hij',
+            'https://meet.google.com/xyz-uvwx-rst',
+            'https://meet.google.com/klm-nopq-stu',
+          ]
+          const ZOOM_URLS = [
+            'https://zoom.us/j/1234567890',
+            'https://zoom.us/j/9876543210',
+            'https://zoom.us/j/5555555555',
+          ]
+          const subsInsert = sIds.slice(0, Math.min(sIds.length, qty.invoices)).map((sid, i) => {
+            const subType = ['monthly', 'quarterly', 'yearly'][i % 3]
+            const renewalDays = subType === 'yearly' ? 365 : subType === 'quarterly' ? 88 : 28
+            const startDate = randomDateOnly(30, 0)
+            const renewalDate = new Date(startDate)
+            renewalDate.setDate(renewalDate.getDate() + renewalDays)
+            return {
+              student_id: sid, course_id: cIds[i % cIds.length], teacher_id: tIds[i % tIds.length],
+              status: i === 0 ? 'expired' : 'active',
+              subscription_type: subType,
+              price: [50, 100, 75, 120, 80][i % 5],
+              start_date: startDate,
+              renewal_date: renewalDate.toISOString().split('T')[0],
+              google_meet_url: MEET_URLS[i % MEET_URLS.length],
+              zoom_url: ZOOM_URLS[i % ZOOM_URLS.length],
+            }
+          })
           const { data: subs } = await admin.from('subscriptions').insert(subsInsert).select('id, student_id, course_id, price, subscription_type')
           const subRows = subs || []
           createdSubIds = subRows.map(s => s.id)
