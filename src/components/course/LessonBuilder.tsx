@@ -70,6 +70,7 @@ export interface ContentBlock {
   divider_style?: 'solid' | 'dashed' | 'dotted' | 'double' | 'groove' | 'ridge';
   divider_thickness?: number; // 1-6 px
   divider_color?: string;
+  divider_text?: string;
   // page break (no extra fields needed, acts as marker)
   page_label?: string;
   page_label_ar?: string;
