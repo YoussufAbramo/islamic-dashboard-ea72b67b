@@ -39,8 +39,20 @@ const AutoBackupCard = ({ isAr }: { isAr: boolean }) => {
   const [testing, setTesting] = useState(false);
 
   useEffect(() => {
-    supabase.from('auto_backup_config').select('*').limit(1).single().then(({ data }) => {
-      if (data) { setConfig({ enabled: data.enabled, schedule: data.schedule, retention_count: data.retention_count, format: data.format, scheduled_time: (data as any).scheduled_time || '02:00' }); }
+    // Read backup config from app_settings.settings jsonb
+    supabase.from('app_settings').select('settings').limit(1).single().then(({ data }) => {
+      if (data?.settings) {
+        const s = data.settings as any;
+        if (s.backup_config) {
+          setConfig({
+            enabled: s.backup_config.enabled ?? false,
+            schedule: s.backup_config.schedule ?? 'daily',
+            retention_count: s.backup_config.retention_count ?? 7,
+            format: s.backup_config.format ?? 'json',
+            scheduled_time: s.backup_config.scheduled_time ?? '02:00',
+          });
+        }
+      }
       setLoading(false);
     });
   }, []);
