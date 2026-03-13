@@ -486,46 +486,17 @@ const CourseLearning = () => {
     }
   }, [activeLesson, user, isAr, hasNext, currentIndex, orderedLessons]);
 
-  const openEditDialog = useCallback(() => {
-    if (!currentLesson) return;
-    const c = currentLesson.content || {};
-    setEditForm({
-      video_url: c.video_url || c.videoUrl || '',
-      audio_url: c.audio_url || c.audioUrl || '',
-      pdf_url: c.pdf_url || c.pdfUrl || '',
-      external_url: c.external_url || c.externalUrl || c.link || '',
-      instructions: c.instructions || '',
-      text: c.text || c.body || c.html || c.description || '',
-    });
-    setEditDialogOpen(true);
-  }, [currentLesson]);
-
-  const handleSaveContent = useCallback(async () => {
-    if (!currentLesson) return;
-    setSaving(true);
-    try {
-      const newContent = { ...(currentLesson.content || {}) };
-      // Update fields
-      if (editForm.video_url) newContent.video_url = editForm.video_url; else { delete newContent.video_url; delete newContent.videoUrl; }
-      if (editForm.audio_url) newContent.audio_url = editForm.audio_url; else { delete newContent.audio_url; delete newContent.audioUrl; }
-      if (editForm.pdf_url) newContent.pdf_url = editForm.pdf_url; else { delete newContent.pdf_url; delete newContent.pdfUrl; }
-      if (editForm.external_url) newContent.external_url = editForm.external_url; else { delete newContent.external_url; delete newContent.externalUrl; delete newContent.link; }
-      if (editForm.instructions) newContent.instructions = editForm.instructions; else delete newContent.instructions;
-      if (editForm.text) newContent.text = editForm.text; else { delete newContent.text; delete newContent.body; delete newContent.html; delete newContent.description; }
-
-      const { error } = await supabase.from('lessons').update({ content: newContent }).eq('id', currentLesson.id);
-      if (error) throw error;
-
-      // Update local state
-      setLessons(prev => prev.map(l => l.id === currentLesson.id ? { ...l, content: newContent } : l));
-      toast.success(isAr ? 'تم حفظ المحتوى' : 'Content saved');
-      setEditDialogOpen(false);
-    } catch (err: any) {
-      toast.error(err.message);
-    } finally {
-      setSaving(false);
-    }
-  }, [currentLesson, editForm, isAr]);
+  const handleBuilderSaved = useCallback(async () => {
+    // Re-fetch lessons to get updated content
+    if (!id) return;
+    const csIds = courseSections.map(s => s.id);
+    if (csIds.length === 0) return;
+    const { data: lSections } = await supabase.from('lesson_sections').select('*').in('course_section_id', csIds).order('sort_order');
+    const lsIds = (lSections || []).map((s: any) => s.id);
+    if (lsIds.length === 0) return;
+    const { data: lessonsData } = await supabase.from('lessons').select('*').in('section_id', lsIds).order('sort_order');
+    setLessons(lessonsData || []);
+  }, [id, courseSections]);
 
   if (loading) {
     return (
