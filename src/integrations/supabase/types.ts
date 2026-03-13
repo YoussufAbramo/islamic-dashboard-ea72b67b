@@ -1879,6 +1879,17 @@ export type Database = {
           student_id: string
         }[]
       }
+      get_public_teachers: {
+        Args: { max_count?: number }
+        Returns: {
+          avatar_url: string
+          bio: string
+          full_name: string
+          id: string
+          specialization: string
+          title: string
+        }[]
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]

@@ -17,10 +17,15 @@ const InstructorsSection = ({ content, isAr }: InstructorsSectionProps) => {
 
   useEffect(() => {
     supabase
-      .from('teachers')
-      .select('id, specialization, bio, profiles:user_id(full_name, avatar_url)')
-      .limit(maxDisplay)
-      .then(({ data }) => { if (data) setTeachers(data); });
+      .rpc('get_public_teachers', { max_count: maxDisplay })
+      .then(({ data }) => {
+        if (data) setTeachers(data.map((t: any) => ({
+          id: t.id,
+          specialization: t.specialization,
+          bio: t.bio,
+          profiles: { full_name: t.full_name, avatar_url: t.avatar_url },
+        })));
+      });
   }, [maxDisplay]);
 
   if (teachers.length === 0) return null;
