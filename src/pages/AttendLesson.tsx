@@ -322,6 +322,7 @@ const AttendLesson = () => {
   const handleOpenMeeting = (entry: LessonEntry) => {
     const platform = lastJoinedPlatformRef.current;
 
+    // Try stored platform first
     if (platform === 'google_meet' && entry.google_meet_url) {
       window.open(entry.google_meet_url, '_blank', 'noopener,noreferrer');
       toast.success(isAr ? 'تم فتح Google Meet' : 'Opening Google Meet');
@@ -332,7 +333,23 @@ const AttendLesson = () => {
       toast.success(isAr ? 'تم فتح Zoom' : 'Opening Zoom');
       return;
     }
-    // Fallback: open platform list
+
+    // Auto-detect: if only one URL is available, open it directly
+    const hasGoogleMeet = !!entry.google_meet_url;
+    const hasZoom = !!entry.zoom_url;
+
+    if (hasGoogleMeet && !hasZoom) {
+      window.open(entry.google_meet_url, '_blank', 'noopener,noreferrer');
+      toast.success(isAr ? 'تم فتح Google Meet' : 'Opening Google Meet');
+      return;
+    }
+    if (hasZoom && !hasGoogleMeet) {
+      window.open(entry.zoom_url, '_blank', 'noopener,noreferrer');
+      toast.success(isAr ? 'تم فتح Zoom' : 'Opening Zoom');
+      return;
+    }
+
+    // Fallback: open platform list only if multiple or no URLs
     setSelectedEntry(entry);
     setJoinOpen(true);
   };
