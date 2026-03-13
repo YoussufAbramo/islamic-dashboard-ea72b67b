@@ -1,7 +1,8 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { assertEquals } from "https://deno.land/std@0.168.0/testing/asserts.ts";
 
 Deno.test("drop all students", async () => {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseUrl = "https://ubpiluthfipkunectidq.supabase.co";
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const adminClient = createClient(supabaseUrl, serviceRoleKey);
   
@@ -30,4 +31,8 @@ Deno.test("drop all students", async () => {
   
   console.log(`Deleted ${deleted}/${studentRoles.length} students`);
   if (errors.length > 0) console.log('Errors:', errors);
+  
+  // Verify
+  const { data: remaining } = await adminClient.from('user_roles').select('user_id').eq('role', 'student');
+  console.log(`Remaining students: ${remaining?.length || 0}`);
 });
