@@ -59,7 +59,7 @@ const formatReportDuration = (seconds: number): string => {
 const AttendLesson = () => {
   const { language } = useLanguage();
   const { role, user } = useAuth();
-  const { activeSessionId, startSession, clearSession, setPendingAttend } = useSession();
+  const { activeSessionId, startSession, clearSession } = useSession();
   const isAr = language === 'ar';
   const [entries, setEntries] = useState<LessonEntry[]>([]);
   const [loading, setLoading] = useState(true);
