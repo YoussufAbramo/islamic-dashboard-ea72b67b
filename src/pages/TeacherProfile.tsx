@@ -979,6 +979,14 @@ const TeacherProfile = () => {
               />
             )}
           </div>
+          <div className="flex justify-end gap-2 shrink-0 pt-2">
+            <Button variant="outline" size="sm" asChild>
+              <a href={docPreview?.url} download title={isAr ? 'تحميل' : 'Download'}>
+                <FileUp className="h-3.5 w-3.5 me-1.5" />
+                {isAr ? 'تحميل' : 'Download'}
+              </a>
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
