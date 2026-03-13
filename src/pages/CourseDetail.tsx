@@ -68,6 +68,8 @@ const CourseDetail = () => {
   const canEdit = role === 'admin' || role === 'teacher';
 
   const [course, setCourse] = useState<any>(null);
+  const [courseSettingsOpen, setCourseSettingsOpen] = useState(false);
+  const [slugForm, setSlugForm] = useState('');
   const [categories, setCategories] = useState<any[]>([]);
   const [levels, setLevels] = useState<any[]>([]);
   const [tracks, setTracks] = useState<any[]>([]);
