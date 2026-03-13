@@ -1,8 +1,7 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Bold, Italic, Underline, List, ListOrdered, Link, Heading1, Heading2, Code, Eye, FileText, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
+import { Bold, Italic, Underline, List, ListOrdered, Link, Heading1, Heading2, Code, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ContentEditorProps {
@@ -15,18 +14,31 @@ interface ContentEditorProps {
 const ContentEditor = ({ value, onChange, placeholder, minHeight = '300px' }: ContentEditorProps) => {
   const { language } = useLanguage();
   const isAr = language === 'ar';
-  const [mode, setMode] = useState<'visual' | 'html'>('visual');
   const editorRef = useRef<HTMLDivElement>(null);
+  const isInternalChange = useRef(false);
+
+  // Only update innerHTML when value changes externally (not from typing)
+  useEffect(() => {
+    if (isInternalChange.current) {
+      isInternalChange.current = false;
+      return;
+    }
+    if (editorRef.current && editorRef.current.innerHTML !== value) {
+      editorRef.current.innerHTML = DOMPurify.sanitize(value);
+    }
+  }, [value]);
 
   const execCmd = useCallback((command: string, val?: string) => {
     document.execCommand(command, false, val);
     if (editorRef.current) {
+      isInternalChange.current = true;
       onChange(editorRef.current.innerHTML);
     }
   }, [onChange]);
 
   const handleInput = useCallback(() => {
     if (editorRef.current) {
+      isInternalChange.current = true;
       onChange(editorRef.current.innerHTML);
     }
   }, [onChange]);
@@ -57,7 +69,6 @@ const ContentEditor = ({ value, onChange, placeholder, minHeight = '300px' }: Co
 
   return (
     <div className="border rounded-lg overflow-hidden bg-background">
-      {/* Toolbar */}
       <div className="flex items-center gap-0.5 p-1.5 border-b bg-muted/30 flex-wrap">
         {toolbar.map((item, i) => {
           if ('divider' in item) return <div key={i} className="w-px h-6 bg-border mx-1" />;
@@ -81,7 +92,6 @@ const ContentEditor = ({ value, onChange, placeholder, minHeight = '300px' }: Co
         })}
       </div>
 
-      {/* Editor */}
       <div
         ref={editorRef}
         contentEditable
@@ -90,7 +100,7 @@ const ContentEditor = ({ value, onChange, placeholder, minHeight = '300px' }: Co
         dir="auto"
         style={{ minHeight, unicodeBidi: 'plaintext' }}
         onInput={handleInput}
-        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(value) }}
+        data-placeholder={placeholder}
       />
     </div>
   );
