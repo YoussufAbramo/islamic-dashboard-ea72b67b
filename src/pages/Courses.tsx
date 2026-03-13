@@ -164,6 +164,8 @@ const Courses = () => {
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
 
+  const showEmptyState = !loading && courses.length === 0;
+
   if (loading) return <TableSkeleton />;
 
   return (
