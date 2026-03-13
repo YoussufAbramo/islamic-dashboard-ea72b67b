@@ -639,10 +639,37 @@ const CourseDetail = () => {
                                       <ChevronDown className="h-3.5 w-3.5 text-muted-foreground ms-auto transition-transform group-data-[state=open]:rotate-180 shrink-0" />
                                     </CollapsibleTrigger>
                                     {canEdit && (
-                                      <ItemActionsMenu
-                                        onEdit={() => openEditSection(section, topic.id)}
-                                        onDelete={() => setDeleteTarget({ id: section.id, type: 'section' })}
-                                      />
+                                      <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                          <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted shrink-0" onClick={(e) => e.stopPropagation()}>
+                                            <MoreHorizontal className="h-4 w-4" />
+                                          </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="w-44">
+                                          {topics.length > 1 && (
+                                            <>
+                                              <DropdownMenuSub>
+                                                <DropdownMenuSubTrigger className="gap-2" onClick={(e) => e.stopPropagation()}>
+                                                  <MoveRight className="h-3.5 w-3.5" />
+                                                  {isAr ? 'نقل إلى' : 'Move To'}
+                                                </DropdownMenuSubTrigger>
+                                                <DropdownMenuSubContent>
+                                                  {topics.filter(t => t.id !== topic.id).map(t => (
+                                                    <DropdownMenuItem key={t.id} onClick={(e) => { e.stopPropagation(); handleMoveSection(section.id, t.id); }}>
+                                                      {isAr && t.title_ar ? t.title_ar : t.title}
+                                                    </DropdownMenuItem>
+                                                  ))}
+                                                </DropdownMenuSubContent>
+                                              </DropdownMenuSub>
+                                              <DropdownMenuSeparator />
+                                            </>
+                                          )}
+                                          <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: section.id, type: 'section' }); }}>
+                                            <Trash2 className="h-3.5 w-3.5 me-2" />
+                                            {isAr ? 'حذف' : 'Delete'}
+                                          </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
                                     )}
                                   </div>
                                   <CollapsibleContent className="animate-accordion-down data-[state=closed]:animate-accordion-up">
