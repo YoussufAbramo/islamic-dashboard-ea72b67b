@@ -98,6 +98,7 @@ const App = () => (
                         <Route path="courses/categories" element={<RoleGuard allowed={['admin']}><CourseCategories /></RoleGuard>} />
                         <Route path="courses/levels" element={<RoleGuard allowed={['admin']}><CourseLevels /></RoleGuard>} />
                         <Route path="courses/:id" element={<CourseDetail />} />
+                        <Route path="courses/:id/learn" element={<CourseLearning />} />
                         <Route path="students" element={<RoleGuard allowed={['admin', 'teacher']}><Students /></RoleGuard>} />
                         <Route path="teachers" element={<RoleGuard allowed={['admin']}><Teachers /></RoleGuard>} />
                         <Route path="admins" element={<RoleGuard allowed={['admin']}><Admins /></RoleGuard>} />
