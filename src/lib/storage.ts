@@ -1,13 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
 import { MEDIA_BUCKET, MEDIA_PATHS, resolveMediaUrl, uploadAndReplaceMedia, getMediaSignedUrl } from '@/lib/mediaStorage';
-import avatar1 from '@/assets/avatars/avatar-1.png';
-import avatar2 from '@/assets/avatars/avatar-2.png';
-import avatar3 from '@/assets/avatars/avatar-3.png';
-
 export const CARTOON_AVATARS: Record<string, string> = {
-  'avatar-1': avatar1,
-  'avatar-2': avatar2,
-  'avatar-3': avatar3,
+  'avatar-1': '/system/avatars/avatar-1.png',
+  'avatar-2': '/system/avatars/avatar-2.png',
+  'avatar-3': '/system/avatars/avatar-3.png',
 };
 
 /**

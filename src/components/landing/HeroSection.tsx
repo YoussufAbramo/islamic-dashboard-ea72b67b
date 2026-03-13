@@ -2,8 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { Star, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getField } from '@/lib/landingDefaults';
-import islamicPatternHero from '@/assets/other/islamic-pattern-hero.jpg';
-import dashboardMockup from '@/assets/other/dashboard-mockup.png';
+const islamicPatternHero = '/system/backgrounds/islamic-pattern-hero.jpg';
+const dashboardMockup = '/system/samples/dashboard-mockup.png';
 
 interface HeroSectionProps {
   content: Record<string, any>;
