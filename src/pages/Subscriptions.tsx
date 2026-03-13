@@ -46,6 +46,7 @@ const Subscriptions = () => {
   const [editForm, setEditForm] = useState({ subscription_type: 'monthly', status: 'active', renewal_date: '', teacher_id: '', course_id: '', price: '', weekly_lessons: '', lesson_duration: '', google_meet_url: '', zoom_url: '', auto_renew: false });
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [checkingSubscriptions, setCheckingSubscriptions] = useState(false);
 
   // Create subscription
   const [createOpen, setCreateOpen] = useState(false);
