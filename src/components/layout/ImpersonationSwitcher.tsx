@@ -194,7 +194,7 @@ const ImpersonationSwitcher = () => {
           </div>
         </div>
 
-        <ScrollArea className="max-h-[360px]">
+        <ScrollArea className="h-[360px]">
           {loading ? (
             <div className="p-3 space-y-2">
               {Array.from({ length: 4 }).map((_, i) => (
