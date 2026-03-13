@@ -1,8 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import {
   CommandDialog,
   CommandEmpty,
@@ -10,7 +8,6 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from '@/components/ui/command';
 import {
   GraduationCap, BookOpen, FileText, Globe, ScrollText, PenLine,
@@ -63,57 +60,19 @@ const PAGES: SearchResult[] = [
 const GlobalSearch = ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) => {
   const navigate = useNavigate();
   const { language } = useLanguage();
-  const { role } = useAuth();
   const isAr = language === 'ar';
-
-  const [invoices, setInvoices] = useState<SearchResult[]>([]);
-  const [loaded, setLoaded] = useState(false);
-
-  const loadData = useCallback(async () => {
-    if (loaded) return;
-
-    const invoicesRes = role === 'admin'
-      ? await supabase.from('invoices').select('id, invoice_number, amount, status, students:invoices_student_id_fkey(user_id, profiles:students_user_id_profiles_fkey(full_name))').limit(200)
-      : { data: [] };
-
-    setInvoices(
-      (invoicesRes.data || []).map((inv: any) => ({
-        id: `i-${inv.id}`,
-        title: inv.invoice_number,
-        subtitle: `${inv.students?.profiles?.full_name || ''} — ${inv.status}`,
-        icon: FileText,
-        path: '/dashboard/invoices',
-        category: 'invoices',
-      }))
-    );
-
-    setLoaded(true);
-  }, [loaded, role, isAr]);
-
-  useEffect(() => {
-    if (open) loadData();
-  }, [open, loadData]);
 
   const handleSelect = (path: string) => {
     onOpenChange(false);
     navigate(path);
   };
 
-  const categoryLabel = (cat: string) => {
-    const labels: Record<string, { en: string; ar: string }> = {
-      pages: { en: 'Pages', ar: 'الصفحات' },
-      invoices: { en: 'Invoices', ar: 'الفواتير' },
-    };
-    return isAr ? labels[cat]?.ar : labels[cat]?.en;
-  };
-
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <CommandInput placeholder={isAr ? 'ابحث عن صفحات، فواتير...' : 'Search pages, invoices...'} />
+      <CommandInput placeholder={isAr ? 'ابحث عن صفحات...' : 'Search pages...'} />
       <CommandList>
         <CommandEmpty>{isAr ? 'لا توجد نتائج' : 'No results found.'}</CommandEmpty>
-
-        <CommandGroup heading={categoryLabel('pages')}>
+        <CommandGroup heading={isAr ? 'الصفحات' : 'Pages'}>
           {PAGES.map(page => (
             <CommandItem key={page.id} value={`${page.title} ${page.subtitle || ''}`} onSelect={() => handleSelect(page.path)}>
               <page.icon className="me-2 h-4 w-4 text-muted-foreground shrink-0" />
@@ -121,22 +80,6 @@ const GlobalSearch = ({ open, onOpenChange }: { open: boolean; onOpenChange: (op
             </CommandItem>
           ))}
         </CommandGroup>
-
-
-        {invoices.length > 0 && (
-          <>
-            <CommandSeparator />
-            <CommandGroup heading={categoryLabel('invoices')}>
-              {invoices.map(inv => (
-                <CommandItem key={inv.id} value={`${inv.title} ${inv.subtitle}`} onSelect={() => handleSelect(inv.path)}>
-                  <inv.icon className="me-2 h-4 w-4 text-muted-foreground shrink-0" />
-                  <span>{inv.title}</span>
-                  {inv.subtitle && <span className="ms-2 text-xs text-muted-foreground truncate">{inv.subtitle}</span>}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </>
-        )}
       </CommandList>
     </CommandDialog>
   );

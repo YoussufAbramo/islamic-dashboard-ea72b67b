@@ -64,7 +64,7 @@ const FloatingButtons = () => {
 
   if (bugDismissed && whatsappDismissed) return null;
 
-  const dismissBtnClass = `absolute -top-1 ${isAr ? '-right-1' : '-left-1'} flex items-center justify-center h-4 w-4 rounded-full bg-muted-foreground/20 text-muted-foreground opacity-0 group-hover:opacity-100 hover:!bg-destructive hover:!text-destructive-foreground transition-all duration-200 z-10`;
+  const dismissBtnClass = `absolute -top-1.5 ${isAr ? '-right-1.5' : '-left-1.5'} flex items-center justify-center h-5 w-5 rounded-full bg-muted text-muted-foreground border border-border shadow-sm opacity-0 group-hover:opacity-100 hover:!bg-destructive hover:!text-destructive-foreground transition-all duration-200 z-10`;
 
   return (
     <>

@@ -2,6 +2,26 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.9.0] - 2026-03-13
+
+### Added
+- **Actions Queue** — new developer page under the Developer sidebar that logs all user CRUD actions (add/modify/delete) to localStorage with type filtering, stats cards, detail dialog, and clear functionality
+- **`logAction()` utility** — reusable function in `src/lib/actionsQueue.ts` to record actions from any module; integrated into Course Tracks mutations as the first use case
+
+### Changed — Global Search
+- **Removed invoice preloading** — the search dialog no longer fetches invoices on open; only static page navigation results are shown for instant performance
+
+### Changed — Course Tracks Redesign
+- **Stats row** — added 4 KPI cards (total tracks, linked courses, levels, unassigned courses)
+- **Enhanced track cards** — numbered track badges, vertical separator before actions, improved empty state with guidance text
+- **Better create/edit dialog** — section headers with dot indicators, placeholder examples, saving spinner state, and description subtitle
+- **Published course badges** — green-tinted badges for published status
+
+### Fixed
+- **Floating action X buttons** — dismiss icons now have a visible background (`bg-muted` with border) instead of transparent, improving discoverability
+
+---
+
 ## [5.8.0] - 2026-03-13
 
 ### Added
