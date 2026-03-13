@@ -305,9 +305,7 @@ const CourseLearning = () => {
   const [markingComplete, setMarkingComplete] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false); // collapsed by default
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [editForm, setEditForm] = useState<Record<string, string>>({});
-  const [saving, setSaving] = useState(false);
+  const [builderOpen, setBuilderOpen] = useState(false);
   const canManage = role === 'admin' || role === 'teacher';
 
   // Fetch everything
