@@ -630,85 +630,23 @@ const Chats = () => {
 
       {/* Create Chat Dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{isAr ? 'إنشاء محادثة جديدة' : 'Create New Chat'}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>{isAr ? 'نوع المحادثة' : 'Chat Type'}</Label>
-              <div className="grid grid-cols-2 gap-2 mt-1">
-                <button type="button" onClick={() => setChatType('direct')} className={`p-3 rounded-lg border-2 text-sm transition-all ${chatType === 'direct' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'}`}>
-                  {isAr ? 'محادثة مباشرة' : '1-on-1 Chat'}
-                </button>
-                <button type="button" onClick={() => setChatType('group')} className={`relative p-3 rounded-lg border-2 text-sm transition-all ${chatType === 'group' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'}`}>
-                  {isAr ? 'مجموعة' : 'Group Chat'}
-                  <Badge className="absolute -top-1.5 -end-1.5 text-[7px] px-1 py-0 h-3.5 bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">Beta</Badge>
-                </button>
-              </div>
+              <Label>{isAr ? 'الطالب' : 'Student'}</Label>
+              <Select value={createForm.student_id} onValueChange={(v) => setCreateForm(prev => ({ ...prev, student_id: v }))}>
+                <SelectTrigger><SelectValue placeholder={isAr ? 'اختر طالب' : 'Select student'} /></SelectTrigger>
+                <SelectContent>{studentsList.map((s) => <SelectItem key={s.id} value={s.id}>{s.profiles?.full_name || s.id}</SelectItem>)}</SelectContent>
+              </Select>
             </div>
-            {chatType === 'direct' ? (
-              <>
-                <div>
-                  <Label>{isAr ? 'الطالب' : 'Student'}</Label>
-                  <Select value={createForm.student_id} onValueChange={(v) => setCreateForm(prev => ({ ...prev, student_id: v }))}>
-                    <SelectTrigger><SelectValue placeholder={isAr ? 'اختر طالب' : 'Select student'} /></SelectTrigger>
-                    <SelectContent>{studentsList.map((s) => <SelectItem key={s.id} value={s.id}>{s.profiles?.full_name || s.id}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>{isAr ? 'المعلم' : 'Teacher'}</Label>
-                  <Select value={createForm.teacher_id} onValueChange={(v) => setCreateForm(prev => ({ ...prev, teacher_id: v }))}>
-                    <SelectTrigger><SelectValue placeholder={isAr ? 'اختر معلم' : 'Select teacher'} /></SelectTrigger>
-                    <SelectContent>{teachersList.map((te) => <SelectItem key={te.id} value={te.id}>{te.profiles?.full_name || te.id}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-              </>
-            ) : (
-              <>
-                <div>
-                  <Label>{isAr ? 'اسم المجموعة' : 'Group Name'} *</Label>
-                  <Input value={createForm.name} onChange={(e) => setCreateForm(prev => ({ ...prev, name: e.target.value }))} />
-                </div>
-                <div>
-                  <Label>{isAr ? 'الاشتراك المرتبط (اختياري)' : 'Linked Subscription (optional)'}</Label>
-                  <Select value={createForm.subscription_id} onValueChange={(v) => setCreateForm(prev => ({ ...prev, subscription_id: v }))}>
-                    <SelectTrigger><SelectValue placeholder={isAr ? 'اختر اشتراك' : 'Select subscription'} /></SelectTrigger>
-                    <SelectContent>{subscriptionsList.map((sub) => <SelectItem key={sub.id} value={sub.id}>{sub.students?.profiles?.full_name || ''} - {sub.courses?.title || ''}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                {/* Multi-select teachers */}
-                <div>
-                  <Label>{isAr ? 'المعلمون' : 'Teachers'}</Label>
-                  <div className="flex flex-wrap gap-1.5 mt-1 p-2 border rounded-md min-h-[40px]">
-                    {teachersList.map(te => (
-                      <button
-                        key={te.id}
-                        type="button"
-                        onClick={() => setCreateForm(prev => ({ ...prev, group_teachers: toggleMultiSelect(prev.group_teachers, te.id) }))}
-                        className={`px-2 py-1 rounded-md text-xs border transition-all ${createForm.group_teachers.includes(te.id) ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/50 text-muted-foreground border-border hover:border-primary/40'}`}
-                      >
-                        {te.profiles?.full_name || te.id}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {/* Multi-select students */}
-                <div>
-                  <Label>{isAr ? 'الطلاب' : 'Students'}</Label>
-                  <div className="flex flex-wrap gap-1.5 mt-1 p-2 border rounded-md min-h-[40px]">
-                    {studentsList.map(s => (
-                      <button
-                        key={s.id}
-                        type="button"
-                        onClick={() => setCreateForm(prev => ({ ...prev, group_students: toggleMultiSelect(prev.group_students, s.id) }))}
-                        className={`px-2 py-1 rounded-md text-xs border transition-all ${createForm.group_students.includes(s.id) ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/50 text-muted-foreground border-border hover:border-primary/40'}`}
-                      >
-                        {s.profiles?.full_name || s.id}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
+            <div>
+              <Label>{isAr ? 'المعلم' : 'Teacher'}</Label>
+              <Select value={createForm.teacher_id} onValueChange={(v) => setCreateForm(prev => ({ ...prev, teacher_id: v }))}>
+                <SelectTrigger><SelectValue placeholder={isAr ? 'اختر معلم' : 'Select teacher'} /></SelectTrigger>
+                <SelectContent>{teachersList.map((te) => <SelectItem key={te.id} value={te.id}>{te.profiles?.full_name || te.id}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
             <Button onClick={handleCreateChat} disabled={createLoading} className="w-full">
               {createLoading ? t('common.loading') : (isAr ? 'إنشاء المحادثة' : 'Create Chat')}
             </Button>

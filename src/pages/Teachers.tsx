@@ -148,7 +148,21 @@ const Teachers = () => {
                 </TableCell>
               </TableRow>
             ))}
-            {filtered.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">{t('common.noData')}</TableCell></TableRow>}
+            {paginatedItems.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="p-0">
+                  <EmptyState
+                    icon={Users}
+                    title={isAr ? 'لا يوجد معلمون بعد' : 'No teachers yet'}
+                    description={isAr
+                      ? 'أضف أول معلم لبدء تنظيم فريق التدريس.'
+                      : 'Add your first teacher to start building your teaching team.'}
+                    actionLabel={role === 'admin' ? (isAr ? 'إضافة معلم' : 'Add Teacher') : undefined}
+                    onAction={role === 'admin' ? () => setAddOpen(true) : undefined}
+                  />
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
