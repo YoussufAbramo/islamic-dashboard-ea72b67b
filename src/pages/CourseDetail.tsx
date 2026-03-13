@@ -690,6 +690,45 @@ const CourseDetail = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Course Settings Dialog (slug) */}
+      <Dialog open={courseSettingsOpen} onOpenChange={setCourseSettingsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings2 className="h-4 w-4 text-primary" />
+              {isAr ? 'إعدادات الدورة' : 'Course Settings'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="flex items-center gap-1.5">
+                <Link2 className="h-3.5 w-3.5" />
+                {isAr ? 'الرابط المختصر (Slug)' : 'URL Slug'}
+              </Label>
+              <Input
+                value={slugForm}
+                onChange={(e) => setSlugForm(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-'))}
+                placeholder="e.g. quran-memorization"
+                className="mt-1 font-mono text-sm"
+                dir="ltr"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                {isAr ? 'يُستخدم في رابط الدورة. يقبل أحرف إنجليزية صغيرة وأرقام وشرطات فقط.' : 'Used in the course URL. Only lowercase letters, numbers, and hyphens allowed.'}
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCourseSettingsOpen(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
+            <Button onClick={async () => {
+              await supabase.from('courses').update({ slug: slugForm || null }).eq('id', id);
+              toast.success(isAr ? 'تم تحديث الإعدادات' : 'Settings updated');
+              setCourseSettingsOpen(false);
+              fetchCourse();
+            }} disabled={!slugForm.trim()}>{t('common.save')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete Confirmation */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>

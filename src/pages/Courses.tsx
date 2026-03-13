@@ -251,6 +251,19 @@ const Courses = () => {
                     value={form.image_url}
                     onChange={(url) => setForm({ ...form, image_url: url })}
                   />
+                  <div>
+                    <Label>{isAr ? 'الرابط المختصر (Slug)' : 'URL Slug'}</Label>
+                    <Input
+                      value={form.slug}
+                      onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-') })}
+                      placeholder="e.g. quran-memorization"
+                      className="font-mono text-sm"
+                      dir="ltr"
+                    />
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {isAr ? 'أحرف إنجليزية صغيرة وأرقام وشرطات فقط' : 'Lowercase letters, numbers, and hyphens only'}
+                    </p>
+                  </div>
                   <Button onClick={handleSave} className="w-full">
                     {t('common.save')}
                   </Button>
