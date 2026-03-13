@@ -77,27 +77,27 @@ const CourseDetail = () => {
   const [categories, setCategories] = useState<any[]>([]);
   const [levels, setLevels] = useState<any[]>([]);
   const [tracks, setTracks] = useState<any[]>([]);
-  const [lessons, setLessons] = useState<any[]>([]);
+  const [topics, setTopics] = useState<any[]>([]);
   const [sections, setSections] = useState<Record<string, any[]>>({});
-  const [contents, setContents] = useState<Record<string, any[]>>({});
+  const [lessonItems, setLessonItems] = useState<Record<string, any[]>>({});
 
   // Dialog states
-  const [lessonDialog, setLessonDialog] = useState(false);
+  const [topicDialog, setTopicDialog] = useState(false);
   const [sectionDialog, setSectionDialog] = useState(false);
-  const [contentDialog, setContentDialog] = useState(false);
-  const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+  const [lessonDialog, setLessonDialog] = useState(false);
+  const [activeTopicId, setActiveTopicId] = useState<string | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: 'lesson' | 'section' | 'content' } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: 'topic' | 'section' | 'lesson' } | null>(null);
 
   // Edit states
-  const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
+  const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
-  const [editingContentId, setEditingContentId] = useState<string | null>(null);
+  const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
 
   // Forms
-  const [lessonForm, setLessonForm] = useState({ title: '', title_ar: '' });
+  const [topicForm, setTopicForm] = useState({ title: '', title_ar: '' });
   const [sectionForm, setSectionForm] = useState({ title: '', title_ar: '' });
-  const [contentForm, setContentForm] = useState({ title: '', title_ar: '', lesson_type: 'read_listen' });
+  const [lessonForm, setLessonForm] = useState({ title: '', title_ar: '', lesson_type: 'read_listen' });
 
   const totalContent = useMemo(() => {
     return Object.values(contents).reduce((sum, arr) => sum + arr.length, 0);
