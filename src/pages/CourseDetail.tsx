@@ -99,9 +99,9 @@ const CourseDetail = () => {
   const [sectionForm, setSectionForm] = useState({ title: '', title_ar: '' });
   const [lessonForm, setLessonForm] = useState({ title: '', title_ar: '', lesson_type: 'read_listen' });
 
-  const totalContent = useMemo(() => {
-    return Object.values(contents).reduce((sum, arr) => sum + arr.length, 0);
-  }, [contents]);
+  const totalLessons = useMemo(() => {
+    return Object.values(lessonItems).reduce((sum, arr) => sum + arr.length, 0);
+  }, [lessonItems]);
 
   const fetchCourse = async () => {
     const [courseRes, catRes, lvlRes, trkRes] = await Promise.all([
@@ -117,28 +117,28 @@ const CourseDetail = () => {
   };
 
   const fetchHierarchy = async () => {
-    const { data: lessonData } = await supabase
+    const { data: topicData } = await supabase
       .from('course_sections')
       .select('*')
       .eq('course_id', id)
       .order('sort_order');
-    setLessons(lessonData || []);
+    setTopics(topicData || []);
 
-    if (!lessonData?.length) {
+    if (!topicData?.length) {
       setSections({});
-      setContents({});
+      setLessonItems({});
       return;
     }
 
-    const lessonIds = lessonData.map((l: any) => l.id);
+    const topicIds = topicData.map((t: any) => t.id);
     const { data: sectionData } = await supabase
       .from('lesson_sections' as any)
       .select('*')
-      .in('course_section_id', lessonIds)
+      .in('course_section_id', topicIds)
       .order('sort_order');
 
     const sectionMap: Record<string, any[]> = {};
-    for (const ls of lessonData) sectionMap[ls.id] = [];
+    for (const tp of topicData) sectionMap[tp.id] = [];
     for (const s of (sectionData || [])) {
       const key = (s as any).course_section_id;
       if (!sectionMap[key]) sectionMap[key] = [];
@@ -148,90 +148,90 @@ const CourseDetail = () => {
 
     const sectionIds = (sectionData || []).map((s: any) => s.id);
     if (!sectionIds.length) {
-      setContents({});
+      setLessonItems({});
       return;
     }
-    const { data: contentData } = await supabase
+    const { data: lessonData } = await supabase
       .from('lessons')
       .select('*')
       .in('section_id', sectionIds)
       .order('sort_order');
 
-    const contentMap: Record<string, any[]> = {};
-    for (const s of (sectionData || [])) contentMap[(s as any).id] = [];
-    for (const c of (contentData || [])) {
-      if (!contentMap[c.section_id]) contentMap[c.section_id] = [];
-      contentMap[c.section_id].push(c);
+    const lessonMap: Record<string, any[]> = {};
+    for (const s of (sectionData || [])) lessonMap[(s as any).id] = [];
+    for (const l of (lessonData || [])) {
+      if (!lessonMap[l.section_id]) lessonMap[l.section_id] = [];
+      lessonMap[l.section_id].push(l);
     }
-    setContents(contentMap);
+    setLessonItems(lessonMap);
   };
 
   useEffect(() => { fetchCourse(); fetchHierarchy(); }, [id]);
 
   // ─── Reorder helpers ───
-  const reorderLessons = useCallback(async (activeId: string, overId: string) => {
-    const oldIndex = lessons.findIndex(l => l.id === activeId);
-    const newIndex = lessons.findIndex(l => l.id === overId);
+  const reorderTopics = useCallback(async (activeId: string, overId: string) => {
+    const oldIndex = topics.findIndex(t => t.id === activeId);
+    const newIndex = topics.findIndex(t => t.id === overId);
     if (oldIndex === -1 || newIndex === -1) return;
-    const reordered = arrayMove(lessons, oldIndex, newIndex);
-    setLessons(reordered);
+    const reordered = arrayMove(topics, oldIndex, newIndex);
+    setTopics(reordered);
     const updates = reordered.map((item, i) =>
       supabase.from('course_sections').update({ sort_order: i }).eq('id', item.id)
     );
     await Promise.all(updates);
-  }, [lessons]);
+  }, [topics]);
 
-  const reorderSections = useCallback(async (lessonId: string, activeId: string, overId: string) => {
-    const list = sections[lessonId] || [];
+  const reorderSections = useCallback(async (topicId: string, activeId: string, overId: string) => {
+    const list = sections[topicId] || [];
     const oldIndex = list.findIndex(s => s.id === activeId);
     const newIndex = list.findIndex(s => s.id === overId);
     if (oldIndex === -1 || newIndex === -1) return;
     const reordered = arrayMove(list, oldIndex, newIndex);
-    setSections(prev => ({ ...prev, [lessonId]: reordered }));
+    setSections(prev => ({ ...prev, [topicId]: reordered }));
     const updates = reordered.map((item, i) =>
       supabase.from('lesson_sections' as any).update({ sort_order: i } as any).eq('id', item.id)
     );
     await Promise.all(updates);
   }, [sections]);
 
-  const reorderContents = useCallback(async (sectionId: string, activeId: string, overId: string) => {
-    const list = contents[sectionId] || [];
+  const reorderLessons = useCallback(async (sectionId: string, activeId: string, overId: string) => {
+    const list = lessonItems[sectionId] || [];
     const oldIndex = list.findIndex(c => c.id === activeId);
     const newIndex = list.findIndex(c => c.id === overId);
     if (oldIndex === -1 || newIndex === -1) return;
     const reordered = arrayMove(list, oldIndex, newIndex);
-    setContents(prev => ({ ...prev, [sectionId]: reordered }));
+    setLessonItems(prev => ({ ...prev, [sectionId]: reordered }));
     const updates = reordered.map((item, i) =>
       supabase.from('lessons').update({ sort_order: i }).eq('id', item.id)
     );
     await Promise.all(updates);
-  }, [contents]);
+  }, [lessonItems]);
 
-  // ─── CRUD: Lessons ───
-  const addLesson = async () => {
-    if (editingLessonId) {
+  // ─── CRUD: Topics (course_sections) ───
+  const addTopic = async () => {
+    if (editingTopicId) {
       await supabase.from('course_sections').update({
-        title: lessonForm.title,
-        title_ar: lessonForm.title_ar,
-      }).eq('id', editingLessonId);
-      setEditingLessonId(null);
-      toast.success(isAr ? 'تم تحديث الدرس' : 'Lesson updated');
+        title: topicForm.title,
+        title_ar: topicForm.title_ar,
+      }).eq('id', editingTopicId);
+      setEditingTopicId(null);
+      toast.success(isAr ? 'تم تحديث الموضوع' : 'Topic updated');
     } else {
-      await supabase.from('course_sections').insert({ ...lessonForm, course_id: id, sort_order: lessons.length });
-      toast.success(isAr ? 'تمت إضافة الدرس' : 'Lesson added');
+      await supabase.from('course_sections').insert({ ...topicForm, course_id: id, sort_order: topics.length });
+      toast.success(isAr ? 'تمت إضافة الموضوع' : 'Topic added');
     }
-    setLessonDialog(false);
-    setLessonForm({ title: '', title_ar: '' });
+    setTopicDialog(false);
+    setTopicForm({ title: '', title_ar: '' });
     fetchHierarchy();
   };
 
-  const openEditLesson = (lesson: any) => {
-    setEditingLessonId(lesson.id);
-    setLessonForm({ title: lesson.title, title_ar: lesson.title_ar || '' });
-    setLessonDialog(true);
+  const openEditTopic = (topic: any) => {
+    setEditingTopicId(topic.id);
+    setTopicForm({ title: topic.title, title_ar: topic.title_ar || '' });
+    setTopicDialog(true);
   };
 
-  // ─── CRUD: Sections ───
+  // ─── CRUD: Sections (lesson_sections) ───
   const addSection = async () => {
     if (editingSectionId) {
       await supabase.from('lesson_sections' as any).update({
@@ -241,10 +241,10 @@ const CourseDetail = () => {
       setEditingSectionId(null);
       toast.success(isAr ? 'تم تحديث القسم' : 'Section updated');
     } else {
-      if (!activeLessonId) return;
-      const currentSections = sections[activeLessonId] || [];
+      if (!activeTopicId) return;
+      const currentSections = sections[activeTopicId] || [];
       await supabase.from('lesson_sections' as any).insert([{
-        course_section_id: activeLessonId,
+        course_section_id: activeTopicId,
         title: sectionForm.title,
         title_ar: sectionForm.title_ar,
         sort_order: currentSections.length,
@@ -256,60 +256,60 @@ const CourseDetail = () => {
     fetchHierarchy();
   };
 
-  const openEditSection = (section: any, lessonId: string) => {
+  const openEditSection = (section: any, topicId: string) => {
     setEditingSectionId(section.id);
-    setActiveLessonId(lessonId);
+    setActiveTopicId(topicId);
     setSectionForm({ title: section.title, title_ar: section.title_ar || '' });
     setSectionDialog(true);
   };
 
-  // ─── CRUD: Content ───
-  const addContent = async () => {
-    if (editingContentId) {
+  // ─── CRUD: Lessons (lessons table) ───
+  const addLesson = async () => {
+    if (editingLessonId) {
       await supabase.from('lessons').update({
-        title: contentForm.title,
-        title_ar: contentForm.title_ar,
-        lesson_type: contentForm.lesson_type as any,
-      }).eq('id', editingContentId);
-      setEditingContentId(null);
-      toast.success(isAr ? 'تم تحديث المحتوى' : 'Content updated');
+        title: lessonForm.title,
+        title_ar: lessonForm.title_ar,
+        lesson_type: lessonForm.lesson_type as any,
+      }).eq('id', editingLessonId);
+      setEditingLessonId(null);
+      toast.success(isAr ? 'تم تحديث الدرس' : 'Lesson updated');
     } else {
       if (!activeSectionId) return;
-      const currentContents = contents[activeSectionId] || [];
+      const currentLessons = lessonItems[activeSectionId] || [];
       await supabase.from('lessons').insert([{
-        title: contentForm.title,
-        title_ar: contentForm.title_ar,
-        lesson_type: contentForm.lesson_type as any,
+        title: lessonForm.title,
+        title_ar: lessonForm.title_ar,
+        lesson_type: lessonForm.lesson_type as any,
         section_id: activeSectionId,
-        sort_order: currentContents.length,
+        sort_order: currentLessons.length,
       }]);
-      toast.success(isAr ? 'تمت إضافة المحتوى' : 'Content added');
+      toast.success(isAr ? 'تمت إضافة الدرس' : 'Lesson added');
     }
-    setContentDialog(false);
-    setContentForm({ title: '', title_ar: '', lesson_type: 'read_listen' });
+    setLessonDialog(false);
+    setLessonForm({ title: '', title_ar: '', lesson_type: 'read_listen' });
     fetchHierarchy();
   };
 
-  const openEditContent = (content: any, sectionId: string) => {
-    setEditingContentId(content.id);
+  const openEditLesson = (lesson: any, sectionId: string) => {
+    setEditingLessonId(lesson.id);
     setActiveSectionId(sectionId);
-    setContentForm({ title: content.title, title_ar: content.title_ar || '', lesson_type: content.lesson_type });
-    setContentDialog(true);
+    setLessonForm({ title: lesson.title, title_ar: lesson.title_ar || '', lesson_type: lesson.lesson_type });
+    setLessonDialog(true);
   };
 
   // ─── Delete ───
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
     const { id, type } = deleteTarget;
-    if (type === 'lesson') {
+    if (type === 'topic') {
       await supabase.from('course_sections').delete().eq('id', id);
-      toast.success(isAr ? 'تم حذف الدرس' : 'Lesson deleted');
+      toast.success(isAr ? 'تم حذف الموضوع' : 'Topic deleted');
     } else if (type === 'section') {
       await supabase.from('lesson_sections' as any).delete().eq('id', id);
       toast.success(isAr ? 'تم حذف القسم' : 'Section deleted');
     } else {
       await supabase.from('lessons').delete().eq('id', id);
-      toast.success(isAr ? 'تم حذف المحتوى' : 'Content deleted');
+      toast.success(isAr ? 'تم حذف الدرس' : 'Lesson deleted');
     }
     setDeleteTarget(null);
     fetchHierarchy();
