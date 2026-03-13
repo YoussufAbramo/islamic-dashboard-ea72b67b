@@ -572,7 +572,7 @@ const CourseDetail = () => {
         <h2 className="text-xl font-semibold">{t('courses.topics')}</h2>
         {canEdit && (
           <div className="flex items-center gap-2">
-            <PresetSections courseId={id!} currentTopicCount={topics.length} onInserted={fetchHierarchy} />
+            <PresetSections courseId={id!} currentTopicCount={topics.length} topics={topics} onInserted={fetchHierarchy} />
             <Button size="sm" onClick={() => { setEditingTopicId(null); setTopicForm({ title: '', title_ar: '' }); setTopicDialog(true); }}>
               <Plus className="h-4 w-4 me-2" />{t('courses.addTopic')}
             </Button>

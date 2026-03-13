@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { BookTemplate, BookOpen, Mic, BookHeart, PenTool, ClipboardList, Loader2 } from 'lucide-react';
+import { BookTemplate, BookOpen, Mic, BookHeart, PenTool, ClipboardList, Loader2, Plus } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface PresetLesson {
@@ -35,9 +37,9 @@ const presets: PresetTemplate[] = [
     lessons: [
       { title: 'Table of Content', title_ar: 'فهرس المحتويات', lesson_type: 'table_of_content' },
       { title: 'Goals', title_ar: 'الأهداف', lesson_type: 'read_listen' },
-      { title: 'فضائل السورة', title_ar: 'فضائل السورة', lesson_type: 'read_listen' },
-      { title: 'أسباب النزول', title_ar: 'أسباب النزول', lesson_type: 'read_listen' },
-      { title: 'السياق النبوي', title_ar: 'السياق النبوي', lesson_type: 'read_listen' },
+      { title: 'Virtues of the Surah', title_ar: 'فضائل السورة', lesson_type: 'read_listen' },
+      { title: 'Reasons of Revelation', title_ar: 'أسباب النزول', lesson_type: 'read_listen' },
+      { title: 'Prophetic Context', title_ar: 'السياق النبوي', lesson_type: 'read_listen' },
       { title: 'Other', title_ar: 'آخرى', lesson_type: 'read_listen' },
     ],
   },
@@ -78,8 +80,8 @@ const presets: PresetTemplate[] = [
     lessons: [
       { title: 'Explanation', title_ar: 'الشرح', lesson_type: 'read_listen' },
       { title: 'Tafsir', title_ar: 'التفسير', lesson_type: 'read_listen' },
-      { title: 'الدروس المستفادة', title_ar: 'الدروس المستفادة', lesson_type: 'read_listen' },
-      { title: 'أخلاقيات السورة', title_ar: 'أخلاقيات السورة', lesson_type: 'read_listen' },
+      { title: 'Lessons Learned', title_ar: 'الدروس المستفادة', lesson_type: 'read_listen' },
+      { title: 'Ethics of the Surah', title_ar: 'أخلاقيات السورة', lesson_type: 'read_listen' },
     ],
   },
   {
@@ -110,17 +112,21 @@ const presets: PresetTemplate[] = [
   },
 ];
 
+const NEW_TOPIC_VALUE = '__new__';
+
 interface PresetSectionsProps {
   courseId: string;
   currentTopicCount: number;
+  topics: { id: string; title: string; title_ar: string | null }[];
   onInserted: () => void;
 }
 
-export default function PresetSections({ courseId, currentTopicCount, onInserted }: PresetSectionsProps) {
+export default function PresetSections({ courseId, currentTopicCount, topics, onInserted }: PresetSectionsProps) {
   const { language } = useLanguage();
   const isAr = language === 'ar';
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [targetTopic, setTargetTopic] = useState<string>(NEW_TOPIC_VALUE);
   const [loading, setLoading] = useState(false);
 
   const toggle = (id: string) => {
@@ -143,33 +149,38 @@ export default function PresetSections({ courseId, currentTopicCount, onInserted
         const preset = presets.find(p => p.id === presetId);
         if (!preset) continue;
 
-        // Create Topic (course_sections)
-        const { data: topicData, error: topicErr } = await supabase
-          .from('course_sections')
-          .insert({
-            course_id: courseId,
-            title: preset.topicTitle,
-            title_ar: preset.topicTitle_ar,
-            sort_order: topicOffset,
-          })
-          .select('id')
-          .single();
+        let topicId: string;
 
-        if (topicErr || !topicData) {
-          console.error('Topic insert error:', topicErr);
-          continue;
+        if (targetTopic === NEW_TOPIC_VALUE) {
+          // Create a new Topic
+          const { data: topicData, error: topicErr } = await supabase
+            .from('course_sections')
+            .insert({
+              course_id: courseId,
+              title: preset.topicTitle,
+              title_ar: preset.topicTitle_ar,
+              sort_order: topicOffset,
+            })
+            .select('id')
+            .single();
+
+          if (topicErr || !topicData) {
+            console.error('Topic insert error:', topicErr);
+            continue;
+          }
+          topicId = topicData.id;
+          topicOffset++;
+        } else {
+          topicId = targetTopic;
         }
 
-        // Create a default Section inside the topic
-        const sectionTitle = preset.topicTitle;
-        const sectionTitleAr = preset.topicTitle_ar;
-
+        // Create a Section inside the topic
         const { data: sectionData, error: secErr } = await supabase
           .from('lesson_sections' as any)
           .insert([{
-            course_section_id: topicData.id,
-            title: sectionTitle,
-            title_ar: sectionTitleAr,
+            course_section_id: topicId,
+            title: preset.topicTitle,
+            title_ar: preset.topicTitle_ar,
             sort_order: 0,
           }] as any)
           .select('id')
@@ -191,12 +202,11 @@ export default function PresetSections({ courseId, currentTopicCount, onInserted
 
         const { error: lesErr } = await supabase.from('lessons').insert(lessonInserts);
         if (lesErr) console.error('Lessons insert error:', lesErr);
-
-        topicOffset++;
       }
 
       toast.success(isAr ? 'تم إدراج القوالب بنجاح' : 'Presets inserted successfully');
       setSelected(new Set());
+      setTargetTopic(NEW_TOPIC_VALUE);
       setOpen(false);
       onInserted();
     } catch (err) {
@@ -228,7 +238,37 @@ export default function PresetSections({ courseId, currentTopicCount, onInserted
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-2 mt-2">
+          {/* Target Topic Selector */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">
+              {isAr ? 'إدراج داخل موضوع' : 'Insert into topic'}
+            </Label>
+            <Select value={targetTopic} onValueChange={setTargetTopic}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NEW_TOPIC_VALUE}>
+                  <div className="flex items-center gap-1.5">
+                    <Plus className="h-3.5 w-3.5 text-primary" />
+                    <span>{isAr ? 'إنشاء موضوع جديد' : 'Create new topic'}</span>
+                  </div>
+                </SelectItem>
+                {topics.map(t => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {isAr && t.title_ar ? t.title_ar : t.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[10px] text-muted-foreground">
+              {targetTopic === NEW_TOPIC_VALUE
+                ? (isAr ? 'سيتم إنشاء موضوع جديد لكل قالب محدد.' : 'A new topic will be created for each selected preset.')
+                : (isAr ? 'سيتم إضافة الأقسام والدروس داخل الموضوع المحدد.' : 'Sections and lessons will be added inside the selected topic.')}
+            </p>
+          </div>
+
+          <div className="space-y-2 mt-1">
             {presets.map(preset => {
               const isSelected = selected.has(preset.id);
               return (
