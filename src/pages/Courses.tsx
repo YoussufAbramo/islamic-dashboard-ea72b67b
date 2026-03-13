@@ -241,7 +241,7 @@ const Courses = () => {
                 <Button><Plus className="h-4 w-4 me-2" />{t('courses.create')}</Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-                <DialogHeader><DialogTitle>{editCourse ? t('courses.edit') : t('courses.create')}</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle>{editCourse ? (isAr ? 'إعدادات الدورة' : 'Course Settings') : t('courses.create')}</DialogTitle></DialogHeader>
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div><Label>{t('courses.name')} (EN)</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
@@ -254,27 +254,30 @@ const Courses = () => {
                   <div className="grid grid-cols-3 gap-3">
                     <div>
                       <Label>{isAr ? 'التصنيف' : 'Category'}</Label>
-                      <Select value={form.category_id} onValueChange={(v) => setForm({ ...form, category_id: v })}>
+                      <Select value={form.category_id || '__none__'} onValueChange={(v) => setForm({ ...form, category_id: v === '__none__' ? '' : v })}>
                         <SelectTrigger><SelectValue placeholder={isAr ? 'اختر التصنيف' : 'Select category'} /></SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="__none__">{isAr ? '— بدون تصنيف —' : '— No Category —'}</SelectItem>
                           {categories.map(c => <SelectItem key={c.id} value={c.id}>{isAr && c.title_ar ? c.title_ar : c.title}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
                       <Label>{isAr ? 'المستوى' : 'Level'}</Label>
-                      <Select value={form.level_id} onValueChange={(v) => setForm({ ...form, level_id: v })}>
+                      <Select value={form.level_id || '__none__'} onValueChange={(v) => setForm({ ...form, level_id: v === '__none__' ? '' : v })}>
                         <SelectTrigger><SelectValue placeholder={isAr ? 'اختر المستوى' : 'Select level'} /></SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="__none__">{isAr ? '— بدون مستوى —' : '— No Level —'}</SelectItem>
                           {levels.map(l => <SelectItem key={l.id} value={l.id}>{isAr && l.title_ar ? l.title_ar : l.title}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
                       <Label>{isAr ? 'المسار' : 'Track'}</Label>
-                      <Select value={form.track_id} onValueChange={(v) => setForm({ ...form, track_id: v })}>
+                      <Select value={form.track_id || '__none__'} onValueChange={(v) => setForm({ ...form, track_id: v === '__none__' ? '' : v })}>
                         <SelectTrigger><SelectValue placeholder={isAr ? 'اختر المسار' : 'Select track'} /></SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="__none__">{isAr ? '— بدون مسار —' : '— No Track —'}</SelectItem>
                           {tracks.map(tr => <SelectItem key={tr.id} value={tr.id}>{isAr && tr.title_ar ? tr.title_ar : tr.title}</SelectItem>)}
                         </SelectContent>
                       </Select>
