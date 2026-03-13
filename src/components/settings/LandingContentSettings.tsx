@@ -627,6 +627,10 @@ const LandingContentSettings = ({ initialTab }: { initialTab?: string }) => {
     </div>
   );
 
+  useEffect(() => {
+    if (initialTab === 'pricing') setActiveTab('pricing');
+  }, [initialTab]);
+
 
 
   // ─── Footer editor ───
