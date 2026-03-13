@@ -198,28 +198,38 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
                 </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-medium text-muted-foreground">{isAr ? 'المضاعف' : 'Multiplier'}</Label>
-                  <span className="text-[10px] text-muted-foreground font-mono">
-                    ~{getEstimatedTotal(multiplier)} {isAr ? 'سجل' : 'records'}
+                  <span className="text-xs font-mono font-semibold text-primary">
+                    {multiplier}x
                   </span>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {Array.from({ length: 10 }, (_, i) => i + 1).map((v) => (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => setMultiplier(v)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                        multiplier === v
-                          ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                          : 'bg-muted/50 text-muted-foreground border-border hover:border-primary/40 hover:bg-muted'
-                      }`}
-                    >
-                      {v}x
-                    </button>
-                  ))}
+                <Slider
+                  value={[multiplier]}
+                  onValueChange={([v]) => setMultiplier(v)}
+                  min={1}
+                  max={10}
+                  step={1}
+                  className="w-full"
+                />
+                <div className="flex items-center justify-between">
+                  <div className="flex gap-3 text-[10px] text-muted-foreground">
+                    <span>1x</span>
+                    <span>5x</span>
+                    <span>10x</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-1.5 rounded-full bg-muted overflow-hidden w-20">
+                      <div
+                        className="h-full rounded-full bg-primary transition-all duration-300"
+                        style={{ width: `${(getEstimatedTotal(multiplier) / MAX_TOTAL_RECORDS) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] font-mono text-muted-foreground">
+                      ~{getEstimatedTotal(multiplier)}/{MAX_TOTAL_RECORDS}
+                    </span>
+                  </div>
                 </div>
               </div>
 
