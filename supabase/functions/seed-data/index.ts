@@ -1068,8 +1068,8 @@ Deno.serve(async (req) => {
         }
 
         // ── BADGES (realistic teacher data for badge thresholds) ──
-        if (categories.includes('badges') && tIds.length > 0 && budget.canAdd()) {
-          const badgeBudget = budget.cap(alloc.badges || 15)
+        if (categories.includes('badges') && tIds.length > 0) {
+          const badgeBudget = budget.capMin(alloc.badges || 15)
           // Create enough sessions/reports for 1-2 teachers to hit mid-tier badges
           const badgeTeacher = tIds[0]
           const numSessions = Math.max(3, Math.floor(badgeBudget * 0.45))
