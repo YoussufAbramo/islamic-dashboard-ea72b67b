@@ -291,7 +291,7 @@ const CourseDetail = () => {
   const openEditLesson = (lesson: any, sectionId: string) => {
     setEditingLessonId(lesson.id);
     setActiveSectionId(sectionId);
-    setLessonForm({ title: lesson.title, title_ar: lesson.title_ar || '', lesson_type: lesson.lesson_type });
+    setLessonForm({ title: lesson.title, title_ar: lesson.title_ar || '' });
     setLessonDialog(true);
   };
 
