@@ -757,7 +757,8 @@ const CourseLearning = () => {
                       )}
                     </summary>
 
-                    <div className="ms-3 border-s border-border/50 space-y-0.5 pb-1">
+                    <div className="ms-3 border-s border-border/50 space-y-0.5 pb-1 grid transition-all duration-300 ease-out group-open/topic:grid-rows-[1fr] grid-rows-[0fr]">
+                     <div className="overflow-hidden">
                       {lsForCs.length === 0 && (
                         <p className="text-[10px] text-muted-foreground/50 px-4 py-2 italic">
                           {isAr ? 'لا توجد أقسام' : 'No sections'}
