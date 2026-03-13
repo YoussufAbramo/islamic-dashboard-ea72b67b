@@ -137,6 +137,10 @@ const LandingContentSettings = ({ initialTab }: { initialTab?: string }) => {
     load();
   }, []);
 
+  useEffect(() => {
+    if (initialTab === 'pricing') setActiveTab('pricing');
+  }, [initialTab]);
+
   const sectionsVisible: Record<string, boolean> = general.sections_visible || {};
 
   const updateField = (section: string, field: string, value: any) => {
