@@ -554,7 +554,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+      <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
         <DialogHeader className="px-5 pt-5 pb-3 shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <FileEdit className="h-5 w-5 text-primary" />
@@ -572,21 +572,19 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
 
         <Separator />
 
-        <div className="flex-1 min-h-0 overflow-y-auto">
-          <div className="p-5 space-y-3">
-            {blocks.length === 0 ? (
-              <div className="space-y-4">
-                <div className="text-center py-4 space-y-2">
-                  <FileEdit className="h-10 w-10 mx-auto text-muted-foreground/30" />
+        <div className="flex flex-1 min-h-0 overflow-hidden">
+          {/* Left: Content blocks */}
+          <div className="flex-1 min-w-0 overflow-y-auto border-e">
+            <div className="p-5 space-y-3">
+              {blocks.length === 0 ? (
+                <div className="text-center py-12 space-y-3">
+                  <FileEdit className="h-12 w-12 mx-auto text-muted-foreground/20" />
                   <p className="text-sm text-muted-foreground">
-                    {isAr ? 'اختر نوع المحتوى للبدء' : 'Choose a content type to get started'}
+                    {isAr ? 'اختر عنصرًا من اليمين للبدء' : 'Pick an element from the right panel to get started'}
                   </p>
                 </div>
-                <AddBlockButtons isAr={isAr} onAdd={addBlock} prominent />
-              </div>
-            ) : (
-              <>
-                {blocks.map((block, idx) => (
+              ) : (
+                blocks.map((block, idx) => (
                   <BlockEditor
                     key={block.id}
                     block={block}
@@ -598,10 +596,40 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                     isFirst={idx === 0}
                     isLast={idx === blocks.length - 1}
                   />
-                ))}
-                <AddBlockButtons isAr={isAr} onAdd={addBlock} />
-              </>
-            )}
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Right: Element palette */}
+          <div className="w-56 shrink-0 overflow-y-auto bg-muted/20">
+            <div className="p-3 space-y-4">
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-1">
+                {isAr ? 'العناصر' : 'Elements'}
+              </p>
+              {blockGroups.map(group => (
+                <div key={group.key} className="space-y-1.5">
+                  <span className="text-[10px] font-semibold text-muted-foreground/70 px-1">{isAr ? group.labelAr : group.label}</span>
+                  <div className="space-y-1">
+                    {group.types.map(type => {
+                      const meta = blockMeta[type];
+                      const Icon = meta.icon;
+                      return (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => addBlock(type)}
+                          className="w-full flex items-center gap-2 px-2.5 py-2 rounded-md border border-transparent text-start text-[11px] font-medium text-muted-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-foreground"
+                        >
+                          <Icon className={cn("h-3.5 w-3.5 shrink-0", meta.color)} />
+                          <span className="truncate">{isAr ? meta.labelAr : meta.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
