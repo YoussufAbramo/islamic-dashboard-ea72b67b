@@ -583,9 +583,10 @@ Deno.serve(async (req) => {
 
         // ── SCHEDULE (timetable + attendance + session reports) ──
         if (categories.includes('schedule') && sIds.length > 0 && tIds.length > 0 && cIds.length > 0 && budget.canAdd()) {
-          const scheduleBudget = budget.cap(alloc.schedule || 25)
-          // Split: ~40% timetable, ~20% attendance, ~40% reports
-          const numTT = Math.max(3, Math.ceil(scheduleBudget * 0.4))
+          // Scale timetable/reports directly with multiplier: base 5, max ~80 at 10x
+          // This ensures multiplier meaningfully affects session volume
+          const rawTT = Math.max(5, multiplier * 8)
+          const numTT = budget.cap(rawTT)
           const completedCount = Math.floor(numTT * 0.4)
           const cancelledCount = Math.max(1, Math.floor(numTT * 0.15))
           const scheduledCount = numTT - completedCount - cancelledCount
