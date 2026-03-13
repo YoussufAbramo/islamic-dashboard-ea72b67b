@@ -6,10 +6,17 @@ const corsHeaders = {
 }
 
 const ALL_TABLES = [
-  'courses', 'course_sections', 'lessons', 'students', 'teachers', 'profiles',
-  'user_roles', 'subscriptions', 'timetable_entries', 'attendance', 'announcements',
-  'notifications', 'chats', 'chat_messages', 'support_tickets', 'certificates',
-  'student_progress', 'invoices', 'pricing_packages', 'landing_content',
+  'courses', 'course_sections', 'course_categories', 'course_levels', 'course_tracks',
+  'lessons', 'lesson_sections', 'students', 'teachers', 'teacher_courses', 'profiles',
+  'user_roles', 'subscriptions', 'timetable_entries', 'attendance', 'session_reports',
+  'announcements', 'notifications', 'chats', 'chat_messages', 'chat_members', 'chat_read_receipts',
+  'support_tickets', 'support_departments', 'support_priorities',
+  'certificates', 'student_progress', 'invoices', 'pricing_packages',
+  'payout_requests', 'expenses', 'expense_categories',
+  'ebooks', 'ebook_views', 'ebook_downloads',
+  'landing_content', 'blog_posts', 'website_pages', 'policies',
+  'app_settings', 'auto_backup_config', 'payment_gateway_config',
+  'audit_logs', 'seed_sessions', 'seed_records',
 ]
 
 async function createBackupFile(adminClient: any, name: string, format: string, tables: string[]) {
