@@ -558,7 +558,7 @@
   .theme-crimson:root, :root.theme-crimson {
     --primary: 0 65% 42%;
     --primary-foreground: 0 10% 98%;
-    --accent: 15 60% 52%;
+    --accent: 0 18% 93%;
     --accent-foreground: 0 30% 10%;
     --ring: 0 65% 42%;
     --gold: 15 60% 52%;
