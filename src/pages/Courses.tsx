@@ -274,9 +274,10 @@ const Courses = () => {
                     </div>
                     <div>
                       <Label>{isAr ? 'المسار' : 'Track'}</Label>
-                      <Select value={form.track_id} onValueChange={(v) => setForm({ ...form, track_id: v })}>
+                      <Select value={form.track_id || '__none__'} onValueChange={(v) => setForm({ ...form, track_id: v === '__none__' ? '' : v })}>
                         <SelectTrigger><SelectValue placeholder={isAr ? 'اختر المسار' : 'Select track'} /></SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="__none__">{isAr ? '— بدون مسار —' : '— No Track —'}</SelectItem>
                           {tracks.map(tr => <SelectItem key={tr.id} value={tr.id}>{isAr && tr.title_ar ? tr.title_ar : tr.title}</SelectItem>)}
                         </SelectContent>
                       </Select>
