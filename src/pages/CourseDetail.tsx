@@ -85,6 +85,7 @@ const CourseDetail = () => {
 
   // Dialog states
   const [topicDialog, setTopicDialog] = useState(false);
+  const [docsDialogOpen, setDocsDialogOpen] = useState(false);
   const [sectionDialog, setSectionDialog] = useState(false);
   const [lessonDialog, setLessonDialog] = useState(false);
   const [activeTopicId, setActiveTopicId] = useState<string | null>(null);
@@ -540,6 +541,11 @@ const CourseDetail = () => {
                   ? '💡 يمكنك إعادة ترتيب المواضيع والأقسام والدروس بالسحب والإفلات. انقر مرتين على أي عنوان لتعديله مباشرة. استخدم قائمة "المزيد" (⋯) لتعديل أو حذف أي عنصر.'
                   : '💡 You can drag & drop to reorder topics, sections, and lessons. Double-click any title to rename it inline. Use the "More" menu (⋯) to edit or delete any item.'}
               </p>
+
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setDocsDialogOpen(true)}>
+                <BookOpen className="h-3.5 w-3.5" />
+                {isAr ? 'التوثيق الكامل' : 'Full Documentation'}
+              </Button>
             </div>
           </CollapsibleContent>
         </Card>
@@ -994,6 +1000,166 @@ const CourseDetail = () => {
         isAr={isAr}
         onSaved={fetchHierarchy}
       />
+
+      {/* Full Documentation Dialog */}
+      <Dialog open={docsDialogOpen} onOpenChange={setDocsDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" />
+              {isAr ? 'توثيق بناء الدورة' : 'Course Builder Documentation'}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-6 text-sm">
+            {/* Overview */}
+            <div className="space-y-2">
+              <h3 className="text-base font-semibold text-foreground">
+                {isAr ? '📋 نظرة عامة' : '📋 Overview'}
+              </h3>
+              <p className="text-muted-foreground leading-relaxed">
+                {isAr
+                  ? 'يستخدم منشئ الدورات هيكلًا ثلاثي المستويات لتنظيم المحتوى التعليمي بشكل منهجي. هذا الهيكل يضمن تجربة تعلم واضحة ومتسلسلة للطلاب.'
+                  : 'The Course Builder uses a three-level hierarchy to organize educational content systematically. This structure ensures a clear, sequential learning experience for students.'}
+              </p>
+            </div>
+
+            {/* Hierarchy */}
+            <div className="space-y-4">
+              <h3 className="text-base font-semibold text-foreground">
+                {isAr ? '🏗️ الهيكل التنظيمي' : '🏗️ Content Hierarchy'}
+              </h3>
+
+              <div className="rounded-lg border overflow-hidden">
+                <div className="bg-primary/10 px-4 py-3 flex items-center gap-2 border-b">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  <span className="font-semibold text-foreground">{isAr ? 'المستوى ١: المواضيع (Topics)' : 'Level 1: Topics'}</span>
+                </div>
+                <div className="px-4 py-3 space-y-2 text-muted-foreground">
+                  <p>{isAr ? 'المواضيع هي الوحدات الرئيسية (مثل فصول الكتاب). كل موضوع يمثل مجالاً تعليمياً مستقلاً.' : 'Topics are the top-level units — like chapters in a book. Each topic represents a standalone learning area.'}</p>
+                  <p className="text-xs">{isAr ? '📖 مثال: "سورة الفاتحة"، "أحكام التجويد"، "الحروف العربية"' : '📖 Example: "Surah Al-Fatiha", "Tajweed Rules", "Arabic Letters"'}</p>
+                </div>
+              </div>
+
+              <div className="rounded-lg border overflow-hidden" style={{ borderInlineStartWidth: '3px', borderInlineStartColor: 'hsl(var(--gold))' }}>
+                <div className="bg-secondary/40 px-4 py-3 flex items-center gap-2 border-b">
+                  <Layers className="h-4 w-4" style={{ color: 'hsl(var(--gold))' }} />
+                  <span className="font-semibold text-foreground">{isAr ? 'المستوى ٢: الأقسام (Sections)' : 'Level 2: Sections'}</span>
+                </div>
+                <div className="px-4 py-3 space-y-2 text-muted-foreground">
+                  <p>{isAr ? 'الأقسام تقسّم الموضوع إلى أجزاء أصغر. كل قسم يركز على جانب محدد من الموضوع.' : 'Sections break a topic into smaller parts. Each section focuses on a specific aspect of the topic.'}</p>
+                  <p className="text-xs">{isAr ? '📂 مثال: "آيات ١-٥"، "أحكام النون الساكنة"، "حروف المد"' : '📂 Example: "Verses 1-5", "Rules of Noon Sakinah", "Vowel Letters"'}</p>
+                </div>
+              </div>
+
+              <div className="rounded-lg border overflow-hidden">
+                <div className="bg-muted/40 px-4 py-3 flex items-center gap-2 border-b">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-semibold text-foreground">{isAr ? 'المستوى ٣: الدروس (Lessons)' : 'Level 3: Lessons'}</span>
+                </div>
+                <div className="px-4 py-3 space-y-2 text-muted-foreground">
+                  <p>{isAr ? 'الدروس هي وحدات المحتوى الفعلية التي يتفاعل معها الطالب. كل درس له نوع يحدد طريقة العرض.' : 'Lessons are the actual content units students interact with. Each lesson has a type that determines its display format.'}</p>
+                  <p className="text-xs">{isAr ? '📝 مثال: "اقرأ واستمع — الآية ١"، "تمرين اختيار الإجابة الصحيحة"' : '📝 Example: "Read & Listen — Verse 1", "Choose the Correct Answer exercise"'}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Lesson Types */}
+            <div className="space-y-3">
+              <h3 className="text-base font-semibold text-foreground">
+                {isAr ? '📚 أنواع الدروس' : '📚 Lesson Types'}
+              </h3>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {[
+                  { type: 'table_of_content', en: 'Table of Content', ar: 'جدول المحتويات', desc: isAr ? 'عرض فهرس الدروس' : 'Displays a lesson index' },
+                  { type: 'read_listen', en: 'Read & Listen', ar: 'قراءة واستماع', desc: isAr ? 'نص مع صوت للقراءة' : 'Text with audio for reading' },
+                  { type: 'memorization', en: 'Memorization', ar: 'حفظ', desc: isAr ? 'تمارين الحفظ والتكرار' : 'Memorization and repetition exercises' },
+                  { type: 'revision', en: 'Revision', ar: 'مراجعة', desc: isAr ? 'مراجعة المحتوى السابق' : 'Review of previous content' },
+                  { type: 'homework', en: 'Homework', ar: 'واجب', desc: isAr ? 'مهام ليقوم بها الطالب' : 'Tasks for the student to complete' },
+                  { type: 'exercise_text_match', en: 'Text Match', ar: 'مطابقة النص', desc: isAr ? 'مطابقة العناصر مع بعضها' : 'Match items together' },
+                  { type: 'exercise_choose_correct', en: 'Choose Correct', ar: 'اختر الصحيح', desc: isAr ? 'اختيار إجابة واحدة صحيحة' : 'Select one correct answer' },
+                  { type: 'exercise_choose_multiple', en: 'Choose Multiple', ar: 'اختر متعدد', desc: isAr ? 'اختيار عدة إجابات صحيحة' : 'Select multiple correct answers' },
+                  { type: 'exercise_rearrange', en: 'Rearrange', ar: 'إعادة ترتيب', desc: isAr ? 'ترتيب الكلمات بالتسلسل الصحيح' : 'Arrange words in correct order' },
+                  { type: 'exercise_missing_text', en: 'Missing Text', ar: 'نص ناقص', desc: isAr ? 'إكمال الفراغات في النص' : 'Fill in the blanks' },
+                  { type: 'exercise_true_false', en: 'True / False', ar: 'صح / خطأ', desc: isAr ? 'تحديد صحة العبارات' : 'Determine statement validity' },
+                  { type: 'exercise_listen_choose', en: 'Listen & Choose', ar: 'استمع واختر', desc: isAr ? 'استمع ثم اختر الإجابة' : 'Listen then choose the answer' },
+                ].map(lt => (
+                  <div key={lt.type} className="flex items-start gap-2 p-2 rounded-md border bg-muted/20">
+                    <Badge variant="outline" className="text-[10px] shrink-0 mt-0.5">{isAr ? lt.ar : lt.en}</Badge>
+                    <span className="text-xs text-muted-foreground">{lt.desc}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Lesson Builder */}
+            <div className="space-y-2">
+              <h3 className="text-base font-semibold text-foreground">
+                {isAr ? '🛠️ محرر الدرس (Lesson Builder)' : '🛠️ Lesson Builder'}
+              </h3>
+              <p className="text-muted-foreground leading-relaxed">
+                {isAr
+                  ? 'يمكنك فتح محرر الدرس بالنقر على أيقونة القلم (✏️) بجانب أي درس. يتيح لك المحرر إضافة كتل محتوى متعددة:'
+                  : 'Open the Lesson Builder by clicking the pencil icon (✏️) next to any lesson. The builder lets you add multiple content blocks:'}
+              </p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {[
+                  { icon: '📝', en: 'Text Block', ar: 'كتلة نص', desc: isAr ? 'محرر نصوص غني مع تنسيق (عناوين، قوائم، روابط)' : 'Rich text editor with formatting (headings, lists, links)' },
+                  { icon: '🖼️', en: 'Image Block', ar: 'كتلة صورة', desc: isAr ? 'إضافة صور مع تسمية توضيحية ونص بديل' : 'Add images with caption and alt text' },
+                  { icon: '🎬', en: 'Video Block', ar: 'كتلة فيديو', desc: isAr ? 'تضمين فيديو MP4 مع معاينة مباشرة' : 'Embed MP4 videos with live preview' },
+                  { icon: '🎧', en: 'Audio Block', ar: 'كتلة صوت', desc: isAr ? 'إضافة ملفات صوتية (MP3, WAV, OGG)' : 'Add audio files (MP3, WAV, OGG)' },
+                ].map(b => (
+                  <div key={b.en} className="flex items-start gap-2 p-2.5 rounded-md border bg-muted/20">
+                    <span className="text-base">{b.icon}</span>
+                    <div>
+                      <p className="text-xs font-medium text-foreground">{isAr ? b.ar : b.en}</p>
+                      <p className="text-[11px] text-muted-foreground">{b.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Preset Sections */}
+            <div className="space-y-2">
+              <h3 className="text-base font-semibold text-foreground">
+                {isAr ? '⚡ القوالب الجاهزة (Presets)' : '⚡ Preset Sections'}
+              </h3>
+              <p className="text-muted-foreground leading-relaxed">
+                {isAr
+                  ? 'استخدم زر "القوالب" لإدراج هياكل دروس جاهزة مصممة لتعليم القرآن. تشمل القوالب المتاحة: المقدمة، الآيات، التجويد، التدبر، التقييم، والواجبات. يمكن إدراج نفس القالب أكثر من مرة.'
+                  : 'Use the "Presets" button to insert ready-made lesson structures designed for Quran education. Available presets include: Introduction, Ayat, Tajweed, Tadabbur, Assessment, and Assignment. The same preset can be inserted multiple times.'}
+              </p>
+            </div>
+
+            {/* Tips */}
+            <div className="space-y-2">
+              <h3 className="text-base font-semibold text-foreground">
+                {isAr ? '💡 نصائح سريعة' : '💡 Quick Tips'}
+              </h3>
+              <ul className="space-y-1.5 text-muted-foreground">
+                {(isAr ? [
+                  '🖱️ انقر مرتين على أي عنوان لتعديله مباشرة دون فتح نافذة.',
+                  '↕️ اسحب وأفلت لإعادة ترتيب المواضيع والأقسام والدروس.',
+                  '⋯ استخدم قائمة "المزيد" للتعديل أو الحذف.',
+                  '🔄 يمكنك تغيير نوع الدرس من القائمة المنسدلة بجانب كل درس.',
+                  '✏️ انقر على أيقونة القلم لفتح محرر المحتوى.',
+                  '📊 شارة العدد بجانب كل موضوع/قسم تعرض عدد العناصر الفرعية.',
+                ] : [
+                  '🖱️ Double-click any title to rename it inline without opening a dialog.',
+                  '↕️ Drag & drop to reorder topics, sections, and lessons.',
+                  '⋯ Use the "More" menu (⋯) to edit or delete any item.',
+                  '🔄 Change a lesson type from the dropdown next to each lesson.',
+                  '✏️ Click the pencil icon to open the content builder.',
+                  '📊 Count badges next to topics/sections show child item counts.',
+                ]).map((tip, i) => (
+                  <li key={i} className="text-xs leading-relaxed">{tip}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
