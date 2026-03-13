@@ -119,7 +119,7 @@ const Settings = () => {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<SettingsTab>(() => {
     const tab = searchParams.get('tab');
-    return tab && ['general','appearance','auth','payment','data','backups','education','pixels','seo','supabase','developer','website'].includes(tab) ? tab as SettingsTab : 'general';
+    return tab && ['general','appearance','auth','payment','data','backups','education','pixels','seo','supabase','developer','website','webhooks'].includes(tab) ? tab as SettingsTab : 'general';
   });
 
   // Auto-discard pending changes when leaving settings - use ref to avoid re-running on discardChanges change
