@@ -885,7 +885,7 @@ Deno.serve(async (req) => {
         }
 
         // ── PACKAGES ──
-        if (categories.includes('packages') && budget.canAdd()) {
+        if (categories.includes('packages')) {
           const pkgs = [
             { title: 'Starter', title_ar: 'بداية', subtitle: 'For getting started', subtitle_ar: 'للبداية', regular_price: 19, sale_price: null, max_courses: 1, max_students: 3, max_teachers: 1, is_featured: false },
             { title: 'Growth', title_ar: 'نمو', subtitle: 'Growing institutions', subtitle_ar: 'المؤسسات النامية', regular_price: 79, sale_price: 69, max_courses: 10, max_students: 30, max_teachers: 5, is_featured: true },
