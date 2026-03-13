@@ -360,7 +360,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
         <Separator />
 
         {/* Blocks Area */}
-        <ScrollArea className="flex-1 min-h-0">
+        <div className="flex-1 min-h-0 overflow-y-auto">
           <div className="p-5 space-y-3">
             {blocks.length === 0 ? (
               <div className="space-y-4">
