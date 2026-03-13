@@ -410,48 +410,35 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
     };
 
     return (
-      <div className="space-y-4">
-        {/* Page navigation */}
-        {hasPages && (
-          <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
-            <Button variant="outline" size="sm" disabled={safePage === 0} onClick={() => setCurrentPage(safePage - 1)} className="gap-1 text-xs">
-              <ChevronLeft className="h-3 w-3" />
-              {isAr ? 'السابق' : 'Previous'}
-            </Button>
-            <div className="flex items-center gap-1.5">
-              {pages.map((p, pIdx) => (
-                <button key={pIdx} type="button" onClick={() => setCurrentPage(pIdx)}
-                  className={cn("min-w-[28px] h-7 rounded-md text-xs font-medium border transition-colors px-2",
-                    safePage === pIdx ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border hover:bg-muted"
-                  )}
-                >
-                  {pIdx === 0 ? (isAr ? '١' : '1') : (isAr && p.labelAr ? p.labelAr : p.label || `${pIdx + 1}`)}
-                </button>
-              ))}
-            </div>
-            <Button variant="outline" size="sm" disabled={safePage >= pages.length - 1} onClick={() => setCurrentPage(safePage + 1)} className="gap-1 text-xs">
-              {isAr ? 'التالي' : 'Next'}
-              <ChevronRight className="h-3 w-3" />
-            </Button>
-          </div>
-        )}
-
+      <div className={cn("space-y-4", hasPages && "pb-16")}>
         <div className="space-y-6">
           {visibleBlocks.map((block: any, idx: number) => renderBlock(block, idx))}
         </div>
 
-        {/* Bottom page navigation */}
+        {/* Fixed bottom page navigation */}
         {hasPages && (
-          <div className="flex items-center justify-between pt-2">
-            <Button variant="ghost" size="sm" disabled={safePage === 0} onClick={() => setCurrentPage(safePage - 1)} className="gap-1 text-xs">
-              <ChevronLeft className="h-3 w-3" />
-              {isAr ? 'الصفحة السابقة' : 'Previous Page'}
-            </Button>
-            <span className="text-xs text-muted-foreground">{safePage + 1} / {pages.length}</span>
-            <Button variant="ghost" size="sm" disabled={safePage >= pages.length - 1} onClick={() => setCurrentPage(safePage + 1)} className="gap-1 text-xs">
-              {isAr ? 'الصفحة التالية' : 'Next Page'}
-              <ChevronRight className="h-3 w-3" />
-            </Button>
+          <div className="sticky bottom-0 z-10 mt-4">
+            <div className="flex items-center justify-between p-2.5 rounded-xl border bg-background/80 backdrop-blur-md shadow-lg">
+              <Button variant="outline" size="sm" disabled={safePage === 0} onClick={() => setCurrentPage(safePage - 1)} className="gap-1 text-xs h-8">
+                <ChevronLeft className="h-3.5 w-3.5" />
+                {isAr ? 'السابق' : 'Prev'}
+              </Button>
+              <div className="flex items-center gap-1">
+                {pages.map((p, pIdx) => (
+                  <button key={pIdx} type="button" onClick={() => setCurrentPage(pIdx)}
+                    className={cn("min-w-[30px] h-8 rounded-lg text-xs font-medium border transition-all px-2",
+                      safePage === pIdx ? "bg-primary text-primary-foreground border-primary shadow-sm" : "bg-transparent text-muted-foreground border-transparent hover:bg-muted hover:border-border"
+                    )}
+                  >
+                    {pIdx === 0 ? (isAr ? '١' : '1') : (isAr && p.labelAr ? p.labelAr : p.label || `${pIdx + 1}`)}
+                  </button>
+                ))}
+              </div>
+              <Button variant="outline" size="sm" disabled={safePage >= pages.length - 1} onClick={() => setCurrentPage(safePage + 1)} className="gap-1 text-xs h-8">
+                {isAr ? 'التالي' : 'Next'}
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
         )}
       </div>
