@@ -162,19 +162,22 @@ const DashboardLayout = () => {
           <main className={cn("flex-1 overflow-auto", isLearnPage ? "p-0" : "p-4 md:p-6")}>
             <Outlet context={{ topBarHidden, setTopBarHidden }} />
           </main>
-          <footer className="p-3 border-t border-border flex items-center justify-between gap-3">
+          <footer className={cn(
+            "border-t border-border flex items-center justify-between gap-3",
+            isLearnPage ? "px-2 py-1" : "p-3"
+          )}>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <a href="https://codecom.dev" target="_blank" rel="noopener noreferrer">
-                    <img src="/system/logos/codecom-logo.png" alt="CodeCom.dev" className="h-5 w-auto object-contain opacity-60 hover:opacity-100 transition-opacity" />
+                    <img src="/system/logos/codecom-logo.png" alt="CodeCom.dev" className={cn("w-auto object-contain opacity-60 hover:opacity-100 transition-opacity", isLearnPage ? "h-3" : "h-5")} />
                   </a>
                 </TooltipTrigger>
                 <TooltipContent>{dir === 'rtl' ? 'تم تطوير هذا النظام بواسطة CodeCom.dev' : 'This Software is Developed By CodeCom.dev'}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
             <CopyrightText
-              className="text-[11px] text-muted-foreground/60"
+              className={cn("text-muted-foreground/60", isLearnPage ? "text-[8px]" : "text-[11px]")}
               linkClassName="hover:text-foreground transition-colors no-underline" />
             
           </footer>
