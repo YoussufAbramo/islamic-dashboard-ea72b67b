@@ -25,7 +25,7 @@ import {
   Loader2, Percent, Mail, Phone, User, Briefcase, FileText,
   ExternalLink, FileUp, Pencil, X, Save, Award, Maximize2, Minimize2,
   CalendarDays, Wallet, Info, Eye, HeadphonesIcon, Receipt, Cake,
-  Send,
+  Send, Lock,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ACTION_BTN, ACTION_ICON } from '@/lib/actionBtnClass';
