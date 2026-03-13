@@ -68,6 +68,35 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ success: true, results }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
+    if (action === 'drop_all_students') {
+      // Get all student user_ids (exclude admin caller)
+      const { data: studentRoles } = await adminClient
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'student')
+        .neq('user_id', callerId)
+      
+      if (!studentRoles || studentRoles.length === 0) {
+        return new Response(JSON.stringify({ success: true, deleted: 0, message: 'No students found' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+
+      const userIds = studentRoles.map(r => r.user_id)
+      let deleted = 0
+      const errors: string[] = []
+
+      for (const uid of userIds) {
+        try {
+          const { error } = await adminClient.auth.admin.deleteUser(uid)
+          if (error) { errors.push(`${uid}: ${error.message}`) }
+          else { deleted++ }
+        } catch (e) { errors.push(`${uid}: ${e.message}`) }
+      }
+
+      return new Response(JSON.stringify({ success: true, deleted, total: userIds.length, errors }), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
     if (action === 'seed_timetable') {
       const { data: students } = await adminClient.from('students').select('id').limit(1)
       const { data: teachers } = await adminClient.from('teachers').select('id').limit(1)
