@@ -764,6 +764,37 @@ const LandingContentSettings = () => {
             ))}
           </div>
         </div>
+
+        {/* Social media column picker */}
+        <div className="space-y-1.5">
+          <Label className="text-xs font-medium">{isAr ? 'أيقونات التواصل في' : 'Social icons in'}</Label>
+          <div className="flex gap-1.5">
+            <button
+              onClick={() => updateFooterField('social_column', -1)}
+              className={`h-9 px-3 rounded-lg border-2 text-xs font-medium transition-all ${
+                (footer.social_column ?? -1) === -1
+                  ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                  : 'border-border text-muted-foreground hover:border-primary/40 hover:bg-muted'
+              }`}
+            >
+              {isAr ? 'إخفاء' : 'None'}
+            </button>
+            {Array.from({ length: footerColumnsCount }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => updateFooterField('social_column', i)}
+                className={`h-9 px-3 rounded-lg border-2 text-xs font-medium transition-all ${
+                  footer.social_column === i
+                    ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                    : 'border-border text-muted-foreground hover:border-primary/40 hover:bg-muted'
+                }`}
+              >
+                {isAr ? `عمود ${i + 1}` : `Col ${i + 1}`}
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-muted-foreground">{isAr ? 'الروابط من إعدادات التطبيق > روابط التواصل الاجتماعي' : 'Links from App Settings > Social Media Links'}</p>
+        </div>
       </div>
 
       {/* Column editors */}
