@@ -70,6 +70,10 @@ const CourseDetail = () => {
   const [course, setCourse] = useState<any>(null);
   const [courseSettingsOpen, setCourseSettingsOpen] = useState(false);
   const [slugForm, setSlugForm] = useState('');
+  const [settingsForm, setSettingsForm] = useState({
+    title: '', title_ar: '', description: '', description_ar: '',
+    category_id: '', level_id: '', track_id: '', duration_weeks: '' as string,
+  });
   const [categories, setCategories] = useState<any[]>([]);
   const [levels, setLevels] = useState<any[]>([]);
   const [tracks, setTracks] = useState<any[]>([]);
@@ -356,13 +360,28 @@ const CourseDetail = () => {
               <div className="flex items-center gap-2">
                 <CardTitle>{isAr && course.title_ar ? course.title_ar : course.title}</CardTitle>
                 {canEdit && (
-                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-muted-foreground hover:text-foreground shrink-0" onClick={() => { setSlugForm(course.slug || ''); setCourseSettingsOpen(true); }}>
+                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 text-muted-foreground hover:text-foreground shrink-0" onClick={() => {
+                    setSlugForm(course.slug || '');
+                    setSettingsForm({
+                      title: course.title || '', title_ar: course.title_ar || '',
+                      description: course.description || '', description_ar: course.description_ar || '',
+                      category_id: course.category_id || '', level_id: course.level_id || '',
+                      track_id: course.track_id || '', duration_weeks: course.duration_weeks?.toString() || '',
+                    });
+                    setCourseSettingsOpen(true);
+                  }}>
                     <Settings2 className="h-4 w-4" />
                   </Button>
                 )}
               </div>
               <p className="text-muted-foreground mt-1">{isAr && course.description_ar ? course.description_ar : course.description}</p>
               <div className="flex flex-wrap items-center gap-2 mt-3">
+                {course.slug && (
+                  <Badge variant="outline" className="gap-1 text-xs font-mono">
+                    <Link2 className="h-3 w-3" />
+                    /{course.slug}
+                  </Badge>
+                )}
                 {categoryLabel && (
                   <Badge variant="outline" className="gap-1 text-xs">
                     <FolderTree className="h-3 w-3" />
@@ -690,9 +709,9 @@ const CourseDetail = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Course Settings Dialog (slug) */}
+      {/* Course Settings Dialog */}
       <Dialog open={courseSettingsOpen} onOpenChange={setCourseSettingsOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Settings2 className="h-4 w-4 text-primary" />
@@ -700,31 +719,94 @@ const CourseDetail = () => {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <Label className="flex items-center gap-1.5">
-                <Link2 className="h-3.5 w-3.5" />
-                {isAr ? 'الرابط المختصر (Slug)' : 'URL Slug'}
-              </Label>
-              <Input
-                value={slugForm}
-                onChange={(e) => setSlugForm(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-'))}
-                placeholder="e.g. quran-memorization"
-                className="mt-1 font-mono text-sm"
-                dir="ltr"
-              />
-              <p className="text-[10px] text-muted-foreground mt-1">
-                {isAr ? 'يُستخدم في رابط الدورة. يقبل أحرف إنجليزية صغيرة وأرقام وشرطات فقط.' : 'Used in the course URL. Only lowercase letters, numbers, and hyphens allowed.'}
-              </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label>{isAr ? 'العنوان (إنجليزي)' : 'Title (English)'}</Label>
+                <Input value={settingsForm.title} onChange={(e) => setSettingsForm(f => ({ ...f, title: e.target.value }))} className="mt-1" />
+              </div>
+              <div>
+                <Label>{isAr ? 'العنوان (عربي)' : 'Title (Arabic)'}</Label>
+                <Input value={settingsForm.title_ar} onChange={(e) => setSettingsForm(f => ({ ...f, title_ar: e.target.value }))} className="mt-1" dir="rtl" />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label>{isAr ? 'الوصف (إنجليزي)' : 'Description (English)'}</Label>
+                <Input value={settingsForm.description} onChange={(e) => setSettingsForm(f => ({ ...f, description: e.target.value }))} className="mt-1" />
+              </div>
+              <div>
+                <Label>{isAr ? 'الوصف (عربي)' : 'Description (Arabic)'}</Label>
+                <Input value={settingsForm.description_ar} onChange={(e) => setSettingsForm(f => ({ ...f, description_ar: e.target.value }))} className="mt-1" dir="rtl" />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <Label>{isAr ? 'التصنيف' : 'Category'}</Label>
+                <Select value={settingsForm.category_id} onValueChange={(v) => setSettingsForm(f => ({ ...f, category_id: v }))}>
+                  <SelectTrigger className="mt-1"><SelectValue placeholder={isAr ? 'اختر' : 'Select'} /></SelectTrigger>
+                  <SelectContent>
+                    {categories.map(c => <SelectItem key={c.id} value={c.id}>{isAr && c.title_ar ? c.title_ar : c.title}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>{isAr ? 'المستوى' : 'Level'}</Label>
+                <Select value={settingsForm.level_id} onValueChange={(v) => setSettingsForm(f => ({ ...f, level_id: v }))}>
+                  <SelectTrigger className="mt-1"><SelectValue placeholder={isAr ? 'اختر' : 'Select'} /></SelectTrigger>
+                  <SelectContent>
+                    {levels.map(l => <SelectItem key={l.id} value={l.id}>{isAr && l.title_ar ? l.title_ar : l.title}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>{isAr ? 'المسار' : 'Track'}</Label>
+                <Select value={settingsForm.track_id} onValueChange={(v) => setSettingsForm(f => ({ ...f, track_id: v }))}>
+                  <SelectTrigger className="mt-1"><SelectValue placeholder={isAr ? 'اختر' : 'Select'} /></SelectTrigger>
+                  <SelectContent>
+                    {tracks.map(tr => <SelectItem key={tr.id} value={tr.id}>{isAr && tr.title_ar ? tr.title_ar : tr.title}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label>{isAr ? 'المدة (أسابيع)' : 'Duration (weeks)'}</Label>
+                <Input type="number" min={1} value={settingsForm.duration_weeks} onChange={(e) => setSettingsForm(f => ({ ...f, duration_weeks: e.target.value }))} className="mt-1" />
+              </div>
+              <div>
+                <Label className="flex items-center gap-1.5">
+                  <Link2 className="h-3.5 w-3.5" />
+                  {isAr ? 'الرابط المختصر (Slug)' : 'URL Slug'}
+                </Label>
+                <Input
+                  value={slugForm}
+                  onChange={(e) => setSlugForm(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-'))}
+                  placeholder="e.g. quran-memorization"
+                  className="mt-1 font-mono text-sm"
+                  dir="ltr"
+                />
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  {isAr ? 'أحرف إنجليزية صغيرة وأرقام وشرطات فقط.' : 'Lowercase letters, numbers, and hyphens only.'}
+                </p>
+              </div>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCourseSettingsOpen(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
             <Button onClick={async () => {
-              await supabase.from('courses').update({ slug: slugForm || null }).eq('id', id);
+              const updates: any = {
+                title: settingsForm.title, title_ar: settingsForm.title_ar || null,
+                description: settingsForm.description, description_ar: settingsForm.description_ar || null,
+                category_id: settingsForm.category_id || null, level_id: settingsForm.level_id || null,
+                track_id: settingsForm.track_id || null,
+                duration_weeks: settingsForm.duration_weeks ? parseInt(settingsForm.duration_weeks) : null,
+                slug: slugForm || null,
+              };
+              await supabase.from('courses').update(updates).eq('id', id);
               toast.success(isAr ? 'تم تحديث الإعدادات' : 'Settings updated');
               setCourseSettingsOpen(false);
               fetchCourse();
-            }} disabled={!slugForm.trim()}>{t('common.save')}</Button>
+            }} disabled={!settingsForm.title.trim()}>{t('common.save')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
