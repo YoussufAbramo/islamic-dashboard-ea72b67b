@@ -2,6 +2,25 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.4.0] - 2026-03-13
+
+### Changed
+- **Course hierarchy terminology refactored** — renamed the three-level course structure from "Lesson → Section → Content" to "Topic → Section → Lesson" across the entire system
+- **Translation keys updated** — added `courses.topics` and `courses.addTopic` keys; repurposed `courses.lessons`/`courses.addLesson` for the bottom-level learning units; removed old `courses.content`/`courses.addContent`/`courses.contentType` keys
+- **Course builder updated** — all UI labels, dialogs, documentation panel, and example text now reflect the new Topic → Section → Lesson hierarchy
+- **Manage Content button** — added inline lesson content editing from the learning page (admin/teacher only)
+- **Floating action buttons** — each button now has its own individual dismiss X instead of a shared dismiss button
+
+### Added
+- **Leave confirmation dialog** — back button on the learning page now shows a warning about unsaved progress before navigating away
+
+### Improved
+- **Top bar animation** — smooth slide transition when toggling the top bar on the course learning page
+- **Learning page defaults** — sidebar starts collapsed and top bar auto-hides for distraction-free learning
+- **Copyright footer contrast** — darker text for better readability
+
+---
+
 ## [5.3.0] - 2026-03-13
 
 ### Added
