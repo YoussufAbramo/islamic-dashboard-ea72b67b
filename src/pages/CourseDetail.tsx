@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { ACTION_BTN, ACTION_BTN_DESTRUCTIVE, ACTION_ICON } from '@/lib/actionBtnClass';
+import { ActionButton } from '@/components/ui/action-button';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,12 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
-import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree, Layers, FileText, Pencil, Route } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree, Layers, FileText, Pencil, Route, MoreHorizontal, Settings2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { arrayMove } from '@dnd-kit/sortable';
 import SortableItem from '@/components/course/SortableItem';
@@ -72,14 +74,20 @@ const CourseDetail = () => {
   const [sections, setSections] = useState<Record<string, any[]>>({});
   const [contents, setContents] = useState<Record<string, any[]>>({});
 
+  // Dialog states
   const [lessonDialog, setLessonDialog] = useState(false);
   const [sectionDialog, setSectionDialog] = useState(false);
   const [contentDialog, setContentDialog] = useState(false);
-  const [editingContentId, setEditingContentId] = useState<string | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; type: 'lesson' | 'section' | 'content' } | null>(null);
 
+  // Edit states
+  const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
+  const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
+  const [editingContentId, setEditingContentId] = useState<string | null>(null);
+
+  // Forms
   const [lessonForm, setLessonForm] = useState({ title: '', title_ar: '' });
   const [sectionForm, setSectionForm] = useState({ title: '', title_ar: '' });
   const [contentForm, setContentForm] = useState({ title: '', title_ar: '', lesson_type: 'read_listen' });
@@ -192,32 +200,63 @@ const CourseDetail = () => {
     await Promise.all(updates);
   }, [contents]);
 
-  // ─── CRUD ───
+  // ─── CRUD: Lessons ───
   const addLesson = async () => {
-    await supabase.from('course_sections').insert({ ...lessonForm, course_id: id, sort_order: lessons.length });
+    if (editingLessonId) {
+      await supabase.from('course_sections').update({
+        title: lessonForm.title,
+        title_ar: lessonForm.title_ar,
+      }).eq('id', editingLessonId);
+      setEditingLessonId(null);
+      toast.success(isAr ? 'تم تحديث الدرس' : 'Lesson updated');
+    } else {
+      await supabase.from('course_sections').insert({ ...lessonForm, course_id: id, sort_order: lessons.length });
+      toast.success(isAr ? 'تمت إضافة الدرس' : 'Lesson added');
+    }
     setLessonDialog(false);
     setLessonForm({ title: '', title_ar: '' });
     fetchHierarchy();
-    toast.success(isAr ? 'تمت إضافة الدرس' : 'Lesson added');
   };
 
-  const handleConfirmDelete = async () => {
-    if (!deleteTarget) return;
-    const { id, type } = deleteTarget;
-    if (type === 'lesson') {
-      await supabase.from('course_sections').delete().eq('id', id);
-      toast.success(isAr ? 'تم حذف الدرس' : 'Lesson deleted');
-    } else if (type === 'section') {
-      await supabase.from('lesson_sections' as any).delete().eq('id', id);
-      toast.success(isAr ? 'تم حذف القسم' : 'Section deleted');
+  const openEditLesson = (lesson: any) => {
+    setEditingLessonId(lesson.id);
+    setLessonForm({ title: lesson.title, title_ar: lesson.title_ar || '' });
+    setLessonDialog(true);
+  };
+
+  // ─── CRUD: Sections ───
+  const addSection = async () => {
+    if (editingSectionId) {
+      await supabase.from('lesson_sections' as any).update({
+        title: sectionForm.title,
+        title_ar: sectionForm.title_ar,
+      } as any).eq('id', editingSectionId);
+      setEditingSectionId(null);
+      toast.success(isAr ? 'تم تحديث القسم' : 'Section updated');
     } else {
-      await supabase.from('lessons').delete().eq('id', id);
-      toast.success(isAr ? 'تم حذف المحتوى' : 'Content deleted');
+      if (!activeLessonId) return;
+      const currentSections = sections[activeLessonId] || [];
+      await supabase.from('lesson_sections' as any).insert([{
+        course_section_id: activeLessonId,
+        title: sectionForm.title,
+        title_ar: sectionForm.title_ar,
+        sort_order: currentSections.length,
+      }] as any);
+      toast.success(isAr ? 'تمت إضافة القسم' : 'Section added');
     }
-    setDeleteTarget(null);
+    setSectionDialog(false);
+    setSectionForm({ title: '', title_ar: '' });
     fetchHierarchy();
   };
 
+  const openEditSection = (section: any, lessonId: string) => {
+    setEditingSectionId(section.id);
+    setActiveLessonId(lessonId);
+    setSectionForm({ title: section.title, title_ar: section.title_ar || '' });
+    setSectionDialog(true);
+  };
+
+  // ─── CRUD: Content ───
   const addContent = async () => {
     if (editingContentId) {
       await supabase.from('lessons').update({
@@ -251,19 +290,22 @@ const CourseDetail = () => {
     setContentDialog(true);
   };
 
-  const addSection = async () => {
-    if (!activeLessonId) return;
-    const currentSections = sections[activeLessonId] || [];
-    await supabase.from('lesson_sections' as any).insert([{
-      course_section_id: activeLessonId,
-      title: sectionForm.title,
-      title_ar: sectionForm.title_ar,
-      sort_order: currentSections.length,
-    }] as any);
-    setSectionDialog(false);
-    setSectionForm({ title: '', title_ar: '' });
+  // ─── Delete ───
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    const { id, type } = deleteTarget;
+    if (type === 'lesson') {
+      await supabase.from('course_sections').delete().eq('id', id);
+      toast.success(isAr ? 'تم حذف الدرس' : 'Lesson deleted');
+    } else if (type === 'section') {
+      await supabase.from('lesson_sections' as any).delete().eq('id', id);
+      toast.success(isAr ? 'تم حذف القسم' : 'Section deleted');
+    } else {
+      await supabase.from('lessons').delete().eq('id', id);
+      toast.success(isAr ? 'تم حذف المحتوى' : 'Content deleted');
+    }
+    setDeleteTarget(null);
     fetchHierarchy();
-    toast.success(isAr ? 'تمت إضافة القسم' : 'Section added');
   };
 
   if (!course) return <div className="text-muted-foreground">{t('common.loading')}</div>;
@@ -271,6 +313,28 @@ const CourseDetail = () => {
   const categoryLabel = categories.find(c => c.id === course.category_id);
   const skillLabel = levels.find(l => l.id === course.level_id);
   const trackLabel = tracks.find(t => t.id === course.track_id);
+
+  // ─── Item Actions Menu (reusable for lessons, sections, content) ───
+  const ItemActionsMenu = ({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted shrink-0" onClick={(e) => e.stopPropagation()}>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-36">
+        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(); }}>
+          <Pencil className="h-3.5 w-3.5 me-2" />
+          {isAr ? 'تعديل' : 'Edit'}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={(e) => { e.stopPropagation(); onDelete(); }}>
+          <Trash2 className="h-3.5 w-3.5 me-2" />
+          {isAr ? 'حذف' : 'Delete'}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 
   return (
     <div className="space-y-4">
@@ -327,21 +391,9 @@ const CourseDetail = () => {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">{t('courses.lessons')}</h2>
         {canEdit && (
-          <Dialog open={lessonDialog} onOpenChange={setLessonDialog}>
-            <DialogTrigger asChild>
-              <Button size="sm"><Plus className="h-4 w-4 me-2" />{t('courses.addLesson')}</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader><DialogTitle>{t('courses.addLesson')}</DialogTitle></DialogHeader>
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div><Label>Title (EN)</Label><Input value={lessonForm.title} onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })} /></div>
-                  <div><Label>Title (AR)</Label><Input value={lessonForm.title_ar} onChange={(e) => setLessonForm({ ...lessonForm, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
-                </div>
-                <Button onClick={addLesson} className="w-full">{t('common.save')}</Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button size="sm" onClick={() => { setEditingLessonId(null); setLessonForm({ title: '', title_ar: '' }); setLessonDialog(true); }}>
+            <Plus className="h-4 w-4 me-2" />{t('courses.addLesson')}
+          </Button>
         )}
       </div>
 
@@ -350,12 +402,7 @@ const CourseDetail = () => {
           {lessons.map((lesson) => (
             <SortableItem key={lesson.id} id={lesson.id} disabled={!canEdit}>
               <AccordionItem value={lesson.id} className="border rounded-lg px-4">
-                <div className="flex items-center">
-                  {canEdit && (
-                    <Button variant="ghost" size="icon" className={`${ACTION_BTN_DESTRUCTIVE} shrink-0`} onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: lesson.id, type: 'lesson' }); }}>
-                      <Trash2 className={ACTION_ICON} />
-                    </Button>
-                  )}
+                <div className="flex items-center gap-1">
                   <AccordionTrigger className="hover:no-underline flex-1">
                     <div className="flex items-center gap-2">
                       <BookOpen className="h-4 w-4 text-primary" />
@@ -365,6 +412,12 @@ const CourseDetail = () => {
                       </Badge>
                     </div>
                   </AccordionTrigger>
+                  {canEdit && (
+                    <ItemActionsMenu
+                      onEdit={() => openEditLesson(lesson)}
+                      onDelete={() => setDeleteTarget({ id: lesson.id, type: 'lesson' })}
+                    />
+                  )}
                 </div>
                 <AccordionContent>
                   <div className="space-y-3 pt-2">
@@ -374,23 +427,9 @@ const CourseDetail = () => {
                         {t('courses.sections')}
                       </h3>
                       {canEdit && (
-                        <Dialog open={sectionDialog && activeLessonId === lesson.id} onOpenChange={(o) => { setSectionDialog(o); if (o) setActiveLessonId(lesson.id); }}>
-                          <DialogTrigger asChild>
-                            <Button variant="outline" size="sm" onClick={() => setActiveLessonId(lesson.id)}>
-                              <Plus className="h-3 w-3 me-1" />{t('courses.addSection')}
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader><DialogTitle>{t('courses.addSection')}</DialogTitle></DialogHeader>
-                            <div className="space-y-3">
-                              <div className="grid grid-cols-2 gap-3">
-                                <div><Label>Title (EN)</Label><Input value={sectionForm.title} onChange={(e) => setSectionForm({ ...sectionForm, title: e.target.value })} /></div>
-                                <div><Label>Title (AR)</Label><Input value={sectionForm.title_ar} onChange={(e) => setSectionForm({ ...sectionForm, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
-                              </div>
-                              <Button onClick={addSection} className="w-full">{t('common.save')}</Button>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
+                        <Button variant="outline" size="sm" onClick={() => { setActiveLessonId(lesson.id); setEditingSectionId(null); setSectionForm({ title: '', title_ar: '' }); setSectionDialog(true); }}>
+                          <Plus className="h-3 w-3 me-1" />{t('courses.addSection')}
+                        </Button>
                       )}
                     </div>
 
@@ -403,12 +442,7 @@ const CourseDetail = () => {
                         {(sections[lesson.id] || []).map((section: any) => (
                           <SortableItem key={section.id} id={section.id} disabled={!canEdit}>
                             <AccordionItem value={section.id} className="border rounded-md px-3 bg-muted/30">
-                              <div className="flex items-center">
-                                {canEdit && (
-                                   <Button variant="ghost" size="icon" className={`${ACTION_BTN_DESTRUCTIVE} shrink-0`} onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: section.id, type: 'section' }); }}>
-                                     <Trash2 className={ACTION_ICON} />
-                                   </Button>
-                                )}
+                              <div className="flex items-center gap-1">
                                 <AccordionTrigger className="hover:no-underline py-3 text-sm flex-1">
                                   <div className="flex items-center gap-2">
                                     <Layers className="h-3.5 w-3.5 text-muted-foreground" />
@@ -418,6 +452,12 @@ const CourseDetail = () => {
                                     </Badge>
                                   </div>
                                 </AccordionTrigger>
+                                {canEdit && (
+                                  <ItemActionsMenu
+                                    onEdit={() => openEditSection(section, lesson.id)}
+                                    onDelete={() => setDeleteTarget({ id: section.id, type: 'section' })}
+                                  />
+                                )}
                               </div>
                               <AccordionContent>
                                 <div className="space-y-2 pt-1">
@@ -425,23 +465,19 @@ const CourseDetail = () => {
                                     <div className="space-y-1">
                                       {(contents[section.id] || []).map((content: any) => (
                                         <SortableItem key={content.id} id={content.id} disabled={!canEdit}>
-                                          <div className="flex items-center justify-between p-2 rounded bg-background border">
-                                            <div className="flex items-center gap-2">
-                                              <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-                                              <span className="font-medium text-sm">{isAr && content.title_ar ? content.title_ar : content.title}</span>
-                                              <Badge variant="outline" className="text-xs">
+                                          <div className="flex items-center justify-between p-2 rounded bg-background border group">
+                                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                                              <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                              <span className="font-medium text-sm truncate">{isAr && content.title_ar ? content.title_ar : content.title}</span>
+                                              <Badge variant="outline" className="text-xs shrink-0">
                                                 {allContentTypes.find(ct => ct.value === content.lesson_type)?.label || content.lesson_type}
                                               </Badge>
                                             </div>
                                             {canEdit && (
-                                              <div className="flex items-center gap-1">
-                                                <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => openEditContent(content, section.id)}>
-                                                  <Pencil className={ACTION_ICON} />
-                                                </Button>
-                                                <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteTarget({ id: content.id, type: 'content' })}>
-                                                  <Trash2 className={ACTION_ICON} />
-                                                </Button>
-                                              </div>
+                                              <ItemActionsMenu
+                                                onEdit={() => openEditContent(content, section.id)}
+                                                onDelete={() => setDeleteTarget({ id: content.id, type: 'content' })}
+                                              />
                                             )}
                                           </div>
                                         </SortableItem>
@@ -450,39 +486,9 @@ const CourseDetail = () => {
                                   </SortableList>
 
                                   {canEdit && (
-                                    <Dialog open={contentDialog && activeSectionId === section.id} onOpenChange={(o) => { setContentDialog(o); if (o) { setActiveSectionId(section.id); } if (!o) { setEditingContentId(null); setContentForm({ title: '', title_ar: '', lesson_type: 'read_listen' }); } }}>
-                                      <DialogTrigger asChild>
-                                        <Button variant="outline" size="sm" className="w-full" onClick={() => { setActiveSectionId(section.id); setEditingContentId(null); setContentForm({ title: '', title_ar: '', lesson_type: 'read_listen' }); }}>
-                                          <Plus className="h-3 w-3 me-1" />{t('courses.addContent')}
-                                        </Button>
-                                      </DialogTrigger>
-                                      <DialogContent>
-                                        <DialogHeader><DialogTitle>{editingContentId ? (isAr ? 'تعديل المحتوى' : 'Edit Content') : t('courses.addContent')}</DialogTitle></DialogHeader>
-                                        <div className="space-y-3">
-                                          <div className="grid grid-cols-2 gap-3">
-                                            <div><Label>Title (EN)</Label><Input value={contentForm.title} onChange={(e) => setContentForm({ ...contentForm, title: e.target.value })} /></div>
-                                            <div><Label>Title (AR)</Label><Input value={contentForm.title_ar} onChange={(e) => setContentForm({ ...contentForm, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
-                                          </div>
-                                          <div>
-                                            <Label>{t('courses.contentType')}</Label>
-                                            <Select value={contentForm.lesson_type} onValueChange={(v) => setContentForm({ ...contentForm, lesson_type: v })}>
-                                              <SelectTrigger><SelectValue /></SelectTrigger>
-                                              <SelectContent>
-                                                {contentTypeGroups.map((group) => (
-                                                  <SelectGroup key={group.label}>
-                                                    <SelectLabel className="text-xs font-semibold text-muted-foreground">{group.label}</SelectLabel>
-                                                    {group.items.map((ct) => (
-                                                      <SelectItem key={ct.value} value={ct.value}>{ct.label}</SelectItem>
-                                                    ))}
-                                                  </SelectGroup>
-                                                ))}
-                                              </SelectContent>
-                                            </Select>
-                                          </div>
-                                          <Button onClick={addContent} className="w-full">{t('common.save')}</Button>
-                                        </div>
-                                      </DialogContent>
-                                    </Dialog>
+                                    <Button variant="outline" size="sm" className="w-full" onClick={() => { setActiveSectionId(section.id); setEditingContentId(null); setContentForm({ title: '', title_ar: '', lesson_type: 'read_listen' }); setContentDialog(true); }}>
+                                      <Plus className="h-3 w-3 me-1" />{t('courses.addContent')}
+                                    </Button>
                                   )}
                                 </div>
                               </AccordionContent>
@@ -500,6 +506,88 @@ const CourseDetail = () => {
       </SortableList>
 
       {lessons.length === 0 && <p className="text-center text-muted-foreground py-8">{t('common.noData')}</p>}
+
+      {/* ─── Lesson Dialog (Add/Edit) ─── */}
+      <Dialog open={lessonDialog} onOpenChange={(o) => { setLessonDialog(o); if (!o) { setEditingLessonId(null); setLessonForm({ title: '', title_ar: '' }); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {editingLessonId ? <Pencil className="h-4 w-4 text-primary" /> : <Plus className="h-4 w-4 text-primary" />}
+              {editingLessonId ? (isAr ? 'تعديل الدرس' : 'Edit Lesson') : t('courses.addLesson')}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Title (EN)</Label><Input value={lessonForm.title} onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })} /></div>
+              <div><Label>Title (AR)</Label><Input value={lessonForm.title_ar} onChange={(e) => setLessonForm({ ...lessonForm, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setLessonDialog(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
+            <Button onClick={addLesson} disabled={!lessonForm.title.trim()}>{t('common.save')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ─── Section Dialog (Add/Edit) ─── */}
+      <Dialog open={sectionDialog} onOpenChange={(o) => { setSectionDialog(o); if (!o) { setEditingSectionId(null); setSectionForm({ title: '', title_ar: '' }); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {editingSectionId ? <Pencil className="h-4 w-4 text-primary" /> : <Plus className="h-4 w-4 text-primary" />}
+              {editingSectionId ? (isAr ? 'تعديل القسم' : 'Edit Section') : t('courses.addSection')}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Title (EN)</Label><Input value={sectionForm.title} onChange={(e) => setSectionForm({ ...sectionForm, title: e.target.value })} /></div>
+              <div><Label>Title (AR)</Label><Input value={sectionForm.title_ar} onChange={(e) => setSectionForm({ ...sectionForm, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSectionDialog(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
+            <Button onClick={addSection} disabled={!sectionForm.title.trim()}>{t('common.save')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ─── Content Dialog (Add/Edit) ─── */}
+      <Dialog open={contentDialog} onOpenChange={(o) => { setContentDialog(o); if (!o) { setEditingContentId(null); setContentForm({ title: '', title_ar: '', lesson_type: 'read_listen' }); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {editingContentId ? <Settings2 className="h-4 w-4 text-primary" /> : <Plus className="h-4 w-4 text-primary" />}
+              {editingContentId ? (isAr ? 'تعديل المحتوى' : 'Edit Content') : t('courses.addContent')}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Title (EN)</Label><Input value={contentForm.title} onChange={(e) => setContentForm({ ...contentForm, title: e.target.value })} /></div>
+              <div><Label>Title (AR)</Label><Input value={contentForm.title_ar} onChange={(e) => setContentForm({ ...contentForm, title_ar: e.target.value })} dir="rtl" className="text-right" /></div>
+            </div>
+            <div>
+              <Label>{t('courses.contentType')}</Label>
+              <Select value={contentForm.lesson_type} onValueChange={(v) => setContentForm({ ...contentForm, lesson_type: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {contentTypeGroups.map((group) => (
+                    <SelectGroup key={group.label}>
+                      <SelectLabel className="text-xs font-semibold text-muted-foreground">{group.label}</SelectLabel>
+                      {group.items.map((ct) => (
+                        <SelectItem key={ct.value} value={ct.value}>{ct.label}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setContentDialog(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
+            <Button onClick={addContent} disabled={!contentForm.title.trim()}>{t('common.save')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
