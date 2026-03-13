@@ -4,6 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -12,7 +13,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import {
   ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Circle,
   BookOpen, Play, FileText, Headphones, ExternalLink, FileDown,
-  Menu, X, GraduationCap, Loader2, PanelTop, PanelTopClose,
+  Menu, X, GraduationCap, Loader2, PanelTop, PanelTopClose, AlertTriangle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -236,6 +237,7 @@ const CourseLearning = () => {
   const [loading, setLoading] = useState(true);
   const [markingComplete, setMarkingComplete] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
 
   // Fetch everything
   useEffect(() => {
@@ -439,7 +441,7 @@ const CourseLearning = () => {
     <div className={cn("flex flex-col", topBarHidden ? "h-[calc(100vh-2.5rem)]" : "h-[calc(100vh-6.5rem)]")}>
       {/* Top bar */}
       <div className="flex items-center gap-3 px-4 py-2.5 border-b bg-card shrink-0">
-        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => navigate(`/dashboard/courses/${id}`)}>
+        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setLeaveDialogOpen(true)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 md:hidden" onClick={() => setSidebarOpen(!sidebarOpen)}>
@@ -591,6 +593,31 @@ const CourseLearning = () => {
           )}
         </div>
       </div>
+
+      <AlertDialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              {isAr ? 'مغادرة صفحة التعلم؟' : 'Leave Learning Page?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {isAr
+                ? 'أي تقدم غير محفوظ قد يُفقد. تأكد من الضغط على "إكمال الدرس" قبل المغادرة للحفاظ على تقدمك.'
+                : 'Any unsaved progress may be lost. Make sure to click "Mark Complete" before leaving to save your progress.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{isAr ? 'متابعة التعلم' : 'Continue Learning'}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => navigate(`/dashboard/courses/${id}`)}
+            >
+              {isAr ? 'مغادرة' : 'Leave'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
