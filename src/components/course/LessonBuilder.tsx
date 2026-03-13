@@ -1035,19 +1035,31 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                   </p>
                 </div>
               ) : (
-                blocks.map((block, idx) => (
-                  <BlockEditor
-                    key={block.id}
-                    block={block}
-                    isAr={isAr}
-                    onChange={(updated) => updateBlock(block.id, updated)}
-                    onRemove={() => removeBlock(block.id)}
-                    onMoveUp={() => moveBlock(block.id, 'up')}
-                    onMoveDown={() => moveBlock(block.id, 'down')}
-                    isFirst={idx === 0}
-                    isLast={idx === blocks.length - 1}
-                  />
-                ))
+                <SortableList
+                  items={blocks}
+                  onReorder={(activeId, overId) => {
+                    setBlocks(prev => {
+                      const oldIdx = prev.findIndex(b => b.id === activeId);
+                      const newIdx = prev.findIndex(b => b.id === overId);
+                      if (oldIdx === -1 || newIdx === -1) return prev;
+                      return arrayMove(prev, oldIdx, newIdx);
+                    });
+                  }}
+                >
+                  {blocks.map((block, idx) => (
+                    <BlockEditor
+                      key={block.id}
+                      block={block}
+                      isAr={isAr}
+                      onChange={(updated) => updateBlock(block.id, updated)}
+                      onRemove={() => removeBlock(block.id)}
+                      onMoveUp={() => moveBlock(block.id, 'up')}
+                      onMoveDown={() => moveBlock(block.id, 'down')}
+                      isFirst={idx === 0}
+                      isLast={idx === blocks.length - 1}
+                    />
+                  ))}
+                </SortableList>
               )}
             </div>
           </div>
