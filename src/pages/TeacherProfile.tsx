@@ -38,6 +38,7 @@ const TeacherProfile = () => {
   const { user, role } = useAuth();
   const navigate = useNavigate();
   const isAr = language === 'ar';
+  const { teacherBadges: teacherBadgesEnabled } = useAppSettings();
 
   const [teacher, setTeacher] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
