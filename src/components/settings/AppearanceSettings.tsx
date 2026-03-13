@@ -116,6 +116,47 @@ const AppearanceSettings = () => {
     </Popover>
   );
 
+
+  const CompactImagePicker = ({ value, onChange, isAr: _isAr }: { value: string; onChange: (v: string) => void; isAr: boolean }) => {
+    const [open, setOpen] = useState(false);
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="relative w-full h-14 rounded-md border border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer overflow-hidden bg-muted/30 flex items-center justify-center group"
+        >
+          {value ? (
+            <>
+              <img src={value} alt="" className="max-h-12 w-auto object-contain" />
+              <div className="absolute inset-0 bg-background/0 group-hover:bg-background/60 transition-colors flex items-center justify-center">
+                <span className="text-[10px] font-medium text-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                  {_isAr ? 'تغيير' : 'Change'}
+                </span>
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center text-muted-foreground">
+              <Image className="h-4 w-4 opacity-40" />
+              <span className="text-[10px] mt-0.5">{_isAr ? 'اختر صورة' : 'Select'}</span>
+            </div>
+          )}
+        </button>
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            className="flex items-center gap-0.5 text-[10px] text-destructive hover:text-destructive/80 transition-colors"
+          >
+            <X className="h-2.5 w-2.5" />
+            {_isAr ? 'إزالة' : 'Remove'}
+          </button>
+        )}
+        <MediaPickerDialog open={open} onOpenChange={setOpen} onSelect={onChange} bucket="media" />
+      </>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Branding — Compact Grid Layout */}
