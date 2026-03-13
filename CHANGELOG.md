@@ -2,6 +2,28 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.7.0] - 2026-03-13
+
+### Changed — Course Learning Sidebar (Major)
+- **Hierarchical sidebar** — rebuilt the learning page sidebar with a full 3-level collapsible tree: Topics (L1) → Sections (L2) → Lessons (L3) using native `<details>` elements
+- **Visual tree structure** — each nesting level has a left border line, indentation, and distinct icons (FolderTree for topics, Layers for sections, Play/Circle/Check for lessons)
+- **Section progress** — each section shows completion percentage or a check icon when all lessons are done
+- **Completed lesson styling** — finished lessons show strikethrough text with reduced opacity; active lesson shows a filled play icon
+
+### Changed — Course Builder UX
+- **Topic delete button** — replaced the three-dot menu on topics with a direct trash icon button (confirmation dialog preserved)
+- **Section "Move To"** — replaced the section edit button with a "Move To" sub-menu allowing sections to be moved between topics
+- **Skill level icon** — changed from Signal to Settings2 icon in course detail badge
+
+### Fixed
+- **Content Editor RTL reversal** — fixed text typing in reverse (e.g. "olleH" instead of "Hello") when the UI is in Arabic mode by adding `dir="auto"` and `unicodeBidi: plaintext`
+
+### Changed — Manage Content → Lesson Builder
+- **"Manage Content" button** in the Course Learning page now opens the full Lesson Builder dialog (with all 16 block types) instead of the old simple URL/text form
+- Removed legacy edit dialog code (video/audio/PDF URL fields, plain text editor)
+
+---
+
 ## [5.6.0] - 2026-03-13
 
 ### Changed — Lesson Types → Builder Elements (Major)
