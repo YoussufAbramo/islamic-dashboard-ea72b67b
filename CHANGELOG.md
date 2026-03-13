@@ -2,6 +2,21 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.3.0] - 2026-03-13
+
+### Added
+- **Course Learning Page** — full session-based learning interface at `/courses/:id/learn` with sidebar navigation, content viewer (video, audio, PDF, text, external links), progress tracking, and mark-complete functionality
+- **Learn Now button** — added to both course cards and course detail page for direct access to the learning experience
+- **Auto-resume learning** — system detects learner's last completed lesson and opens the next one automatically
+- **System Reset feature** — new destructive action in App Settings that wipes all operational data, clears storage buckets, and restores the platform to a fresh installation state with typed confirmation safety mechanism
+- **Top bar toggle on learning page** — top bar auto-hides when entering course learning for a distraction-free experience, with a toggle button to show/hide it
+
+### Improved
+- **Seed data scaling** — timetable entries, attendance, and session reports now scale proportionally with the user-selected multiplier
+- **Learning page layout** — compact copyright footer and zero-padding main area for full-bleed learning experience
+
+---
+
 ## [5.2.0] - 2026-03-13
 
 ### Added
