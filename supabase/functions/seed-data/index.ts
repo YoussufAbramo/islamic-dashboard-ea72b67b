@@ -160,6 +160,8 @@ class RecordBudget {
   cap(desired: number) { return Math.min(desired, this.remaining()) }
   // Guarantee at least minCount even if budget is exhausted
   capMin(desired: number, minCount = 1) { return Math.max(minCount, Math.min(desired, this.remaining())) }
+  // Scale minimum based on multiplier level
+  static minForMultiplier(multiplier: number) { return multiplier <= 3 ? 1 : multiplier <= 6 ? 2 : 3 }
   total() { return this.used }
 }
 

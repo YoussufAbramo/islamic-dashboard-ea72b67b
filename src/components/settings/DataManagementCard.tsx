@@ -388,7 +388,7 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
                   </div>
                   <div className="p-2 rounded-md bg-muted/30 border border-border">
                     <p className="text-[10px] text-muted-foreground">{isAr ? 'الحد الأدنى' : 'Min/category'}</p>
-                    <p className="text-sm font-semibold">1</p>
+                    <p className="text-sm font-semibold">{multiplier <= 3 ? 1 : multiplier <= 6 ? 2 : 3}</p>
                   </div>
                 </div>
               </div>
