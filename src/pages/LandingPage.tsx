@@ -177,7 +177,7 @@ const LandingPage = () => {
         const footerLogo = logoSource === 'light' ? appLogo : logoSource === 'favicon' ? favicon : darkLogo;
         const brandingCol: number = ft.branding_column ?? 0;
         const socialCol: number = ft.social_column ?? -1;
-        const hasBranding = !!(footerLogo || ftTitle || ftDesc);
+        const hasBranding = brandingCol >= 0 && !!(footerLogo || ftTitle || ftDesc);
 
         const gridCols = colsCount === 1 ? 'grid-cols-1' : colsCount === 2 ? 'sm:grid-cols-2' : colsCount === 4 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-3';
 

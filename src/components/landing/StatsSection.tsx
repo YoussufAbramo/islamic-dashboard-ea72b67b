@@ -1,9 +1,20 @@
 import { getField } from '@/lib/landingDefaults';
+import { useCountUp } from '@/hooks/use-landing-animations';
 
 interface StatsSectionProps {
   content: Record<string, any>;
   isAr: boolean;
 }
+
+const StatItem = ({ stat, isAr }: { stat: any; isAr: boolean }) => {
+  const { display, ref } = useCountUp(stat.value, 2000);
+  return (
+    <div ref={ref} className="text-center">
+      <div className="text-3xl md:text-4xl font-bold text-primary mb-2">{display}</div>
+      <div className="text-sm text-muted-foreground font-medium">{isAr ? (stat.label_ar || stat.label) : stat.label}</div>
+    </div>
+  );
+};
 
 const StatsSection = ({ content, isAr }: StatsSectionProps) => {
   const items = content?.items || [];
@@ -19,10 +30,7 @@ const StatsSection = ({ content, isAr }: StatsSectionProps) => {
         )}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {items.map((stat: any, i: number) => (
-            <div key={i} className="text-center">
-              <div className="text-3xl md:text-4xl font-bold text-primary mb-2">{stat.value}</div>
-              <div className="text-sm text-muted-foreground font-medium">{isAr ? (stat.label_ar || stat.label) : stat.label}</div>
-            </div>
+            <StatItem key={i} stat={stat} isAr={isAr} />
           ))}
         </div>
       </div>
