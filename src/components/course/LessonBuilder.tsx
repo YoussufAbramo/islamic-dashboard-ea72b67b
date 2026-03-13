@@ -34,8 +34,10 @@ export interface ContentBlock {
   image_caption?: string;
   image_alt?: string;
   // video
+  video_type?: 'url' | 'youtube' | 'vimeo' | 'embed';
   video_url?: string;
   video_caption?: string;
+  video_embed?: string;
   // audio
   audio_url?: string;
   audio_caption?: string;
