@@ -138,7 +138,7 @@ const AppearanceSettings = () => {
             </>
           ) : (
             <div className="flex flex-col items-center text-muted-foreground">
-              <Image className="h-4 w-4 opacity-40" />
+              <ImageIcon className="h-4 w-4 opacity-40" />
               <span className="text-[10px] mt-0.5">{_isAr ? 'اختر صورة' : 'Select'}</span>
             </div>
           )}
