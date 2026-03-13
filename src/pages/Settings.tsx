@@ -107,7 +107,7 @@ const WebsiteModeSettings = () => {
   );
 };
 
-type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'pricing' | 'backups' | 'education' | 'pixels' | 'seo' | 'supabase' | 'developer' | 'website';
+type SettingsTab = 'general' | 'appearance' | 'auth' | 'payment' | 'data' | 'backups' | 'education' | 'pixels' | 'seo' | 'supabase' | 'developer' | 'website';
 
 const Settings = () => {
   const { language } = useLanguage();
