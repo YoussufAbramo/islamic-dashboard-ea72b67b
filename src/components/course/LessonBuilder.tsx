@@ -248,7 +248,23 @@ const BlockEditor = ({
 }) => {
   const meta = blockMeta[block.type];
   const Icon = meta.icon;
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: block.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0.5 : 1,
+  };
 
   const renderQuestionField = () => (
     <div className="grid grid-cols-2 gap-3">
