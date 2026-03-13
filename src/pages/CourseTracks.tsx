@@ -424,22 +424,25 @@ const CourseTracks = () => {
                                               {course.status === 'published' ? (isAr ? 'منشور' : 'Published') : (isAr ? 'مسودة' : 'Draft')}
                                             </Badge>
                                           </div>
-                                          <Select
-                                            value={course.level_id || '__none__'}
-                                            onValueChange={val => handleChangeCourseLevel(course.id, val)}
-                                          >
-                                            <SelectTrigger className="w-32 h-7 text-xs shrink-0">
-                                              <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              <SelectItem value="__none__">{isAr ? 'بدون مستوى' : 'No Level'}</SelectItem>
-                                              {levels.map(l => (
-                                                <SelectItem key={l.id} value={l.id}>
-                                                  {isAr ? (l.title_ar || l.title) : l.title}
-                                                </SelectItem>
-                                              ))}
-                                            </SelectContent>
-                                          </Select>
+                                          <div className="flex items-center gap-1.5 shrink-0">
+                                            <Select
+                                              value={course.level_id || '__none__'}
+                                              onValueChange={val => handleChangeCourseLevel(course.id, val)}
+                                            >
+                                              <SelectTrigger className="w-32 h-7 text-xs">
+                                                <SelectValue />
+                                              </SelectTrigger>
+                                              <SelectContent>
+                                                <SelectItem value="__none__">{isAr ? 'بدون مستوى' : 'No Level'}</SelectItem>
+                                                {levels.map(l => (
+                                                  <SelectItem key={l.id} value={l.id}>
+                                                    {isAr ? (l.title_ar || l.title) : l.title}
+                                                  </SelectItem>
+                                                ))}
+                                              </SelectContent>
+                                            </Select>
+                                            <ActionButton icon={Unlink} label={isAr ? 'إلغاء الربط' : 'Unlink'} destructive onClick={() => handleUnlinkCourse(course.id)} />
+                                          </div>
                                         </div>
                                       </SortableItem>
                                     ))}
