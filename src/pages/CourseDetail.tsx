@@ -443,6 +443,12 @@ const CourseDetail = () => {
                           <SortableItem key={section.id} id={section.id} disabled={!canEdit}>
                             <AccordionItem value={section.id} className="border rounded-md px-3 bg-muted/30">
                               <div className="flex items-center gap-1">
+                                {canEdit && (
+                                  <ItemActionsMenu
+                                    onEdit={() => openEditSection(section, lesson.id)}
+                                    onDelete={() => setDeleteTarget({ id: section.id, type: 'section' })}
+                                  />
+                                )}
                                 <AccordionTrigger className="hover:no-underline py-3 text-sm flex-1">
                                   <div className="flex items-center gap-2">
                                     <Layers className="h-3.5 w-3.5 text-muted-foreground" />
@@ -452,12 +458,6 @@ const CourseDetail = () => {
                                     </Badge>
                                   </div>
                                 </AccordionTrigger>
-                                {canEdit && (
-                                  <ItemActionsMenu
-                                    onEdit={() => openEditSection(section, lesson.id)}
-                                    onDelete={() => setDeleteTarget({ id: section.id, type: 'section' })}
-                                  />
-                                )}
                               </div>
                               <AccordionContent>
                                 <div className="space-y-2 pt-1">
