@@ -62,7 +62,7 @@ const ImpersonationSwitcher = () => {
       const { data: teachers } = await supabase
         .from('teachers')
         .select('user_id, profiles:user_id(id, full_name, email, avatar_url)')
-        .limit(50);
+        .limit(5);
 
       const { data: students } = await supabase
         .from('students')
