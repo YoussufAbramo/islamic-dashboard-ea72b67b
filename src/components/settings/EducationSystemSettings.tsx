@@ -1,202 +1,145 @@
-import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { MessageSquare, BookOpen, ClipboardCheck, Award, Calendar, GraduationCap, Users, BarChart3, FileText, Globe, Shield, Bell, Zap, Target, Layers, Palette, Video, Mic, Smartphone, HeartHandshake, Star, BookMarked, Brain, Gamepad2, PenTool, Library, Lightbulb, MessageCircle } from 'lucide-react';
+import { useState as __import_useState } from 'react';
 
 const EducationSystemSettings = () => {
   const { language } = useLanguage();
+  const { pending, updatePending, setTeacherBadges, setStudentBadges } = useAppSettings();
   const isAr = language === 'ar';
 
-  const [teacherCanChat, setTeacherCanChat] = useState(() => {
+  const teacherCanChat = pending.developerMode; // kept for reference; chat uses its own key
+  // Chat permission still uses localStorage directly (not part of pending/save flow for now)
+  const [teacherCanChatState, setTeacherCanChatState] = __import_useState(() => {
     return localStorage.getItem('app_teacher_can_chat') !== 'false';
   });
 
-  const [teacherBadges, setTeacherBadges] = useState(() => {
-    return localStorage.getItem('app_teacher_badges') !== 'false';
-  });
-
-  const [studentBadges, setStudentBadges] = useState(() => {
-    return localStorage.getItem('app_student_badges') !== 'false';
-  });
-
-  useEffect(() => {
-    localStorage.setItem('app_teacher_can_chat', String(teacherCanChat));
-  }, [teacherCanChat]);
-
-  useEffect(() => {
-    localStorage.setItem('app_teacher_badges', String(teacherBadges));
-  }, [teacherBadges]);
-
-  useEffect(() => {
-    localStorage.setItem('app_student_badges', String(studentBadges));
-  }, [studentBadges]);
-
-  const teacherFeatures = [
-    { icon: BookOpen, label: isAr ? 'نظام الواجبات المنزلية' : 'Homework System', desc: isAr ? 'تعيين ومتابعة الواجبات المنزلية للطلاب' : 'Assign and track student homework' },
-    { icon: ClipboardCheck, label: isAr ? 'نظام الامتحانات' : 'Examination System', desc: isAr ? 'إنشاء وإدارة الامتحانات عبر الإنترنت' : 'Create and manage online exams' },
-    { icon: Award, label: isAr ? 'نظام الدرجات' : 'Grading System', desc: isAr ? 'نظام تقييم ودرجات شامل' : 'Comprehensive grading and evaluation system' },
-    { icon: Calendar, label: isAr ? 'الجدولة التلقائية' : 'Auto Scheduling', desc: isAr ? 'جدولة تلقائية للحصص بناءً على التوفر' : 'Automated lesson scheduling based on availability' },
-    { icon: BarChart3, label: isAr ? 'تقارير الأداء' : 'Performance Reports', desc: isAr ? 'تقارير تفصيلية عن أداء الطلاب' : 'Detailed student performance analytics' },
-    { icon: Video, label: isAr ? 'الفصول المباشرة' : 'Live Classes', desc: isAr ? 'بث مباشر للدروس مع مشاركة الشاشة' : 'Live lesson streaming with screen sharing' },
-    { icon: FileText, label: isAr ? 'بنك الأسئلة' : 'Question Bank', desc: isAr ? 'مكتبة أسئلة قابلة لإعادة الاستخدام' : 'Reusable question library for assessments' },
-    { icon: MessageCircle, label: isAr ? 'ملاحظات الطلاب' : 'Student Notes', desc: isAr ? 'ملاحظات خاصة لكل طالب' : 'Private notes for each student' },
-    { icon: PenTool, label: isAr ? 'السبورة التفاعلية' : 'Interactive Whiteboard', desc: isAr ? 'أداة رسم وكتابة تفاعلية' : 'Interactive drawing and writing tool' },
-    { icon: Layers, label: isAr ? 'قوالب الدروس' : 'Lesson Templates', desc: isAr ? 'قوالب جاهزة لتسريع إنشاء الدروس' : 'Pre-built templates for faster lesson creation' },
-  ];
-
-  const studentFeatures = [
-    { icon: GraduationCap, label: isAr ? 'مسارات التعلم' : 'Learning Paths', desc: isAr ? 'مسارات تعليمية مخصصة لكل طالب' : 'Custom learning paths for each student' },
-    { icon: Brain, label: isAr ? 'التعلم التكيفي' : 'Adaptive Learning', desc: isAr ? 'محتوى يتكيف مع مستوى الطالب' : 'Content adapts to student level automatically' },
-    { icon: Gamepad2, label: isAr ? 'التعلم بالألعاب' : 'Gamification', desc: isAr ? 'نقاط ومكافآت وشارات تحفيزية' : 'Points, rewards, and motivational badges' },
-    { icon: Star, label: isAr ? 'لوحة المتصدرين' : 'Leaderboard', desc: isAr ? 'ترتيب الطلاب حسب الأداء' : 'Student ranking based on performance' },
-    { icon: BookMarked, label: isAr ? 'المفضلات' : 'Bookmarks', desc: isAr ? 'حفظ الدروس والمحتوى المفضل' : 'Save favorite lessons and content' },
-    { icon: Target, label: isAr ? 'الأهداف الشخصية' : 'Personal Goals', desc: isAr ? 'تعيين ومتابعة الأهداف التعليمية' : 'Set and track learning goals' },
-    { icon: Mic, label: isAr ? 'التسميع الصوتي' : 'Audio Recitation', desc: isAr ? 'تسجيل التلاوة والتقييم التلقائي' : 'Record recitation with auto-evaluation' },
-    { icon: Smartphone, label: isAr ? 'التطبيق المحمول' : 'Mobile App', desc: isAr ? 'تطبيق مخصص للهاتف المحمول' : 'Dedicated mobile application' },
-    { icon: Bell, label: isAr ? 'تذكيرات الدراسة' : 'Study Reminders', desc: isAr ? 'تنبيهات ذكية لمواعيد المراجعة' : 'Smart reminders for review sessions' },
-    { icon: Library, label: isAr ? 'المكتبة الرقمية' : 'Digital Library', desc: isAr ? 'مكتبة رقمية شاملة للمراجع' : 'Comprehensive digital reference library' },
-  ];
-
-  const platformFeatures = [
-    { icon: Globe, label: isAr ? 'متعدد اللغات' : 'Multi-Language', desc: isAr ? 'دعم لغات متعددة (تركي، أوردو، فرنسي)' : 'Support for Turkish, Urdu, French & more' },
-    { icon: Shield, label: isAr ? 'تسجيل الدخول الموحد' : 'SSO Integration', desc: isAr ? 'تسجيل دخول موحد مع Google وMicrosoft' : 'Single sign-on with Google & Microsoft' },
-    { icon: Zap, label: isAr ? 'الذكاء الاصطناعي' : 'AI Assistant', desc: isAr ? 'مساعد ذكي للإجابة على أسئلة الطلاب' : 'AI-powered assistant for student questions' },
-    { icon: HeartHandshake, label: isAr ? 'إدارة أولياء الأمور' : 'Parent Portal', desc: isAr ? 'بوابة خاصة لأولياء الأمور لمتابعة التقدم' : 'Dedicated portal for parents to track progress' },
-    { icon: Palette, label: isAr ? 'التخصيص المتقدم' : 'Advanced Theming', desc: isAr ? 'تخصيص كامل للواجهة والعلامة التجارية' : 'Full UI and branding customization' },
-    { icon: Lightbulb, label: isAr ? 'الإشعارات الذكية' : 'Smart Notifications', desc: isAr ? 'إشعارات ذكية عبر البريد وSMS وواتساب' : 'Smart alerts via email, SMS, and WhatsApp' },
-    { icon: BarChart3, label: isAr ? 'لوحة تحكم متقدمة' : 'Advanced Analytics', desc: isAr ? 'تحليلات متقدمة مع رسوم بيانية تفاعلية' : 'Advanced analytics with interactive charts' },
-    { icon: Users, label: isAr ? 'إدارة الفروع' : 'Multi-Branch', desc: isAr ? 'إدارة فروع متعددة من لوحة واحدة' : 'Manage multiple branches from one dashboard' },
-    { icon: FileText, label: isAr ? 'إنشاء التقارير' : 'Report Builder', desc: isAr ? 'أداة مرنة لإنشاء تقارير مخصصة' : 'Flexible tool for custom report generation' },
-    { icon: Calendar, label: isAr ? 'التقويم المتكامل' : 'Calendar Integration', desc: isAr ? 'تكامل مع Google Calendar وOutlook' : 'Integration with Google Calendar & Outlook' },
-  ];
-
-  const FeatureList = ({ features }: { features: typeof teacherFeatures }) => (
-    <div className="space-y-3">
-      {features.map((feature, i) => {
-        const Icon = feature.icon;
-        return (
-          <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Icon className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">{feature.label}</p>
-                <p className="text-xs text-muted-foreground">{feature.desc}</p>
-              </div>
-            </div>
-            <Badge variant="secondary" className="text-[10px] shrink-0">
-              {isAr ? 'قريباً' : 'Coming Soon'}
-            </Badge>
-          </div>
-        );
-      })}
-    </div>
-  );
-
   return (
-    <div className="space-y-6">
-      {/* Chat Permissions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-primary" />
-            {isAr ? 'صلاحيات المحادثة' : 'Chat Permissions'}
-          </CardTitle>
-          <CardDescription>{isAr ? 'التحكم في إمكانية بدء المعلمين للمحادثات' : 'Control whether teachers can initiate chats with students'}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>{isAr ? 'السماح للمعلمين ببدء محادثات' : 'Allow teachers to start chats'}</Label>
-              <p className="text-sm text-muted-foreground">{isAr ? 'عند التفعيل، يمكن للمعلمين بدء محادثات مع طلابهم' : 'When enabled, teachers can initiate chats with their students'}</p>
-            </div>
-            <Switch checked={teacherCanChat} onCheckedChange={setTeacherCanChat} />
-          </div>
-        </CardContent>
-      </Card>
+    <div className="w-full">
+      <Tabs defaultValue="general" className="w-full">
+        <TabsList>
+          <TabsTrigger value="general">
+            <GraduationCap className="mr-2 h-4 w-4" />
+            {isAr ? 'عام' : 'General'}
+          </TabsTrigger>
+          {/* <TabsTrigger value="design"><Palette className="mr-2 h-4 w-4" />{isAr ? 'تصميم' : 'Design'}</TabsTrigger> */}
+          <TabsTrigger value="engagement">
+            <HeartHandshake className="mr-2 h-4 w-4" />
+            {isAr ? 'تفاعل' : 'Engagement'}
+          </TabsTrigger>
+          <TabsTrigger value="communication">
+            <MessageCircle className="mr-2 h-4 w-4" />
+            {isAr ? 'تواصل' : 'Communication'}
+          </TabsTrigger>
+          <TabsTrigger value="gamification">
+            <Gamepad2 className="mr-2 h-4 w-4" />
+            {isAr ? 'التحفيز' : 'Gamification'}
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="general" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>{isAr ? 'إعدادات عامة' : 'General Settings'}</CardTitle>
+              <CardDescription>{isAr ? 'إدارة الإعدادات الأساسية للنظام التعليمي.' : 'Manage basic settings for the education system.'}</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="developerMode">{isAr ? 'وضع المطور' : 'Developer Mode'}</Label>
+                <Switch id="developerMode" checked={pending.developerMode} onCheckedChange={(checked) => updatePending({ developerMode: checked })} />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="publicSignup">{isAr ? 'السماح بالتسجيل العام' : 'Allow Public Signup'}</Label>
+                <Switch id="publicSignup" checked={pending.publicSignup} onCheckedChange={(checked) => updatePending({ publicSignup: checked })} />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="requireApproval">{isAr ? 'تتطلب الموافقة' : 'Require Approval'}</Label>
+                <Switch id="requireApproval" checked={pending.requireApproval} onCheckedChange={(checked) => updatePending({ requireApproval: checked })} />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      {/* Badges Management */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Award className="h-5 w-5 text-primary" />
-            {isAr ? 'إدارة الشارات' : 'Badges Management'}
-          </CardTitle>
-          <CardDescription>{isAr ? 'التحكم في تفعيل نظام الشارات والإنجازات' : 'Control the badges and achievements system'}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Users className="h-4 w-4 text-primary" />
+        <TabsContent value="engagement" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>{isAr ? 'إعدادات التفاعل' : 'Engagement Settings'}</CardTitle>
+              <CardDescription>{isAr ? 'إدارة ميزات التفاعل في النظام التعليمي.' : 'Manage engagement features within the education system.'}</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="teacherBadges">{isAr ? 'شارة المعلم' : 'Teacher Badges'}</Label>
+                <Switch id="teacherBadges" checked={pending.teacherBadges} onCheckedChange={(checked) => updatePending({ teacherBadges: checked })} />
               </div>
-              <div>
-                <Label className="text-sm font-medium">{isAr ? 'شارات المعلمين' : 'Teacher Badges'}</Label>
-                <p className="text-xs text-muted-foreground">{isAr ? 'تفعيل نظام الشارات والإنجازات للمعلمين' : 'Enable badges and achievements for teachers'}</p>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="studentBadges">{isAr ? 'شارة الطالب' : 'Student Badges'}</Label>
+                <Switch id="studentBadges" checked={pending.studentBadges} onCheckedChange={(checked) => updatePending({ studentBadges: checked })} />
               </div>
-            </div>
-            <Switch checked={teacherBadges} onCheckedChange={setTeacherBadges} />
-          </div>
-          <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                <GraduationCap className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <Label className="text-sm font-medium">{isAr ? 'شارات الطلاب' : 'Student Badges'}</Label>
-                <p className="text-xs text-muted-foreground">{isAr ? 'تفعيل نظام الشارات والإنجازات للطلاب' : 'Enable badges and achievements for students'}</p>
-              </div>
-            </div>
-            <Switch checked={studentBadges} onCheckedChange={setStudentBadges} />
-          </div>
-        </CardContent>
-      </Card>
+              {/* <div className="flex items-center justify-between">
+                <Label htmlFor="forums">{isAr ? 'منتديات' : 'Forums'}</Label>
+                <Switch id="forums" checked={pending.forums} onCheckedChange={(checked) => updatePending({ forums: checked })} />
+              </div> */}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      {/* Coming Soon Features */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <GraduationCap className="h-5 w-5 text-primary" />
-            {isAr ? 'ميزات النظام التعليمي' : 'Education System Features'}
-          </CardTitle>
-          <CardDescription>{isAr ? 'ميزات إضافية قادمة للنظام التعليمي' : 'Additional education system features coming soon'}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="teachers">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="teachers" className="text-xs gap-1">
-                <Users className="h-3 w-3" />
-                {isAr ? 'المعلمين' : 'Teachers'}
-                <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">{teacherFeatures.length}</Badge>
-              </TabsTrigger>
-              <TabsTrigger value="students" className="text-xs gap-1">
-                <GraduationCap className="h-3 w-3" />
-                {isAr ? 'الطلاب' : 'Students'}
-                <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">{studentFeatures.length}</Badge>
-              </TabsTrigger>
-              <TabsTrigger value="platform" className="text-xs gap-1">
-                <Globe className="h-3 w-3" />
-                {isAr ? 'المنصة' : 'Platform'}
-                <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">{platformFeatures.length}</Badge>
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="teachers" className="mt-4">
-              <FeatureList features={teacherFeatures} />
-            </TabsContent>
-            <TabsContent value="students" className="mt-4">
-              <FeatureList features={studentFeatures} />
-            </TabsContent>
-            <TabsContent value="platform" className="mt-4">
-              <FeatureList features={platformFeatures} />
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+        <TabsContent value="communication" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>{isAr ? 'إعدادات الاتصال' : 'Communication Settings'}</CardTitle>
+              <CardDescription>{isAr ? 'إدارة خيارات الاتصال داخل النظام التعليمي.' : 'Manage communication options within the education system.'}</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="teacherChat">{isAr ? 'دردشة المعلم' : 'Teacher Chat'}</Label>
+                <Switch
+                  id="teacherChat"
+                  checked={teacherCanChatState}
+                  onCheckedChange={(checked) => {
+                    localStorage.setItem('app_teacher_can_chat', checked.toString());
+                    setTeacherCanChatState(checked);
+                  }}
+                />
+              </div>
+              {/* <div className="flex items-center justify-between">
+                <Label htmlFor="studentChat">{isAr ? 'دردشة الطالب' : 'Student Chat'}</Label>
+                <Switch id="studentChat" checked={pending.studentChat} onCheckedChange={(checked) => updatePending({ studentChat: checked })} />
+              </div> */}
+              {/* <div className="flex items-center justify-between">
+                <Label htmlFor="announcements">{isAr ? 'إعلانات' : 'Announcements'}</Label>
+                <Switch id="announcements" checked={pending.announcements} onCheckedChange={(checked) => updatePending({ announcements: checked })} />
+              </div> */}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="gamification" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>{isAr ? 'إعدادات التحفيز' : 'Gamification Settings'}</CardTitle>
+              <CardDescription>{isAr ? 'إدارة عناصر التحفيز في النظام التعليمي.' : 'Manage gamification elements within the education system.'}</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="pointsSystem">{isAr ? 'نظام النقاط' : 'Points System'}</Label>
+                <Switch id="pointsSystem" checked={pending.pointsSystem} onCheckedChange={(checked) => updatePending({ pointsSystem: checked })} />
+              </div>
+              {/* <div className="flex items-center justify-between">
+                <Label htmlFor="leaderboards">{isAr ? 'المتصدرين' : 'Leaderboards'}</Label>
+                <Switch id="leaderboards" checked={pending.leaderboards} onCheckedChange={(checked) => updatePending({ leaderboards: checked })} />
+              </div> */}
+              {/* <div className="flex items-center justify-between">
+                <Label htmlFor="rewards">{isAr ? 'المكافآت' : 'Rewards'}</Label>
+                <Switch id="rewards" checked={pending.rewards} onCheckedChange={(checked) => updatePending({ rewards: checked })} />
+              </div> */}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
