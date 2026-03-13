@@ -275,6 +275,8 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
     localStorage.setItem('app_developer_mode', String(pending.developerMode));
     localStorage.setItem('app_website_mode', String(pending.websiteMode));
     localStorage.setItem('app_social_links', JSON.stringify(pending.socialLinks));
+    localStorage.setItem('app_teacher_badges', String(pending.teacherBadges));
+    localStorage.setItem('app_student_badges', String(pending.studentBadges));
     setSaved({ ...pending });
   }, [pending]);
 
