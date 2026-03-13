@@ -100,259 +100,354 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
 
   // ─── Block-based content (new format) ───
   if (Array.isArray(content.blocks) && content.blocks.length > 0) {
-    return (
-      <div className="space-y-6">
+    // Split blocks into pages by page_break markers
+    const pages: { blocks: any[]; label?: string; labelAr?: string }[] = [{ blocks: [] }];
+    content.blocks.forEach((block: any) => {
+      if (block.type === 'page_break') {
+        pages.push({ blocks: [], label: block.page_label, labelAr: block.page_label_ar });
+      } else {
+        pages[pages.length - 1].blocks.push(block);
+      }
+    });
 
-        {content.blocks.map((block: any, idx: number) => {
-          switch (block.type) {
-            case 'text':
-              return block.html ? (
-                <div key={block.id || idx} className="prose prose-sm dark:prose-invert max-w-none">
+    const hasPages = pages.length > 1;
+    const safePage = Math.min(currentPage, pages.length - 1);
+    const visibleBlocks = pages[safePage]?.blocks || [];
+
+    const renderBlock = (block: any, idx: number) => {
+      switch (block.type) {
+        case 'text':
+          return block.html ? (
+            <div key={block.id || idx} className="prose prose-sm dark:prose-invert max-w-none">
+              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.html) }} />
+            </div>
+          ) : null;
+
+        case 'image':
+          return block.image_url ? (
+            <div key={block.id || idx} className="space-y-2">
+              <div className="rounded-lg overflow-hidden border bg-muted/20">
+                <img src={block.image_url} alt={block.image_alt || ''} className="max-h-96 mx-auto object-contain" loading="lazy" />
+              </div>
+              {(block.image_caption || block.image_alt) && (
+                <p className="text-xs text-muted-foreground text-center italic">{block.image_caption || block.image_alt}</p>
+              )}
+            </div>
+          ) : null;
+
+        case 'video':
+          return (block.video_url || block.video_embed) ? (
+            <div key={block.id || idx} className="space-y-2">
+              <div className="aspect-video rounded-lg overflow-hidden bg-muted border">
+                {block.video_type === 'embed' && block.video_embed ? (
+                  <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.video_embed, { ADD_TAGS: ['iframe'], ADD_ATTR: ['allowfullscreen', 'frameborder', 'allow'] }) }} />
+                ) : block.video_type === 'youtube' && block.video_url ? (
+                  <iframe src={(() => { const m = block.video_url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^&?\s]+)/); return m ? `https://www.youtube.com/embed/${m[1]}` : block.video_url; })()} className="w-full h-full" allowFullScreen />
+                ) : block.video_type === 'vimeo' && block.video_url ? (
+                  <iframe src={(() => { const m = block.video_url.match(/vimeo\.com\/(\d+)/); return m ? `https://player.vimeo.com/video/${m[1]}` : block.video_url; })()} className="w-full h-full" allowFullScreen />
+                ) : (
+                  <video src={block.video_url} controls className="w-full h-full" />
+                )}
+              </div>
+              {block.video_caption && <p className="text-xs text-muted-foreground text-center italic">{block.video_caption}</p>}
+            </div>
+          ) : null;
+
+        case 'audio':
+          return block.audio_url ? (
+            <div key={block.id || idx} className="space-y-2">
+              <div className="p-4 rounded-lg border bg-muted/30">
+                <div className="flex items-center gap-3 mb-3">
+                  <Headphones className="h-5 w-5 text-primary" />
+                  <span className="text-sm font-medium">
+                    {block.audio_caption || (isAr ? 'مقطع صوتي' : 'Audio')}
+                  </span>
+                </div>
+                <audio src={block.audio_url} controls className="w-full" />
+              </div>
+            </div>
+          ) : null;
+
+        // ── Divider ──
+        case 'divider':
+          return (
+            <div key={block.id || idx} className="flex justify-center py-2">
+              <hr style={{
+                width: `${block.divider_width || 100}%`,
+                borderStyle: block.divider_style || 'solid',
+                borderWidth: `${block.divider_thickness || 1}px 0 0 0`,
+                borderColor: 'hsl(var(--border))',
+              }} />
+            </div>
+          );
+
+        // ── Split Screen ──
+        case 'split_screen':
+          return (
+            <div key={block.id || idx} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {block.split_left_html && (
+                <div className="prose prose-sm dark:prose-invert max-w-none p-4 rounded-lg border bg-card" dir="auto">
+                  <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.split_left_html) }} />
+                </div>
+              )}
+              {block.split_right_html && (
+                <div className="prose prose-sm dark:prose-invert max-w-none p-4 rounded-lg border bg-card" dir="auto">
+                  <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.split_right_html) }} />
+                </div>
+              )}
+              {!block.split_left_html && !block.split_right_html && (
+                <div className="col-span-2 p-4 rounded-lg border bg-muted/20 text-center">
+                  <p className="text-xs text-muted-foreground italic">{isAr ? 'لا يوجد محتوى بعد' : 'No content yet'}</p>
+                </div>
+              )}
+            </div>
+          );
+
+        // Content block types
+        case 'table_of_content': {
+          const tocRows = block.toc_rows;
+          if (tocRows && tocRows.length > 0) {
+            const tocStyle = block.toc_style || 'default';
+            const tocSize = block.toc_size || 'md';
+            const sizeClasses: Record<string, { cell: string; text: string; header: string }> = {
+              sm: { cell: 'px-2.5 py-1.5', text: 'text-xs', header: 'text-[10px]' },
+              md: { cell: 'px-4 py-2.5', text: 'text-sm', header: 'text-xs' },
+              lg: { cell: 'px-5 py-3.5', text: 'text-base', header: 'text-sm' },
+              xl: { cell: 'px-6 py-4.5', text: 'text-lg', header: 'text-base' },
+            };
+            const sz = sizeClasses[tocSize] || sizeClasses.md;
+            const tableClass = cn(
+              "w-full",
+              tocStyle === 'bordered' && "border-collapse [&_td]:border [&_th]:border [&_td]:border-border [&_th]:border-border",
+              tocStyle === 'minimal' && "[&_thead]:hidden"
+            );
+            const rowClass = (rIdx: number) => cn(
+              "border-b last:border-b-0 transition-colors",
+              tocStyle === 'striped' && rIdx % 2 === 1 && "bg-muted/30",
+              tocStyle !== 'minimal' && "hover:bg-muted/20"
+            );
+            const wrapClass = cn(
+              "rounded-lg overflow-hidden",
+              tocStyle !== 'minimal' && "border",
+              tocStyle === 'minimal' && "border-b"
+            );
+            return (
+              <div key={block.id || idx} className="space-y-3">
+                <div className={wrapClass}>
+                  <table className={tableClass}>
+                    <thead>
+                      <tr className="bg-muted/50 border-b">
+                        <th className={cn(sz.cell, sz.header, "text-start font-medium text-muted-foreground")} dir="ltr">{block.toc_header_en || 'English'}</th>
+                        <th className={cn(sz.cell, sz.header, "text-start font-medium text-muted-foreground")} dir="rtl">{block.toc_header_ar || 'العربية'}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tocRows.map((row: { en: string; ar: string }, rIdx: number) => (
+                        <tr key={rIdx} className={rowClass(rIdx)}>
+                          <td className={cn(sz.cell, sz.text)} dir="ltr">{row.en}</td>
+                          <td className={cn(sz.cell, sz.text, "font-[var(--font-arabic)]")} dir="rtl">{row.ar}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          }
+          return (
+            <div key={block.id || idx} className="space-y-3">
+              {block.html ? (
+                <div className="prose prose-sm dark:prose-invert max-w-none">
                   <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.html) }} />
                 </div>
-              ) : null;
-
-            case 'image':
-              return block.image_url ? (
-                <figure key={block.id || idx} className="space-y-2">
-                  <div className="rounded-lg overflow-hidden border bg-muted/30">
-                    <img
-                      src={block.image_url}
-                      alt={block.image_alt || block.image_caption || ''}
-                      className="w-full object-contain max-h-[500px] mx-auto"
-                    />
-                  </div>
-                  {block.image_caption && (
-                    <figcaption className="text-xs text-muted-foreground text-center">
-                      {block.image_caption}
-                    </figcaption>
-                  )}
-                </figure>
-              ) : null;
-
-            case 'video':
-              return block.video_url ? (
-                <div key={block.id || idx} className="space-y-2">
-                  <div className="aspect-video rounded-lg overflow-hidden bg-muted border">
-                    <video src={block.video_url} controls className="w-full h-full" controlsList="nodownload" />
-                  </div>
-                  {block.video_caption && (
-                    <p className="text-xs text-muted-foreground text-center">{block.video_caption}</p>
-                  )}
+              ) : (
+                <div className="p-4 rounded-lg border bg-muted/20 text-center">
+                  <p className="text-xs text-muted-foreground italic">{isAr ? 'لا يوجد محتوى بعد' : 'No content yet'}</p>
                 </div>
-              ) : null;
-
-            case 'audio':
-              return block.audio_url ? (
-                <div key={block.id || idx} className="space-y-2">
-                  <div className="p-4 rounded-lg border bg-muted/30">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Headphones className="h-5 w-5 text-primary" />
-                      <span className="text-sm font-medium">
-                        {block.audio_caption || (isAr ? 'مقطع صوتي' : 'Audio')}
-                      </span>
-                    </div>
-                    <audio src={block.audio_url} controls className="w-full" />
+              )}
+            </div>
+          );
+        }
+        case 'read_listen':
+        case 'memorization':
+        case 'revision':
+        case 'homework':
+          return (
+            <div key={block.id || idx} className="space-y-3">
+              {block.html && (
+                <div className="prose prose-sm dark:prose-invert max-w-none">
+                  <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.html) }} />
+                </div>
+              )}
+              {block.audio_url && (
+                <div className="p-3 rounded-lg border bg-muted/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Headphones className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-medium">{block.audio_caption || (isAr ? 'صوت' : 'Audio')}</span>
                   </div>
+                  <audio src={block.audio_url} controls className="w-full" />
                 </div>
-              ) : null;
+              )}
+              {!block.html && !block.audio_url && (
+                <div className="p-4 rounded-lg border bg-muted/20 text-center">
+                  <p className="text-xs text-muted-foreground italic">{isAr ? 'لا يوجد محتوى بعد' : 'No content yet'}</p>
+                </div>
+              )}
+            </div>
+          );
 
-            // Content block types (table_of_content, read_listen, memorization, revision, homework)
-            case 'table_of_content': {
-              const tocRows = block.toc_rows;
-              if (tocRows && tocRows.length > 0) {
-                const tocStyle = block.toc_style || 'default';
-                const tocSize = block.toc_size || 'md';
-                const sizeClasses: Record<string, { cell: string; text: string; header: string }> = {
-                  sm: { cell: 'px-2.5 py-1.5', text: 'text-xs', header: 'text-[10px]' },
-                  md: { cell: 'px-4 py-2.5', text: 'text-sm', header: 'text-xs' },
-                  lg: { cell: 'px-5 py-3.5', text: 'text-base', header: 'text-sm' },
-                  xl: { cell: 'px-6 py-4.5', text: 'text-lg', header: 'text-base' },
-                };
-                const sz = sizeClasses[tocSize] || sizeClasses.md;
-                const tableClass = cn(
-                  "w-full",
-                  tocStyle === 'bordered' && "border-collapse [&_td]:border [&_th]:border [&_td]:border-border [&_th]:border-border",
-                  tocStyle === 'minimal' && "[&_thead]:hidden"
-                );
-                const rowClass = (rIdx: number) => cn(
-                  "border-b last:border-b-0 transition-colors",
-                  tocStyle === 'striped' && rIdx % 2 === 1 && "bg-muted/30",
-                  tocStyle !== 'minimal' && "hover:bg-muted/20"
-                );
-                const wrapClass = cn(
-                  "rounded-lg overflow-hidden",
-                  tocStyle !== 'minimal' && "border",
-                  tocStyle === 'minimal' && "border-b"
-                );
-                return (
-                  <div key={block.id || idx} className="space-y-3">
-                    <div className={wrapClass}>
-                      <table className={tableClass}>
-                        <thead>
-                          <tr className="bg-muted/50 border-b">
-                            <th className={cn(sz.cell, sz.header, "text-start font-medium text-muted-foreground")} dir="ltr">{block.toc_header_en || 'English'}</th>
-                            <th className={cn(sz.cell, sz.header, "text-start font-medium text-muted-foreground")} dir="rtl">{block.toc_header_ar || 'العربية'}</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {tocRows.map((row: { en: string; ar: string }, rIdx: number) => (
-                            <tr key={rIdx} className={rowClass(rIdx)}>
-                              <td className={cn(sz.cell, sz.text)} dir="ltr">{row.en}</td>
-                              <td className={cn(sz.cell, sz.text, "font-[var(--font-arabic)]")} dir="rtl">{row.ar}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+        // Exercise: True/False
+        case 'exercise_true_false':
+          return (
+            <div key={block.id || idx} className="space-y-3 p-4 rounded-lg border bg-muted/10">
+              {block.question && <p className="text-sm font-medium">{isAr && block.question_ar ? block.question_ar : block.question}</p>}
+              <div className="flex gap-3">
+                <Badge variant="outline" className="px-4 py-1.5 cursor-pointer hover:bg-primary/10">{isAr ? 'صح' : 'True'}</Badge>
+                <Badge variant="outline" className="px-4 py-1.5 cursor-pointer hover:bg-primary/10">{isAr ? 'خطأ' : 'False'}</Badge>
+              </div>
+            </div>
+          );
+
+        // Exercise: Choose Correct / Multiple
+        case 'exercise_choose_correct':
+        case 'exercise_choose_multiple':
+          return (
+            <div key={block.id || idx} className="space-y-3 p-4 rounded-lg border bg-muted/10">
+              {block.question && <p className="text-sm font-medium">{isAr && block.question_ar ? block.question_ar : block.question}</p>}
+              {Array.isArray(block.options) && block.options.length > 0 && (
+                <div className="space-y-2">
+                  {block.options.map((opt: any, oi: number) => (
+                    <div key={oi} className="flex items-center gap-2 p-2 rounded-md border cursor-pointer hover:bg-primary/5 transition-colors">
+                      <div className={cn("h-4 w-4 rounded-full border-2 border-primary/30 shrink-0", block.type === 'exercise_choose_multiple' && "rounded-sm")} />
+                      <span className="text-sm">{isAr && opt.text_ar ? opt.text_ar : opt.text}</span>
                     </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+
+        // Exercise: Listen & Choose
+        case 'exercise_listen_choose':
+          return (
+            <div key={block.id || idx} className="space-y-3 p-4 rounded-lg border bg-muted/10">
+              {block.audio_url && <audio src={block.audio_url} controls className="w-full" />}
+              {block.question && <p className="text-sm font-medium">{isAr && block.question_ar ? block.question_ar : block.question}</p>}
+              {Array.isArray(block.options) && block.options.length > 0 && (
+                <div className="space-y-2">
+                  {block.options.map((opt: any, oi: number) => (
+                    <div key={oi} className="flex items-center gap-2 p-2 rounded-md border cursor-pointer hover:bg-primary/5 transition-colors">
+                      <div className="h-4 w-4 rounded-full border-2 border-primary/30 shrink-0" />
+                      <span className="text-sm">{isAr && opt.text_ar ? opt.text_ar : opt.text}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+
+        // Exercise: Text Match
+        case 'exercise_text_match':
+          return (
+            <div key={block.id || idx} className="space-y-3 p-4 rounded-lg border bg-muted/10">
+              {block.question && <p className="text-sm font-medium">{isAr && block.question_ar ? block.question_ar : block.question}</p>}
+              {Array.isArray(block.pairs) && block.pairs.length > 0 && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    {block.pairs.map((p: any, pi: number) => (
+                      <Badge key={pi} variant="secondary" className="w-full justify-center py-1.5">{isAr && p.left_ar ? p.left_ar : p.left}</Badge>
+                    ))}
                   </div>
-                );
-              }
-              // Fallback to legacy html content
-              return (
-                <div key={block.id || idx} className="space-y-3">
-                  {block.html ? (
-                    <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.html) }} />
-                    </div>
-                  ) : (
-                    <div className="p-4 rounded-lg border bg-muted/20 text-center">
-                      <p className="text-xs text-muted-foreground italic">{isAr ? 'لا يوجد محتوى بعد' : 'No content yet'}</p>
-                    </div>
-                  )}
-                </div>
-              );
-            }
-            case 'read_listen':
-            case 'memorization':
-            case 'revision':
-            case 'homework':
-              return (
-                <div key={block.id || idx} className="space-y-3">
-                  {block.html && (
-                    <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.html) }} />
-                    </div>
-                  )}
-                  {block.audio_url && (
-                    <div className="p-3 rounded-lg border bg-muted/30">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Headphones className="h-4 w-4 text-primary" />
-                        <span className="text-xs font-medium">{block.audio_caption || (isAr ? 'صوت' : 'Audio')}</span>
-                      </div>
-                      <audio src={block.audio_url} controls className="w-full" />
-                    </div>
-                  )}
-                  {!block.html && !block.audio_url && (
-                    <div className="p-4 rounded-lg border bg-muted/20 text-center">
-                      <p className="text-xs text-muted-foreground italic">{isAr ? 'لا يوجد محتوى بعد' : 'No content yet'}</p>
-                    </div>
-                  )}
-                </div>
-              );
-
-            // Exercise: True/False
-            case 'exercise_true_false':
-              return (
-                <div key={block.id || idx} className="space-y-3 p-4 rounded-lg border bg-muted/10">
-                  {block.question && <p className="text-sm font-medium">{isAr && block.question_ar ? block.question_ar : block.question}</p>}
-                  <div className="flex gap-3">
-                    <Badge variant="outline" className="px-4 py-1.5">{isAr ? 'صح' : 'True'}</Badge>
-                    <Badge variant="outline" className="px-4 py-1.5">{isAr ? 'خطأ' : 'False'}</Badge>
+                  <div className="space-y-2">
+                    {block.pairs.map((p: any, pi: number) => (
+                      <Badge key={pi} variant="outline" className="w-full justify-center py-1.5">{isAr && p.right_ar ? p.right_ar : p.right}</Badge>
+                    ))}
                   </div>
                 </div>
-              );
+              )}
+            </div>
+          );
 
-            // Exercise: Choose Correct / Choose Multiple
-            case 'exercise_choose_correct':
-            case 'exercise_choose_multiple':
-              return (
-                <div key={block.id || idx} className="space-y-3 p-4 rounded-lg border bg-muted/10">
-                  {block.question && <p className="text-sm font-medium">{isAr && block.question_ar ? block.question_ar : block.question}</p>}
-                  {Array.isArray(block.options) && block.options.length > 0 && (
-                    <div className="space-y-2">
-                      {block.options.map((opt: any, oi: number) => (
-                        <div key={oi} className="flex items-center gap-2 p-2.5 rounded-md border bg-background hover:bg-muted/40 cursor-pointer transition-colors">
-                          <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0" />
-                          <span className="text-sm">{isAr && opt.text_ar ? opt.text_ar : opt.text}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+        // Exercise: Rearrange
+        case 'exercise_rearrange':
+          return (
+            <div key={block.id || idx} className="space-y-3 p-4 rounded-lg border bg-muted/10">
+              {block.question && <p className="text-sm font-medium">{isAr && block.question_ar ? block.question_ar : block.question}</p>}
+              {Array.isArray(block.items) && block.items.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {block.items.map((item: any, ii: number) => (
+                    <Badge key={ii} variant="outline" className="px-3 py-1.5 cursor-grab">
+                      {isAr && item.text_ar ? item.text_ar : item.text}
+                    </Badge>
+                  ))}
                 </div>
-              );
+              )}
+            </div>
+          );
 
-            // Exercise: Listen & Choose
-            case 'exercise_listen_choose':
-              return (
-                <div key={block.id || idx} className="space-y-3 p-4 rounded-lg border bg-muted/10">
-                  {block.audio_url && <audio src={block.audio_url} controls className="w-full" />}
-                  {block.question && <p className="text-sm font-medium">{isAr && block.question_ar ? block.question_ar : block.question}</p>}
-                  {Array.isArray(block.options) && block.options.length > 0 && (
-                    <div className="space-y-2">
-                      {block.options.map((opt: any, oi: number) => (
-                        <div key={oi} className="flex items-center gap-2 p-2.5 rounded-md border bg-background hover:bg-muted/40 cursor-pointer transition-colors">
-                          <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0" />
-                          <span className="text-sm">{isAr && opt.text_ar ? opt.text_ar : opt.text}</span>
-                        </div>
-                      ))}
-                    </div>
+        // Exercise: Missing Text
+        case 'exercise_missing_text':
+          return (
+            <div key={block.id || idx} className="space-y-3 p-4 rounded-lg border bg-muted/10">
+              {block.question && <p className="text-sm font-medium">{isAr && block.question_ar ? block.question_ar : block.question}</p>}
+              {(block.sentence || block.sentence_ar) && (
+                <p className="text-sm">
+                  {(isAr && block.sentence_ar ? block.sentence_ar : block.sentence || '').replace('___', '______')}
+                </p>
+              )}
+            </div>
+          );
+
+        default:
+          return null;
+      }
+    };
+
+    return (
+      <div className="space-y-4">
+        {/* Page navigation */}
+        {hasPages && (
+          <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
+            <Button variant="outline" size="sm" disabled={safePage === 0} onClick={() => setCurrentPage(safePage - 1)} className="gap-1 text-xs">
+              <ChevronLeft className="h-3 w-3" />
+              {isAr ? 'السابق' : 'Previous'}
+            </Button>
+            <div className="flex items-center gap-1.5">
+              {pages.map((p, pIdx) => (
+                <button key={pIdx} type="button" onClick={() => setCurrentPage(pIdx)}
+                  className={cn("min-w-[28px] h-7 rounded-md text-xs font-medium border transition-colors px-2",
+                    safePage === pIdx ? "bg-primary text-primary-foreground border-primary" : "bg-background text-muted-foreground border-border hover:bg-muted"
                   )}
-                </div>
-              );
+                >
+                  {pIdx === 0 ? (isAr ? '١' : '1') : (isAr && p.labelAr ? p.labelAr : p.label || `${pIdx + 1}`)}
+                </button>
+              ))}
+            </div>
+            <Button variant="outline" size="sm" disabled={safePage >= pages.length - 1} onClick={() => setCurrentPage(safePage + 1)} className="gap-1 text-xs">
+              {isAr ? 'التالي' : 'Next'}
+              <ChevronRight className="h-3 w-3" />
+            </Button>
+          </div>
+        )}
 
-            // Exercise: Text Match (pairs)
-            case 'exercise_text_match':
-              return (
-                <div key={block.id || idx} className="space-y-3 p-4 rounded-lg border bg-muted/10">
-                  {block.question && <p className="text-sm font-medium">{isAr && block.question_ar ? block.question_ar : block.question}</p>}
-                  {Array.isArray(block.pairs) && block.pairs.length > 0 && (
-                    <div className="grid grid-cols-2 gap-2">
-                      {block.pairs.map((pair: any, pi: number) => (
-                        <React.Fragment key={pi}>
-                          <div className="p-2.5 rounded-md border bg-background text-sm text-center">{isAr && pair.left_ar ? pair.left_ar : pair.left}</div>
-                          <div className="p-2.5 rounded-md border bg-primary/5 text-sm text-center">{isAr && pair.right_ar ? pair.right_ar : pair.right}</div>
-                        </React.Fragment>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
+        <div className="space-y-6">
+          {visibleBlocks.map((block: any, idx: number) => renderBlock(block, idx))}
+        </div>
 
-            // Exercise: Rearrange
-            case 'exercise_rearrange':
-              return (
-                <div key={block.id || idx} className="space-y-3 p-4 rounded-lg border bg-muted/10">
-                  {block.question && <p className="text-sm font-medium">{isAr && block.question_ar ? block.question_ar : block.question}</p>}
-                  {Array.isArray(block.items) && block.items.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {block.items.map((item: any, ii: number) => (
-                        <Badge key={ii} variant="outline" className="px-3 py-1.5 cursor-grab">
-                          {isAr && item.text_ar ? item.text_ar : item.text}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-
-            // Exercise: Missing Text
-            case 'exercise_missing_text':
-              return (
-                <div key={block.id || idx} className="space-y-3 p-4 rounded-lg border bg-muted/10">
-                  {block.question && <p className="text-sm font-medium">{isAr && block.question_ar ? block.question_ar : block.question}</p>}
-                  {(block.sentence || block.sentence_ar) && (
-                    <p className="text-sm">
-                      {(isAr && block.sentence_ar ? block.sentence_ar : block.sentence || '').replace('___', '______')}
-                    </p>
-                  )}
-                </div>
-              );
-
-            default:
-              return null;
-          }
-        })}
+        {/* Bottom page navigation */}
+        {hasPages && (
+          <div className="flex items-center justify-between pt-2">
+            <Button variant="ghost" size="sm" disabled={safePage === 0} onClick={() => setCurrentPage(safePage - 1)} className="gap-1 text-xs">
+              <ChevronLeft className="h-3 w-3" />
+              {isAr ? 'الصفحة السابقة' : 'Previous Page'}
+            </Button>
+            <span className="text-xs text-muted-foreground">{safePage + 1} / {pages.length}</span>
+            <Button variant="ghost" size="sm" disabled={safePage >= pages.length - 1} onClick={() => setCurrentPage(safePage + 1)} className="gap-1 text-xs">
+              {isAr ? 'الصفحة التالية' : 'Next Page'}
+              <ChevronRight className="h-3 w-3" />
+            </Button>
+          </div>
+        )}
       </div>
     );
   }
