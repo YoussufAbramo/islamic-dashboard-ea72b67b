@@ -437,6 +437,7 @@ const BackupsSettings = () => {
                 const { data, error } = await supabase.functions.invoke('manage-backups', { body: { action: 'test_auto_backup' } });
                 if (error) throw error;
                 if (data?.error) throw new Error(data.error);
+                logAction('add', 'Backup', `Full backup created: ${data.fileName}`, undefined, `${data.totalRecords} records`);
                 toast.success(isAr ? `تم إنشاء نسخة شاملة: ${data.fileName} (${data.totalRecords} سجل)` : `Full backup created: ${data.fileName} (${data.totalRecords} records)`);
                 fetchBackups();
               } catch (err: any) { toast.error(err.message || 'Backup failed'); }
