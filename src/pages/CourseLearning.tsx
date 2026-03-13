@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import DOMPurify from 'dompurify';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -112,7 +113,7 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
             case 'text':
               return block.html ? (
                 <div key={block.id || idx} className="prose prose-sm dark:prose-invert max-w-none">
-                  <div dangerouslySetInnerHTML={{ __html: block.html }} />
+                  <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.html) }} />
                 </div>
               ) : null;
 
@@ -171,7 +172,7 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
                 <div key={block.id || idx} className="space-y-3">
                   {block.html && (
                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <div dangerouslySetInnerHTML={{ __html: block.html }} />
+                      <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.html) }} />
                     </div>
                   )}
                   {block.audio_url && (
@@ -386,7 +387,7 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
 
       {textContent && (
         <div className="prose prose-sm dark:prose-invert max-w-none">
-          <div dangerouslySetInnerHTML={{ __html: textContent }} />
+          <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(textContent) }} />
         </div>
       )}
 
