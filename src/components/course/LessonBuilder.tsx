@@ -109,7 +109,7 @@ const blockMeta: Record<BlockType, BlockMetaItem> = {
 };
 
 const blockGroups: { key: string; label: string; labelAr: string; types: BlockType[] }[] = [
-  { key: 'media', label: '📁 Media', labelAr: '📁 الوسائط', types: ['text', 'image', 'video', 'audio'] },
+  { key: 'media', label: '📁 Media', labelAr: '📁 الوسائط', types: ['text', 'image', 'video', 'audio', 'divider', 'page_break', 'split_screen'] },
   { key: 'content', label: '📖 Content', labelAr: '📖 المحتوى', types: ['table_of_content', 'read_listen', 'memorization', 'revision', 'homework'] },
   { key: 'exercise', label: '✏️ Exercises', labelAr: '✏️ التمارين', types: ['exercise_listen_choose', 'exercise_text_match', 'exercise_choose_correct', 'exercise_choose_multiple', 'exercise_rearrange', 'exercise_missing_text', 'exercise_true_false'] },
 ];
