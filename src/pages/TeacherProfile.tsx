@@ -59,6 +59,10 @@ const TeacherProfile = () => {
   // Avatar
   const [resolvedAvatar, setResolvedAvatar] = useState('');
 
+  // Document preview
+  const [docPreview, setDocPreview] = useState<{ url: string; label: string } | null>(null);
+  const [docFullscreen, setDocFullscreen] = useState(false);
+
   // File uploads - signed URLs for viewing
   const [cvSignedUrl, setCvSignedUrl] = useState('');
   const [contractSignedUrl, setContractSignedUrl] = useState('');
