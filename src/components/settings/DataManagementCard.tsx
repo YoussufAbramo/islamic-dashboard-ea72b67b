@@ -131,43 +131,34 @@ const ClearLogsCard = ({ isAr }: { isAr: boolean }) => {
   return (
     <>
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <ScrollText className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <ScrollText className="h-4 w-4 text-amber-600 dark:text-amber-400" />
             {isAr ? 'مسح السجلات' : 'Clear Logs'}
           </CardTitle>
-          <CardDescription>
-            {isAr
-              ? 'مسح سجلات النظام المحددة. اختر السجلات التي تريد مسحها.'
-              : 'Clear selected system logs. Choose which logs to clear.'}
-          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
+        <CardContent className="space-y-2 pt-0">
+          <div className="flex flex-wrap gap-2">
             {LOG_TYPES.map(lt => {
               const Icon = lt.icon;
               return (
                 <label
                   key={lt.key}
-                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border cursor-pointer transition-colors text-xs ${
                     selected.includes(lt.key) ? 'border-primary/30 bg-primary/5' : 'border-border'
                   }`}
                 >
                   <Checkbox
+                    className="h-3.5 w-3.5"
                     checked={selected.includes(lt.key)}
                     onCheckedChange={(checked) => {
                       if (checked) setSelected(prev => [...prev, lt.key]);
                       else setSelected(prev => prev.filter(c => c !== lt.key));
                     }}
                   />
-                  <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">{isAr ? lt.labelAr : lt.label}</span>
-                      {lt.isLocal && <Badge variant="outline" className="text-[9px] h-4 px-1.5">{isAr ? 'محلي' : 'Local'}</Badge>}
-                    </div>
-                    <p className="text-[10px] text-muted-foreground">{isAr ? lt.descAr : lt.desc}</p>
-                  </div>
+                  <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="font-medium">{isAr ? lt.labelAr : lt.label}</span>
+                  {lt.isLocal && <Badge variant="outline" className="text-[8px] h-3.5 px-1">{isAr ? 'محلي' : 'Local'}</Badge>}
                 </label>
               );
             })}
@@ -177,10 +168,10 @@ const ClearLogsCard = ({ isAr }: { isAr: boolean }) => {
             size="sm"
             onClick={() => setConfirmOpen(true)}
             disabled={loading || selected.length === 0}
-            className="text-destructive hover:text-destructive"
+            className="text-destructive hover:text-destructive h-7 text-xs"
           >
-            {loading && <Loader2 className="h-4 w-4 me-1 animate-spin" />}
-            {isAr ? 'مسح السجلات المحددة' : 'Clear Selected Logs'}
+            {loading && <Loader2 className="h-3.5 w-3.5 me-1 animate-spin" />}
+            {isAr ? 'مسح المحدد' : 'Clear Selected'}
           </Button>
         </CardContent>
       </Card>
