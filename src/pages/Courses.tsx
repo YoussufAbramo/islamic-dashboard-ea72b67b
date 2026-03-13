@@ -444,7 +444,15 @@ const Courses = () => {
                         {getTrackLabel(course) || '—'}
                       </TableCell>
                       <TableCell>
-                        {course.duration_weeks ? `${course.duration_weeks} ${isAr ? 'أسابيع' : 'weeks'}` : '—'}
+                        {contentCounts[course.id] ? (
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <span title={isAr ? 'المواضيع' : 'Topics'}>{contentCounts[course.id].topics} {isAr ? 'موضوع' : 'T'}</span>
+                            <span>·</span>
+                            <span title={isAr ? 'الأقسام' : 'Sections'}>{contentCounts[course.id].sections} {isAr ? 'قسم' : 'S'}</span>
+                            <span>·</span>
+                            <span title={isAr ? 'الدروس' : 'Lessons'}>{contentCounts[course.id].lessons} {isAr ? 'درس' : 'L'}</span>
+                          </div>
+                        ) : '—'}
                       </TableCell>
                       <TableCell><Badge variant={statusColor[course.status] as any}>{getLabel(courseStatusLabels, course.status, isAr)}</Badge></TableCell>
                       <TableCell className="flex gap-1">
