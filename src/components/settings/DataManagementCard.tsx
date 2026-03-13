@@ -334,6 +334,12 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
           </CardContent>
         </Card>
 
+        {/* Clear All Content Card */}
+        <ClearContentCard isAr={isAr} />
+
+        {/* Clear Logs Card */}
+        <ClearLogsCard isAr={isAr} />
+
         {/* System Reset */}
         <SystemResetCard isAr={isAr} />
       </div>
