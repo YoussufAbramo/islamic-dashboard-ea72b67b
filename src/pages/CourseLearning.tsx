@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -160,6 +160,134 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
                   </div>
                 </div>
               ) : null;
+
+            // Content block types (table_of_content, read_listen, memorization, revision, homework)
+            case 'table_of_content':
+            case 'read_listen':
+            case 'memorization':
+            case 'revision':
+            case 'homework':
+              return (
+                <div key={block.id || idx} className="space-y-3">
+                  {block.html && (
+                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                      <div dangerouslySetInnerHTML={{ __html: block.html }} />
+                    </div>
+                  )}
+                  {block.audio_url && (
+                    <div className="p-3 rounded-lg border bg-muted/30">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Headphones className="h-4 w-4 text-primary" />
+                        <span className="text-xs font-medium">{block.audio_caption || (isAr ? 'صوت' : 'Audio')}</span>
+                      </div>
+                      <audio src={block.audio_url} controls className="w-full" />
+                    </div>
+                  )}
+                  {!block.html && !block.audio_url && (
+                    <div className="p-4 rounded-lg border bg-muted/20 text-center">
+                      <p className="text-xs text-muted-foreground italic">{isAr ? 'لا يوجد محتوى بعد' : 'No content yet'}</p>
+                    </div>
+                  )}
+                </div>
+              );
+
+            // Exercise: True/False
+            case 'exercise_true_false':
+              return (
+                <div key={block.id || idx} className="space-y-3 p-4 rounded-lg border bg-muted/10">
+                  {block.question && <p className="text-sm font-medium">{isAr && block.question_ar ? block.question_ar : block.question}</p>}
+                  <div className="flex gap-3">
+                    <Badge variant="outline" className="px-4 py-1.5">{isAr ? 'صح' : 'True'}</Badge>
+                    <Badge variant="outline" className="px-4 py-1.5">{isAr ? 'خطأ' : 'False'}</Badge>
+                  </div>
+                </div>
+              );
+
+            // Exercise: Choose Correct / Choose Multiple
+            case 'exercise_choose_correct':
+            case 'exercise_choose_multiple':
+              return (
+                <div key={block.id || idx} className="space-y-3 p-4 rounded-lg border bg-muted/10">
+                  {block.question && <p className="text-sm font-medium">{isAr && block.question_ar ? block.question_ar : block.question}</p>}
+                  {Array.isArray(block.options) && block.options.length > 0 && (
+                    <div className="space-y-2">
+                      {block.options.map((opt: any, oi: number) => (
+                        <div key={oi} className="flex items-center gap-2 p-2.5 rounded-md border bg-background hover:bg-muted/40 cursor-pointer transition-colors">
+                          <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                          <span className="text-sm">{isAr && opt.text_ar ? opt.text_ar : opt.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+
+            // Exercise: Listen & Choose
+            case 'exercise_listen_choose':
+              return (
+                <div key={block.id || idx} className="space-y-3 p-4 rounded-lg border bg-muted/10">
+                  {block.audio_url && <audio src={block.audio_url} controls className="w-full" />}
+                  {block.question && <p className="text-sm font-medium">{isAr && block.question_ar ? block.question_ar : block.question}</p>}
+                  {Array.isArray(block.options) && block.options.length > 0 && (
+                    <div className="space-y-2">
+                      {block.options.map((opt: any, oi: number) => (
+                        <div key={oi} className="flex items-center gap-2 p-2.5 rounded-md border bg-background hover:bg-muted/40 cursor-pointer transition-colors">
+                          <Circle className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                          <span className="text-sm">{isAr && opt.text_ar ? opt.text_ar : opt.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+
+            // Exercise: Text Match (pairs)
+            case 'exercise_text_match':
+              return (
+                <div key={block.id || idx} className="space-y-3 p-4 rounded-lg border bg-muted/10">
+                  {block.question && <p className="text-sm font-medium">{isAr && block.question_ar ? block.question_ar : block.question}</p>}
+                  {Array.isArray(block.pairs) && block.pairs.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {block.pairs.map((pair: any, pi: number) => (
+                        <React.Fragment key={pi}>
+                          <div className="p-2.5 rounded-md border bg-background text-sm text-center">{isAr && pair.left_ar ? pair.left_ar : pair.left}</div>
+                          <div className="p-2.5 rounded-md border bg-primary/5 text-sm text-center">{isAr && pair.right_ar ? pair.right_ar : pair.right}</div>
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+
+            // Exercise: Rearrange
+            case 'exercise_rearrange':
+              return (
+                <div key={block.id || idx} className="space-y-3 p-4 rounded-lg border bg-muted/10">
+                  {block.question && <p className="text-sm font-medium">{isAr && block.question_ar ? block.question_ar : block.question}</p>}
+                  {Array.isArray(block.items) && block.items.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {block.items.map((item: any, ii: number) => (
+                        <Badge key={ii} variant="outline" className="px-3 py-1.5 cursor-grab">
+                          {isAr && item.text_ar ? item.text_ar : item.text}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+
+            // Exercise: Missing Text
+            case 'exercise_missing_text':
+              return (
+                <div key={block.id || idx} className="space-y-3 p-4 rounded-lg border bg-muted/10">
+                  {block.question && <p className="text-sm font-medium">{isAr && block.question_ar ? block.question_ar : block.question}</p>}
+                  {(block.sentence || block.sentence_ar) && (
+                    <p className="text-sm">
+                      {(isAr && block.sentence_ar ? block.sentence_ar : block.sentence || '').replace('___', '______')}
+                    </p>
+                  )}
+                </div>
+              );
 
             default:
               return null;
