@@ -331,10 +331,21 @@ const CourseTracks = () => {
                     <Separator />
                     <CardContent className="py-4 px-5">
                       {trackCourses.length === 0 ? (
-                        <div className="text-center py-8 border border-dashed rounded-xl bg-muted/30">
-                          <BookOpen className="h-8 w-8 mx-auto mb-2 text-muted-foreground/40" />
-                          <p className="text-sm text-muted-foreground">{isAr ? 'لا توجد دورات مرتبطة بهذا المسار' : 'No courses assigned to this track'}</p>
-                          <p className="text-xs text-muted-foreground/60 mt-1">{isAr ? 'اربط الدورات من صفحة إدارة الدورات' : 'Link courses from the course management page'}</p>
+                        <div className="text-center py-8 border border-dashed rounded-xl bg-muted/30 space-y-3">
+                          <BookOpen className="h-8 w-8 mx-auto text-muted-foreground/40" />
+                          <div>
+                            <p className="text-sm text-muted-foreground">{isAr ? 'لا توجد دورات مرتبطة بهذا المسار' : 'No courses assigned to this track'}</p>
+                            <p className="text-xs text-muted-foreground/60 mt-1">{isAr ? 'اربط الدورات من صفحة إدارة الدورات' : 'Link courses from the course management page'}</p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1.5"
+                            onClick={() => navigate('/dashboard/courses')}
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                            {isAr ? 'إدارة الدورات' : 'Manage Courses'}
+                          </Button>
                         </div>
                       ) : (
                         <div className="space-y-5">
