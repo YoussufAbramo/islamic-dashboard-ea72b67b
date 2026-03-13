@@ -203,6 +203,8 @@ function loadSaved(): PendingSettings {
     developerMode: localStorage.getItem('app_developer_mode') !== 'false',
     websiteMode: localStorage.getItem('app_website_mode') !== 'false',
     socialLinks: (() => { try { const s = localStorage.getItem('app_social_links'); return s ? { ...DEFAULT_SOCIAL_LINKS, ...JSON.parse(s) } : DEFAULT_SOCIAL_LINKS; } catch { return DEFAULT_SOCIAL_LINKS; } })(),
+    teacherBadges: localStorage.getItem('app_teacher_badges') !== 'false',
+    studentBadges: localStorage.getItem('app_student_badges') !== 'false',
   };
 }
 
