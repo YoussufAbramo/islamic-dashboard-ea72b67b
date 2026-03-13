@@ -580,7 +580,27 @@ const CourseDetail = () => {
                     </div>
                     <CollapsibleTrigger className="flex items-center gap-2 flex-1 min-w-0 text-start group">
                       <BookOpen className="h-4 w-4 text-primary shrink-0" />
-                      <span className="font-semibold truncate">{isAr && topic.title_ar ? topic.title_ar : topic.title}</span>
+                      {inlineEdit?.id === topic.id && inlineEdit?.type === 'topic' ? (
+                        <div className="flex items-center gap-1 flex-1" onClick={(e) => e.stopPropagation()}>
+                          <Input
+                            value={inlineEdit.value}
+                            onChange={(e) => setInlineEdit({ ...inlineEdit, value: e.target.value })}
+                            onKeyDown={handleInlineKeyDown}
+                            autoFocus
+                            className="h-7 text-sm font-semibold"
+                            onClick={(e) => e.preventDefault()}
+                          />
+                          <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 text-primary" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleInlineSave(); }}><Check className="h-3.5 w-3.5" /></Button>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 text-muted-foreground" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleInlineCancel(); }}><X className="h-3.5 w-3.5" /></Button>
+                        </div>
+                      ) : (
+                        <span
+                          className="font-semibold truncate cursor-text"
+                          onDoubleClick={(e) => { e.stopPropagation(); handleInlineDoubleClick(topic.id, 'topic', isAr && topic.title_ar ? topic.title_ar : topic.title); }}
+                        >
+                          {isAr && topic.title_ar ? topic.title_ar : topic.title}
+                        </span>
+                      )}
                       <Badge variant="secondary" className="text-[10px] shrink-0">
                         {(sections[topic.id] || []).length} {isAr ? 'قسم' : 'sec'}
                       </Badge>
@@ -593,7 +613,7 @@ const CourseDetail = () => {
                       />
                     )}
                   </div>
-                  <CollapsibleContent>
+                  <CollapsibleContent className="animate-accordion-down data-[state=closed]:animate-accordion-up">
                     <div className="p-4 space-y-3">
                       {/* Sections within this Topic */}
                       <SortableList items={sections[topic.id] || []} onReorder={(a, o) => reorderSections(topic.id, a, o)}>
