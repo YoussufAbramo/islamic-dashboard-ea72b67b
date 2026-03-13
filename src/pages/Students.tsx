@@ -112,6 +112,8 @@ const Students = () => {
 
   const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems, startIndex, endIndex } = usePagination(filtered);
 
+  const showEmptyState = !loading && students.length === 0;
+
   if (loading) return <TableSkeleton />;
 
   return (
@@ -131,50 +133,56 @@ const Students = () => {
         </div>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('students.name')}</TableHead>
-              <TableHead>{t('students.phone')}</TableHead>
-              <TableHead>{t('students.email')}</TableHead>
-              <TableHead>{t('students.lessonDuration')}</TableHead>
-              <TableHead>{t('common.actions')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedItems.map((student) => (
-              <TableRow key={student.id}>
-                <TableCell className="font-medium">{student.profiles?.full_name}</TableCell>
-                <TableCell>{student.profiles?.phone}</TableCell>
-                <TableCell>{student.profiles?.email}</TableCell>
-                <TableCell>{student.lesson_duration} {t('common.minutes')}</TableCell>
-                <TableCell className="flex gap-1">
-                  <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => viewDetails(student)}><Eye className={ACTION_ICON} /></Button>
-                  <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => { viewDetails(student); setTimeout(() => setEditing(true), 100); }}><Pencil className={ACTION_ICON} /></Button>
-                  {role === 'admin' && <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteTarget(student.id)}><Trash2 className={ACTION_ICON} /></Button>}
-                </TableCell>
-              </TableRow>
-            ))}
-            {paginatedItems.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} className="p-0">
-                  <EmptyState
-                    icon={Users}
-                    title={isAr ? 'لا يوجد طلاب بعد' : 'No students yet'}
-                    description={isAr
-                      ? 'أضف أول طالب لبدء إدارة الفصول الدراسية.'
-                      : 'Add your first student to start managing your classrooms.'}
-                    actionLabel={role === 'admin' ? (isAr ? 'إضافة طالب' : 'Add Student') : undefined}
-                    onAction={role === 'admin' ? () => setAddOpen(true) : undefined}
-                  />
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
+      {showEmptyState ? (
+        <EmptyState
+          icon={Users}
+          title={isAr ? 'لا يوجد طلاب بعد' : 'No students yet'}
+          description={isAr
+            ? 'أضف أول طالب لبدء إدارة الفصول الدراسية.'
+            : 'Add your first student to start managing your classrooms.'}
+          actionLabel={role === 'admin' ? (isAr ? 'إضافة طالب' : 'Add Student') : undefined}
+          onAction={role === 'admin' ? () => setAddOpen(true) : undefined}
+        />
+      ) : (
+        <>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t('students.name')}</TableHead>
+                  <TableHead>{t('students.phone')}</TableHead>
+                  <TableHead>{t('students.email')}</TableHead>
+                  <TableHead>{t('students.lessonDuration')}</TableHead>
+                  <TableHead>{t('common.actions')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedItems.map((student) => (
+                  <TableRow key={student.id}>
+                    <TableCell className="font-medium">{student.profiles?.full_name}</TableCell>
+                    <TableCell>{student.profiles?.phone}</TableCell>
+                    <TableCell>{student.profiles?.email}</TableCell>
+                    <TableCell>{student.lesson_duration} {t('common.minutes')}</TableCell>
+                    <TableCell className="flex gap-1">
+                      <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => viewDetails(student)}><Eye className={ACTION_ICON} /></Button>
+                      <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => { viewDetails(student); setTimeout(() => setEditing(true), 100); }}><Pencil className={ACTION_ICON} /></Button>
+                      {role === 'admin' && <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteTarget(student.id)}><Trash2 className={ACTION_ICON} /></Button>}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {paginatedItems.length === 0 && filtered.length === 0 && students.length > 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                      {isAr ? 'لا توجد نتائج للبحث' : 'No results found'}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          <PaginationControls currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} totalItems={totalItems} startIndex={startIndex} endIndex={endIndex} />
+        </>
+      )}
 
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
