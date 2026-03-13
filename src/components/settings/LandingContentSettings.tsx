@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,6 +26,7 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, v
 import { CSS } from '@dnd-kit/utilities';
 import { DEFAULT_SECTION_ORDER, defaultSectionContent, defaultGeneralContent, defaultNavItems, defaultFooterContent, sectionMeta, type SectionKey, type NavItem, type FooterColumn } from '@/lib/landingDefaults';
 import CopyrightSettingsEditor from '@/components/settings/CopyrightSettingsEditor';
+import SaaSPricingSettings from '@/components/settings/SaaSPricingSettings';
 import type { CopyrightConfig } from '@/components/landing/CopyrightBar';
 import { defaultCopyrightConfig } from '@/components/landing/CopyrightBar';
 
@@ -89,8 +91,58 @@ const SortableSectionCard = ({ sectionKey, isAr, visible, expanded, onToggleVisi
   );
 };
 
-// ─── Main Component ───
-const LandingContentSettings = () => {
+// ─── Sortable section list item (compact, for split-view) ───
+interface SortableListItemProps {
+  sectionKey: SectionKey;
+  isAr: boolean;
+  isSelected: boolean;
+  isVisible: boolean;
+  onToggleVisible: () => void;
+  onSelect: () => void;
+}
+
+const SortableSectionListItem = ({ sectionKey, isAr, isSelected, isVisible, onToggleVisible, onSelect }: SortableListItemProps) => {
+  const meta = sectionMeta[sectionKey];
+  const Icon = iconMap[meta.iconName] || BookOpen;
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: sectionKey });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : 'auto' as any,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all cursor-pointer ${
+        isSelected
+          ? 'border-primary bg-primary/5 shadow-sm'
+          : 'border-border hover:bg-muted/50'
+      }`}
+      onClick={onSelect}
+    >
+      <button {...attributes} {...listeners} className="cursor-grab text-muted-foreground hover:text-foreground touch-none" onClick={e => e.stopPropagation()}>
+        <GripVertical className="h-4 w-4" />
+      </button>
+      <div className={`h-6 w-6 rounded-md flex items-center justify-center shrink-0 ${isSelected ? 'bg-primary/15' : 'bg-muted'}`}>
+        <Icon className={`h-3.5 w-3.5 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+      </div>
+      <span className={`text-sm flex-1 truncate ${isSelected ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
+        {isAr ? meta.labelAr : meta.label}
+      </span>
+      {!isVisible && <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">{isAr ? 'مخفي' : 'Hidden'}</Badge>}
+      <button onClick={e => { e.stopPropagation(); onToggleVisible(); }} className="text-muted-foreground hover:text-foreground transition-colors">
+        {isVisible ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+      </button>
+    </div>
+  );
+};
+
+
+const LandingContentSettings = ({ initialTab }: { initialTab?: string }) => {
   const { language } = useLanguage();
   const { appLogo, darkLogo, favicon } = useAppSettings();
   const isAr = language === 'ar';
@@ -98,7 +150,7 @@ const LandingContentSettings = () => {
   const [general, setGeneral] = useState<Record<string, any>>({ ...defaultGeneralContent });
   const [sectionsOrder, setSectionsOrder] = useState<SectionKey[]>([...DEFAULT_SECTION_ORDER]);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'header' | 'sections' | 'footer' | 'copyright'>('header');
+  const [activeTab, setActiveTab] = useState<'header' | 'sections' | 'pricing' | 'footer' | 'copyright'>('header');
   const [saving, setSaving] = useState(false);
   const [websitePages, setWebsitePages] = useState<{ slug: string; title: string; title_ar: string | null }[]>([]);
   const [policies, setPolicies] = useState<{ slug: string; title: string; title_ar: string | null }[]>([]);
@@ -134,6 +186,10 @@ const LandingContentSettings = () => {
     };
     load();
   }, []);
+
+  useEffect(() => {
+    if (initialTab === 'pricing') setActiveTab('pricing');
+  }, [initialTab]);
 
   const sectionsVisible: Record<string, boolean> = general.sections_visible || {};
 
@@ -625,6 +681,10 @@ const LandingContentSettings = () => {
     </div>
   );
 
+  useEffect(() => {
+    if (initialTab === 'pricing') setActiveTab('pricing');
+  }, [initialTab]);
+
 
 
   // ─── Footer editor ───
@@ -765,9 +825,18 @@ const LandingContentSettings = () => {
           </div>
         </div>
 
-        {/* Social media column picker */}
         <div className="space-y-1.5">
-          <Label className="text-xs font-medium">{isAr ? 'أيقونات التواصل في' : 'Social icons in'}</Label>
+          <div className="flex items-center gap-2">
+            <Label className="text-xs font-medium">{isAr ? 'أيقونات التواصل في' : 'Social icons in'}</Label>
+            <Badge
+              variant="outline"
+              className="text-[10px] px-1.5 py-0 h-5 cursor-pointer hover:bg-muted transition-colors"
+              onClick={() => navigate('/dashboard/settings?tab=general')}
+            >
+              <Settings2 className="h-2.5 w-2.5 me-0.5" />
+              {isAr ? 'إدارة الروابط' : 'Manage URLs'}
+            </Badge>
+          </div>
           <div className="flex gap-1.5">
             <button
               onClick={() => updateFooterField('social_column', -1)}
@@ -793,7 +862,6 @@ const LandingContentSettings = () => {
               </button>
             ))}
           </div>
-          <p className="text-[10px] text-muted-foreground">{isAr ? 'الروابط من إعدادات التطبيق > روابط التواصل الاجتماعي' : 'Links from App Settings > Social Media Links'}</p>
         </div>
       </div>
 
@@ -856,26 +924,28 @@ const LandingContentSettings = () => {
     </div>
   );
 
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-6">
-      {/* Tab navigation */}
-      <div className="flex items-center gap-1 p-1 rounded-lg bg-muted w-fit">
-        <button onClick={() => setActiveTab('header')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'header' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-          <LayoutTemplate className="h-4 w-4" />
-          {isAr ? 'الهيدر' : 'Header'}
-        </button>
-        <button onClick={() => setActiveTab('sections')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'sections' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-          <Layers className="h-4 w-4" />
-          {isAr ? 'الأقسام' : 'Sections'}
-        </button>
-        <button onClick={() => setActiveTab('footer')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'footer' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-          <PanelBottom className="h-4 w-4" />
-          {isAr ? 'الفوتر' : 'Footer'}
-        </button>
-        <button onClick={() => setActiveTab('copyright')} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'copyright' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-          <Shield className="h-4 w-4" />
-          {isAr ? 'حقوق النشر' : 'Copyright'}
-        </button>
+      {/* Unified tab navigation: Header / Sections / Pricing / Footer / Copyright */}
+      <div className="flex items-center gap-1 p-1 rounded-lg bg-muted w-fit flex-wrap">
+        {([
+          { key: 'header' as const, icon: LayoutTemplate, label: 'Header', labelAr: 'الهيدر' },
+          { key: 'sections' as const, icon: Layers, label: 'Sections', labelAr: 'الأقسام' },
+          { key: 'pricing' as const, icon: CreditCard, label: 'Pricing Packages', labelAr: 'باقات الأسعار' },
+          { key: 'footer' as const, icon: PanelBottom, label: 'Footer', labelAr: 'الفوتر' },
+          { key: 'copyright' as const, icon: Shield, label: 'Copyright', labelAr: 'حقوق النشر' },
+        ]).map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === tab.key ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            <tab.icon className="h-4 w-4" />
+            {isAr ? tab.labelAr : tab.label}
+          </button>
+        ))}
       </div>
 
       {activeTab === 'header' ? (
@@ -886,6 +956,8 @@ const LandingContentSettings = () => {
           </CardHeader>
           <CardContent>{renderHeaderTab()}</CardContent>
         </Card>
+      ) : activeTab === 'pricing' ? (
+        <SaaSPricingSettings />
       ) : activeTab === 'footer' ? (
         <Card>
           <CardHeader>
@@ -910,30 +982,56 @@ const LandingContentSettings = () => {
           </CardContent>
         </Card>
       ) : (
+        /* Sections — Split-view layout */
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">{isAr ? 'اسحب لإعادة الترتيب • اضغط على العين للإظهار/الإخفاء • اضغط القلم للتحرير' : 'Drag to reorder • Click eye to show/hide • Click pencil to edit'}</p>
             <Badge variant="outline">{sectionsOrder.length} {isAr ? 'أقسام' : 'sections'}</Badge>
           </div>
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={sectionsOrder} strategy={verticalListSortingStrategy}>
-              <div className="space-y-2">
-                {sectionsOrder.map(key => (
-                  <SortableSectionCard
-                    key={key}
-                    sectionKey={key}
-                    isAr={isAr}
-                    visible={sectionsVisible[key] !== false}
-                    expanded={expandedSection === key}
-                    onToggleVisible={() => toggleSectionVisibility(key)}
-                    onToggleExpand={() => setExpandedSection(expandedSection === key ? null : key)}
-                  >
-                    {renderEditor(key)}
-                  </SortableSectionCard>
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
+          <div className={`grid gap-4 ${expandedSection ? 'grid-cols-1 lg:grid-cols-[320px_1fr]' : 'grid-cols-1'}`}>
+            {/* Left: Section list */}
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={sectionsOrder} strategy={verticalListSortingStrategy}>
+                <div className="space-y-1.5">
+                  {sectionsOrder.map(key => {
+                    const meta = sectionMeta[key];
+                    const Icon = iconMap[meta.iconName] || BookOpen;
+                    const isSelected = expandedSection === key;
+                    const isVisible = sectionsVisible[key] !== false;
+                    return (
+                      <SortableSectionListItem
+                        key={key}
+                        sectionKey={key}
+                        isAr={isAr}
+                        isSelected={isSelected}
+                        isVisible={isVisible}
+                        onToggleVisible={() => toggleSectionVisibility(key)}
+                        onSelect={() => setExpandedSection(isSelected ? null : key)}
+                      />
+                    );
+                  })}
+                </div>
+              </SortableContext>
+            </DndContext>
+
+            {/* Right: Content editor */}
+            {expandedSection && (
+              <Card className="self-start">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      {(() => { const Icon = iconMap[sectionMeta[expandedSection as SectionKey]?.iconName] || BookOpen; return <Icon className="h-4 w-4 text-primary" />; })()}
+                      {isAr ? sectionMeta[expandedSection as SectionKey]?.labelAr : sectionMeta[expandedSection as SectionKey]?.label}
+                    </CardTitle>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setExpandedSection(null)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>{renderEditor(expandedSection as SectionKey)}</CardContent>
+              </Card>
+            )}
+          </div>
         </div>
       )}
 
