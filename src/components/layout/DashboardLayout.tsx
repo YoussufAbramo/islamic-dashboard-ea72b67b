@@ -47,6 +47,7 @@ const FloatingButtons = () => {
   const { profile, user } = useAuth();
   const isAr = language === 'ar';
   const [ticketOpen, setTicketOpen] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
   const iframeSrc = (() => {
     const base = 'https://portal.codecom.dev/forms/ticket';
@@ -60,10 +61,26 @@ const FloatingButtons = () => {
 
   const whatsappUrl = `https://wa.me/201558612808?text=${encodeURIComponent("Hello Dear, I'm texting you regarding Quran.CodeCom.dev, are you available to talk?")}`;
 
+  if (dismissed) return null;
+
   return (
     <>
       <div className={`fixed z-50 flex items-center gap-2 animate-fade-in ${isAr ? 'left-5' : 'right-5'}`} style={{ bottom: '35px', animationDelay: '0.5s', animationFillMode: 'backwards' }}>
         <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setDismissed(true)}
+                className="flex items-center justify-center h-7 w-7 rounded-full bg-muted/60 text-muted-foreground shadow-sm hover:scale-110 hover:bg-destructive hover:text-destructive-foreground transition-all duration-200"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs">
+              {isAr ? 'إخفاء' : 'Dismiss'}
+            </TooltipContent>
+          </Tooltip>
+
           <Tooltip>
             <TooltipTrigger asChild>
               <button
