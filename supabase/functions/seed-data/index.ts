@@ -584,7 +584,7 @@ Deno.serve(async (req) => {
         }
 
         // ── SCHEDULE (timetable + attendance + session reports) ──
-        if (categories.includes('schedule') && sIds.length > 0 && tIds.length > 0 && cIds.length > 0 && budget.canAdd()) {
+        if (categories.includes('schedule') && sIds.length > 0 && tIds.length > 0 && cIds.length > 0) {
           // Scale timetable/reports directly with multiplier: base 5, max ~80 at 10x
           // This ensures multiplier meaningfully affects session volume
           const rawTT = Math.max(5, multiplier * 8)
