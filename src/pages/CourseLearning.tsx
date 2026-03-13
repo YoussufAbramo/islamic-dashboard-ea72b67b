@@ -2,10 +2,6 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -21,6 +17,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import LessonBuilder from '@/components/course/LessonBuilder';
 
 // ─── Types ───
 interface CourseSection {
@@ -304,9 +301,7 @@ const CourseLearning = () => {
   const [markingComplete, setMarkingComplete] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false); // collapsed by default
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [editForm, setEditForm] = useState<Record<string, string>>({});
-  const [saving, setSaving] = useState(false);
+  const [builderOpen, setBuilderOpen] = useState(false);
   const canManage = role === 'admin' || role === 'teacher';
 
   // Fetch everything
@@ -487,46 +482,17 @@ const CourseLearning = () => {
     }
   }, [activeLesson, user, isAr, hasNext, currentIndex, orderedLessons]);
 
-  const openEditDialog = useCallback(() => {
-    if (!currentLesson) return;
-    const c = currentLesson.content || {};
-    setEditForm({
-      video_url: c.video_url || c.videoUrl || '',
-      audio_url: c.audio_url || c.audioUrl || '',
-      pdf_url: c.pdf_url || c.pdfUrl || '',
-      external_url: c.external_url || c.externalUrl || c.link || '',
-      instructions: c.instructions || '',
-      text: c.text || c.body || c.html || c.description || '',
-    });
-    setEditDialogOpen(true);
-  }, [currentLesson]);
-
-  const handleSaveContent = useCallback(async () => {
-    if (!currentLesson) return;
-    setSaving(true);
-    try {
-      const newContent = { ...(currentLesson.content || {}) };
-      // Update fields
-      if (editForm.video_url) newContent.video_url = editForm.video_url; else { delete newContent.video_url; delete newContent.videoUrl; }
-      if (editForm.audio_url) newContent.audio_url = editForm.audio_url; else { delete newContent.audio_url; delete newContent.audioUrl; }
-      if (editForm.pdf_url) newContent.pdf_url = editForm.pdf_url; else { delete newContent.pdf_url; delete newContent.pdfUrl; }
-      if (editForm.external_url) newContent.external_url = editForm.external_url; else { delete newContent.external_url; delete newContent.externalUrl; delete newContent.link; }
-      if (editForm.instructions) newContent.instructions = editForm.instructions; else delete newContent.instructions;
-      if (editForm.text) newContent.text = editForm.text; else { delete newContent.text; delete newContent.body; delete newContent.html; delete newContent.description; }
-
-      const { error } = await supabase.from('lessons').update({ content: newContent }).eq('id', currentLesson.id);
-      if (error) throw error;
-
-      // Update local state
-      setLessons(prev => prev.map(l => l.id === currentLesson.id ? { ...l, content: newContent } : l));
-      toast.success(isAr ? 'تم حفظ المحتوى' : 'Content saved');
-      setEditDialogOpen(false);
-    } catch (err: any) {
-      toast.error(err.message);
-    } finally {
-      setSaving(false);
-    }
-  }, [currentLesson, editForm, isAr]);
+  const handleBuilderSaved = useCallback(async () => {
+    // Re-fetch lessons to get updated content
+    if (!id) return;
+    const csIds = courseSections.map(s => s.id);
+    if (csIds.length === 0) return;
+    const { data: lSections } = await supabase.from('lesson_sections').select('*').in('course_section_id', csIds).order('sort_order');
+    const lsIds = (lSections || []).map((s: any) => s.id);
+    if (lsIds.length === 0) return;
+    const { data: lessonsData } = await supabase.from('lessons').select('*').in('section_id', lsIds).order('sort_order');
+    setLessons(lessonsData || []);
+  }, [id, courseSections]);
 
   if (loading) {
     return (
@@ -673,7 +639,7 @@ const CourseLearning = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={openEditDialog}
+                    onClick={() => setBuilderOpen(true)}
                     className="gap-1.5"
                   >
                     <Settings2 className="h-3.5 w-3.5" />
@@ -741,76 +707,14 @@ const CourseLearning = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Manage Content Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Settings2 className="h-5 w-5 text-primary" />
-              {isAr ? 'إدارة محتوى الدرس' : 'Manage Lesson Content'}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>{isAr ? 'رابط الفيديو' : 'Video URL'}</Label>
-              <Input
-                placeholder="https://..."
-                value={editForm.video_url || ''}
-                onChange={e => setEditForm(f => ({ ...f, video_url: e.target.value }))}
-              />
-            </div>
-            <div>
-              <Label>{isAr ? 'رابط الصوت' : 'Audio URL'}</Label>
-              <Input
-                placeholder="https://..."
-                value={editForm.audio_url || ''}
-                onChange={e => setEditForm(f => ({ ...f, audio_url: e.target.value }))}
-              />
-            </div>
-            <div>
-              <Label>{isAr ? 'رابط PDF' : 'PDF URL'}</Label>
-              <Input
-                placeholder="https://..."
-                value={editForm.pdf_url || ''}
-                onChange={e => setEditForm(f => ({ ...f, pdf_url: e.target.value }))}
-              />
-            </div>
-            <div>
-              <Label>{isAr ? 'رابط خارجي' : 'External Link'}</Label>
-              <Input
-                placeholder="https://..."
-                value={editForm.external_url || ''}
-                onChange={e => setEditForm(f => ({ ...f, external_url: e.target.value }))}
-              />
-            </div>
-            <div>
-              <Label>{isAr ? 'التعليمات' : 'Instructions'}</Label>
-              <Textarea
-                rows={3}
-                value={editForm.instructions || ''}
-                onChange={e => setEditForm(f => ({ ...f, instructions: e.target.value }))}
-              />
-            </div>
-            <div>
-              <Label>{isAr ? 'المحتوى النصي (HTML)' : 'Text Content (HTML)'}</Label>
-              <Textarea
-                rows={5}
-                value={editForm.text || ''}
-                onChange={e => setEditForm(f => ({ ...f, text: e.target.value }))}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
-              {isAr ? 'إلغاء' : 'Cancel'}
-            </Button>
-            <Button onClick={handleSaveContent} disabled={saving}>
-              {saving && <Loader2 className="h-4 w-4 me-1.5 animate-spin" />}
-              {isAr ? 'حفظ' : 'Save'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Lesson Builder */}
+      <LessonBuilder
+        open={builderOpen}
+        onOpenChange={setBuilderOpen}
+        lesson={currentLesson ? { id: currentLesson.id, title: currentLesson.title, title_ar: currentLesson.title_ar, content: currentLesson.content } : null}
+        isAr={isAr}
+        onSaved={handleBuilderSaved}
+      />
     </div>
   );
 };
