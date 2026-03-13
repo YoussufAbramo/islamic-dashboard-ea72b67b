@@ -198,31 +198,30 @@ const BlockEditor = ({
   );
 };
 
-// ─── Add Block Button ───
-const AddBlockButton = ({ isAr, onAdd }: { isAr: boolean; onAdd: (type: BlockType) => void }) => (
-  <DropdownMenu>
-    <DropdownMenuTrigger asChild>
-      <Button
-        variant="outline"
-        size="sm"
-        className="w-full border-dashed gap-1.5 text-muted-foreground hover:text-foreground"
-      >
-        <Plus className="h-3.5 w-3.5" />
-        {isAr ? 'إضافة كتلة محتوى' : 'Add Content Block'}
-      </Button>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent align="center" className="w-48">
-      {(Object.entries(blockMeta) as [BlockType, typeof blockMeta['text']][]).map(([type, meta]) => {
-        const Icon = meta.icon;
-        return (
-          <DropdownMenuItem key={type} onClick={() => onAdd(type)} className="gap-2">
-            <Icon className={cn("h-4 w-4", meta.color)} />
-            <span>{isAr ? meta.labelAr : meta.label}</span>
-          </DropdownMenuItem>
-        );
-      })}
-    </DropdownMenuContent>
-  </DropdownMenu>
+// ─── Add Block Buttons (shown inline) ───
+const AddBlockButtons = ({ isAr, onAdd, prominent }: { isAr: boolean; onAdd: (type: BlockType) => void; prominent?: boolean }) => (
+  <div className={cn(
+    "grid grid-cols-2 gap-2",
+    prominent && "sm:grid-cols-4"
+  )}>
+    {(Object.entries(blockMeta) as [BlockType, typeof blockMeta['text']][]).map(([type, meta]) => {
+      const Icon = meta.icon;
+      return (
+        <button
+          key={type}
+          type="button"
+          onClick={() => onAdd(type)}
+          className={cn(
+            "flex flex-col items-center gap-2 rounded-lg border-2 border-dashed p-4 transition-all hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-foreground",
+            prominent && "py-6"
+          )}
+        >
+          <Icon className={cn("h-5 w-5", meta.color)} />
+          <span className="text-xs font-medium">{isAr ? meta.labelAr : meta.label}</span>
+        </button>
+      );
+    })}
+  </div>
 );
 
 // ─── Main LessonBuilder Dialog ───
@@ -363,30 +362,34 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
         {/* Blocks Area */}
         <ScrollArea className="flex-1 min-h-0">
           <div className="p-5 space-y-3">
-            {blocks.length === 0 && (
-              <div className="text-center py-10 space-y-3">
-                <FileEdit className="h-10 w-10 mx-auto text-muted-foreground/30" />
-                <p className="text-sm text-muted-foreground">
-                  {isAr ? 'لا يوجد محتوى بعد. أضف كتلة محتوى للبدء.' : 'No content yet. Add a block to get started.'}
-                </p>
+            {blocks.length === 0 ? (
+              <div className="space-y-4">
+                <div className="text-center py-6 space-y-2">
+                  <FileEdit className="h-10 w-10 mx-auto text-muted-foreground/30" />
+                  <p className="text-sm text-muted-foreground">
+                    {isAr ? 'اختر نوع المحتوى للبدء' : 'Choose a content type to get started'}
+                  </p>
+                </div>
+                <AddBlockButtons isAr={isAr} onAdd={addBlock} prominent />
               </div>
+            ) : (
+              <>
+                {blocks.map((block, idx) => (
+                  <BlockEditor
+                    key={block.id}
+                    block={block}
+                    isAr={isAr}
+                    onChange={(updated) => updateBlock(block.id, updated)}
+                    onRemove={() => removeBlock(block.id)}
+                    onMoveUp={() => moveBlock(block.id, 'up')}
+                    onMoveDown={() => moveBlock(block.id, 'down')}
+                    isFirst={idx === 0}
+                    isLast={idx === blocks.length - 1}
+                  />
+                ))}
+                <AddBlockButtons isAr={isAr} onAdd={addBlock} />
+              </>
             )}
-
-            {blocks.map((block, idx) => (
-              <BlockEditor
-                key={block.id}
-                block={block}
-                isAr={isAr}
-                onChange={(updated) => updateBlock(block.id, updated)}
-                onRemove={() => removeBlock(block.id)}
-                onMoveUp={() => moveBlock(block.id, 'up')}
-                onMoveDown={() => moveBlock(block.id, 'down')}
-                isFirst={idx === 0}
-                isLast={idx === blocks.length - 1}
-              />
-            ))}
-
-            <AddBlockButton isAr={isAr} onAdd={addBlock} />
           </div>
         </ScrollArea>
 
