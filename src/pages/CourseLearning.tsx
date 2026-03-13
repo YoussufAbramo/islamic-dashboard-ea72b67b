@@ -172,7 +172,7 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
                 <div key={block.id || idx} className="space-y-3">
                   {block.html && (
                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <div dangerouslySetInnerHTML={{ __html: block.html }} />
+                      <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.html) }} />
                     </div>
                   )}
                   {block.audio_url && (
