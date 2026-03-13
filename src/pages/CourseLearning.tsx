@@ -164,7 +164,47 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
               ) : null;
 
             // Content block types (table_of_content, read_listen, memorization, revision, homework)
-            case 'table_of_content':
+            case 'table_of_content': {
+              const tocRows = block.toc_rows;
+              if (tocRows && tocRows.length > 0) {
+                return (
+                  <div key={block.id || idx} className="space-y-3">
+                    <div className="rounded-lg border overflow-hidden">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="bg-muted/50 border-b">
+                            <th className="px-4 py-2 text-start font-medium text-xs text-muted-foreground" dir="ltr">English</th>
+                            <th className="px-4 py-2 text-start font-medium text-xs text-muted-foreground" dir="rtl">العربية</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {tocRows.map((row: { en: string; ar: string }, rIdx: number) => (
+                            <tr key={rIdx} className="border-b last:border-b-0 hover:bg-muted/20 transition-colors">
+                              <td className="px-4 py-2.5 text-sm" dir="ltr">{row.en}</td>
+                              <td className="px-4 py-2.5 text-sm font-[var(--font-arabic)]" dir="rtl">{row.ar}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              }
+              // Fallback to legacy html content
+              return (
+                <div key={block.id || idx} className="space-y-3">
+                  {block.html ? (
+                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                      <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.html) }} />
+                    </div>
+                  ) : (
+                    <div className="p-4 rounded-lg border bg-muted/20 text-center">
+                      <p className="text-xs text-muted-foreground italic">{isAr ? 'لا يوجد محتوى بعد' : 'No content yet'}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            }
             case 'read_listen':
             case 'memorization':
             case 'revision':
