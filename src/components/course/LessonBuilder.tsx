@@ -1,4 +1,8 @@
 import { useState, useCallback, useRef } from 'react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { arrayMove } from '@dnd-kit/sortable';
+import SortableList from '@/components/course/SortableList';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -245,7 +249,23 @@ const BlockEditor = ({
 }) => {
   const meta = blockMeta[block.type];
   const Icon = meta.icon;
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: block.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0.5 : 1,
+  };
 
   const renderQuestionField = () => (
     <div className="grid grid-cols-2 gap-3">
@@ -261,12 +281,20 @@ const BlockEditor = ({
   );
 
   return (
-    <div className="rounded-lg border bg-card group relative">
+    <div ref={setNodeRef} style={style} className="rounded-lg border bg-card group relative">
       <div
         className="flex items-center gap-2 px-3 py-2 border-b bg-muted/30 cursor-pointer select-none"
         onClick={() => setCollapsed((c) => !c)}
       >
-        <GripVertical className="h-4 w-4 text-muted-foreground/40 shrink-0" onClick={(e) => e.stopPropagation()} />
+        <button
+          type="button"
+          className="cursor-grab active:cursor-grabbing touch-none shrink-0 text-muted-foreground/40 hover:text-muted-foreground"
+          onClick={(e) => e.stopPropagation()}
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
         <Icon className={cn("h-4 w-4 shrink-0", meta.color)} />
         <span className="text-xs font-medium text-muted-foreground">
           {isAr ? meta.labelAr : meta.label}
@@ -1008,19 +1036,31 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                   </p>
                 </div>
               ) : (
-                blocks.map((block, idx) => (
-                  <BlockEditor
-                    key={block.id}
-                    block={block}
-                    isAr={isAr}
-                    onChange={(updated) => updateBlock(block.id, updated)}
-                    onRemove={() => removeBlock(block.id)}
-                    onMoveUp={() => moveBlock(block.id, 'up')}
-                    onMoveDown={() => moveBlock(block.id, 'down')}
-                    isFirst={idx === 0}
-                    isLast={idx === blocks.length - 1}
-                  />
-                ))
+                <SortableList
+                  items={blocks}
+                  onReorder={(activeId, overId) => {
+                    setBlocks(prev => {
+                      const oldIdx = prev.findIndex(b => b.id === activeId);
+                      const newIdx = prev.findIndex(b => b.id === overId);
+                      if (oldIdx === -1 || newIdx === -1) return prev;
+                      return arrayMove(prev, oldIdx, newIdx);
+                    });
+                  }}
+                >
+                  {blocks.map((block, idx) => (
+                    <BlockEditor
+                      key={block.id}
+                      block={block}
+                      isAr={isAr}
+                      onChange={(updated) => updateBlock(block.id, updated)}
+                      onRemove={() => removeBlock(block.id)}
+                      onMoveUp={() => moveBlock(block.id, 'up')}
+                      onMoveDown={() => moveBlock(block.id, 'down')}
+                      isFirst={idx === 0}
+                      isLast={idx === blocks.length - 1}
+                    />
+                  ))}
+                </SortableList>
               )}
             </div>
           </div>
