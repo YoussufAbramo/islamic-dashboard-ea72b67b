@@ -158,6 +158,8 @@ class RecordBudget {
   canAdd() { return this.used < MAX_TOTAL_RECORDS }
   consume(n: number) { this.used += n }
   cap(desired: number) { return Math.min(desired, this.remaining()) }
+  // Guarantee at least minCount even if budget is exhausted
+  capMin(desired: number, minCount = 1) { return Math.max(minCount, Math.min(desired, this.remaining())) }
   total() { return this.used }
 }
 
@@ -273,8 +275,8 @@ Deno.serve(async (req) => {
       try {
         // ── STUDENTS ──
         const studentUserIds: string[] = []
-        if (categories.includes('students') && budget.canAdd()) {
-          const qty = budget.cap(alloc.students || 4)
+        if (categories.includes('students')) {
+          const qty = budget.capMin(alloc.students || 4)
           for (let i = 0; i < qty; i++) {
             if (!budget.canAdd()) break
             const fn = pick(FIRST_NAMES)
@@ -308,8 +310,8 @@ Deno.serve(async (req) => {
 
         // ── TEACHERS ──
         const teacherUserIds: string[] = []
-        if (categories.includes('teachers') && budget.canAdd()) {
-          const qty = budget.cap(alloc.teachers || 2)
+        if (categories.includes('teachers')) {
+          const qty = budget.capMin(alloc.teachers || 2)
           for (let i = 0; i < qty; i++) {
             if (!budget.canAdd()) break
             const fn = pick(FIRST_NAMES)
@@ -371,8 +373,8 @@ Deno.serve(async (req) => {
 
         // ── COURSES (tracks, categories, levels, sections, lessons) ──
         let cIds: string[] = []
-        if (categories.includes('courses') && budget.canAdd()) {
-          const courseBudget = budget.cap(alloc.courses || 10)
+        if (categories.includes('courses')) {
+          const courseBudget = budget.capMin(alloc.courses || 10)
           // Split budget: ~10% taxonomy, ~20% courses, ~30% sections, ~40% lessons
           const numCourses = Math.max(1, Math.min(5, Math.ceil(courseBudget * 0.15)))
 
@@ -508,8 +510,8 @@ Deno.serve(async (req) => {
 
         // ── BILLING (subscriptions + invoices) ──
         let createdSubIds: string[] = []
-        if (categories.includes('billing') && sIds.length > 0 && cIds.length > 0 && tIds.length > 0 && budget.canAdd()) {
-          const billingBudget = budget.cap(alloc.billing || 12)
+        if (categories.includes('billing') && sIds.length > 0 && cIds.length > 0 && tIds.length > 0) {
+          const billingBudget = budget.capMin(alloc.billing || 12)
           const numSubs = Math.max(1, Math.min(sIds.length, Math.ceil(billingBudget * 0.4)))
           const numInvoices = Math.max(1, billingBudget - numSubs)
 
@@ -582,7 +584,7 @@ Deno.serve(async (req) => {
         }
 
         // ── SCHEDULE (timetable + attendance + session reports) ──
-        if (categories.includes('schedule') && sIds.length > 0 && tIds.length > 0 && cIds.length > 0 && budget.canAdd()) {
+        if (categories.includes('schedule') && sIds.length > 0 && tIds.length > 0 && cIds.length > 0) {
           // Scale timetable/reports directly with multiplier: base 5, max ~80 at 10x
           // This ensures multiplier meaningfully affects session volume
           const rawTT = Math.max(5, multiplier * 8)
@@ -690,8 +692,8 @@ Deno.serve(async (req) => {
         }
 
         // ── COMMUNICATIONS (announcements + notifications) ──
-        if (categories.includes('communications') && budget.canAdd()) {
-          const commBudget = budget.cap(alloc.communications || 5)
+        if (categories.includes('communications')) {
+          const commBudget = budget.capMin(alloc.communications || 5)
           const numAnn = Math.max(1, Math.ceil(commBudget * 0.5))
           const numNotif = Math.max(1, commBudget - numAnn)
 
@@ -737,8 +739,8 @@ Deno.serve(async (req) => {
         }
 
         // ── SUPPORT (chats, messages, tickets) ──
-        if (categories.includes('support') && budget.canAdd()) {
-          const supportBudget = budget.cap(alloc.support || 10)
+        if (categories.includes('support')) {
+          const supportBudget = budget.capMin(alloc.support || 10)
 
           // Chats & messages
           if (sIds.length > 0 && tIds.length > 0) {
@@ -808,8 +810,8 @@ Deno.serve(async (req) => {
         }
 
         // ── CERTIFICATES ──
-        if (categories.includes('certificates') && sIds.length > 0 && budget.canAdd()) {
-          const certBudget = budget.cap(alloc.certificates || 3)
+        if (categories.includes('certificates') && sIds.length > 0) {
+          const certBudget = budget.capMin(alloc.certificates || 3)
           const certInsert = Array.from({ length: certBudget }, (_, i) => {
             const issuedAt = randomPastDate(60)
             trackTs(issuedAt)
@@ -835,8 +837,8 @@ Deno.serve(async (req) => {
         }
 
         // ── WEBSITE (blogs + pages) ──
-        if (categories.includes('website') && budget.canAdd()) {
-          const webBudget = budget.cap(alloc.website || 5)
+        if (categories.includes('website')) {
+          const webBudget = budget.capMin(alloc.website || 5)
           const numBlogs = Math.max(1, Math.ceil(webBudget * 0.6))
           const numPages = Math.max(1, webBudget - numBlogs)
 
@@ -883,7 +885,7 @@ Deno.serve(async (req) => {
         }
 
         // ── PACKAGES ──
-        if (categories.includes('packages') && budget.canAdd()) {
+        if (categories.includes('packages')) {
           const pkgs = [
             { title: 'Starter', title_ar: 'بداية', subtitle: 'For getting started', subtitle_ar: 'للبداية', regular_price: 19, sale_price: null, max_courses: 1, max_students: 3, max_teachers: 1, is_featured: false },
             { title: 'Growth', title_ar: 'نمو', subtitle: 'Growing institutions', subtitle_ar: 'المؤسسات النامية', regular_price: 79, sale_price: 69, max_courses: 10, max_students: 30, max_teachers: 5, is_featured: true },
@@ -904,8 +906,8 @@ Deno.serve(async (req) => {
         }
 
         // ── EXPENSES (categories + records) ──
-        if (categories.includes('expenses') && budget.canAdd()) {
-          const expBudget = budget.cap(alloc.expenses || 5)
+        if (categories.includes('expenses')) {
+          const expBudget = budget.capMin(alloc.expenses || 5)
           const expCatRaw = [
             { title: 'Office Supplies', title_ar: 'لوازم مكتبية', color: '#6366f1', sort_order: 0 },
             { title: 'Software', title_ar: 'برمجيات', color: '#8b5cf6', sort_order: 1 },
@@ -948,8 +950,8 @@ Deno.serve(async (req) => {
         }
 
         // ── EBOOKS ──
-        if (categories.includes('ebooks') && budget.canAdd()) {
-          const ebookBudget = budget.cap(alloc.ebooks || 3)
+        if (categories.includes('ebooks')) {
+          const ebookBudget = budget.capMin(alloc.ebooks || 3)
           const ebookRaw = Array.from({ length: ebookBudget }, (_, i) => {
             const createdAt = randomPastDate(90)
             trackTs(createdAt)
@@ -973,8 +975,8 @@ Deno.serve(async (req) => {
         }
 
         // ── PROGRESS ──
-        if (categories.includes('progress') && sIds.length > 0 && budget.canAdd()) {
-          const progBudget = budget.cap(alloc.progress || 5)
+        if (categories.includes('progress') && sIds.length > 0) {
+          const progBudget = budget.capMin(alloc.progress || 5)
           const { data: existingLessons } = await admin.from('lessons').select('id').limit(20)
           const lessonIdsForProgress = (existingLessons || []).map(l => l.id)
           if (lessonIdsForProgress.length > 0) {
@@ -1008,7 +1010,7 @@ Deno.serve(async (req) => {
         }
 
         // ── SUPPORT CONFIG (departments + priorities) ──
-        if (categories.includes('support_config') && budget.canAdd()) {
+        if (categories.includes('support_config')) {
           const deptRaw = [
             { name: 'Technical Support', name_ar: 'الدعم الفني', sort_order: 0 },
             { name: 'Billing', name_ar: 'الفواتير', sort_order: 1 },
@@ -1039,8 +1041,8 @@ Deno.serve(async (req) => {
         }
 
         // ── PAYOUTS ──
-        if (categories.includes('payouts') && tIds.length > 0 && budget.canAdd()) {
-          const payoutBudget = budget.cap(alloc.payouts || 4)
+        if (categories.includes('payouts') && tIds.length > 0) {
+          const payoutBudget = budget.capMin(alloc.payouts || 4)
           const payoutStatuses = ['approved', 'declined', 'approved', 'under_review', 'declined', 'approved']
           const payoutInsert = Array.from({ length: payoutBudget }, (_, i) => {
             const status = payoutStatuses[i % payoutStatuses.length]
@@ -1066,8 +1068,8 @@ Deno.serve(async (req) => {
         }
 
         // ── BADGES (realistic teacher data for badge thresholds) ──
-        if (categories.includes('badges') && tIds.length > 0 && budget.canAdd()) {
-          const badgeBudget = budget.cap(alloc.badges || 15)
+        if (categories.includes('badges') && tIds.length > 0) {
+          const badgeBudget = budget.capMin(alloc.badges || 15)
           // Create enough sessions/reports for 1-2 teachers to hit mid-tier badges
           const badgeTeacher = tIds[0]
           const numSessions = Math.max(3, Math.floor(badgeBudget * 0.45))
