@@ -314,6 +314,8 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const setTimeFormat = useCallback((f: TimeFormat) => { setPending(p => ({ ...p, timeFormat: f })); }, []);
   const setDeveloperMode = useCallback((d: boolean) => { setPending(p => ({ ...p, developerMode: d })); }, []);
   const setWebsiteMode = useCallback((w: boolean) => { setPending(p => ({ ...p, websiteMode: w })); }, []);
+  const setTeacherBadges = useCallback((b: boolean) => { setPending(p => ({ ...p, teacherBadges: b })); }, []);
+  const setStudentBadges = useCallback((b: boolean) => { setPending(p => ({ ...p, studentBadges: b })); }, []);
 
   return (
     <AppSettingsContext.Provider value={{
