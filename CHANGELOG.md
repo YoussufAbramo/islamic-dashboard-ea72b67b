@@ -2,6 +2,19 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [4.19.0] - 2026-03-13
+
+### Fixed
+- **Critical: Infinite RLS recursion breaking all data access** — cross-table RLS policies between `profiles`, `teachers`, `students`, and `attendance` created circular dependency chains (`profiles → students → teachers → students → ...`), causing PostgreSQL error `42P17: infinite recursion detected in policy for relation "teachers"`. This made ALL data appear deleted (profiles, students, teachers, subscriptions, invoices) even though the data was intact in the database
+- **Root cause** — RLS policies on `profiles` queried `students` joined with `teachers`, while `teachers` policies queried `students`, and `students` policies queried `teachers` — forming an unbreakable circular evaluation chain
+
+### Security
+- Created 5 new `SECURITY DEFINER` helper functions (`get_teacher_id_for_user`, `get_student_ids_for_teacher`, `get_student_user_ids_for_teacher`, `get_assigned_teacher_id`, `get_student_id_for_user`) to safely bypass RLS during policy evaluation
+- Rewrote RLS policies on `profiles`, `teachers`, `students`, and `attendance` to use these helper functions instead of raw cross-table subqueries
+- All helper functions have proper `EXECUTE` grants for `authenticated` and `anon` roles
+
+---
+
 ## [4.18.0] - 2026-03-13
 
 ### Fixed

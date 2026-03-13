@@ -1863,6 +1863,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_assigned_teacher_id: { Args: { _user_id: string }; Returns: string }
       get_invoice_by_share_token: {
         Args: { _token: string }
         Returns: {
@@ -1890,6 +1891,16 @@ export type Database = {
           title: string
         }[]
       }
+      get_student_id_for_user: { Args: { _user_id: string }; Returns: string }
+      get_student_ids_for_teacher: {
+        Args: { _user_id: string }
+        Returns: string[]
+      }
+      get_student_user_ids_for_teacher: {
+        Args: { _user_id: string }
+        Returns: string[]
+      }
+      get_teacher_id_for_user: { Args: { _user_id: string }; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
