@@ -575,6 +575,7 @@ const TeacherProfile = () => {
                   <InfoCard icon={<Mail className="h-3.5 w-3.5" />} label={isAr ? 'البريد الإلكتروني' : 'Email'} value={profile?.email || '-'} small />
                   <InfoCard icon={<Phone className="h-3.5 w-3.5" />} label={isAr ? 'الهاتف' : 'Phone'} value={profile?.phone || '-'} small />
                   <InfoCard icon={<Briefcase className="h-3.5 w-3.5" />} label={isAr ? 'التخصص' : 'Specialization'} value={teacher?.specialization || '-'} small />
+                  <InfoCard icon={<DollarSign className="h-3.5 w-3.5" />} label={isAr ? 'سعر الساعة' : 'Hourly Rate'} value={`$${hourlyRate}`} small />
                   <InfoCard icon={<User className="h-3.5 w-3.5" />} label={isAr ? 'الجنس' : 'Gender'} value={(teacher as any)?.gender ? ((teacher as any).gender === 'male' ? (isAr ? 'ذكر' : 'Male') : (isAr ? 'أنثى' : 'Female')) : '-'} small />
                   <InfoCard icon={<Cake className="h-3.5 w-3.5" />} label={isAr ? 'العمر' : 'Age'} value={(teacher as any)?.date_of_birth ? `${Math.floor((Date.now() - new Date((teacher as any).date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))} ${isAr ? 'سنة' : 'years'}` : '-'} small />
                   <InfoCard icon={<CalendarDays className="h-3.5 w-3.5" />} label={isAr ? 'تاريخ إنشاء الحساب' : 'Account Created'} value={authInfo?.created_at ? format(new Date(authInfo.created_at), 'dd/MM/yyyy HH:mm') : '-'} small />
