@@ -316,37 +316,77 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-4">
+                {/* Header with multiplier badge */}
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs font-medium text-muted-foreground">{isAr ? 'المضاعف' : 'Multiplier'}</Label>
-                  <span className="text-xs font-mono font-semibold text-primary">
-                    {multiplier}x
-                  </span>
+                  <div className="space-y-0.5">
+                    <Label className="text-xs font-medium">{isAr ? 'مضاعف الكمية' : 'Data Multiplier'}</Label>
+                    <p className="text-[11px] text-muted-foreground">
+                      {isAr ? 'كلما زاد المضاعف، زادت البيانات المُنشأة' : 'Higher multiplier = more records generated'}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    <Badge variant="secondary" className="text-sm font-mono font-bold px-3 py-1">
+                      {multiplier}x
+                    </Badge>
+                  </div>
                 </div>
-                <Slider
-                  value={[multiplier]}
-                  onValueChange={([v]) => setMultiplier(v)}
-                  min={1}
-                  max={10}
-                  step={1}
-                  className="w-full"
-                />
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-3 text-[10px] text-muted-foreground">
+
+                {/* Slider with aligned labels */}
+                <div className="space-y-1.5">
+                  <Slider
+                    value={[multiplier]}
+                    onValueChange={([v]) => setMultiplier(v)}
+                    min={1}
+                    max={10}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-[10px] text-muted-foreground font-mono px-0.5">
                     <span>1x</span>
+                    <span className="translate-x-[-2px]">2x</span>
+                    <span className="translate-x-[-2px]">3x</span>
+                    <span className="translate-x-[-1px]">4x</span>
                     <span>5x</span>
+                    <span className="translate-x-[1px]">6x</span>
+                    <span className="translate-x-[1px]">7x</span>
+                    <span className="translate-x-[1px]">8x</span>
+                    <span className="translate-x-[2px]">9x</span>
                     <span>10x</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="h-1.5 rounded-full bg-muted overflow-hidden w-20">
+                </div>
+
+                {/* Estimated records bar */}
+                <div className="flex items-center gap-3 p-2.5 rounded-md bg-muted/40 border border-border">
+                  <div className="flex-1 space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-muted-foreground font-medium">{isAr ? 'السجلات المُقدرة' : 'Estimated records'}</span>
+                      <span className="font-mono font-semibold text-foreground">
+                        ~{getEstimatedTotal(multiplier)} <span className="text-muted-foreground font-normal">/ {MAX_TOTAL_RECORDS}</span>
+                      </span>
+                    </div>
+                    <div className="h-2 rounded-full bg-muted overflow-hidden">
                       <div
                         className="h-full rounded-full bg-primary transition-all duration-300"
                         style={{ width: `${(getEstimatedTotal(multiplier) / MAX_TOTAL_RECORDS) * 100}%` }}
                       />
                     </div>
-                    <span className="text-[10px] font-mono text-muted-foreground">
-                      ~{getEstimatedTotal(multiplier)}/{MAX_TOTAL_RECORDS}
-                    </span>
+                  </div>
+                </div>
+
+                {/* Quick info */}
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="p-2 rounded-md bg-muted/30 border border-border">
+                    <p className="text-[10px] text-muted-foreground">{isAr ? 'الفئات' : 'Categories'}</p>
+                    <p className="text-sm font-semibold">{selectedCategories.length}</p>
+                  </div>
+                  <div className="p-2 rounded-md bg-muted/30 border border-border">
+                    <p className="text-[10px] text-muted-foreground">{isAr ? 'لكل فئة' : 'Per category'}</p>
+                    <p className="text-sm font-semibold">~{selectedCategories.length > 0 ? Math.round(getEstimatedTotal(multiplier) / selectedCategories.length) : 0}</p>
+                  </div>
+                  <div className="p-2 rounded-md bg-muted/30 border border-border">
+                    <p className="text-[10px] text-muted-foreground">{isAr ? 'الحد الأدنى' : 'Min/category'}</p>
+                    <p className="text-sm font-semibold">1</p>
                   </div>
                 </div>
               </div>
