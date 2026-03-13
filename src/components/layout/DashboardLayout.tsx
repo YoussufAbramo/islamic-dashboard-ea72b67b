@@ -7,7 +7,7 @@ import AppSidebar from './AppSidebar';
 import TopBar from './TopBar';
 import ImpersonationBanner from './ImpersonationBanner';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Bug } from 'lucide-react';
+import { Bug, X } from 'lucide-react';
 import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
