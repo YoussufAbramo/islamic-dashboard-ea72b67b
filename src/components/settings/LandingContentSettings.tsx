@@ -825,9 +825,18 @@ const LandingContentSettings = ({ initialTab }: { initialTab?: string }) => {
           </div>
         </div>
 
-        {/* Social media column picker */}
         <div className="space-y-1.5">
-          <Label className="text-xs font-medium">{isAr ? 'أيقونات التواصل في' : 'Social icons in'}</Label>
+          <div className="flex items-center gap-2">
+            <Label className="text-xs font-medium">{isAr ? 'أيقونات التواصل في' : 'Social icons in'}</Label>
+            <Badge
+              variant="outline"
+              className="text-[10px] px-1.5 py-0 h-5 cursor-pointer hover:bg-muted transition-colors"
+              onClick={() => navigate('/dashboard/settings?tab=general')}
+            >
+              <Settings2 className="h-2.5 w-2.5 me-0.5" />
+              {isAr ? 'إدارة الروابط' : 'Manage URLs'}
+            </Badge>
+          </div>
           <div className="flex gap-1.5">
             <button
               onClick={() => updateFooterField('social_column', -1)}
@@ -853,7 +862,6 @@ const LandingContentSettings = ({ initialTab }: { initialTab?: string }) => {
               </button>
             ))}
           </div>
-          <p className="text-[10px] text-muted-foreground">{isAr ? 'الروابط من إعدادات التطبيق > روابط التواصل الاجتماعي' : 'Links from App Settings > Social Media Links'}</p>
         </div>
       </div>
 
