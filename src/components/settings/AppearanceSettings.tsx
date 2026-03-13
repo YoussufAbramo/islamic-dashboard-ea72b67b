@@ -217,22 +217,46 @@ const AppearanceSettings = () => {
           <CardDescription>{isAr ? 'اختر نظام ألوان التطبيق' : 'Choose the app color scheme'}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            {themes.map((t) => (
-              <button key={t.value} onClick={() => updatePending({ colorTheme: t.value })} className={`relative flex flex-col items-center gap-2.5 p-4 rounded-xl border-2 transition-all ${pending.colorTheme === t.value ? 'border-primary shadow-md scale-[1.02]' : 'border-border hover:border-muted-foreground/30'}`}>
-                <div className="flex items-center gap-1">
-                  {t.palette.map((c, i) => (
-                    <div
-                      key={i}
-                      className={`rounded-lg ${i === 0 ? 'w-9 h-9' : 'w-5 h-5'}`}
-                      style={{ background: c }}
-                    />
-                  ))}
-                </div>
-                <span className="text-xs font-medium">{isAr ? t.labelAr : t.label}</span>
-                {pending.colorTheme === t.value && <Check className="absolute top-2 end-2 h-4 w-4 text-primary" />}
-              </button>
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {themes.map((t) => {
+              const isSelected = pending.colorTheme === t.value;
+              return (
+                <button
+                  key={t.value}
+                  onClick={() => updatePending({ colorTheme: t.value })}
+                  className={`group relative flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-start ${
+                    isSelected
+                      ? 'border-primary bg-primary/5 shadow-md'
+                      : 'border-border hover:border-muted-foreground/30 hover:bg-muted/40'
+                  }`}
+                >
+                  {/* Radio indicator */}
+                  <div className={`shrink-0 h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                    isSelected ? 'border-primary' : 'border-muted-foreground/40 group-hover:border-muted-foreground/60'
+                  }`}>
+                    {isSelected && <div className="h-2.5 w-2.5 rounded-full bg-primary" />}
+                  </div>
+
+                  {/* Color palette strip */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    {t.palette.map((c, i) => (
+                      <div
+                        key={i}
+                        className="w-7 h-7 rounded-lg first:w-9 first:h-9 border border-border/30"
+                        style={{ background: c }}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Label */}
+                  <span className={`text-sm font-medium truncate ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
+                    {isAr ? t.labelAr : t.label}
+                  </span>
+
+                  {isSelected && <Check className="absolute top-3 end-3 h-4 w-4 text-primary" />}
+                </button>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
