@@ -52,9 +52,11 @@ export interface ContentBlock {
   missing_word?: string;
   missing_word_ar?: string;
   pairs?: { left: string; left_ar?: string; right: string; right_ar?: string }[]; // for text_match
-  // table of content rows
+  // table of content
   toc_header_en?: string;
   toc_header_ar?: string;
+  toc_style?: 'default' | 'striped' | 'bordered' | 'minimal';
+  toc_size?: 'sm' | 'md' | 'lg' | 'xl';
   toc_rows?: { en: string; ar: string }[];
 }
 const generateId = () => Math.random().toString(36).substring(2, 10);
