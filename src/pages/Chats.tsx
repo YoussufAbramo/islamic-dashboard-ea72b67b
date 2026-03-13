@@ -43,9 +43,8 @@ const Chats = () => {
   const [createForm, setCreateForm] = useState({ student_id: '', teacher_id: '' });
   const [createLoading, setCreateLoading] = useState(false);
 
-  // Group members state
+  // Group members state (for viewing existing group chats)
   const [groupMembers, setGroupMembers] = useState<any[]>([]);
-  const [addMemberKey, setAddMemberKey] = useState(0);
 
   const fetchChats = async () => {
     setLoading(true);
