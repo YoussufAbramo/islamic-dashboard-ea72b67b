@@ -470,37 +470,121 @@ Deno.serve(async (req) => {
           }
         }
 
-        // ── SCHEDULE (timetable + attendance) ──
+        // ── SCHEDULE (timetable + attendance + session reports) ──
         if (categories.includes('schedule') && sIds.length > 0 && tIds.length > 0 && cIds.length > 0) {
+          const CANCEL_REASONS = ['Student requested postponement', 'Teacher unavailable', 'Technical issues', 'Schedule conflict', 'Holiday']
           const now = new Date()
+          const completedCount = Math.floor(qty.timetable * 0.4)
+          const cancelledCount = Math.max(1, Math.floor(qty.timetable * 0.15))
+          const scheduledCount = qty.timetable - completedCount - cancelledCount
+
           const ttInsert = Array.from({ length: qty.timetable }, (_, i) => {
             const d = new Date(now)
-            d.setDate(d.getDate() + i - Math.floor(qty.timetable / 3))
-            d.setHours(8 + (i % 6), 0, 0, 0)
+            const duration = [30, 45, 60][i % 3]
+            let status: string
+            let cancellationReason: string | null = null
+
+            if (i < completedCount) {
+              // Past completed sessions
+              d.setDate(d.getDate() - completedCount + i)
+              d.setHours(8 + (i % 6), 0, 0, 0)
+              status = 'completed'
+            } else if (i < completedCount + cancelledCount) {
+              // Cancelled sessions (mix of past and future)
+              d.setDate(d.getDate() - 2 + (i - completedCount))
+              d.setHours(10 + (i % 4), 0, 0, 0)
+              status = 'cancelled'
+              cancellationReason = pick(CANCEL_REASONS)
+            } else {
+              // Future scheduled sessions
+              d.setDate(d.getDate() + 1 + (i - completedCount - cancelledCount))
+              d.setHours(8 + (i % 6), 0, 0, 0)
+              status = 'scheduled'
+            }
+
             return {
               student_id: sIds[i % sIds.length], teacher_id: tIds[i % tIds.length],
               course_id: cIds[i % cIds.length], scheduled_at: d.toISOString(),
-              duration_minutes: [30, 45, 60][i % 3],
-              status: i < Math.floor(qty.timetable / 3) ? 'completed' : i === qty.timetable - 1 ? 'cancelled' : 'scheduled',
+              duration_minutes: duration, status,
+              cancellation_reason: cancellationReason,
             }
           })
-          const { data: createdTT } = await admin.from('timetable_entries').insert(ttInsert).select('id')
+          const { data: createdTT } = await admin.from('timetable_entries').insert(ttInsert).select('id, status, scheduled_at, duration_minutes, student_id, teacher_id, course_id')
           const ttIds = (createdTT || []).map(t => t.id)
           await trackRecords(admin, sessionId, 'timetable_entries', ttIds)
           counts.timetable = ttIds.length
 
           // Attendance for completed entries
-          const completedTT = (createdTT || []).filter((_, i) => i < Math.floor(qty.timetable / 3))
+          const completedTT = (createdTT || []).filter(t => t.status === 'completed')
           if (completedTT.length > 0) {
             const attInsert = completedTT.map((tt, i) => ({
-              timetable_entry_id: tt.id, student_id: sIds[i % sIds.length],
-              status: i % 3 === 2 ? 'absent' : 'present',
-              notes: i % 3 === 2 ? 'Student was absent' : '',
+              timetable_entry_id: tt.id, student_id: tt.student_id,
+              status: i % 5 === 4 ? 'absent' : 'present',
+              notes: i % 5 === 4 ? 'Student was absent' : 'Attended on time',
             }))
             const { data: createdAtt } = await admin.from('attendance').insert(attInsert).select('id')
             const attIds = (createdAtt || []).map(a => a.id)
             await trackRecords(admin, sessionId, 'attendance', attIds)
             counts.attendance = attIds.length
+          }
+
+          // Session reports (logged time) for completed entries
+          const attendedTT = completedTT.filter((_, i) => i % 5 !== 4) // exclude absent ones
+          if (attendedTT.length > 0) {
+            const SUMMARIES = [
+              'Student reviewed Surah Al-Fatiha and began memorizing Surah Al-Baqarah verses 1-5.',
+              'Covered Arabic grammar rules for noun-adjective agreement. Student showed good understanding.',
+              'Practiced tajweed rules: Idgham and Ikhfa. Student needs more practice on Ikhfa.',
+              'Discussed Islamic history - The Hijra. Student participated actively.',
+              'Memorization session: Student completed 2 new verses with proper tajweed.',
+              'Revision of previously memorized surahs. Good retention observed.',
+            ]
+            const OBSERVATIONS = [
+              'Student is making steady progress and shows enthusiasm.',
+              'Needs additional practice on pronunciation of certain letters.',
+              'Excellent memorization skills, ahead of schedule.',
+              'Student was focused and attentive throughout the session.',
+              'Recommended extra revision before the next lesson.',
+              'Good improvement compared to last session.',
+            ]
+            const PERF_REMARKS = ['Excellent', 'Very Good', 'Good', 'Satisfactory', 'Needs Improvement', 'Outstanding']
+
+            // Find subscription IDs for student-course pairs
+            const reportInsert = await Promise.all(attendedTT.map(async (tt, i) => {
+              const scheduledAt = new Date(tt.scheduled_at)
+              const durationMins = tt.duration_minutes || 30
+              // Realistic: actual duration varies slightly from scheduled
+              const actualDurationSecs = (durationMins * 60) + Math.floor(Math.random() * 300) - 120 // ±2 min variance
+              const endedAt = new Date(scheduledAt.getTime() + actualDurationSecs * 1000)
+
+              // Try to find matching subscription
+              const { data: subMatch } = await admin.from('subscriptions')
+                .select('id')
+                .eq('student_id', tt.student_id)
+                .eq('course_id', tt.course_id)
+                .limit(1)
+                .single()
+
+              return {
+                timetable_entry_id: tt.id,
+                teacher_id: tt.teacher_id,
+                student_id: tt.student_id,
+                course_id: tt.course_id,
+                subscription_id: subMatch?.id || null,
+                summary: pick(SUMMARIES),
+                observations: pick(OBSERVATIONS),
+                performance_remarks: pick(PERF_REMARKS),
+                session_duration_seconds: Math.max(actualDurationSecs, 300),
+                started_at: scheduledAt.toISOString(),
+                ended_at: endedAt.toISOString(),
+                created_by: callerId,
+              }
+            }))
+
+            const { data: createdReports } = await admin.from('session_reports').insert(reportInsert).select('id')
+            const reportIds = (createdReports || []).map(r => r.id)
+            await trackRecords(admin, sessionId, 'session_reports', reportIds)
+            counts.session_reports = reportIds.length
           }
         }
 
