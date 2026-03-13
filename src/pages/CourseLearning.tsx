@@ -830,6 +830,8 @@ const CourseLearning = () => {
                                   </button>
                                 );
                               })}
+                              </div>
+                             </div>
                             </div>
                           </details>
                         );
