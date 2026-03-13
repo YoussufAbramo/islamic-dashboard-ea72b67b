@@ -424,89 +424,21 @@ const CourseDetail = () => {
         </CardHeader>
       </Card>
 
-      {/* Course Structure Documentation */}
-      <Collapsible>
-        <Card className="border-dashed">
-          <CollapsibleTrigger asChild>
-            <button className="w-full flex items-center justify-between p-4 text-start hover:bg-muted/50 rounded-lg transition-colors group">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <HelpCircle className="h-4 w-4 shrink-0" />
-                <span className="text-sm font-medium">
-                  {isAr ? 'كيف يتم تنظيم الدورة؟' : 'How is the course structured?'}
-                </span>
-              </div>
-              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
-            </button>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div className="px-4 pb-4 space-y-4 text-sm text-muted-foreground">
-              <p>
-                {isAr
-                  ? 'يتم تنظيم كل دورة في ثلاث طبقات متداخلة لتسهيل التعلم وتنظيم المحتوى:'
-                  : 'Every course is organized into three nested layers to make learning easy and content well-structured:'}
-              </p>
-
-              <div className="grid gap-3 sm:grid-cols-3">
-                {/* Layer 1 */}
-                <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
-                  <div className="flex items-center gap-2 font-semibold text-foreground">
-                    <BookOpen className="h-4 w-4 text-primary" />
-                    {isAr ? '١. المواضيع' : '1. Topics'}
-                  </div>
-                  <p className="text-xs leading-relaxed">
-                    {isAr
-                      ? 'المواضيع هي الوحدات الرئيسية للدورة. فكّر فيها كفصول في كتاب — كل موضوع يغطي مجالاً مستقلاً.'
-                      : 'Topics are the main units of the course. Think of them as chapters in a book — each topic covers a standalone subject area.'}
-                  </p>
-                </div>
-
-                {/* Layer 2 */}
-                <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
-                  <div className="flex items-center gap-2 font-semibold text-foreground">
-                    <Layers className="h-4 w-4 text-primary" />
-                    {isAr ? '٢. الأقسام' : '2. Sections'}
-                  </div>
-                  <p className="text-xs leading-relaxed">
-                    {isAr
-                      ? 'كل موضوع يحتوي على أقسام. الأقسام تقسّم الموضوع إلى أجزاء أصغر ومركزة ليسهل استيعابها.'
-                      : 'Each topic contains sections. Sections break the topic into smaller, focused parts that are easier to follow.'}
-                  </p>
-                </div>
-
-                {/* Layer 3 */}
-                <div className="rounded-lg border bg-muted/30 p-3 space-y-1">
-                  <div className="flex items-center gap-2 font-semibold text-foreground">
-                    <FileText className="h-4 w-4 text-primary" />
-                    {isAr ? '٣. الدروس' : '3. Lessons'}
-                  </div>
-                  <p className="text-xs leading-relaxed">
-                    {isAr
-                      ? 'داخل كل قسم، تضيف الدروس الفعلية: نصوص للقراءة، تمارين تفاعلية، مراجعات، واجبات، وغيرها.'
-                      : 'Inside each section, you add the actual lessons: reading text, interactive exercises, revisions, homework, and more.'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="rounded-lg border bg-muted/20 p-3 space-y-2">
-                <p className="font-medium text-foreground text-xs">
-                  {isAr ? '📌 مثال عملي:' : '📌 Quick example:'}
-                </p>
-                <div className="text-xs leading-relaxed space-y-1">
-                  <p>{isAr ? '📖 الموضوع: "الحروف العربية"' : '📖 Topic: "Arabic Letters"'}</p>
-                  <p className="ps-4">{isAr ? '📂 القسم: "حروف المد"' : '📂 Section: "Vowel Letters"'}</p>
-                  <p className="ps-8">{isAr ? '📝 الدرس: "اقرأ واستمع — حرف الألف" + تمرين اختيار الإجابة الصحيحة' : '📝 Lesson: "Read & Listen — Letter Alif" + Choose Correct exercise'}</p>
-                </div>
-              </div>
-
-              <p className="text-xs italic">
-                {isAr
-                  ? '💡 يمكنك إعادة ترتيب المواضيع والأقسام والدروس بالسحب والإفلات. استخدم قائمة "المزيد" (⋯) لتعديل أو حذف أي عنصر.'
-                  : '💡 You can drag & drop to reorder topics, sections, and lessons. Use the "More" menu (⋯) to edit or delete any item.'}
-              </p>
-            </div>
-          </CollapsibleContent>
-        </Card>
-      </Collapsible>
+      {/* Course Structure Legend */}
+      <div className="flex items-center gap-4 px-1 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-sm bg-primary" />
+          <span>{isAr ? 'موضوع' : 'Topic'}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-sm" style={{ background: 'hsl(var(--gold))' }} />
+          <span>{isAr ? 'قسم' : 'Section'}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-sm bg-muted-foreground/40" />
+          <span>{isAr ? 'درس' : 'Lesson'}</span>
+        </div>
+      </div>
 
       {/* Level 1: Topics */}
       <div className="flex items-center justify-between">
@@ -519,118 +451,127 @@ const CourseDetail = () => {
       </div>
 
       <SortableList items={topics} onReorder={(a, o) => reorderTopics(a, o)}>
-        <Accordion type="multiple" className="space-y-2">
-          {topics.map((topic) => (
+        <div className="space-y-3">
+          {topics.map((topic, topicIdx) => (
             <SortableItem key={topic.id} id={topic.id} disabled={!canEdit}>
-              <AccordionItem value={topic.id} className="border rounded-lg px-4">
-                <div className="flex items-center gap-1">
-                  {canEdit && (
-                    <ItemActionsMenu
-                      onEdit={() => openEditTopic(topic)}
-                      onDelete={() => setDeleteTarget({ id: topic.id, type: 'topic' })}
-                    />
-                  )}
-                  <AccordionTrigger className="hover:no-underline flex-1 [&>svg]:ms-auto">
-                    <div className="flex items-center gap-2 flex-1">
-                      <BookOpen className="h-4 w-4 text-primary shrink-0" />
-                      <span>{isAr && topic.title_ar ? topic.title_ar : topic.title}</span>
-                      <Badge variant="secondary" className="text-xs">
-                        {(sections[topic.id] || []).length} {t('courses.sections')}
-                      </Badge>
+              <div className="rounded-lg border-2 border-primary/20 bg-card overflow-hidden">
+                {/* Topic Header */}
+                <Collapsible defaultOpen>
+                  <div className="flex items-center gap-2 px-4 py-3 bg-primary/5 border-b border-primary/10">
+                    <div className="flex items-center justify-center h-7 w-7 rounded-md bg-primary text-primary-foreground text-xs font-bold shrink-0">
+                      {topicIdx + 1}
                     </div>
-                  </AccordionTrigger>
-                </div>
-                <AccordionContent>
-                  <div className="space-y-3 pt-2">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-1">
-                        <Layers className="h-3.5 w-3.5" />
-                        {t('courses.sections')}
-                      </h3>
+                    <CollapsibleTrigger className="flex items-center gap-2 flex-1 min-w-0 text-start group">
+                      <BookOpen className="h-4 w-4 text-primary shrink-0" />
+                      <span className="font-semibold truncate">{isAr && topic.title_ar ? topic.title_ar : topic.title}</span>
+                      <Badge variant="secondary" className="text-[10px] shrink-0">
+                        {(sections[topic.id] || []).length} {isAr ? 'قسم' : 'sec'}
+                      </Badge>
+                      <ChevronDown className="h-4 w-4 text-muted-foreground ms-auto transition-transform group-data-[state=open]:rotate-180 shrink-0" />
+                    </CollapsibleTrigger>
+                    {canEdit && (
+                      <ItemActionsMenu
+                        onEdit={() => openEditTopic(topic)}
+                        onDelete={() => setDeleteTarget({ id: topic.id, type: 'topic' })}
+                      />
+                    )}
+                  </div>
+                  <CollapsibleContent>
+                    <div className="p-4 space-y-3">
+                      {/* Sections within this Topic */}
+                      <SortableList items={sections[topic.id] || []} onReorder={(a, o) => reorderSections(topic.id, a, o)}>
+                        <div className="space-y-2">
+                          {(sections[topic.id] || []).map((section: any, secIdx: number) => (
+                            <SortableItem key={section.id} id={section.id} disabled={!canEdit}>
+                              <div className="rounded-md border overflow-hidden" style={{ borderInlineStartWidth: '3px', borderInlineStartColor: 'hsl(var(--gold))' }}>
+                                {/* Section Header */}
+                                <Collapsible defaultOpen>
+                                  <div className="flex items-center gap-2 px-3 py-2.5 bg-secondary/40">
+                                    <span className="text-[10px] font-bold text-muted-foreground tabular-nums shrink-0">{topicIdx + 1}.{secIdx + 1}</span>
+                                    <CollapsibleTrigger className="flex items-center gap-2 flex-1 min-w-0 text-start group">
+                                      <Layers className="h-3.5 w-3.5 shrink-0" style={{ color: 'hsl(var(--gold))' }} />
+                                      <span className="text-sm font-medium truncate">{isAr && section.title_ar ? section.title_ar : section.title}</span>
+                                      <Badge variant="outline" className="text-[10px] shrink-0">
+                                        {(lessonItems[section.id] || []).length} {isAr ? 'درس' : 'les'}
+                                      </Badge>
+                                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground ms-auto transition-transform group-data-[state=open]:rotate-180 shrink-0" />
+                                    </CollapsibleTrigger>
+                                    {canEdit && (
+                                      <ItemActionsMenu
+                                        onEdit={() => openEditSection(section, topic.id)}
+                                        onDelete={() => setDeleteTarget({ id: section.id, type: 'section' })}
+                                      />
+                                    )}
+                                  </div>
+                                  <CollapsibleContent>
+                                    <div className="px-3 pb-3 pt-2 space-y-1.5">
+                                      {/* Lessons within this Section */}
+                                      <SortableList items={lessonItems[section.id] || []} onReorder={(a, o) => reorderLessons(section.id, a, o)}>
+                                        <div className="space-y-1">
+                                          {(lessonItems[section.id] || []).map((lesson: any, lesIdx: number) => (
+                                            <SortableItem key={lesson.id} id={lesson.id} disabled={!canEdit}>
+                                              <div className="flex items-center justify-between py-2 px-3 rounded-md bg-muted/40 border border-transparent hover:border-border group/lesson transition-colors">
+                                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                                  <span className="text-[10px] font-mono text-muted-foreground tabular-nums shrink-0">{topicIdx + 1}.{secIdx + 1}.{lesIdx + 1}</span>
+                                                  <FileText className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
+                                                  <span className="text-sm truncate">{isAr && lesson.title_ar ? lesson.title_ar : lesson.title}</span>
+                                                  <Badge variant="outline" className="text-[10px] font-normal shrink-0 bg-background">
+                                                    {allContentTypes.find(ct => ct.value === lesson.lesson_type)?.label || lesson.lesson_type}
+                                                  </Badge>
+                                                </div>
+                                                {canEdit && (
+                                                  <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover/lesson:opacity-100 transition-opacity">
+                                                    <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted" onClick={(e) => { e.stopPropagation(); openEditLesson(lesson, section.id); }}>
+                                                      <Settings2 className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted" onClick={(e) => { e.stopPropagation(); }}>
+                                                      <Edit className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-destructive/60 hover:text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: lesson.id, type: 'lesson' }); }}>
+                                                      <Trash2 className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </SortableItem>
+                                          ))}
+                                        </div>
+                                      </SortableList>
+
+                                      {(lessonItems[section.id] || []).length === 0 && (
+                                        <p className="text-xs text-muted-foreground text-center py-3">{isAr ? 'لا توجد دروس بعد' : 'No lessons yet'}</p>
+                                      )}
+
+                                      {canEdit && (
+                                        <Button variant="ghost" size="sm" className="w-full text-xs text-muted-foreground hover:text-foreground border border-dashed border-border/60 hover:border-border mt-1" onClick={() => { setActiveSectionId(section.id); setEditingLessonId(null); setLessonForm({ title: '', title_ar: '', lesson_type: 'read_listen' }); setLessonDialog(true); }}>
+                                          <Plus className="h-3 w-3 me-1" />{t('courses.addLesson')}
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </CollapsibleContent>
+                                </Collapsible>
+                              </div>
+                            </SortableItem>
+                          ))}
+                        </div>
+                      </SortableList>
+
+                      {(sections[topic.id] || []).length === 0 && (
+                        <p className="text-xs text-muted-foreground text-center py-3">{isAr ? 'لا توجد أقسام بعد' : 'No sections yet'}</p>
+                      )}
+
                       {canEdit && (
-                        <Button variant="outline" size="sm" onClick={() => { setActiveTopicId(topic.id); setEditingSectionId(null); setSectionForm({ title: '', title_ar: '' }); setSectionDialog(true); }}>
+                        <Button variant="outline" size="sm" className="w-full border-dashed" onClick={() => { setActiveTopicId(topic.id); setEditingSectionId(null); setSectionForm({ title: '', title_ar: '' }); setSectionDialog(true); }}>
                           <Plus className="h-3 w-3 me-1" />{t('courses.addSection')}
                         </Button>
                       )}
                     </div>
-
-                    {(sections[topic.id] || []).length === 0 && (
-                      <p className="text-xs text-muted-foreground text-center py-2">{t('common.noData')}</p>
-                    )}
-
-                    <SortableList items={sections[topic.id] || []} onReorder={(a, o) => reorderSections(topic.id, a, o)}>
-                      <Accordion type="multiple" className="space-y-1">
-                        {(sections[topic.id] || []).map((section: any) => (
-                          <SortableItem key={section.id} id={section.id} disabled={!canEdit}>
-                            <AccordionItem value={section.id} className="border rounded-md px-3 bg-muted/30">
-                              <div className="flex items-center gap-1">
-                                {canEdit && (
-                                  <ItemActionsMenu
-                                    onEdit={() => openEditSection(section, topic.id)}
-                                    onDelete={() => setDeleteTarget({ id: section.id, type: 'section' })}
-                                  />
-                                )}
-                                <AccordionTrigger className="hover:no-underline py-3 text-sm flex-1 [&>svg]:ms-auto">
-                                  <div className="flex items-center gap-2 flex-1">
-                                    <Layers className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                                    <span>{isAr && section.title_ar ? section.title_ar : section.title}</span>
-                                    <Badge variant="outline" className="text-xs">
-                                      {(lessonItems[section.id] || []).length} {t('courses.lessons')}
-                                    </Badge>
-                                  </div>
-                                </AccordionTrigger>
-                              </div>
-                              <AccordionContent>
-                                <div className="space-y-2 pt-1">
-                                  <SortableList items={lessonItems[section.id] || []} onReorder={(a, o) => reorderLessons(section.id, a, o)}>
-                                    <div className="space-y-1">
-                                      {(lessonItems[section.id] || []).map((lesson: any) => (
-                                        <SortableItem key={lesson.id} id={lesson.id} disabled={!canEdit}>
-                                          <div className="flex items-center justify-between p-2 rounded bg-background border group">
-                                            <div className="flex items-center gap-2 min-w-0 flex-1">
-                                              <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                                              <span className="font-medium text-sm truncate">{isAr && lesson.title_ar ? lesson.title_ar : lesson.title}</span>
-                                              <Badge variant="outline" className="text-xs shrink-0">
-                                                {allContentTypes.find(ct => ct.value === lesson.lesson_type)?.label || lesson.lesson_type}
-                                              </Badge>
-                                            </div>
-                                            {canEdit && (
-                                              <div className="flex items-center gap-0.5 shrink-0">
-                                                <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted" onClick={(e) => { e.stopPropagation(); openEditLesson(lesson, section.id); }}>
-                                                  <Settings2 className="h-3.5 w-3.5" />
-                                                </Button>
-                                                <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted" onClick={(e) => { e.stopPropagation(); /* edit lesson content handler */ }}>
-                                                  <Edit className="h-3.5 w-3.5" />
-                                                </Button>
-                                                <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-destructive/60 hover:text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: lesson.id, type: 'lesson' }); }}>
-                                                  <Trash2 className="h-3.5 w-3.5" />
-                                                </Button>
-                                              </div>
-                                            )}
-                                          </div>
-                                        </SortableItem>
-                                      ))}
-                                    </div>
-                                  </SortableList>
-
-                                  {canEdit && (
-                                    <Button variant="outline" size="sm" className="w-full" onClick={() => { setActiveSectionId(section.id); setEditingLessonId(null); setLessonForm({ title: '', title_ar: '', lesson_type: 'read_listen' }); setLessonDialog(true); }}>
-                                      <Plus className="h-3 w-3 me-1" />{t('courses.addLesson')}
-                                    </Button>
-                                  )}
-                                </div>
-                              </AccordionContent>
-                            </AccordionItem>
-                          </SortableItem>
-                        ))}
-                      </Accordion>
-                    </SortableList>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
+                  </CollapsibleContent>
+                </Collapsible>
+              </div>
             </SortableItem>
           ))}
-        </Accordion>
+        </div>
       </SortableList>
 
       {topics.length === 0 && <p className="text-center text-muted-foreground py-8">{t('common.noData')}</p>}
