@@ -87,7 +87,8 @@ const ContentEditor = ({ value, onChange, placeholder, minHeight = '300px' }: Co
         contentEditable
         suppressContentEditableWarning
         className="p-4 outline-none prose prose-sm max-w-none dark:prose-invert overflow-auto"
-        style={{ minHeight }}
+        dir="auto"
+        style={{ minHeight, unicodeBidi: 'plaintext' }}
         onInput={handleInput}
         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(value) }}
       />
