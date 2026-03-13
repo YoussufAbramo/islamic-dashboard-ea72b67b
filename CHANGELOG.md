@@ -2,6 +2,24 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.8.0] - 2026-03-13
+
+### Added
+- **Drop All Students edge function** — new `drop-students` edge function performs full cleanup of all student accounts (auth, profiles, roles, and all related data) with admin-only access
+- **`drop_all_students` action** — added to `manage-accounts` edge function as an alternative entry point
+
+### Changed — Course Learning Immersive Mode
+- **App sidebar auto-collapse** — the main application sidebar now automatically collapses when entering the Course Learning page and restores its previous state on exit
+
+### Security
+- **XSS prevention** — integrated DOMPurify to sanitize all `dangerouslySetInnerHTML` content in the Course Learning page
+- **Lesson Builder two-panel layout** — restructured the builder dialog into a left editor panel and right element palette sidebar for improved UX
+
+### Fixed
+- **Course content not rendering** — expanded the ContentViewer to support all 16 block types (was only rendering 4 basic types)
+
+---
+
 ## [5.7.0] - 2026-03-13
 
 ### Changed — Course Learning Sidebar (Major)
