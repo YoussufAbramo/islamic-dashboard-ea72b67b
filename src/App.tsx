@@ -17,6 +17,7 @@ import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import Courses from "./pages/Courses";
+import CourseLearning from "./pages/CourseLearning";
 import CourseDetail from "./pages/CourseDetail";
 import CourseTracks from "./pages/CourseTracks";
 import CourseCategories from "./pages/CourseCategories";
