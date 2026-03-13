@@ -387,7 +387,7 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
 
       {textContent && (
         <div className="prose prose-sm dark:prose-invert max-w-none">
-          <div dangerouslySetInnerHTML={{ __html: textContent }} />
+          <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(textContent) }} />
         </div>
       )}
 
