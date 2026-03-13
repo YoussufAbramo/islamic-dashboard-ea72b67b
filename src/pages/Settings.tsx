@@ -11,7 +11,7 @@ import PaymentGatewayCard from '@/components/settings/PaymentGatewayCard';
 import DataManagementCard from '@/components/settings/DataManagementCard';
 import AuthenticationSettings from '@/components/settings/AuthenticationSettings';
 import GeneralSettings from '@/components/settings/GeneralSettings';
-import SaaSPricingSettings from '@/components/settings/SaaSPricingSettings';
+
 import BackupsSettings from '@/components/settings/BackupsSettings';
 import EducationSystemSettings from '@/components/settings/EducationSystemSettings';
 import PixelsIntegrationSettings from '@/components/settings/PixelsIntegrationSettings';
