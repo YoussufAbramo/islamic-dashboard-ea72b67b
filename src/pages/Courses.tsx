@@ -63,10 +63,59 @@ const Courses = () => {
     setTracks(trkRes.data || []);
   };
 
+  const [contentCounts, setContentCounts] = useState<Record<string, { topics: number; sections: number; lessons: number }>>({});
+
   const fetchCourses = async () => {
     setLoading(true);
     const { data } = await supabase.from('courses').select('*').order('created_at', { ascending: false });
     setCourses(data || []);
+
+    // Fetch content counts for each course
+    if (data && data.length > 0) {
+      const courseIds = data.map(c => c.id);
+      const [topicsRes, sectionsRes, lessonsRes] = await Promise.all([
+        supabase.from('course_sections').select('id, course_id').in('course_id', courseIds),
+        supabase.from('lesson_sections').select('id, course_section_id').in('course_section_id',
+          (await supabase.from('course_sections').select('id').in('course_id', courseIds)).data?.map(s => s.id) || []
+        ),
+        supabase.from('lessons').select('id, section_id').in('section_id',
+          (await supabase.from('lesson_sections').select('id').in('course_section_id',
+            (await supabase.from('course_sections').select('id').in('course_id', courseIds)).data?.map(s => s.id) || []
+          )).data?.map(s => s.id) || []
+        ),
+      ]);
+
+      const topics = topicsRes.data || [];
+      const sections = sectionsRes.data || [];
+      const lessons = lessonsRes.data || [];
+
+      // Build topic->course mapping
+      const topicCourseMap: Record<string, string> = {};
+      topics.forEach(t => { topicCourseMap[t.id] = t.course_id; });
+
+      // Build section->course mapping
+      const sectionTopicMap: Record<string, string> = {};
+      sections.forEach(s => { sectionTopicMap[s.id] = s.course_section_id; });
+
+      const counts: Record<string, { topics: number; sections: number; lessons: number }> = {};
+      courseIds.forEach(id => { counts[id] = { topics: 0, sections: 0, lessons: 0 }; });
+
+      topics.forEach(t => { if (counts[t.course_id]) counts[t.course_id].topics++; });
+      sections.forEach(s => {
+        const courseId = topicCourseMap[s.course_section_id];
+        if (courseId && counts[courseId]) counts[courseId].sections++;
+      });
+      lessons.forEach(l => {
+        const topicId = sectionTopicMap[l.section_id];
+        if (topicId) {
+          const courseId = topicCourseMap[topicId];
+          if (courseId && counts[courseId]) counts[courseId].lessons++;
+        }
+      });
+
+      setContentCounts(counts);
+    }
+
     setLoading(false);
   };
 
