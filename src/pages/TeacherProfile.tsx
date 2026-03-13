@@ -687,6 +687,9 @@ const TeacherProfile = () => {
         ))}
       </div>
 
+      {/* Achievements Summary Cards */}
+      {!badgesLoading && <BadgeSummaryCards categories={badgeCategories} isAr={isAr} />}
+
       {/* Assigned Subscriptions */}
       <Card>
         <CardHeader>
