@@ -140,7 +140,7 @@ const Settings = () => {
     { value: 'appearance', label: 'Appearance', labelAr: 'المظهر', icon: Palette },
     { value: 'education', label: 'Education System', labelAr: 'النظام التعليمي', icon: GraduationCap },
     { value: 'website', label: 'Website Mode', labelAr: 'وضع الموقع', icon: Globe, adminOnly: true },
-    { value: 'pricing', label: 'Pricing Packages', labelAr: 'باقات الأسعار', icon: DollarSign, adminOnly: true },
+    
     { value: 'pixels', label: 'Pixels & Tracking', labelAr: 'البيكسل والتتبع', icon: BarChart3, adminOnly: true },
     { value: 'seo', label: 'Advanced SEO', labelAr: 'تحسين محركات البحث', icon: SearchIcon, adminOnly: true },
     { value: 'auth', label: 'Authentication', labelAr: 'المصادقة', icon: ShieldCheck, adminOnly: true },
