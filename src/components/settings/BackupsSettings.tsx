@@ -173,12 +173,6 @@ const AutoBackupCard = ({ isAr }: { isAr: boolean }) => {
         </div>
 
         <div className="flex justify-end gap-2">
-          {config.enabled && (
-            <Button variant="outline" size="sm" onClick={testBackup} disabled={testing}>
-              {testing ? <Loader2 className="h-4 w-4 me-1 animate-spin" /> : <RefreshCw className="h-4 w-4 me-1" />}
-              {isAr ? 'تشغيل الآن' : 'Run Now'}
-            </Button>
-          )}
           {dirty && (
             <Button size="sm" onClick={save} disabled={saving}>
               {saving ? <Loader2 className="h-4 w-4 me-1 animate-spin" /> : <Save className="h-4 w-4 me-1" />}
