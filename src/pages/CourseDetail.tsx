@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree, Layers, FileText, Pencil, Route, MoreHorizontal, Settings2 } from 'lucide-react';
+import { Plus, ArrowLeft, Trash2, BookOpen, Clock, Signal, FolderTree, Layers, FileText, Pencil, Route, MoreHorizontal, Settings2, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import { arrayMove } from '@dnd-kit/sortable';
 import SortableItem from '@/components/course/SortableItem';
@@ -403,6 +403,12 @@ const CourseDetail = () => {
             <SortableItem key={lesson.id} id={lesson.id} disabled={!canEdit}>
               <AccordionItem value={lesson.id} className="border rounded-lg px-4">
                 <div className="flex items-center gap-1">
+                  {canEdit && (
+                    <ItemActionsMenu
+                      onEdit={() => openEditLesson(lesson)}
+                      onDelete={() => setDeleteTarget({ id: lesson.id, type: 'lesson' })}
+                    />
+                  )}
                   <AccordionTrigger className="hover:no-underline flex-1">
                     <div className="flex items-center gap-2">
                       <BookOpen className="h-4 w-4 text-primary" />
@@ -412,12 +418,6 @@ const CourseDetail = () => {
                       </Badge>
                     </div>
                   </AccordionTrigger>
-                  {canEdit && (
-                    <ItemActionsMenu
-                      onEdit={() => openEditLesson(lesson)}
-                      onDelete={() => setDeleteTarget({ id: lesson.id, type: 'lesson' })}
-                    />
-                  )}
                 </div>
                 <AccordionContent>
                   <div className="space-y-3 pt-2">
@@ -443,6 +443,12 @@ const CourseDetail = () => {
                           <SortableItem key={section.id} id={section.id} disabled={!canEdit}>
                             <AccordionItem value={section.id} className="border rounded-md px-3 bg-muted/30">
                               <div className="flex items-center gap-1">
+                                {canEdit && (
+                                  <ItemActionsMenu
+                                    onEdit={() => openEditSection(section, lesson.id)}
+                                    onDelete={() => setDeleteTarget({ id: section.id, type: 'section' })}
+                                  />
+                                )}
                                 <AccordionTrigger className="hover:no-underline py-3 text-sm flex-1">
                                   <div className="flex items-center gap-2">
                                     <Layers className="h-3.5 w-3.5 text-muted-foreground" />
@@ -452,12 +458,6 @@ const CourseDetail = () => {
                                     </Badge>
                                   </div>
                                 </AccordionTrigger>
-                                {canEdit && (
-                                  <ItemActionsMenu
-                                    onEdit={() => openEditSection(section, lesson.id)}
-                                    onDelete={() => setDeleteTarget({ id: section.id, type: 'section' })}
-                                  />
-                                )}
                               </div>
                               <AccordionContent>
                                 <div className="space-y-2 pt-1">
@@ -474,10 +474,17 @@ const CourseDetail = () => {
                                               </Badge>
                                             </div>
                                             {canEdit && (
-                                              <ItemActionsMenu
-                                                onEdit={() => openEditContent(content, section.id)}
-                                                onDelete={() => setDeleteTarget({ id: content.id, type: 'content' })}
-                                              />
+                                              <div className="flex items-center gap-0.5 shrink-0">
+                                                <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted" onClick={(e) => { e.stopPropagation(); openEditContent(content, section.id); }}>
+                                                  <Settings2 className="h-3.5 w-3.5" />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted" onClick={(e) => { e.stopPropagation(); /* edit content handler - to be implemented */ }}>
+                                                  <Edit className="h-3.5 w-3.5" />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" className="rounded-full h-7 w-7 text-destructive/60 hover:text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: content.id, type: 'content' }); }}>
+                                                  <Trash2 className="h-3.5 w-3.5" />
+                                                </Button>
+                                              </div>
                                             )}
                                           </div>
                                         </SortableItem>
