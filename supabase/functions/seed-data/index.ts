@@ -1041,8 +1041,8 @@ Deno.serve(async (req) => {
         }
 
         // ── PAYOUTS ──
-        if (categories.includes('payouts') && tIds.length > 0 && budget.canAdd()) {
-          const payoutBudget = budget.cap(alloc.payouts || 4)
+        if (categories.includes('payouts') && tIds.length > 0) {
+          const payoutBudget = budget.capMin(alloc.payouts || 4)
           const payoutStatuses = ['approved', 'declined', 'approved', 'under_review', 'declined', 'approved']
           const payoutInsert = Array.from({ length: payoutBudget }, (_, i) => {
             const status = payoutStatuses[i % payoutStatuses.length]
