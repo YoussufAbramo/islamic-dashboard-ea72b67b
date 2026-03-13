@@ -414,7 +414,7 @@ const CourseLearning = () => {
   const { language } = useLanguage();
   const { user, role } = useAuth();
   const { topBarHidden, setTopBarHidden } = useOutletContext<{ topBarHidden: boolean; setTopBarHidden: (v: boolean) => void }>();
-  const { open: sidebarOpen, setOpen: setSidebarOpen } = useSidebar();
+  const { open: appSidebarOpen, setOpen: setAppSidebarOpen } = useSidebar();
   const isAr = language === 'ar';
 
   // Auto-hide top bar & collapse sidebar on mount, restore on unmount
