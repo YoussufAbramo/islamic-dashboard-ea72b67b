@@ -223,6 +223,7 @@ const AppSidebar = () => {
       labelAr: 'المطور',
       requiresDeveloperMode: true,
       items: [
+        { key: 'actions-queue', label: isAr ? 'سجل العمليات' : 'Actions Queue', icon: ListOrdered, path: '/dashboard/actions-queue', roles: ['admin'] },
         { key: 'error-docs', label: isAr ? 'توثيق الأخطاء' : 'Error Docs', icon: AlertCircle, path: '/dashboard/error-docs', roles: ['admin'] },
         { key: 'webhook-log', label: isAr ? 'سجل الويب هوك' : 'Webhook Log', icon: Webhook, path: '/dashboard/webhook-log', roles: ['admin'], beta: true },
         { key: 'activity-log', label: isAr ? 'سجل النشاطات' : 'Activity Log', icon: Activity, path: '/dashboard/activity-log', roles: ['admin'], comingSoon: true },
