@@ -91,7 +91,57 @@ const SortableSectionCard = ({ sectionKey, isAr, visible, expanded, onToggleVisi
   );
 };
 
-// ─── Main Component ───
+// ─── Sortable section list item (compact, for split-view) ───
+interface SortableListItemProps {
+  sectionKey: SectionKey;
+  isAr: boolean;
+  isSelected: boolean;
+  isVisible: boolean;
+  onToggleVisible: () => void;
+  onSelect: () => void;
+}
+
+const SortableSectionListItem = ({ sectionKey, isAr, isSelected, isVisible, onToggleVisible, onSelect }: SortableListItemProps) => {
+  const meta = sectionMeta[sectionKey];
+  const Icon = iconMap[meta.iconName] || BookOpen;
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: sectionKey });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : 'auto' as any,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all cursor-pointer ${
+        isSelected
+          ? 'border-primary bg-primary/5 shadow-sm'
+          : 'border-border hover:bg-muted/50'
+      }`}
+      onClick={onSelect}
+    >
+      <button {...attributes} {...listeners} className="cursor-grab text-muted-foreground hover:text-foreground touch-none" onClick={e => e.stopPropagation()}>
+        <GripVertical className="h-4 w-4" />
+      </button>
+      <div className={`h-6 w-6 rounded-md flex items-center justify-center shrink-0 ${isSelected ? 'bg-primary/15' : 'bg-muted'}`}>
+        <Icon className={`h-3.5 w-3.5 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+      </div>
+      <span className={`text-sm flex-1 truncate ${isSelected ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
+        {isAr ? meta.labelAr : meta.label}
+      </span>
+      {!isVisible && <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">{isAr ? 'مخفي' : 'Hidden'}</Badge>}
+      <button onClick={e => { e.stopPropagation(); onToggleVisible(); }} className="text-muted-foreground hover:text-foreground transition-colors">
+        {isVisible ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+      </button>
+    </div>
+  );
+};
+
+
 const LandingContentSettings = ({ initialTab }: { initialTab?: string }) => {
   const { language } = useLanguage();
   const { appLogo, darkLogo, favicon } = useAppSettings();
