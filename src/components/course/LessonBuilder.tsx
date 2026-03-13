@@ -86,7 +86,7 @@ interface BlockMetaItem {
   label: string;
   labelAr: string;
   color: string;
-  group: 'media' | 'content' | 'exercise';
+  group: 'media' | 'content' | 'exercise' | 'layout';
 }
 
 const blockMeta: Record<BlockType, BlockMetaItem> = {
@@ -95,11 +95,12 @@ const blockMeta: Record<BlockType, BlockMetaItem> = {
   image: { icon: Image, label: 'Image', labelAr: 'صورة', color: 'text-green-500', group: 'media' },
   video: { icon: Video, label: 'Video', labelAr: 'فيديو', color: 'text-red-500', group: 'media' },
   audio: { icon: Music, label: 'Audio', labelAr: 'صوت', color: 'text-amber-500', group: 'media' },
-  divider: { icon: Minus, label: 'Divider', labelAr: 'فاصل', color: 'text-gray-400', group: 'media' },
-  page_break: { icon: FileStack, label: 'New Page', labelAr: 'صفحة جديدة', color: 'text-yellow-500', group: 'media' },
-  split_screen: { icon: Columns, label: 'Split Screen', labelAr: 'شاشة مقسمة', color: 'text-cyan-600', group: 'media' },
+  // Layout
+  divider: { icon: Minus, label: 'Divider', labelAr: 'فاصل', color: 'text-gray-400', group: 'layout' },
+  page_break: { icon: FileStack, label: 'New Page', labelAr: 'صفحة جديدة', color: 'text-yellow-500', group: 'layout' },
+  split_screen: { icon: Columns, label: 'Split Screen', labelAr: 'شاشة مقسمة', color: 'text-cyan-600', group: 'layout' },
+  table_of_content: { icon: ListOrdered, label: 'Table of Content', labelAr: 'فهرس المحتويات', color: 'text-indigo-500', group: 'layout' },
   // Content Types
-  table_of_content: { icon: ListOrdered, label: 'Table of Content', labelAr: 'فهرس المحتويات', color: 'text-indigo-500', group: 'content' },
   read_listen:      { icon: BookOpen, label: 'Read & Listen', labelAr: 'قراءة واستماع', color: 'text-teal-500', group: 'content' },
   memorization:     { icon: Brain, label: 'Memorization', labelAr: 'حفظ', color: 'text-purple-500', group: 'content' },
   revision:         { icon: RotateCcw, label: 'Revision', labelAr: 'مراجعة', color: 'text-cyan-500', group: 'content' },
@@ -115,8 +116,9 @@ const blockMeta: Record<BlockType, BlockMetaItem> = {
 };
 
 const blockGroups: { key: string; label: string; labelAr: string; types: BlockType[] }[] = [
-  { key: 'media', label: '📁 Media', labelAr: '📁 الوسائط', types: ['text', 'image', 'video', 'audio', 'divider', 'page_break', 'split_screen'] },
-  { key: 'content', label: '📖 Content', labelAr: '📖 المحتوى', types: ['table_of_content', 'read_listen', 'memorization', 'revision', 'homework'] },
+  { key: 'media', label: '📁 Media', labelAr: '📁 الوسائط', types: ['text', 'image', 'video', 'audio'] },
+  { key: 'layout', label: '🧩 Layout', labelAr: '🧩 التخطيط', types: ['divider', 'page_break', 'split_screen', 'table_of_content'] },
+  { key: 'content', label: '📖 Content', labelAr: '📖 المحتوى', types: ['read_listen', 'memorization', 'revision', 'homework'] },
   { key: 'exercise', label: '✏️ Exercises', labelAr: '✏️ التمارين', types: ['exercise_listen_choose', 'exercise_text_match', 'exercise_choose_correct', 'exercise_choose_multiple', 'exercise_rearrange', 'exercise_missing_text', 'exercise_true_false'] },
 ];
 
