@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Palette, Building2, Check, Type, RectangleHorizontal, Circle, Square, Search, Plus, AlignLeft, AlignCenter, AlignRight, Moon, Sun, PanelLeft } from 'lucide-react';
+import { Palette, Building2, Check, Type, RectangleHorizontal, Circle, Square, Search, Plus, AlignLeft, AlignCenter, AlignRight, Moon, Sun, PanelLeft, Image as ImageIcon, X } from 'lucide-react';
 import ImagePickerField from '@/components/media/ImagePickerField';
+import MediaPickerDialog from '@/components/media/MediaPickerDialog';
 import { toast } from 'sonner';
 import { useRef, useState, useMemo } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
