@@ -655,21 +655,29 @@ Deno.serve(async (req) => {
 
         // ── EXPENSES (categories + records) ──
         if (categories.includes('expenses')) {
-          const expCatInsert = [
+          const expCatRaw = [
             { title: 'Office Supplies', title_ar: 'لوازم مكتبية', color: '#6366f1', sort_order: 0 },
             { title: 'Software', title_ar: 'برمجيات', color: '#8b5cf6', sort_order: 1 },
             { title: 'Marketing', title_ar: 'تسويق', color: '#ec4899', sort_order: 2 },
           ].slice(0, Math.max(1, Math.ceil(multiplier * 0.3)))
-          const { data: createdExpCats } = await admin.from('expense_categories').insert(expCatInsert).select('id')
-          const expCatIds = (createdExpCats || []).map(c => c.id)
-          await trackRecords(admin, sessionId, 'expense_categories', expCatIds)
+          const expCatInsert = await dedup(admin, 'expense_categories', expCatRaw)
+          let expCatIds: string[] = []
+          if (expCatInsert.length > 0) {
+            const { data: createdExpCats } = await admin.from('expense_categories').insert(expCatInsert).select('id')
+            expCatIds = (createdExpCats || []).map(c => c.id)
+            await trackRecords(admin, sessionId, 'expense_categories', expCatIds)
+          }
+          // Use all existing categories for FK refs
+          const { data: allExpCatRows } = await admin.from('expense_categories').select('id').limit(50)
+          const allExpCatIds = (allExpCatRows || []).map(c => c.id)
           counts.expense_categories = expCatIds.length
 
-          if (expCatIds.length > 0) {
+          if (allExpCatIds.length > 0) {
+            // Use session-unique titles to avoid duplicates
             const expInsert = Array.from({ length: Math.max(1, multiplier) }, (_, i) => ({
-              title: `Sample Expense ${i + 1}`, title_ar: `مصروف تجريبي ${i + 1}`,
+              title: `Sample Expense ${sessionId.slice(0,6)}-${i + 1}`, title_ar: `مصروف تجريبي ${sessionId.slice(0,6)}-${i + 1}`,
               amount: [50, 120, 300, 75, 200][i % 5],
-              category_id: expCatIds[i % expCatIds.length],
+              category_id: allExpCatIds[i % allExpCatIds.length],
               expense_date: randomDateOnly(30, 0),
               status: ['pending', 'approved', 'rejected'][i % 3],
               created_by: callerId,
@@ -684,17 +692,22 @@ Deno.serve(async (req) => {
 
         // ── EBOOKS ──
         if (categories.includes('ebooks')) {
-          const ebookInsert = Array.from({ length: Math.max(1, Math.ceil(multiplier * 0.5)) }, (_, i) => ({
+          const ebookRaw = Array.from({ length: Math.max(1, Math.ceil(multiplier * 0.5)) }, (_, i) => ({
             title: `Sample E-Book ${i + 1}`, title_ar: `كتاب إلكتروني تجريبي ${i + 1}`,
             description: `Description for sample e-book ${i + 1}`,
             description_ar: `وصف الكتاب الإلكتروني التجريبي ${i + 1}`,
             pdf_url: `https://example.com/sample-ebook-${i + 1}.pdf`,
             created_by: callerId,
           }))
-          const { data: createdEbooks } = await admin.from('ebooks').insert(ebookInsert).select('id')
-          const ebookIds = (createdEbooks || []).map(e => e.id)
-          await trackRecords(admin, sessionId, 'ebooks', ebookIds)
-          counts.ebooks = ebookIds.length
+          const ebookInsert = await dedup(admin, 'ebooks', ebookRaw)
+          if (ebookInsert.length > 0) {
+            const { data: createdEbooks } = await admin.from('ebooks').insert(ebookInsert).select('id')
+            const ebookIds = (createdEbooks || []).map(e => e.id)
+            await trackRecords(admin, sessionId, 'ebooks', ebookIds)
+            counts.ebooks = ebookIds.length
+          } else {
+            counts.ebooks = 0
+          }
         }
 
         // ── PROGRESS & REPORTS ──
