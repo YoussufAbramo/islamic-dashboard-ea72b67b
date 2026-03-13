@@ -373,8 +373,8 @@ Deno.serve(async (req) => {
 
         // ── COURSES (tracks, categories, levels, sections, lessons) ──
         let cIds: string[] = []
-        if (categories.includes('courses') && budget.canAdd()) {
-          const courseBudget = budget.cap(alloc.courses || 10)
+        if (categories.includes('courses')) {
+          const courseBudget = budget.capMin(alloc.courses || 10)
           // Split budget: ~10% taxonomy, ~20% courses, ~30% sections, ~40% lessons
           const numCourses = Math.max(1, Math.min(5, Math.ceil(courseBudget * 0.15)))
 
