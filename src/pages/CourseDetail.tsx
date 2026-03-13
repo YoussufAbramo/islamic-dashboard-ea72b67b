@@ -70,6 +70,10 @@ const CourseDetail = () => {
   const [course, setCourse] = useState<any>(null);
   const [courseSettingsOpen, setCourseSettingsOpen] = useState(false);
   const [slugForm, setSlugForm] = useState('');
+  const [settingsForm, setSettingsForm] = useState({
+    title: '', title_ar: '', description: '', description_ar: '',
+    category_id: '', level_id: '', track_id: '', duration_weeks: '' as string,
+  });
   const [categories, setCategories] = useState<any[]>([]);
   const [levels, setLevels] = useState<any[]>([]);
   const [tracks, setTracks] = useState<any[]>([]);
