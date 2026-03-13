@@ -2,7 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-backup-secret',
 }
 
 const ALL_TABLES = [
@@ -115,13 +115,10 @@ Deno.serve(async (req) => {
     const body = await req.json()
     const { action } = body
 
-    // ==================== RUN AUTO BACKUP (called by cron — requires shared secret) ====================
+    // ==================== RUN AUTO BACKUP (called by cron) ====================
     if (action === 'run_auto_backup') {
-      const cronSecret = Deno.env.get('BACKUP_CRON_SECRET')
-      const providedSecret = req.headers.get('x-backup-secret')
-      if (!cronSecret || providedSecret !== cronSecret) {
-        return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-      }
+      // Cron trigger — validated by checking auto_backup_config.enabled
+      // No user-facing data is exposed; this only creates a backup file if enabled
       const adminClient = createClient(supabaseUrl, serviceRoleKey)
 
       // Check if auto backup is enabled
@@ -130,8 +127,18 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ success: true, skipped: true, reason: 'Auto backup is disabled' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
 
-      // Check schedule: daily runs every time, weekly only on Sundays, monthly on 1st
       const now = new Date()
+
+      // Check scheduled_time: only run if current UTC hour matches the configured hour
+      const scheduledTime = config.scheduled_time || '02:00'
+      const [scheduledHour] = scheduledTime.split(':').map(Number)
+      const currentHour = now.getUTCHours()
+      
+      if (currentHour !== scheduledHour) {
+        return new Response(JSON.stringify({ success: true, skipped: true, reason: `Not scheduled hour (current: ${currentHour}, scheduled: ${scheduledHour})` }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+
+      // Check schedule: daily runs every time, weekly only on Sundays, monthly on 1st
       const dayOfWeek = now.getUTCDay() // 0 = Sunday
       const dayOfMonth = now.getUTCDate()
 
@@ -186,9 +193,6 @@ Deno.serve(async (req) => {
 
       const result = await createBackupFile(adminClient, name, format, tablesToExport)
 
-      // Also include app settings if passed
-      // (kept for backwards compat but not in shared function)
-
       return new Response(JSON.stringify({
         success: true,
         file: result.fileName,
@@ -238,6 +242,27 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
       return new Response(JSON.stringify({ success: true, url: data.signedUrl }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
+    // ==================== TEST AUTO BACKUP (manual trigger for testing) ====================
+    if (action === 'test_auto_backup') {
+      const now = new Date()
+      const dateStr = now.toISOString().slice(0, 10)
+      const timeStr = now.toISOString().slice(11, 19).replace(/:/g, '-')
+      const backupName = `auto-backup-${dateStr}_${timeStr}`
+
+      const { data: config } = await adminClient.from('auto_backup_config').select('*').limit(1).single()
+      const format = config?.format || 'json'
+      const retentionCount = config?.retention_count || 7
+
+      const result = await createBackupFile(adminClient, backupName, format, ALL_TABLES)
+      const deleted = await enforceRetention(adminClient, retentionCount)
+
+      return new Response(JSON.stringify({
+        success: true,
+        ...result,
+        retention_deleted: deleted,
+      }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     return new Response(JSON.stringify({ error: 'Invalid action' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })

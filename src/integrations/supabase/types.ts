@@ -162,6 +162,7 @@ export type Database = {
           id: string
           retention_count: number
           schedule: string
+          scheduled_time: string
           updated_at: string
           updated_by: string | null
         }
@@ -171,6 +172,7 @@ export type Database = {
           id?: string
           retention_count?: number
           schedule?: string
+          scheduled_time?: string
           updated_at?: string
           updated_by?: string | null
         }
@@ -180,6 +182,7 @@ export type Database = {
           id?: string
           retention_count?: number
           schedule?: string
+          scheduled_time?: string
           updated_at?: string
           updated_by?: string | null
         }
