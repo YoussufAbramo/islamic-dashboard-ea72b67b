@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Search, Edit, Settings, Trash2, LayoutGrid, List, BookOpen } from 'lucide-react';
+import { Plus, Search, Edit, Settings, Trash2, LayoutGrid, List, BookOpen, GraduationCap } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
@@ -340,8 +340,14 @@ const Courses = () => {
                     </div>
                     {canEdit && (
                       <div className="flex gap-1 pt-1" onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate(`/dashboard/courses/${course.id}/learn`)}><GraduationCap className="h-3 w-3" /></Button>
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(course)}><Settings className="h-3 w-3" /></Button>
                         {role === 'admin' && <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(course.id)}><Trash2 className="h-3 w-3" /></Button>}
+                      </div>
+                    )}
+                    {!canEdit && (
+                      <div className="pt-1" onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate(`/dashboard/courses/${course.id}/learn`)}><GraduationCap className="h-3 w-3" /></Button>
                       </div>
                     )}
                   </CardContent>
@@ -393,6 +399,7 @@ const Courses = () => {
                       </TableCell>
                       <TableCell><Badge variant={statusColor[course.status] as any}>{getLabel(courseStatusLabels, course.status, isAr)}</Badge></TableCell>
                       <TableCell className="flex gap-1">
+                        <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => navigate(`/dashboard/courses/${course.id}/learn`)}><GraduationCap className={ACTION_ICON} /></Button>
                         <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => navigate(`/dashboard/courses/${course.id}`)}><Edit className={ACTION_ICON} /></Button>
                         {canEdit && <Button variant="ghost" size="icon" className={ACTION_BTN} onClick={() => openEdit(course)}><Settings className={ACTION_ICON} /></Button>}
                         {role === 'admin' && <Button variant="ghost" size="icon" className={ACTION_BTN_DESTRUCTIVE} onClick={() => setDeleteTarget(course.id)}><Trash2 className={ACTION_ICON} /></Button>}
