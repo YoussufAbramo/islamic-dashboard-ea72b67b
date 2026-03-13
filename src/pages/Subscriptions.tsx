@@ -772,7 +772,7 @@ const Subscriptions = () => {
               <Label className="flex items-center gap-1.5"><Video className="h-4 w-4" />{isAr ? 'روابط الجلسات المباشرة' : 'Live Session URLs'}</Label>
               <div className="space-y-2">
                 <div className="flex items-center gap-2.5 p-2.5 rounded-lg border bg-card">
-                  <img src="/icons/google-meet.png" alt="Google Meet" className="h-5 w-5 shrink-0" />
+                  <img src="/system/logos/google-meet.png" alt="Google Meet" className="h-5 w-5 shrink-0" />
                   <Input type="url" placeholder="https://meet.google.com/..." value={createForm.google_meet_url} onChange={(e) => setCreateForm(prev => ({ ...prev, google_meet_url: e.target.value }))} className="h-8 text-xs flex-1" />
                 </div>
                 <div className="flex items-center gap-2.5 p-2.5 rounded-lg border bg-card">
