@@ -11,7 +11,7 @@ import CopyrightText from '@/components/CopyrightText';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { GraduationCap, Users, ShieldCheck, Eye, EyeOff, BookOpen, Moon, Sun, Mail, ExternalLink } from 'lucide-react';
-import islamicBg from '@/assets/other/islamic-bg.jpg';
+const islamicBg = '/system/backgrounds/islamic-bg.jpg';
 
 type LoginRole = 'student' | 'teacher' | 'admin';
 

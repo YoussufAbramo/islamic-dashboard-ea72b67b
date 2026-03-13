@@ -18,7 +18,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 import { format } from 'date-fns';
-import islamicBg from '@/assets/other/islamic-bg.jpg';
+const islamicBg = '/system/backgrounds/islamic-bg.jpg';
 import { ChatSkeleton } from '@/components/PageSkeleton';
 
 type SortOrder = 'newest' | 'oldest';
