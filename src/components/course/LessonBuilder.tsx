@@ -91,6 +91,7 @@ export interface ContentBlock {
   selected_symbol?: string;
   symbol_font?: string;
   surah_name_mode?: 'name_only' | 'surat_name';
+  font_size?: 'sm' | 'md' | 'lg' | 'xl' | 'huge';
 }
 const generateId = () => Math.random().toString(36).substring(2, 10);
 
