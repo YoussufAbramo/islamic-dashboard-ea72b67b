@@ -1590,7 +1590,8 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                             onMoveDown={() => moveBlock(block.id, 'down')}
                             isFirst={idx === 0}
                             isLast={idx === sideBlocks.length - 1}
-                            isBeta={!nonBetaTypes.includes(block.type)}
+                            isBeta={quranTypes.includes(block.type)}
+                            isSoon={!stableTypes.includes(block.type) && !quranTypes.includes(block.type)}
                             onTransfer={(toSide) => transferBlock(block.id, toSide)}
                             animating={animatingBlocks[block.id] || null}
                           />
