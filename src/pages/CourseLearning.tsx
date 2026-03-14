@@ -15,10 +15,12 @@ import {
   ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Circle,
   BookOpen, Play, FileText, Headphones, ExternalLink, FileDown,
   Menu, X, GraduationCap, Loader2, PanelTop, PanelTopClose, AlertTriangle, Settings2,
-  ChevronDown, FolderTree, Layers, StickyNote,
+  ChevronDown, FolderTree, Layers, StickyNote, Sun, Moon, Type as TypeIcon,
 } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import LessonBuilder from '@/components/course/LessonBuilder';
