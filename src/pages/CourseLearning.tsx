@@ -976,15 +976,6 @@ const CourseLearning = () => {
           <Button
             variant="ghost"
             size="icon"
-            className={cn("h-8 w-8 shrink-0", rightPanel === 'symbols' && "bg-muted")}
-            onClick={() => toggleRightPanel('symbols')}
-            title={isAr ? 'رموز إسلامية' : 'Islamic Symbols'}
-          >
-            <Sparkles className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
             className={cn("h-8 w-8 shrink-0", rightPanel === 'appearance' && "bg-muted")}
             onClick={() => toggleRightPanel('appearance')}
             title={isAr ? 'المظهر' : 'Appearance'}
