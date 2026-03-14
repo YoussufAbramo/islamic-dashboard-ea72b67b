@@ -885,8 +885,3 @@
 .lesson-content-viewer .prose h1 { font-size: calc(var(--lesson-font-size) * 1.75) !important; }
 .lesson-content-viewer .prose h2 { font-size: calc(var(--lesson-font-size) * 1.5) !important; }
 .lesson-content-viewer .prose h3 { font-size: calc(var(--lesson-font-size) * 1.25) !important; }
-
-/* Quran Quote block uses the --quran-font CSS variable */
-.lesson-content-viewer .quran-quote-block p {
-  font-family: var(--quran-font, 'QPC V2', serif) !important;
-}
