@@ -655,7 +655,7 @@ const CourseLearning = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true); // visible by default
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [builderOpen, setBuilderOpen] = useState(false);
-  const [rightPanel, setRightPanel] = useState<'notes' | 'appearance' | 'symbols' | null>(null);
+  const [rightPanel, setRightPanel] = useState<'notes' | 'appearance' | null>(null);
   const [lessonFontFamily, setLessonFontFamily] = useState(() => {
     try { return localStorage.getItem('lesson_font_family') || 'default'; } catch { return 'default'; }
   });
