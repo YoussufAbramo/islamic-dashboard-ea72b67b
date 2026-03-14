@@ -451,7 +451,7 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
           const sizePx = typeof block.font_size === 'number' ? block.font_size : ({ sm: 24, md: 32, lg: 40, xl: 52, huge: 72 }[block.font_size || 'lg'] || 40);
           return block.selected_symbol ? (
             <div key={block.id || idx} className="text-center py-3">
-              <span className={sizeClass} style={{ fontFamily: `'${surahFont}', serif` }}>
+              <span style={{ fontFamily: `'${surahFont}', serif`, fontSize: `${sizePx}px` }}>
                 {block.selected_symbol}
               </span>
             </div>
