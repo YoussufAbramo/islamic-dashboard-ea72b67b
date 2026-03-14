@@ -235,6 +235,9 @@ Deno.serve(async (req) => {
     new Response(JSON.stringify(data), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
   try {
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+    if (!checkRateLimit(clientIp)) return rateLimited()
+
     // Auth check
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) return json({ error: 'Missing authorization' }, 401)
