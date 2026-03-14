@@ -2,6 +2,17 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.9.6] - 2026-03-14
+
+### Changed
+- **Lesson Builder — Lesson name visibility** — lesson title in the builder popup is now larger (`text-sm font-semibold`) and uses `text-foreground` instead of muted color
+- **Lesson Builder — Split Screen active side selector** — added Left/Right toggle in the split screen header bar to choose which column new elements are added to
+- **Lesson Builder — Transfer blocks between sides** — each block in split screen mode now has an ↔ arrow button to move it from left to right or vice versa
+- **Lesson Builder — Page Break auto-numbering** — removed manual page label inputs; page breaks are now auto-numbered and show their page number (#2, #3…) beside the "New Page" label in the block header
+- **Lesson Builder — BETA badges** — all element types except Text, Image, Video, Divider, New Page, Split Screen, and Table of Content now display a β badge in both the palette and block headers
+
+---
+
 ## [5.9.5] - 2026-03-14
 
 ### Changed
