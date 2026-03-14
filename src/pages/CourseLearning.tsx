@@ -591,7 +591,7 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
               {tocRows.map((row: { en: string; ar: string }, rIdx: number) => (
                 <tr key={rIdx} className="border-b last:border-b-0 hover:bg-muted/20 transition-colors">
                   <td className="px-4 py-2.5 text-sm" dir="ltr">{row.en}</td>
-                  <td className="px-4 py-2.5 text-sm font-[var(--font-arabic)]" dir="rtl">{row.ar}</td>
+                  <td className="px-4 py-2.5 text-sm" dir="rtl">{row.ar}</td>
                 </tr>
               ))}
             </tbody>
