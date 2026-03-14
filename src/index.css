@@ -864,7 +864,8 @@
   font-family: var(--lesson-font-family) !important;
 }
 /* Ensure Quran category elements keep their own inline fonts */
-.lesson-content-viewer .quran-quote-block p {
+.lesson-content-viewer .quran-quote-block p,
+.lesson-content-viewer[style*="--lesson-font-family"] .quran-quote-block p {
   font-family: var(--quran-font, 'QPC V2', serif) !important;
 }
 .lesson-content-viewer [style*="Besmellah"] {
