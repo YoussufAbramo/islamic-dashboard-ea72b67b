@@ -75,7 +75,7 @@ export interface ContentBlock {
   divider_thickness?: number;
   divider_color?: string;
   divider_text?: string;
-  // page break
+  divider_opacity?: number; // 15, 20, 25, 30
   page_label?: string;
   page_label_ar?: string;
   // split screen
