@@ -48,9 +48,11 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
 
   // Search
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<SearchMatch[]>([]);
+  const [allSearchResults, setAllSearchResults] = useState<SearchMatch[]>([]);
+  const [visibleCount, setVisibleCount] = useState(10);
   const [searching, setSearching] = useState(false);
   const searchTimer = useRef<ReturnType<typeof setTimeout>>();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Translation
   const [editions, setEditions] = useState<TranslationEdition[]>([]);
