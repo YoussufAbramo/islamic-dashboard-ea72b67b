@@ -415,6 +415,11 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
           return block.quran_text ? (
             <div key={block.id || idx} className="p-6 rounded-xl border bg-muted/5 text-center quran-quote-block" dir="rtl">
               <p className="leading-[2.5]" style={{ fontSize: `${block.quran_font_size || 18}px` }}>{block.quran_text}</p>
+              {block.quran_translation_enabled && block.quran_translation_text && (
+                <div className="mt-4 pt-3 border-t border-border/30" dir="ltr">
+                  <p className="text-sm leading-relaxed text-muted-foreground italic">{block.quran_translation_text}</p>
+                </div>
+              )}
               {(block.quran_surah_name || block.quran_reference) && (
                 <p className="text-xs text-muted-foreground mt-4">
                   {block.quran_surah_name && <span>{block.quran_surah_name}</span>}

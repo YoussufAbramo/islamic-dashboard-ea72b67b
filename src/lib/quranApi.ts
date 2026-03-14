@@ -28,9 +28,19 @@ export interface SearchMatch {
   surah: SurahMeta;
 }
 
+export interface TranslationEdition {
+  identifier: string;
+  language: string;
+  name: string;
+  englishName: string;
+  type: string;
+}
+
 // ─── Cache ───
 let surahCache: SurahMeta[] | null = null;
 const ayahCache = new Map<number, Ayah[]>();
+const translationCache = new Map<string, Ayah[]>();
+let editionsCache: TranslationEdition[] | null = null;
 
 // ─── Helpers ───
 async function apiFetch<T>(path: string): Promise<T> {
@@ -78,6 +88,52 @@ export async function searchQuran(keyword: string, surahNumber?: number): Promis
   } catch {
     return [];
   }
+}
+
+// ─── English Translation Editions ───
+const POPULAR_EDITIONS = [
+  'en.sahih',      // Saheeh International
+  'en.asad',       // Muhammad Asad
+  'en.pickthall',  // Pickthall
+  'en.yusufali',   // Yusuf Ali
+  'en.hilali',     // Hilali & Khan
+  'en.shakir',     // Shakir
+  'en.sarwar',     // Muhammad Sarwar
+  'en.ahmedali',   // Ahmed Ali
+  'en.itani',      // Talal Itani
+  'en.transliteration', // Transliteration
+];
+
+export async function getEnglishEditions(): Promise<TranslationEdition[]> {
+  if (editionsCache) return editionsCache;
+  try {
+    const data = await apiFetch<TranslationEdition[]>('/edition/language/en');
+    // Filter to translation type and prioritize popular ones
+    const translations = data.filter(e => e.type === 'translation');
+    // Sort: popular ones first
+    translations.sort((a, b) => {
+      const aIdx = POPULAR_EDITIONS.indexOf(a.identifier);
+      const bIdx = POPULAR_EDITIONS.indexOf(b.identifier);
+      if (aIdx >= 0 && bIdx >= 0) return aIdx - bIdx;
+      if (aIdx >= 0) return -1;
+      if (bIdx >= 0) return 1;
+      return a.englishName.localeCompare(b.englishName);
+    });
+    editionsCache = translations;
+    return translations;
+  } catch {
+    return [];
+  }
+}
+
+// ─── Get translation for a surah (cached) ───
+export async function getSurahTranslation(surahNumber: number, edition: string): Promise<Ayah[]> {
+  const key = `${surahNumber}:${edition}`;
+  if (translationCache.has(key)) return translationCache.get(key)!;
+  const data = await apiFetch<{ ayahs: Ayah[]; [key: string]: any }>(`/surah/${surahNumber}/${edition}`);
+  const ayahs = data.ayahs;
+  translationCache.set(key, ayahs);
+  return ayahs;
 }
 
 // ─── Parse reference like "2:255" or "2:255-260" ───
