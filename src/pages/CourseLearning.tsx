@@ -1195,7 +1195,7 @@ const CourseLearning = () => {
           )}
 
           {rightPanel === 'appearance' && (
-            <div className="flex flex-col h-full w-72">
+            <div className="flex flex-col h-full w-72 animate-in fade-in-0 duration-200">
               <div className="flex items-center gap-2 px-4 py-3 border-b bg-muted/30 shrink-0">
                 <Settings2 className="h-4 w-4 text-primary shrink-0" />
                 <h3 className="text-sm font-bold truncate flex-1">{isAr ? 'إعدادات المظهر' : 'Appearance'}</h3>
