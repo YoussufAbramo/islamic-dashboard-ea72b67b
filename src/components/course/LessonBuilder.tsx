@@ -268,7 +268,31 @@ const BlockEditor = ({
   const [collapsed, setCollapsed] = useState(true);
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const renameRef = useRef<HTMLInputElement>(null);
+
+  const blockHasContent = () => {
+    const b = block;
+    if (b.html && b.html.replace(/<[^>]*>/g, '').trim()) return true;
+    if (b.image_url || b.video_url || b.video_embed || b.audio_url) return true;
+    if (b.question || b.question_ar) return true;
+    if (b.options && b.options.length > 0) return true;
+    if (b.pairs && b.pairs.length > 0) return true;
+    if (b.items && b.items.length > 0) return true;
+    if (b.sentence || b.missing_word) return true;
+    if (b.toc_rows && b.toc_rows.length > 0) return true;
+    if (b.split_left_html || b.split_right_html) return true;
+    if (b.divider_text) return true;
+    return false;
+  };
+
+  const handleDelete = () => {
+    if (blockHasContent()) {
+      setConfirmDelete(true);
+    } else {
+      onRemove();
+    }
+  };
 
   const {
     attributes,
