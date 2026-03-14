@@ -1226,11 +1226,12 @@ const BlockEditor = ({
         {/* ── Besmellah ── */}
         {block.type === 'besmellah' && (() => {
           // The Besmellah font maps different calligraphy styles to characters
-          const besmellahStyles = Array.from({ length: 110 }, (_, i) => {
-            // Map to printable ASCII characters starting from '!' (33)
-            const code = 33 + i;
-            return { char: String.fromCharCode(code), label: `${isAr ? 'نمط' : 'Style'} ${i + 1}` };
-          });
+          const excludedStyles = new Set([1,3,4,5,6,7,16,17,18,19,20,21,27,34,38,42,44,46,47,48,52,53,55,56,59,60,61,62,63,64,74,76,77,78,79,80,88,...Array.from({length:21},(_,i)=>90+i)]);
+          const besmellahStyles = Array.from({ length: 110 }, (_, i) => ({
+            char: String.fromCharCode(33 + i),
+            label: `${isAr ? 'نمط' : 'Style'} ${i + 1}`,
+            styleNum: i + 1,
+          })).filter(s => !excludedStyles.has(s.styleNum));
           const currentSizePx = typeof block.font_size === 'number' ? block.font_size : ({ sm: 30, md: 40, lg: 52, xl: 64, huge: 80 }[block.font_size || 'lg'] || 52);
           return (
             <div className="space-y-3">
