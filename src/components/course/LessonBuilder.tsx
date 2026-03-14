@@ -1494,14 +1494,24 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
 
         <Separator />
 
-        <div className="flex items-center justify-end gap-2 px-5 py-3 shrink-0">
-          <Button variant="outline" onClick={() => handleOpenChange(false)}>
-            {isAr ? 'إلغاء' : 'Cancel'}
-          </Button>
-          <Button onClick={handleSave} disabled={saving} className="gap-1.5">
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            {isAr ? 'حفظ الدرس' : 'Save Lesson'}
-          </Button>
+        <div className="flex items-center justify-between gap-2 px-5 py-3 shrink-0">
+          <div className="flex items-center gap-2">
+            {hasUnsavedChanges && (
+              <Badge variant="outline" className="text-[10px] gap-1 border-amber-400/50 bg-amber-500/10 text-amber-600">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                {isAr ? 'تغييرات غير محفوظة' : 'Unsaved Changes'}
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => handleOpenChange(false)}>
+              {isAr ? 'إلغاء' : 'Cancel'}
+            </Button>
+            <Button onClick={handleSave} disabled={saving} className="gap-1.5">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {isAr ? 'حفظ الدرس' : 'Save Lesson'}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
