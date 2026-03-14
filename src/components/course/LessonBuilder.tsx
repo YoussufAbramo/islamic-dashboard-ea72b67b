@@ -1164,16 +1164,7 @@ const BlockEditor = ({
           }));
           const nameMode = block.surah_name_mode || 'name_only';
           const currentFont = nameMode === 'surat_name' ? 'Surah Name Color V4' : 'Surah Name V4';
-          const sizeOptions = [
-            { value: 'sm' as const, label: 'S', title: isAr ? 'صغير' : 'Small' },
-            { value: 'md' as const, label: 'M', title: isAr ? 'متوسط' : 'Medium' },
-            { value: 'lg' as const, label: 'L', title: isAr ? 'كبير' : 'Large' },
-            { value: 'xl' as const, label: 'XL', title: isAr ? 'كبير جداً' : 'Very Large' },
-            { value: 'huge' as const, label: 'H', title: isAr ? 'ضخم' : 'Huge' },
-          ];
-          const currentSize = block.font_size || 'lg';
-          const sizeMap = { sm: 'text-xl', md: 'text-2xl', lg: 'text-3xl', xl: 'text-4xl', huge: 'text-6xl' };
-          const previewSizeMap = { sm: 'text-2xl', md: 'text-3xl', lg: 'text-4xl', xl: 'text-5xl', huge: 'text-7xl' };
+          const currentSizePx = typeof block.font_size === 'number' ? block.font_size : ({ sm: 24, md: 32, lg: 40, xl: 52, huge: 72 }[block.font_size || 'lg'] || 40);
           return (
             <div className="space-y-3">
               {/* Mode & Size Controls */}
