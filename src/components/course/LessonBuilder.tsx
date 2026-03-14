@@ -268,7 +268,31 @@ const BlockEditor = ({
   const [collapsed, setCollapsed] = useState(true);
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const renameRef = useRef<HTMLInputElement>(null);
+
+  const blockHasContent = () => {
+    const b = block;
+    if (b.html && b.html.replace(/<[^>]*>/g, '').trim()) return true;
+    if (b.image_url || b.video_url || b.video_embed || b.audio_url) return true;
+    if (b.question || b.question_ar) return true;
+    if (b.options && b.options.length > 0) return true;
+    if (b.pairs && b.pairs.length > 0) return true;
+    if (b.items && b.items.length > 0) return true;
+    if (b.sentence || b.missing_word) return true;
+    if (b.toc_rows && b.toc_rows.length > 0) return true;
+    if (b.split_left_html || b.split_right_html) return true;
+    if (b.divider_text) return true;
+    return false;
+  };
+
+  const handleDelete = () => {
+    if (blockHasContent()) {
+      setConfirmDelete(true);
+    } else {
+      onRemove();
+    }
+  };
 
   const {
     attributes,
@@ -403,11 +427,24 @@ const BlockEditor = ({
           <Button variant="ghost" size="icon" className="h-6 w-6" disabled={isLast} onClick={(e) => { e.stopPropagation(); onMoveDown(); }}>
             <ChevronDown className="h-3 w-3" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/60 hover:text-destructive" onClick={(e) => { e.stopPropagation(); onRemove(); }}>
+          <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/60 hover:text-destructive" onClick={(e) => { e.stopPropagation(); handleDelete(); }}>
             <Trash2 className="h-3 w-3" />
           </Button>
         </div>
       </div>
+      {confirmDelete && (
+        <div className="flex items-center gap-1.5 px-3 py-1.5 border-b bg-destructive/5" onClick={(e) => e.stopPropagation()}>
+          <span className="text-[10px] text-destructive font-medium">{isAr ? 'هل تريد حذف هذا العنصر؟' : 'Delete this element?'}</span>
+          <div className="ms-auto flex gap-1">
+            <Button variant="destructive" size="sm" className="h-5 text-[10px] px-2" onClick={onRemove}>
+              {isAr ? 'نعم' : 'Yes'}
+            </Button>
+            <Button variant="ghost" size="sm" className="h-5 text-[10px] px-2" onClick={() => setConfirmDelete(false)}>
+              {isAr ? 'لا' : 'No'}
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className={cn("grid transition-all duration-300 ease-out", collapsed ? "grid-rows-[0fr]" : "grid-rows-[1fr]")}>
         <div className="overflow-hidden">
