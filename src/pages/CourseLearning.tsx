@@ -1289,47 +1289,6 @@ const CourseLearning = () => {
             </div>
           )}
 
-          {rightPanel === 'symbols' && (
-            <div className="flex flex-col h-full w-72 animate-in slide-in-from-end duration-300">
-              <div className="flex items-center gap-2 px-4 py-3 border-b bg-muted/30 shrink-0">
-                <Sparkles className="h-4 w-4 text-primary shrink-0" />
-                <h3 className="text-sm font-bold truncate flex-1">{isAr ? 'رموز إسلامية' : 'Islamic Symbols'}</h3>
-                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setRightPanel(null)}>
-                  <X className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-              <ScrollArea className="flex-1">
-                <div className="p-3">
-                  <p className="text-[10px] text-muted-foreground mb-3">
-                    {isAr ? 'اضغط على أي رمز لنسخه' : 'Click any symbol to copy it'}
-                  </p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {quranSymbols.map((s, i) => (
-                      <button
-                        key={i}
-                        onClick={() => handleCopySymbol(s.char)}
-                        className={cn(
-                          "flex flex-col items-center gap-1.5 p-3 rounded-lg border border-border/50 hover:bg-muted/60 hover:border-primary/30 transition-all cursor-pointer group relative",
-                          copiedSymbol === s.char && "bg-primary/10 border-primary/50"
-                        )}
-                        title={s.label}
-                      >
-                        <span className="text-2xl leading-none" style={{ fontFamily: "'Quran Symbols', 'Indopak Nastaleeq', sans-serif" }}>
-                          {s.char}
-                        </span>
-                        <span className="text-[9px] text-muted-foreground leading-tight text-center line-clamp-1">{s.label}</span>
-                        {copiedSymbol === s.char && (
-                          <span className="absolute -top-1 -end-1 bg-primary text-primary-foreground rounded-full p-0.5">
-                            <Check className="h-2.5 w-2.5" />
-                          </span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </ScrollArea>
-            </div>
-          )}
 
           {rightPanel === 'appearance' && (
             <div className="flex flex-col h-full w-72 animate-in slide-in-from-end duration-300">
