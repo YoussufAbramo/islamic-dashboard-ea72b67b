@@ -431,9 +431,11 @@ const BlockEditor = ({
             <Trash2 className="h-3 w-3" />
           </Button>
         </div>
-        {confirmDelete && (
-          <div className="flex items-center gap-1.5 ms-2" onClick={(e) => e.stopPropagation()}>
-            <span className="text-[10px] text-destructive font-medium">{isAr ? 'حذف؟' : 'Delete?'}</span>
+      </div>
+      {confirmDelete && (
+        <div className="flex items-center gap-1.5 px-3 py-1.5 border-b bg-destructive/5" onClick={(e) => e.stopPropagation()}>
+          <span className="text-[10px] text-destructive font-medium">{isAr ? 'هل تريد حذف هذا العنصر؟' : 'Delete this element?'}</span>
+          <div className="ms-auto flex gap-1">
             <Button variant="destructive" size="sm" className="h-5 text-[10px] px-2" onClick={onRemove}>
               {isAr ? 'نعم' : 'Yes'}
             </Button>
@@ -441,9 +443,8 @@ const BlockEditor = ({
               {isAr ? 'لا' : 'No'}
             </Button>
           </div>
-        )}
         </div>
-      </div>
+      )}
 
       <div className={cn("grid transition-all duration-300 ease-out", collapsed ? "grid-rows-[0fr]" : "grid-rows-[1fr]")}>
         <div className="overflow-hidden">
