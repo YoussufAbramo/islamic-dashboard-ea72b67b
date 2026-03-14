@@ -1458,6 +1458,8 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                       return btn;
                     })}
                   </div>
+                  </div>
+                  </div>
                 </div>
               ))}
               </TooltipProvider>
