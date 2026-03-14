@@ -1116,7 +1116,6 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
               ) : hasSplitScreen ? (
                 /* ── Split Screen Layout: two-column view ── */
                 (() => {
-                  const splitBlock = blocks.find(b => b.type === 'split_screen')!;
                   const leftBlocks = blocks.filter(b => b.split_side === 'left');
                   const rightBlocks = blocks.filter(b => b.split_side === 'right');
 
@@ -1148,6 +1147,8 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                             onMoveDown={() => moveBlock(block.id, 'down')}
                             isFirst={idx === 0}
                             isLast={idx === sideBlocks.length - 1}
+                            isBeta={!nonBetaTypes.includes(block.type)}
+                            onTransfer={(toSide) => transferBlock(block.id, toSide)}
                           />
                         ))
                       )}
@@ -1157,17 +1158,44 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                   return (
                     <div className="space-y-3">
                       {/* Split screen header */}
-                      <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 border">
+                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted/40 border">
                         <Columns className="h-4 w-4 text-cyan-600" />
                         <span className="text-xs font-medium">{isAr ? 'وضع الشاشة المقسمة' : 'Split Screen Mode'}</span>
                         <Lock className="h-3 w-3 text-muted-foreground/50 ms-1" />
-                        <div className="ms-auto">
+                        {/* Active side selector */}
+                        <div className="ms-auto flex items-center gap-1.5">
+                          <span className="text-[10px] text-muted-foreground">{isAr ? 'إضافة إلى:' : 'Add to:'}</span>
+                          <div className="flex gap-0.5 bg-muted rounded-md p-0.5">
+                            <button
+                              type="button"
+                              onClick={() => setActiveSplitSide('left')}
+                              className={cn(
+                                "px-2 py-0.5 rounded text-[10px] font-medium transition-colors",
+                                activeSplitSide === 'left'
+                                  ? "bg-primary text-primary-foreground shadow-sm"
+                                  : "text-muted-foreground hover:text-foreground"
+                              )}
+                            >
+                              {isAr ? 'يسار' : 'Left'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setActiveSplitSide('right')}
+                              className={cn(
+                                "px-2 py-0.5 rounded text-[10px] font-medium transition-colors",
+                                activeSplitSide === 'right'
+                                  ? "bg-primary text-primary-foreground shadow-sm"
+                                  : "text-muted-foreground hover:text-foreground"
+                              )}
+                            >
+                              {isAr ? 'يمين' : 'Right'}
+                            </button>
+                          </div>
                           <Button
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 text-destructive/60 hover:text-destructive"
                             onClick={() => {
-                              // Remove split screen and unassign all sides
                               setBlocks(prev => prev.filter(b => b.type !== 'split_screen').map(b => {
                                 const { split_side, ...rest } = b;
                                 return rest;
@@ -1187,31 +1215,47 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                   );
                 })()
               ) : (
-                <SortableList
-                  items={blocks}
-                  onReorder={(activeId, overId) => {
-                    setBlocks(prev => {
-                      const oldIdx = prev.findIndex(b => b.id === activeId);
-                      const newIdx = prev.findIndex(b => b.id === overId);
-                      if (oldIdx === -1 || newIdx === -1) return prev;
-                      return arrayMove(prev, oldIdx, newIdx);
-                    });
-                  }}
-                >
-                  {blocks.map((block, idx) => (
-                    <BlockEditor
-                      key={block.id}
-                      block={block}
-                      isAr={isAr}
-                      onChange={(updated) => updateBlock(block.id, updated)}
-                      onRemove={() => removeBlock(block.id)}
-                      onMoveUp={() => moveBlock(block.id, 'up')}
-                      onMoveDown={() => moveBlock(block.id, 'down')}
-                      isFirst={idx === 0}
-                      isLast={idx === blocks.length - 1}
-                    />
-                  ))}
-                </SortableList>
+                (() => {
+                  // Compute page numbers for page_break blocks
+                  let pageCounter = 1;
+                  const pageNumbers = new Map<string, number>();
+                  blocks.forEach(b => {
+                    if (b.type === 'page_break') {
+                      pageCounter++;
+                      pageNumbers.set(b.id, pageCounter);
+                    }
+                  });
+
+                  return (
+                    <SortableList
+                      items={blocks}
+                      onReorder={(activeId, overId) => {
+                        setBlocks(prev => {
+                          const oldIdx = prev.findIndex(b => b.id === activeId);
+                          const newIdx = prev.findIndex(b => b.id === overId);
+                          if (oldIdx === -1 || newIdx === -1) return prev;
+                          return arrayMove(prev, oldIdx, newIdx);
+                        });
+                      }}
+                    >
+                      {blocks.map((block, idx) => (
+                        <BlockEditor
+                          key={block.id}
+                          block={block}
+                          isAr={isAr}
+                          onChange={(updated) => updateBlock(block.id, updated)}
+                          onRemove={() => removeBlock(block.id)}
+                          onMoveUp={() => moveBlock(block.id, 'up')}
+                          onMoveDown={() => moveBlock(block.id, 'down')}
+                          isFirst={idx === 0}
+                          isLast={idx === blocks.length - 1}
+                          pageNumber={pageNumbers.get(block.id)}
+                          isBeta={!nonBetaTypes.includes(block.type)}
+                        />
+                      ))}
+                    </SortableList>
+                  );
+                })()
               )}
             </div>
           </div>
