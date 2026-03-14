@@ -180,9 +180,9 @@ const DashboardLayout = () => {
 
   return (
     <SidebarProvider defaultOpen={!isLearnPage}>
-      <div className="flex min-h-screen w-full" dir={dir}>
+        <div className="flex h-screen w-full overflow-hidden" dir={dir}>
         <AppSidebar />
-        <SidebarInset className="flex flex-col">
+        <SidebarInset className="flex flex-col min-h-0 flex-1 overflow-hidden">
           <div className={cn(
             "overflow-hidden transition-all duration-300 ease-out",
             showTopBar ? "max-h-[3.5rem] opacity-100" : "max-h-0 opacity-0"
