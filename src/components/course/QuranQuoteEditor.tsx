@@ -252,46 +252,34 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
         </div>
       )}
 
-      {/* ─── Surah + Ayah Selection ─── */}
+      {/* ─── Surah + Ayah Selection — single row ─── */}
       <div className="space-y-2">
-        <Label className="text-xs font-medium flex items-center gap-1.5">
-          <BookOpen className="h-3 w-3 text-muted-foreground" />
-          {isAr ? 'السورة والآيات' : 'Surah & Ayah'}
-        </Label>
-
         {loadingSurahs ? (
           <div className="flex items-center justify-center py-3"><Loader2 className="h-4 w-4 animate-spin" /></div>
         ) : (
-          <Select value={selectedSurah ? String(selectedSurah) : ''} onValueChange={v => setSelectedSurah(Number(v))}>
-            <SelectTrigger className="h-9 text-xs">
-              <SelectValue placeholder={isAr ? 'اختر سورة...' : 'Pick a Surah...'} />
-            </SelectTrigger>
-            <SelectContent className="max-h-60 overflow-y-auto">
-              {surahs.map(s => (
-                <SelectItem key={s.number} value={String(s.number)}>
-                  <span className="flex items-center gap-2">
-                    <span className="text-muted-foreground text-[10px] w-5 text-end">{s.number}</span>
-                    <span>{s.name}</span>
-                    <span className="text-muted-foreground text-[10px]">({s.englishName})</span>
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-
-        {selectedSurah > 0 && surahMeta && (
-          <>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <Badge variant="outline" className="text-[10px]">{surahMeta.numberOfAyahs} {isAr ? 'آية' : 'Ayahs'}</Badge>
-              <Badge variant="outline" className="text-[10px]">{surahMeta.revelationType === 'Meccan' ? (isAr ? 'مكية' : 'Meccan') : (isAr ? 'مدنية' : 'Medinan')}</Badge>
+          <div className="flex items-end gap-1.5">
+            <div className="flex-1 min-w-0">
+              <Label className="text-[10px] text-muted-foreground">{isAr ? 'السورة' : 'Surah'}</Label>
+              <Select value={selectedSurah ? String(selectedSurah) : ''} onValueChange={v => setSelectedSurah(Number(v))}>
+                <SelectTrigger className="h-8 text-xs mt-0.5">
+                  <SelectValue placeholder={isAr ? 'اختر...' : 'Pick...'} />
+                </SelectTrigger>
+                <SelectContent className="max-h-60 overflow-y-auto">
+                  {surahs.map(s => (
+                    <SelectItem key={s.number} value={String(s.number)}>
+                      <span className="flex items-center gap-2">
+                        <span className="text-muted-foreground text-[10px] w-5 text-end">{s.number}</span>
+                        <span>{s.name}</span>
+                        <span className="text-muted-foreground text-[10px]">({s.englishName})</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-
-            {loadingAyahs ? (
-              <div className="flex items-center justify-center py-2"><Loader2 className="h-3.5 w-3.5 animate-spin" /></div>
-            ) : (
-              <div className="flex items-end gap-2">
-                <div className="flex-1">
+            {selectedSurah > 0 && surahMeta && !loadingAyahs && (
+              <>
+                <div className="w-16 shrink-0">
                   <Label className="text-[10px] text-muted-foreground">{isAr ? 'من' : 'From'}</Label>
                   <Input
                     type="number"
@@ -302,7 +290,7 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
                     className="h-8 text-xs mt-0.5"
                   />
                 </div>
-                <div className="flex-1">
+                <div className="w-16 shrink-0">
                   <Label className="text-[10px] text-muted-foreground">{isAr ? 'إلى' : 'To'}</Label>
                   <Input
                     type="number"
@@ -313,13 +301,19 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
                     className="h-8 text-xs mt-0.5"
                   />
                 </div>
-                <Button size="sm" className="h-8 px-3 text-xs shrink-0" onClick={handleLoadAyahs}>
-                  <BookOpen className="h-3 w-3 me-1" />
-                  {isAr ? 'تحميل' : 'Load'}
+                <Button size="sm" className="h-8 px-2.5 text-xs shrink-0" onClick={handleLoadAyahs}>
+                  <BookOpen className="h-3 w-3" />
                 </Button>
-              </div>
+              </>
             )}
-          </>
+          </div>
+        )}
+        {selectedSurah > 0 && surahMeta && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Badge variant="outline" className="text-[10px]">{surahMeta.numberOfAyahs} {isAr ? 'آية' : 'Ayahs'}</Badge>
+            <Badge variant="outline" className="text-[10px]">{surahMeta.revelationType === 'Meccan' ? (isAr ? 'مكية' : 'Meccan') : (isAr ? 'مدنية' : 'Medinan')}</Badge>
+            {loadingAyahs && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+          </div>
         )}
       </div>
 
@@ -378,6 +372,15 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
       {/* ─── Preview ─── */}
       {block.quran_text ? (
         <>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full text-xs h-7 text-destructive hover:text-destructive gap-1.5"
+            onClick={handleClear}
+          >
+            <Eraser className="h-3 w-3" />
+            {isAr ? 'مسح الاختيار' : 'Clear Selection'}
+          </Button>
           <div className="p-4 rounded-lg border bg-muted/10 text-center quran-quote-block" dir="rtl">
             <p className="leading-[2.5]" style={{ fontFamily: `'${quranFont}', serif`, fontSize: `${block.quran_font_size || 18}px` }}>
               {block.quran_text}
@@ -399,15 +402,6 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
               <span className="text-[10px] text-muted-foreground">{isAr ? 'جاري تحميل الترجمة...' : 'Loading translation...'}</span>
             </div>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full text-xs h-7 text-destructive hover:text-destructive gap-1.5"
-            onClick={handleClear}
-          >
-            <Eraser className="h-3 w-3" />
-            {isAr ? 'مسح الاختيار' : 'Clear Selection'}
-          </Button>
         </>
       ) : (
         <div className="py-4 text-center rounded-lg border border-dashed border-border/50">
