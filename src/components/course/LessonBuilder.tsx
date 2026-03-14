@@ -1025,24 +1025,7 @@ const BlockEditor = ({
 
         {/* ── Quran Quote ── */}
         {block.type === 'quran_quote' && (
-          <div className="space-y-3">
-            <div>
-              <Label className="text-xs">{isAr ? 'النص القرآني' : 'Quran Text'}</Label>
-              <textarea
-                value={block.quran_text || ''}
-                onChange={(e) => onChange({ ...block, quran_text: e.target.value })}
-                placeholder={isAr ? 'أدخل النص القرآني هنا...' : 'Enter Quran text here...'}
-                dir="rtl"
-                className="mt-1 w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-lg ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                style={{ fontFamily: "'QPC V2', 'Indopak Nastaleeq', serif", lineHeight: '2.2' }}
-              />
-            </div>
-            {block.quran_text && (
-              <div className="p-4 rounded-lg border bg-muted/10 text-center" dir="rtl">
-                <p className="text-xl leading-[2.5]" style={{ fontFamily: "'QPC V2', serif" }}>{block.quran_text}</p>
-              </div>
-            )}
-          </div>
+          <QuranQuoteEditor block={block} isAr={isAr} onChange={onChange} />
         )}
 
         {/* ── Quran Symbol ── */}
