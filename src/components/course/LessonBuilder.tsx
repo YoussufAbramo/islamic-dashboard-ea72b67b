@@ -20,7 +20,7 @@ import {
   ChevronUp, ChevronDown, Loader2, Save, FileEdit, ChevronsUpDown,
   ListOrdered, BookOpen, Brain, RotateCcw, ClipboardList,
   Headphones, CheckCircle2, CheckSquare, ArrowUpDown, TextCursorInput, ToggleLeft, Ear,
-  Minus, FileStack, Columns, Lock, Ban,
+  Minus, FileStack, Columns, Lock, Ban, ArrowLeftRight,
 } from 'lucide-react';
 
 // ─── Block Types ───
@@ -242,7 +242,7 @@ const ItemsEditor = ({ block, isAr, onChange }: { block: ContentBlock; isAr: boo
 
 // ─── Single Block Editor ───
 const BlockEditor = ({
-  block, isAr, onChange, onRemove, onMoveUp, onMoveDown, isFirst, isLast,
+  block, isAr, onChange, onRemove, onMoveUp, onMoveDown, isFirst, isLast, pageNumber, isBeta, onTransfer,
 }: {
   block: ContentBlock;
   isAr: boolean;
@@ -252,6 +252,9 @@ const BlockEditor = ({
   onMoveDown: () => void;
   isFirst: boolean;
   isLast: boolean;
+  pageNumber?: number;
+  isBeta?: boolean;
+  onTransfer?: (toSide: 'left' | 'right') => void;
 }) => {
   const meta = blockMeta[block.type];
   const Icon = meta.icon;
@@ -304,8 +307,35 @@ const BlockEditor = ({
         <Icon className={cn("h-4 w-4 shrink-0", meta.color)} />
         <span className="text-xs font-medium text-muted-foreground">
           {isAr ? meta.labelAr : meta.label}
+          {block.type === 'page_break' && pageNumber != null && (
+            <span className="ms-1 text-[10px] text-muted-foreground/70">#{pageNumber}</span>
+          )}
         </span>
+        {isBeta && (
+          <Badge variant="outline" className="text-[8px] px-1 py-0 h-3.5 border-amber-400/50 text-amber-500 font-bold uppercase tracking-wider">
+            Beta
+          </Badge>
+        )}
         <div className="ms-auto flex items-center gap-0.5">
+          {onTransfer && (
+            <TooltipProvider delayDuration={200}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => {
+                    e.stopPropagation();
+                    onTransfer(block.split_side === 'left' ? 'right' : 'left');
+                  }}>
+                    <ArrowLeftRight className="h-3 w-3" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  {isAr
+                    ? `نقل إلى ${block.split_side === 'left' ? 'اليمين' : 'اليسار'}`
+                    : `Move to ${block.split_side === 'left' ? 'Right' : 'Left'}`}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); setCollapsed((c) => !c); }}>
             <ChevronsUpDown className={cn("h-3 w-3 transition-transform", collapsed && "rotate-180")} />
           </Button>
@@ -593,21 +623,9 @@ const BlockEditor = ({
 
         {/* ── Page Break ── */}
         {block.type === 'page_break' && (
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs">{isAr ? 'عنوان الصفحة (EN)' : 'Page Label (EN)'}</Label>
-                <Input value={block.page_label || ''} onChange={(e) => onChange({ ...block, page_label: e.target.value })} placeholder="Page 2" className="mt-1 text-xs" />
-              </div>
-              <div>
-                <Label className="text-xs">{isAr ? 'عنوان الصفحة (AR)' : 'Page Label (AR)'}</Label>
-                <Input dir="rtl" value={block.page_label_ar || ''} onChange={(e) => onChange({ ...block, page_label_ar: e.target.value })} placeholder="الصفحة ٢" className="mt-1 text-xs" />
-              </div>
-            </div>
-            <div className="flex items-center justify-center gap-2 py-2 border rounded-lg bg-muted/20 border-dashed">
-              <FileStack className="h-4 w-4 text-yellow-500" />
-              <span className="text-xs text-muted-foreground">{isAr ? 'فاصل صفحة — المحتوى التالي يظهر في صفحة جديدة' : 'Page Break — Content below appears on a new page'}</span>
-            </div>
+          <div className="flex items-center justify-center gap-2 py-2 border rounded-lg bg-muted/20 border-dashed">
+            <FileStack className="h-4 w-4 text-yellow-500" />
+            <span className="text-xs text-muted-foreground">{isAr ? 'فاصل صفحة — المحتوى التالي يظهر في صفحة جديدة' : 'Page Break — Content below appears on a new page'}</span>
           </div>
         )}
 
@@ -991,6 +1009,10 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
 
   const hasSplitScreen = useMemo(() => blocks.some(b => b.type === 'split_screen'), [blocks]);
   const hasNonSplitBlocks = useMemo(() => blocks.some(b => b.type !== 'split_screen'), [blocks]);
+  const [activeSplitSide, setActiveSplitSide] = useState<'left' | 'right'>('left');
+
+  // BETA types (all except: page_break, split_screen, text, video, image, divider, table_of_content)
+  const nonBetaTypes: BlockType[] = ['page_break', 'split_screen', 'text', 'video', 'image', 'divider', 'table_of_content'];
 
   const addBlock = useCallback((type: BlockType) => {
     const newBlock: ContentBlock = { id: generateId(), type };
@@ -1003,22 +1025,22 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
     if (type === 'exercise_text_match') { newBlock.pairs = []; }
     if (type === 'exercise_rearrange') { newBlock.items = []; }
 
-    // If split screen exists and this is not a split_screen block, assign to a side
+    // If split screen exists and this is not a split_screen block, assign to active side
     if (type !== 'split_screen') {
       setBlocks(prev => {
         const splitExists = prev.some(b => b.type === 'split_screen');
         if (splitExists) {
-          // Count blocks on each side
-          const leftCount = prev.filter(b => b.split_side === 'left').length;
-          const rightCount = prev.filter(b => b.split_side === 'right').length;
-          // If left has content, add to right; otherwise add to left
-          newBlock.split_side = leftCount > rightCount ? 'right' : (leftCount === 0 ? 'left' : 'right');
+          newBlock.split_side = activeSplitSide;
         }
         return [...prev, newBlock];
       });
     } else {
       setBlocks(prev => [...prev, newBlock]);
     }
+  }, [activeSplitSide]);
+
+  const transferBlock = useCallback((blockId: string, toSide: 'left' | 'right') => {
+    setBlocks(prev => prev.map(b => b.id === blockId ? { ...b, split_side: toSide } : b));
   }, []);
 
   const updateBlock = useCallback((id: string, updated: ContentBlock) => {
@@ -1068,7 +1090,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
             <FileEdit className="h-5 w-5 text-primary" />
             <div className="flex-1 min-w-0">
               <span className="truncate block">{isAr ? 'محرر الدرس' : 'Lesson Builder'}</span>
-              <span className="text-xs font-normal text-muted-foreground truncate block">
+              <span className="text-sm font-semibold text-foreground truncate block mt-0.5">
                 {isAr && lesson.title_ar ? lesson.title_ar : lesson.title}
               </span>
             </div>
@@ -1094,7 +1116,6 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
               ) : hasSplitScreen ? (
                 /* ── Split Screen Layout: two-column view ── */
                 (() => {
-                  const splitBlock = blocks.find(b => b.type === 'split_screen')!;
                   const leftBlocks = blocks.filter(b => b.split_side === 'left');
                   const rightBlocks = blocks.filter(b => b.split_side === 'right');
 
@@ -1126,6 +1147,8 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                             onMoveDown={() => moveBlock(block.id, 'down')}
                             isFirst={idx === 0}
                             isLast={idx === sideBlocks.length - 1}
+                            isBeta={!nonBetaTypes.includes(block.type)}
+                            onTransfer={(toSide) => transferBlock(block.id, toSide)}
                           />
                         ))
                       )}
@@ -1135,17 +1158,44 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                   return (
                     <div className="space-y-3">
                       {/* Split screen header */}
-                      <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 border">
+                      <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted/40 border">
                         <Columns className="h-4 w-4 text-cyan-600" />
                         <span className="text-xs font-medium">{isAr ? 'وضع الشاشة المقسمة' : 'Split Screen Mode'}</span>
                         <Lock className="h-3 w-3 text-muted-foreground/50 ms-1" />
-                        <div className="ms-auto">
+                        {/* Active side selector */}
+                        <div className="ms-auto flex items-center gap-1.5">
+                          <span className="text-[10px] text-muted-foreground">{isAr ? 'إضافة إلى:' : 'Add to:'}</span>
+                          <div className="flex gap-0.5 bg-muted rounded-md p-0.5">
+                            <button
+                              type="button"
+                              onClick={() => setActiveSplitSide('left')}
+                              className={cn(
+                                "px-2 py-0.5 rounded text-[10px] font-medium transition-colors",
+                                activeSplitSide === 'left'
+                                  ? "bg-primary text-primary-foreground shadow-sm"
+                                  : "text-muted-foreground hover:text-foreground"
+                              )}
+                            >
+                              {isAr ? 'يسار' : 'Left'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setActiveSplitSide('right')}
+                              className={cn(
+                                "px-2 py-0.5 rounded text-[10px] font-medium transition-colors",
+                                activeSplitSide === 'right'
+                                  ? "bg-primary text-primary-foreground shadow-sm"
+                                  : "text-muted-foreground hover:text-foreground"
+                              )}
+                            >
+                              {isAr ? 'يمين' : 'Right'}
+                            </button>
+                          </div>
                           <Button
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 text-destructive/60 hover:text-destructive"
                             onClick={() => {
-                              // Remove split screen and unassign all sides
                               setBlocks(prev => prev.filter(b => b.type !== 'split_screen').map(b => {
                                 const { split_side, ...rest } = b;
                                 return rest;
@@ -1165,31 +1215,47 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                   );
                 })()
               ) : (
-                <SortableList
-                  items={blocks}
-                  onReorder={(activeId, overId) => {
-                    setBlocks(prev => {
-                      const oldIdx = prev.findIndex(b => b.id === activeId);
-                      const newIdx = prev.findIndex(b => b.id === overId);
-                      if (oldIdx === -1 || newIdx === -1) return prev;
-                      return arrayMove(prev, oldIdx, newIdx);
-                    });
-                  }}
-                >
-                  {blocks.map((block, idx) => (
-                    <BlockEditor
-                      key={block.id}
-                      block={block}
-                      isAr={isAr}
-                      onChange={(updated) => updateBlock(block.id, updated)}
-                      onRemove={() => removeBlock(block.id)}
-                      onMoveUp={() => moveBlock(block.id, 'up')}
-                      onMoveDown={() => moveBlock(block.id, 'down')}
-                      isFirst={idx === 0}
-                      isLast={idx === blocks.length - 1}
-                    />
-                  ))}
-                </SortableList>
+                (() => {
+                  // Compute page numbers for page_break blocks
+                  let pageCounter = 1;
+                  const pageNumbers = new Map<string, number>();
+                  blocks.forEach(b => {
+                    if (b.type === 'page_break') {
+                      pageCounter++;
+                      pageNumbers.set(b.id, pageCounter);
+                    }
+                  });
+
+                  return (
+                    <SortableList
+                      items={blocks}
+                      onReorder={(activeId, overId) => {
+                        setBlocks(prev => {
+                          const oldIdx = prev.findIndex(b => b.id === activeId);
+                          const newIdx = prev.findIndex(b => b.id === overId);
+                          if (oldIdx === -1 || newIdx === -1) return prev;
+                          return arrayMove(prev, oldIdx, newIdx);
+                        });
+                      }}
+                    >
+                      {blocks.map((block, idx) => (
+                        <BlockEditor
+                          key={block.id}
+                          block={block}
+                          isAr={isAr}
+                          onChange={(updated) => updateBlock(block.id, updated)}
+                          onRemove={() => removeBlock(block.id)}
+                          onMoveUp={() => moveBlock(block.id, 'up')}
+                          onMoveDown={() => moveBlock(block.id, 'down')}
+                          isFirst={idx === 0}
+                          isLast={idx === blocks.length - 1}
+                          pageNumber={pageNumbers.get(block.id)}
+                          isBeta={!nonBetaTypes.includes(block.type)}
+                        />
+                      ))}
+                    </SortableList>
+                  );
+                })()
               )}
             </div>
           </div>
@@ -1225,6 +1291,8 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                           ? (isAr ? 'يجب إضافة الشاشة المقسمة قبل أي عنصر آخر. احذف العناصر الموجودة أولاً.' : 'Split Screen must be added before any other elements. Remove existing elements first.')
                           : '';
 
+                      const showBeta = !nonBetaTypes.includes(type);
+
                       const btn = (
                         <button
                           key={type}
@@ -1232,7 +1300,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                           onClick={() => !cantUse && addBlock(type)}
                           disabled={cantUse}
                           className={cn(
-                            "flex flex-col items-center gap-1.5 p-2.5 rounded-lg border border-border/50 bg-background text-center text-[10px] font-medium text-muted-foreground transition-all relative",
+                            "flex flex-col items-center gap-1 p-2.5 rounded-lg border border-border/50 bg-background text-center text-[10px] font-medium text-muted-foreground transition-all relative",
                             cantUse
                               ? "opacity-40 cursor-not-allowed"
                               : "hover:border-primary/40 hover:bg-primary/5 hover:text-foreground hover:shadow-sm"
@@ -1240,6 +1308,9 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                         >
                           {isLocked && <Lock className="h-2.5 w-2.5 absolute top-1 end-1 text-muted-foreground/60" />}
                           {isDisabled && <Ban className="h-2.5 w-2.5 absolute top-1 end-1 text-destructive/60" />}
+                          {showBeta && (
+                            <span className="absolute top-0.5 start-0.5 text-[6px] font-bold uppercase tracking-wider text-amber-500 leading-none">β</span>
+                          )}
                           <Icon className={cn("h-4 w-4 shrink-0", cantUse ? "text-muted-foreground/40" : meta.color)} />
                           <span className="truncate w-full leading-tight">{isAr ? meta.labelAr : meta.label}</span>
                         </button>
