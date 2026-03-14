@@ -440,9 +440,10 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
         // ── Surah Name ──
         case 'surah_name': {
           const surahFont = block.symbol_font || 'Surah Name V4';
+          const sizeClass = { sm: 'text-xl', md: 'text-2xl', lg: 'text-4xl', xl: 'text-5xl', huge: 'text-7xl' }[block.font_size || 'lg'] || 'text-4xl';
           return block.selected_symbol ? (
             <div key={block.id || idx} className="text-center py-3">
-              <span className="text-4xl" style={{ fontFamily: `'${surahFont}', serif` }}>
+              <span className={sizeClass} style={{ fontFamily: `'${surahFont}', serif` }}>
                 {block.selected_symbol}
               </span>
             </div>
