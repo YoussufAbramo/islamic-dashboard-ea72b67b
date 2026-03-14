@@ -846,6 +846,50 @@ const AttendLesson = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Compensate Dialog */}
+      <Dialog open={!!compensateEntry} onOpenChange={(val) => { if (!val) { setCompensateEntry(null); setCompensateDate(''); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-primary">
+              <RefreshCw className="h-5 w-5" />
+              {isAr ? 'تعويض الدرس' : 'Compensate Lesson'}
+            </DialogTitle>
+          </DialogHeader>
+          {compensateEntry && (
+            <div className="space-y-4">
+              <div className="p-3 rounded-lg border bg-muted/30 text-sm">
+                <p className="font-medium">{compensateEntry.course_title}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {compensateEntry.student_name} — {compensateEntry.teacher_name}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {isAr ? 'الموعد الأصلي:' : 'Original:'} {format(new Date(compensateEntry.scheduled_at), 'MMM d, h:mm a')}
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-sm font-semibold">
+                  {isAr ? 'موعد الدرس الجديد' : 'New Lesson Date & Time'} <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  type="datetime-local"
+                  value={compensateDate}
+                  onChange={(e) => setCompensateDate(e.target.value)}
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => { setCompensateEntry(null); setCompensateDate(''); }}>
+                  {isAr ? 'إلغاء' : 'Cancel'}
+                </Button>
+                <Button onClick={handleCompensateSubmit} disabled={!compensateDate}>
+                  <RefreshCw className="h-4 w-4 me-2" />
+                  {isAr ? 'جدولة التعويض' : 'Schedule Compensation'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
