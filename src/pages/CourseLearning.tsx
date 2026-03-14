@@ -628,7 +628,9 @@ const CourseLearning = () => {
   const { user, role } = useAuth();
   const { topBarHidden, setTopBarHidden } = useOutletContext<{ topBarHidden: boolean; setTopBarHidden: (v: boolean) => void }>();
   const { open: appSidebarOpen, setOpen: setAppSidebarOpen } = useSidebar();
+  const { pending: appSettings } = useAppSettings();
   const isAr = language === 'ar';
+  const appRtlFont = appSettings.rtlFont;
 
   // Auto-hide top bar & collapse app sidebar on mount, restore on unmount
   useEffect(() => {
