@@ -1112,9 +1112,13 @@ const BlockEditor = ({
 
         {/* ── Surah Nameplate ── */}
         {block.type === 'surah_nameplate' && (() => {
-          // Generate range of characters to pick from Surah Header font
+          // Surah Header font uses 3-digit Arabic numeral ligatures (٠٠١ = Surah 1)
+          const toArabicDigits = (n: number) => {
+            const arabicDigits = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+            return String(n).padStart(3, '0').split('').map(d => arabicDigits[parseInt(d)]).join('');
+          };
           const surahHeaderChars = Array.from({ length: 114 }, (_, i) => ({
-            char: String.fromCodePoint(0xE000 + i),
+            char: toArabicDigits(i + 1),
             label: `${isAr ? 'سورة' : 'Surah'} ${i + 1}`,
           }));
           return (
