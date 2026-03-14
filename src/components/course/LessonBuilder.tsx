@@ -385,7 +385,13 @@ const BlockEditor = ({
   );
 
   return (
-    <div ref={setNodeRef} style={style} className={cn("rounded-lg border bg-card group relative", animationClass)}>
+    <div ref={setNodeRef} style={style} className={cn(
+      "rounded-lg border bg-card group relative",
+      (groupDepth ?? 0) > 0 && "ms-4 border-s-2 border-s-violet-400/60",
+      block.type === 'group_start' && "border-violet-400/60 bg-violet-500/5",
+      block.type === 'group_end' && "border-violet-400/60 bg-violet-500/5",
+      animationClass,
+    )}>
       <div
         className="flex items-center gap-2 px-3 py-2 border-b bg-muted/30 cursor-pointer select-none"
         onClick={() => setCollapsed((c) => !c)}
