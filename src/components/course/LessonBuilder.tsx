@@ -85,6 +85,10 @@ export interface ContentBlock {
   split_active_side?: 'left' | 'right';
   // split screen sub-block side assignment
   split_side?: 'left' | 'right';
+  // Quran elements
+  quran_text?: string;
+  selected_symbol?: string;
+  symbol_font?: string;
 }
 const generateId = () => Math.random().toString(36).substring(2, 10);
 
