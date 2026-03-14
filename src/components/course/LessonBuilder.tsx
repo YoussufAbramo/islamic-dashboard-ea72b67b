@@ -1673,10 +1673,21 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                 (() => {
                   let pageCounter = 1;
                   const pageNumbers = new Map<string, number>();
+                  const groupDepths = new Map<string, number>();
+                  let depth = 0;
                   blocks.forEach(b => {
                     if (b.type === 'page_break') {
                       pageCounter++;
                       pageNumbers.set(b.id, pageCounter);
+                    }
+                    if (b.type === 'group_start') {
+                      groupDepths.set(b.id, 0); // start itself is at 0
+                      depth++;
+                    } else if (b.type === 'group_end') {
+                      depth = Math.max(0, depth - 1);
+                      groupDepths.set(b.id, 0); // end itself is at 0
+                    } else {
+                      groupDepths.set(b.id, depth);
                     }
                   });
 
@@ -1707,6 +1718,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                           isBeta={quranTypes.includes(block.type)}
                           isSoon={!stableTypes.includes(block.type) && !quranTypes.includes(block.type)}
                           animating={animatingBlocks[block.id] || null}
+                          groupDepth={groupDepths.get(block.id) ?? 0}
                         />
                       ))}
                     </SortableList>
