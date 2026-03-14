@@ -1280,7 +1280,7 @@ const CourseLearning = () => {
               style={{
                 '--lesson-font-size': `${lessonFontSize}px`,
                 '--lesson-font-family': lessonFontFamily !== 'default' ? `'${lessonFontFamily}', var(--font-rtl)` : undefined,
-                '--quran-font': tajweedMode ? "'QPC V4 Tajweed', serif" : `'${quranFont}', serif`,
+                '--quran-font': `'${quranFont}', serif`,
               } as React.CSSProperties}
             >
               <ContentViewer lesson={currentLesson} isAr={isAr} />
