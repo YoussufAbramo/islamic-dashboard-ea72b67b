@@ -1168,6 +1168,12 @@ const BlockEditor = ({
             </div>
           );
         })()}
+      </div>
+      </div>
+      </div>
+    </div>
+  );
+};
 
 // ─── Main LessonBuilder Dialog ───
 interface LessonBuilderProps {
