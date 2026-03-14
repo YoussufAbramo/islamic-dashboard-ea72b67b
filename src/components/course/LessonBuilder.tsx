@@ -434,7 +434,8 @@ const BlockEditor = ({
           </Badge>
         )}
         {isSoon && (
-          <Badge className="text-[9px] px-1.5 py-0 h-4 bg-amber-500/15 text-amber-600 border-amber-400/40 font-bold uppercase tracking-wider">
+          <Badge className="text-[9px] px-1.5 py-0 h-4 bg-muted text-muted-foreground border-border font-bold uppercase tracking-wider">
+            <Lock className="h-2.5 w-2.5 me-0.5" />
             Soon
           </Badge>
         )}
