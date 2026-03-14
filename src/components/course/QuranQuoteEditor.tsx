@@ -22,7 +22,7 @@ interface Props {
 
 const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
   const [quranFont, setQuranFont] = useState(() => {
-    try { return localStorage.getItem('quran_font') || 'QPC V2'; } catch { return 'QPC V2'; }
+    try { return localStorage.getItem('quran_font') || 'Indopak Nastaleeq'; } catch { return 'Indopak Nastaleeq'; }
   });
 
   useEffect(() => {
