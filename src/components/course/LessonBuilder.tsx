@@ -1127,6 +1127,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
               <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-2 pb-2">
                 {isAr ? 'العناصر' : 'Elements'}
               </p>
+              <TooltipProvider delayDuration={200}>
               {blockGroups.map((group, gIdx) => (
                 <div key={group.key}>
                   {gIdx > 0 && <Separator className="my-2" />}
@@ -1138,21 +1139,55 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                     {group.types.map(type => {
                       const meta = blockMeta[type];
                       const Icon = meta.icon;
-                      return (
+
+                      // Split screen constraints
+                      const isSplitType = type === 'split_screen';
+                      const isLocked = isSplitType && hasSplitScreen;
+                      const isDisabled = isSplitType && !hasSplitScreen && hasNonSplitBlocks;
+                      const cantUse = isLocked || isDisabled;
+
+                      const disabledMessage = isLocked
+                        ? (isAr ? 'الشاشة المقسمة مستخدمة بالفعل (مرة واحدة فقط لكل درس)' : 'Split Screen is already in use (only once per lesson)')
+                        : isDisabled
+                          ? (isAr ? 'يجب إضافة الشاشة المقسمة قبل أي عنصر آخر. احذف العناصر الموجودة أولاً.' : 'Split Screen must be added before any other elements. Remove existing elements first.')
+                          : '';
+
+                      const btn = (
                         <button
                           key={type}
                           type="button"
-                          onClick={() => addBlock(type)}
-                          className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg border border-border/50 bg-background text-center text-[10px] font-medium text-muted-foreground transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-foreground hover:shadow-sm"
+                          onClick={() => !cantUse && addBlock(type)}
+                          disabled={cantUse}
+                          className={cn(
+                            "flex flex-col items-center gap-1.5 p-2.5 rounded-lg border border-border/50 bg-background text-center text-[10px] font-medium text-muted-foreground transition-all relative",
+                            cantUse
+                              ? "opacity-40 cursor-not-allowed"
+                              : "hover:border-primary/40 hover:bg-primary/5 hover:text-foreground hover:shadow-sm"
+                          )}
                         >
-                          <Icon className={cn("h-4 w-4 shrink-0", meta.color)} />
+                          {isLocked && <Lock className="h-2.5 w-2.5 absolute top-1 end-1 text-muted-foreground/60" />}
+                          {isDisabled && <Ban className="h-2.5 w-2.5 absolute top-1 end-1 text-destructive/60" />}
+                          <Icon className={cn("h-4 w-4 shrink-0", cantUse ? "text-muted-foreground/40" : meta.color)} />
                           <span className="truncate w-full leading-tight">{isAr ? meta.labelAr : meta.label}</span>
                         </button>
                       );
+
+                      if (cantUse) {
+                        return (
+                          <Tooltip key={type}>
+                            <TooltipTrigger asChild>{btn}</TooltipTrigger>
+                            <TooltipContent side="left" className="max-w-[200px] text-xs">
+                              {disabledMessage}
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      }
+                      return btn;
                     })}
                   </div>
                 </div>
               ))}
+              </TooltipProvider>
             </div>
           </div>
         </div>
