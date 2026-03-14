@@ -1433,7 +1433,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
 
     {/* Split Page Delete Confirmation */}
     <AlertDialog open={splitDeleteOpen} onOpenChange={setSplitDeleteOpen}>
-      <AlertDialogContent>
+      <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle>
             {isAr ? 'حذف وضع الصفحة المقسمة' : 'Remove Split Page Mode'}
@@ -1444,21 +1444,23 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
               : 'What would you like to do with the elements inside the Split Page?'}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-          <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+        <div className="flex flex-col gap-2 pt-2">
           <Button
             variant="outline"
+            className="w-full justify-center"
             onClick={() => handleDeleteSplitPage(false)}
           >
             {isAr ? 'إزالة التقسيم فقط وإبقاء العناصر' : 'Remove split, keep elements'}
           </Button>
           <Button
             variant="destructive"
+            className="w-full justify-center"
             onClick={() => handleDeleteSplitPage(true)}
           >
             {isAr ? 'حذف التقسيم وجميع العناصر' : 'Delete split & all elements'}
           </Button>
-        </AlertDialogFooter>
+          <AlertDialogCancel className="w-full mt-1">{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+        </div>
       </AlertDialogContent>
     </AlertDialog>
     </>
