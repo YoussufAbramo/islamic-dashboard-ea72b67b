@@ -755,6 +755,22 @@ const BlockEditor = ({
           </div>
         )}
 
+        {/* ── Group Start ── */}
+        {block.type === 'group_start' && (
+          <div className="flex items-center justify-center gap-2 py-2 border rounded-lg bg-violet-500/5 border-dashed border-violet-500/30">
+            <SquareDashedBottom className="h-4 w-4 text-violet-500" />
+            <span className="text-xs text-muted-foreground">{isAr ? 'بداية إطار — العناصر التالية ستظهر داخل إطار مشترك' : 'Box Start — Elements below will appear inside a shared border'}</span>
+          </div>
+        )}
+
+        {/* ── Group End ── */}
+        {block.type === 'group_end' && (
+          <div className="flex items-center justify-center gap-2 py-2 border rounded-lg bg-violet-500/5 border-dashed border-violet-500/30">
+            <SquareDashedBottomCode className="h-4 w-4 text-violet-400" />
+            <span className="text-xs text-muted-foreground">{isAr ? 'نهاية إطار — ينتهي هنا الإطار المشترك' : 'Box End — Ends the shared border here'}</span>
+          </div>
+        )}
+
         {/* ── Split Screen ── */}
         {block.type === 'split_screen' && (() => {
           const activeSide = block.split_active_side || 'left';
