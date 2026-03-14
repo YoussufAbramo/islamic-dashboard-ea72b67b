@@ -48,9 +48,11 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
 
   // Search
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<SearchMatch[]>([]);
+  const [allSearchResults, setAllSearchResults] = useState<SearchMatch[]>([]);
+  const [visibleCount, setVisibleCount] = useState(10);
   const [searching, setSearching] = useState(false);
   const searchTimer = useRef<ReturnType<typeof setTimeout>>();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Translation
   const [editions, setEditions] = useState<TranslationEdition[]>([]);
@@ -84,10 +86,10 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
     }).catch(() => setAyahs([])).finally(() => setLoadingAyahs(false));
   }, [selectedSurah]);
 
-  // Debounced search
+  // Debounced search — ayat text only
   useEffect(() => {
     if (searchTimer.current) clearTimeout(searchTimer.current);
-    if (!searchQuery || searchQuery.trim().length < 2) { setSearchResults([]); return; }
+    if (!searchQuery || searchQuery.trim().length < 2) { setAllSearchResults([]); setVisibleCount(10); return; }
 
     const ref = parseAyahReference(searchQuery);
     if (ref) {
@@ -96,14 +98,15 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
         const matches = allAyahs
           .filter(a => a.numberInSurah >= ref.from && a.numberInSurah <= ref.to)
           .map(a => ({ number: a.number, text: a.text, numberInSurah: a.numberInSurah, surah: a.surah }));
-        setSearchResults(matches);
-      }).catch(() => setSearchResults([])).finally(() => setSearching(false));
+        setAllSearchResults(matches);
+        setVisibleCount(10);
+      }).catch(() => setAllSearchResults([])).finally(() => setSearching(false));
       return;
     }
 
     searchTimer.current = setTimeout(() => {
       setSearching(true);
-      searchQuran(searchQuery).then(setSearchResults).catch(() => setSearchResults([])).finally(() => setSearching(false));
+      searchQuran(searchQuery).then(r => { setAllSearchResults(r); setVisibleCount(10); }).catch(() => setAllSearchResults([])).finally(() => setSearching(false));
     }, 500);
 
     return () => { if (searchTimer.current) clearTimeout(searchTimer.current); };
@@ -159,7 +162,8 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
   const handleSearchSelect = useCallback((match: SearchMatch) => {
     applySelection(match.text, match.surah.number, match.surah.name, match.surah.englishName, match.numberInSurah, match.numberInSurah);
     setSearchQuery('');
-    setSearchResults([]);
+    setAllSearchResults([]);
+    setVisibleCount(10);
   }, [applySelection]);
 
   const handleToggleTranslation = useCallback(async (enabled: boolean) => {
@@ -222,12 +226,12 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
             <Input
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder={isAr ? 'ابحث بالنص، اسم السورة، أو المرجع (مثل 2:255)...' : 'Search by text, Surah name, or reference (e.g. 2:255)...'}
+              placeholder={isAr ? 'ابحث في الآيات بالنص أو المرجع (مثل 2:255)...' : 'Search ayat by text or reference (e.g. 2:255)...'}
               className="ps-8 h-9 text-xs"
               dir="auto"
             />
             {searchQuery && (
-              <Button variant="ghost" size="icon" className="absolute end-1 top-1 h-7 w-7" onClick={() => { setSearchQuery(''); setSearchResults([]); }}>
+              <Button variant="ghost" size="icon" className="absolute end-1 top-1 h-7 w-7" onClick={() => { setSearchQuery(''); setAllSearchResults([]); setVisibleCount(10); }}>
                 <X className="h-3 w-3" />
               </Button>
             )}
@@ -237,26 +241,41 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
             </div>
           )}
-          {!searching && searchResults.length > 0 && (
-            <ScrollArea className="h-48">
-              <div className="space-y-1">
-                {searchResults.slice(0, 20).map((m, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleSearchSelect(m)}
-                    className="w-full text-start p-2.5 rounded-md border border-border/50 hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge variant="secondary" className="text-[9px] px-1.5 py-0">{m.surah.englishName}</Badge>
-                      <span className="text-[10px] text-muted-foreground">{m.surah.number}:{m.numberInSurah}</span>
-                    </div>
-                    <p className="text-sm leading-[2]" dir="rtl" style={{ fontFamily: `'${quranFont}', serif` }}>{m.text}</p>
-                  </button>
-                ))}
-              </div>
-            </ScrollArea>
+          {!searching && allSearchResults.length > 0 && (
+            <div
+              ref={scrollRef}
+              className="max-h-64 overflow-y-auto space-y-1 rounded-md"
+              onScroll={(e) => {
+                const el = e.currentTarget;
+                if (el.scrollTop + el.clientHeight >= el.scrollHeight - 20) {
+                  setVisibleCount(prev => Math.min(prev + 10, allSearchResults.length));
+                }
+              }}
+            >
+              {allSearchResults.slice(0, visibleCount).map((m, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleSearchSelect(m)}
+                  className="w-full text-start p-2.5 rounded-md border border-border/50 hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge variant="secondary" className="text-[9px] px-1.5 py-0">{m.surah.englishName}</Badge>
+                    <span className="text-[10px] text-muted-foreground">{m.surah.number}:{m.numberInSurah}</span>
+                  </div>
+                  <p className="text-sm leading-[2]" dir="rtl" style={{ fontFamily: `'${quranFont}', serif` }}>{m.text}</p>
+                </button>
+              ))}
+              {visibleCount < allSearchResults.length && (
+                <div className="flex items-center justify-center py-2">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                  <span className="text-[10px] text-muted-foreground ms-1.5">
+                    {visibleCount} / {allSearchResults.length}
+                  </span>
+                </div>
+              )}
+            </div>
           )}
-          {!searching && searchQuery.length >= 2 && searchResults.length === 0 && (
+          {!searching && searchQuery.length >= 2 && allSearchResults.length === 0 && (
             <p className="text-xs text-muted-foreground text-center py-3">{isAr ? 'لم يتم العثور على نتائج' : 'No results found'}</p>
           )}
         </div>
