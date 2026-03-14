@@ -1184,7 +1184,7 @@ const BlockEditor = ({
                       {isAr ? 'اسم فقط' : 'Name Only'}
                     </button>
                     <button type="button"
-                      onClick={() => onChange({ ...block, surah_name_mode: 'surat_name', symbol_font: 'Surah Name Color V4' })}
+                      onClick={() => onChange({ ...block, surah_name_mode: 'surat_name', symbol_font: 'Surah Name V2' })}
                       className={cn("px-3 py-1.5 text-xs font-medium transition-colors",
                         nameMode === 'surat_name' ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground hover:bg-muted"
                       )}>
