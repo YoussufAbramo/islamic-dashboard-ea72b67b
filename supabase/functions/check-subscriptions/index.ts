@@ -6,6 +6,29 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// ── Rate Limiter (60 req/min per IP) ──
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT = 60;
+const RATE_WINDOW_MS = 60_000;
+
+function checkRateLimit(id: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(id);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(id, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return true;
+  }
+  if (++entry.count > RATE_LIMIT) return false;
+  return true;
+}
+
+function rateLimited() {
+  return new Response(JSON.stringify({ error: "Too many requests" }), {
+    status: 429,
+    headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" },
+  });
+}
+
 // Period durations in days
 const PERIOD_DAYS: Record<string, number> = {
   monthly: 28,
@@ -26,6 +49,9 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    if (!checkRateLimit(clientIp)) return rateLimited();
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
