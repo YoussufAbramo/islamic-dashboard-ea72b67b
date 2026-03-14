@@ -88,6 +88,12 @@ export interface ContentBlock {
   split_side?: 'left' | 'right';
   // Quran elements
   quran_text?: string;
+  quran_surah_number?: number;
+  quran_surah_name?: string;
+  quran_surah_name_en?: string;
+  quran_ayah_from?: number;
+  quran_ayah_to?: number;
+  quran_reference?: string; // e.g. "2:255" or "2:255-260"
   selected_symbol?: string;
   symbol_font?: string;
   surah_name_mode?: 'name_only' | 'surat_name';
