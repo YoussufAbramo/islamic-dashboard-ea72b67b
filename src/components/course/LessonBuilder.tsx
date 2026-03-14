@@ -1145,24 +1145,46 @@ const BlockEditor = ({
             char: String.fromCodePoint(0xE000 + i),
             label: `${isAr ? 'سورة' : 'Surah'} ${i + 1}`,
           }));
+          const nameMode = block.surah_name_mode || 'name_only';
+          const currentFont = nameMode === 'surat_name' ? 'Surah Name Color V4' : 'Surah Name V4';
           return (
             <div className="space-y-3">
+              {/* Mode Toggle */}
+              <div className="flex items-center gap-2">
+                <Label className="text-xs font-medium">{isAr ? 'الوضع' : 'Mode'}</Label>
+                <div className="flex rounded-lg border border-border overflow-hidden">
+                  <button type="button"
+                    onClick={() => onChange({ ...block, surah_name_mode: 'name_only', symbol_font: 'Surah Name V4' })}
+                    className={cn("px-3 py-1.5 text-xs font-medium transition-colors",
+                      nameMode === 'name_only' ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground hover:bg-muted"
+                    )}>
+                    {isAr ? 'اسم فقط' : 'Name Only'}
+                  </button>
+                  <button type="button"
+                    onClick={() => onChange({ ...block, surah_name_mode: 'surat_name', symbol_font: 'Surah Name Color V4' })}
+                    className={cn("px-3 py-1.5 text-xs font-medium transition-colors",
+                      nameMode === 'surat_name' ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground hover:bg-muted"
+                    )}>
+                    {isAr ? 'سورة + اسم' : 'Surat-Name'}
+                  </button>
+                </div>
+              </div>
               <Label className="text-xs font-medium">{isAr ? 'اختر اسم السورة' : 'Select Surah Name'}</Label>
               <div className="grid grid-cols-4 gap-1.5 max-h-[300px] overflow-y-auto">
                 {surahNameChars.map((s, i) => (
                   <button key={i} type="button"
-                    onClick={() => onChange({ ...block, selected_symbol: s.char, symbol_font: 'Surah Name V4' })}
+                    onClick={() => onChange({ ...block, selected_symbol: s.char, symbol_font: currentFont, surah_name_mode: nameMode })}
                     className={cn("flex flex-col items-center gap-1 p-2 rounded-lg border transition-all",
                       block.selected_symbol === s.char ? "border-primary bg-primary/10" : "border-border/50 hover:border-primary/30 hover:bg-muted/40"
                     )}>
-                    <span className="text-2xl leading-none" style={{ fontFamily: "'Surah Name V4', serif" }}>{s.char}</span>
+                    <span className="text-2xl leading-none" style={{ fontFamily: `'${currentFont}', serif` }}>{s.char}</span>
                     <span className="text-[8px] text-muted-foreground">{s.label}</span>
                   </button>
                 ))}
               </div>
               {block.selected_symbol && (
                 <div className="p-4 rounded-lg border bg-muted/10 text-center">
-                  <span className="text-4xl" style={{ fontFamily: "'Surah Name V4', serif" }}>{block.selected_symbol}</span>
+                  <span className="text-4xl" style={{ fontFamily: `'${currentFont}', serif` }}>{block.selected_symbol}</span>
                 </div>
               )}
             </div>
