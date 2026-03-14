@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import ContentEditor from '@/components/ContentEditor';
+import QuranQuoteEditor from '@/components/course/QuranQuoteEditor';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -88,6 +89,12 @@ export interface ContentBlock {
   split_side?: 'left' | 'right';
   // Quran elements
   quran_text?: string;
+  quran_surah_number?: number;
+  quran_surah_name?: string;
+  quran_surah_name_en?: string;
+  quran_ayah_from?: number;
+  quran_ayah_to?: number;
+  quran_reference?: string; // e.g. "2:255" or "2:255-260"
   selected_symbol?: string;
   symbol_font?: string;
   surah_name_mode?: 'name_only' | 'surat_name';
@@ -1018,24 +1025,7 @@ const BlockEditor = ({
 
         {/* ── Quran Quote ── */}
         {block.type === 'quran_quote' && (
-          <div className="space-y-3">
-            <div>
-              <Label className="text-xs">{isAr ? 'النص القرآني' : 'Quran Text'}</Label>
-              <textarea
-                value={block.quran_text || ''}
-                onChange={(e) => onChange({ ...block, quran_text: e.target.value })}
-                placeholder={isAr ? 'أدخل النص القرآني هنا...' : 'Enter Quran text here...'}
-                dir="rtl"
-                className="mt-1 w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-lg ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                style={{ fontFamily: "'QPC V2', 'Indopak Nastaleeq', serif", lineHeight: '2.2' }}
-              />
-            </div>
-            {block.quran_text && (
-              <div className="p-4 rounded-lg border bg-muted/10 text-center" dir="rtl">
-                <p className="text-xl leading-[2.5]" style={{ fontFamily: "'QPC V2', serif" }}>{block.quran_text}</p>
-              </div>
-            )}
-          </div>
+          <QuranQuoteEditor block={block} isAr={isAr} onChange={onChange} />
         )}
 
         {/* ── Quran Symbol ── */}
