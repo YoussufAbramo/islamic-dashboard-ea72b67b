@@ -1161,10 +1161,10 @@ const CourseLearning = () => {
         {/* ── Right Panel: Notes / Appearance ── */}
         <div className={cn(
           "bg-card border-s flex flex-col shrink-0 transition-all duration-300 overflow-hidden",
-          rightPanel ? "w-72" : "w-0"
+          rightPanel ? "w-72 animate-in slide-in-from-end-4 duration-300" : "w-0"
         )}>
           {rightPanel === 'notes' && activeLesson && (
-            <div className="flex flex-col h-full w-72">
+            <div className="flex flex-col h-full w-72 animate-in fade-in-0 duration-200">
               <div className="flex items-center gap-2 px-4 py-3 border-b bg-muted/30 shrink-0">
                 <StickyNote className="h-4 w-4 text-primary shrink-0" />
                 <h3 className="text-sm font-bold truncate flex-1">{isAr ? 'ملاحظات الدرس' : 'Lesson Notes'}</h3>
@@ -1183,9 +1183,13 @@ const CourseLearning = () => {
                   className="flex-1 min-h-[200px] text-sm resize-none"
                   dir={isAr ? 'rtl' : 'ltr'}
                 />
-                <p className="text-[10px] text-muted-foreground mt-2">
-                  {isAr ? 'يتم حفظ الملاحظات تلقائيًا لكل درس' : 'Notes auto-save per lesson'}
-                </p>
+                <div className="mt-3 p-2.5 rounded-lg bg-muted/40 border border-border/50">
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    {isAr
+                      ? '💡 الحفظ تلقائي. الملاحظات مشتركة ومرئية لكل من الطالب والمعلم.'
+                      : '💡 Auto-saved. Notes are shared and visible to both student and teacher.'}
+                  </p>
+                </div>
               </div>
             </div>
           )}
