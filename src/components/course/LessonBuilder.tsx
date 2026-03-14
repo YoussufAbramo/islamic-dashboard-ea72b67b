@@ -97,7 +97,7 @@ interface BlockMetaItem {
   label: string;
   labelAr: string;
   color: string;
-  group: 'media' | 'content' | 'exercise' | 'layout';
+  group: 'media' | 'content' | 'exercise' | 'layout' | 'quran';
 }
 
 const blockMeta: Record<BlockType, BlockMetaItem> = {
