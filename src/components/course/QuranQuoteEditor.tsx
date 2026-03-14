@@ -378,15 +378,6 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
       {/* ─── Preview ─── */}
       {block.quran_text ? (
         <>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full text-xs h-7 text-destructive hover:text-destructive gap-1.5"
-            onClick={handleClear}
-          >
-            <Eraser className="h-3 w-3" />
-            {isAr ? 'مسح الاختيار' : 'Clear Selection'}
-          </Button>
           <div className="p-4 rounded-lg border bg-muted/10 text-center quran-quote-block" dir="rtl">
             <p className="leading-[2.5]" style={{ fontFamily: `'${quranFont}', serif`, fontSize: `${block.quran_font_size || 18}px` }}>
               {block.quran_text}
