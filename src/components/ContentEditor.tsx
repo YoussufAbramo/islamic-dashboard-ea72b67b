@@ -25,8 +25,15 @@ const ContentEditor = ({ value, onChange, placeholder, minHeight = '300px' }: Co
     const onStorage = (e: StorageEvent) => {
       if (e.key === 'lesson_font_family') setContentFont(e.newValue || 'default');
     };
+    const onCustom = (e: Event) => {
+      setContentFont((e as CustomEvent).detail || 'default');
+    };
     window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
+    window.addEventListener('lesson-font-change', onCustom);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('lesson-font-change', onCustom);
+    };
   }, []);
 
   // Only update innerHTML when value changes externally (not from typing)
