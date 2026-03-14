@@ -24,6 +24,16 @@ type Tab = 'search' | 'surah' | 'ayah';
 
 const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
   const [tab, setTab] = useState<Tab>('surah');
+  const [quranFont, setQuranFont] = useState(() => {
+    try { return localStorage.getItem('quran_font') || 'QPC V2'; } catch { return 'QPC V2'; }
+  });
+
+  useEffect(() => {
+    const sync = () => { try { setQuranFont(localStorage.getItem('quran_font') || 'QPC V2'); } catch {} };
+    window.addEventListener('storage', sync);
+    const id = setInterval(sync, 2000);
+    return () => { window.removeEventListener('storage', sync); clearInterval(id); };
+  }, []);
   const [surahs, setSurahs] = useState<SurahMeta[]>([]);
   const [loadingSurahs, setLoadingSurahs] = useState(false);
 
