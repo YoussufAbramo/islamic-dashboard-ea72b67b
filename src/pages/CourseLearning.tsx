@@ -712,7 +712,7 @@ const CourseLearning = () => {
   });
   const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
   const [quranFont, setQuranFont] = useState(() => {
-    try { return localStorage.getItem('quran_font') || 'QPC V2'; } catch { return 'QPC V2'; }
+    try { return localStorage.getItem('quran_font') || 'Indopak Nastaleeq'; } catch { return 'Indopak Nastaleeq'; }
   });
   const [tajweedMode, setTajweedMode] = useState(() => {
     try { return localStorage.getItem('tajweed_mode') === 'true'; } catch { return false; }
