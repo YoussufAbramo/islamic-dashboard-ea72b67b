@@ -281,7 +281,7 @@ const ItemsEditor = ({ block, isAr, onChange }: { block: ContentBlock; isAr: boo
 
 // ─── Single Block Editor ───
 const BlockEditor = ({
-  block, isAr, onChange, onRemove, onMoveUp, onMoveDown, isFirst, isLast, pageNumber, isBeta, isSoon, onTransfer, animating,
+  block, isAr, onChange, onRemove, onMoveUp, onMoveDown, isFirst, isLast, pageNumber, isBeta, isSoon, onTransfer, animating, groupDepth,
 }: {
   block: ContentBlock;
   isAr: boolean;
@@ -296,6 +296,7 @@ const BlockEditor = ({
   isSoon?: boolean;
   onTransfer?: (toSide: 'left' | 'right') => void;
   animating?: 'up' | 'down' | 'transfer-out' | 'transfer-in' | null;
+  groupDepth?: number;
 }) => {
   const meta = blockMeta[block.type];
   const Icon = meta.icon;
@@ -384,7 +385,13 @@ const BlockEditor = ({
   );
 
   return (
-    <div ref={setNodeRef} style={style} className={cn("rounded-lg border bg-card group relative", animationClass)}>
+    <div ref={setNodeRef} style={style} className={cn(
+      "rounded-lg border bg-card group relative",
+      (groupDepth ?? 0) > 0 && "ms-4 border-s-2 border-s-violet-400/60",
+      block.type === 'group_start' && "border-violet-400/60 bg-violet-500/5",
+      block.type === 'group_end' && "border-violet-400/60 bg-violet-500/5",
+      animationClass,
+    )}>
       <div
         className="flex items-center gap-2 px-3 py-2 border-b bg-muted/30 cursor-pointer select-none"
         onClick={() => setCollapsed((c) => !c)}
@@ -1666,10 +1673,21 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                 (() => {
                   let pageCounter = 1;
                   const pageNumbers = new Map<string, number>();
+                  const groupDepths = new Map<string, number>();
+                  let depth = 0;
                   blocks.forEach(b => {
                     if (b.type === 'page_break') {
                       pageCounter++;
                       pageNumbers.set(b.id, pageCounter);
+                    }
+                    if (b.type === 'group_start') {
+                      groupDepths.set(b.id, 0); // start itself is at 0
+                      depth++;
+                    } else if (b.type === 'group_end') {
+                      depth = Math.max(0, depth - 1);
+                      groupDepths.set(b.id, 0); // end itself is at 0
+                    } else {
+                      groupDepths.set(b.id, depth);
                     }
                   });
 
@@ -1700,6 +1718,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                           isBeta={quranTypes.includes(block.type)}
                           isSoon={!stableTypes.includes(block.type) && !quranTypes.includes(block.type)}
                           animating={animatingBlocks[block.id] || null}
+                          groupDepth={groupDepths.get(block.id) ?? 0}
                         />
                       ))}
                     </SortableList>
