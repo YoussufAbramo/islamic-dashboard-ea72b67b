@@ -15,9 +15,10 @@ import {
   ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Circle,
   BookOpen, Play, FileText, Headphones, ExternalLink, FileDown,
   Menu, X, GraduationCap, Loader2, PanelTop, PanelTopClose, AlertTriangle, Settings2,
-  ChevronDown, FolderTree, Layers, StickyNote, Sun, Moon, Type as TypeIcon,
+  ChevronDown, FolderTree, Layers, StickyNote, Sun, Moon, Type as TypeIcon, Sparkles, Copy, Check,
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -598,7 +599,11 @@ const CourseLearning = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true); // visible by default
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [builderOpen, setBuilderOpen] = useState(false);
-  const [rightPanel, setRightPanel] = useState<'notes' | 'appearance' | null>(null);
+  const [rightPanel, setRightPanel] = useState<'notes' | 'appearance' | 'symbols' | null>(null);
+  const [lessonFontFamily, setLessonFontFamily] = useState(() => {
+    try { return localStorage.getItem('lesson_font_family') || 'default'; } catch { return 'default'; }
+  });
+  const [copiedSymbol, setCopiedSymbol] = useState<string | null>(null);
   const [noteText, setNoteText] = useState('');
   const [lessonFontSize, setLessonFontSize] = useState(() => {
     try { return parseInt(localStorage.getItem('lesson_font_size') || '16', 10); } catch { return 16; }
@@ -606,9 +611,57 @@ const CourseLearning = () => {
   const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
   const canManage = role === 'admin' || role === 'teacher';
 
-  const toggleRightPanel = (panel: 'notes' | 'appearance') => {
+  const toggleRightPanel = (panel: 'notes' | 'appearance' | 'symbols') => {
     setRightPanel(prev => prev === panel ? null : panel);
   };
+
+  const handleCopySymbol = useCallback((symbol: string) => {
+    navigator.clipboard.writeText(symbol).then(() => {
+      setCopiedSymbol(symbol);
+      toast.success(isAr ? 'تم النسخ!' : 'Copied!');
+      setTimeout(() => setCopiedSymbol(null), 1500);
+    });
+  }, [isAr]);
+
+  const saveLessonFontFamily = useCallback((font: string) => {
+    setLessonFontFamily(font);
+    try { localStorage.setItem('lesson_font_family', font); } catch {}
+  }, []);
+
+  // Quran symbol characters (common Islamic symbols in Quran Symbols font)
+  const quranSymbols = useMemo(() => [
+    { char: '\u06DD', label: isAr ? 'نهاية الآية' : 'End of Ayah' },
+    { char: '\u06DE', label: isAr ? 'ربع الحزب' : 'Start of Rub El Hizb' },
+    { char: '\u06E9', label: isAr ? 'موضع السجدة' : 'Place of Sajdah' },
+    { char: '\uFDFD', label: isAr ? 'بسم الله الرحمن الرحيم' : 'Bismillah' },
+    { char: '\uFDFA', label: isAr ? 'صلى الله عليه وسلم' : 'Sallallahu Alayhi Wasallam' },
+    { char: '\uFDFB', label: isAr ? 'جل جلاله' : 'Jalla Jalaluhu' },
+    { char: '\u0610', label: isAr ? 'صلى الله عليه' : 'Sallallahu Alayhi' },
+    { char: '\u0611', label: isAr ? 'عليه السلام' : 'Alayhi Assalam' },
+    { char: '\u0612', label: isAr ? 'رحمه الله' : 'Rahimahu Allah' },
+    { char: '\u0613', label: isAr ? 'رضي الله عنه' : 'Radi Allahu Anhu' },
+    { char: '\u0614', label: isAr ? 'تعالى' : 'Taala' },
+    { char: '\u0615', label: isAr ? 'وقف صلى' : 'Small High Tah' },
+    { char: '\u065C', label: isAr ? 'نقطة تحت' : 'Vowel Below' },
+    { char: '\u0670', label: isAr ? 'ألف خنجرية' : 'Superscript Alef' },
+    { char: '\u06D6', label: isAr ? 'صلى' : 'Small High Sad' },
+    { char: '\u06D7', label: isAr ? 'قلى' : 'Small High Qaf' },
+    { char: '\u06D8', label: isAr ? 'علامة ميم' : 'Small High Meem Initial' },
+    { char: '\u06D9', label: isAr ? 'لا' : 'Small High Lam Alef' },
+    { char: '\u06DA', label: isAr ? 'جيم' : 'Small High Jeem' },
+    { char: '\u06DB', label: isAr ? 'ثلاث نقاط' : 'Three Dots Above' },
+    { char: '\u06DC', label: isAr ? 'سين صغيرة' : 'Small High Seen' },
+  ], [isAr]);
+
+  const lessonFontOptions = useMemo(() => [
+    { value: 'default', label: isAr ? 'الافتراضي' : 'Default' },
+    { value: 'Indopak Nastaleeq', label: 'Indopak Nastaleeq' },
+    { value: 'KFGQPC Nastaleeq', label: 'KFGQPC Nastaleeq' },
+    { value: 'QPC V4 Tajweed', label: 'QPC V4 Tajweed' },
+    { value: 'QPC V2', label: 'QPC V2' },
+    { value: 'Noto Kufi Arabic', label: 'Noto Kufi Arabic' },
+    { value: 'Cairo', label: 'Cairo' },
+  ], [isAr]);
 
   // Notes per lesson (localStorage)
   const notesKey = (lessonId: string) => `lesson_notes_${user?.id}_${lessonId}`;
@@ -886,6 +939,15 @@ const CourseLearning = () => {
           <Button
             variant="ghost"
             size="icon"
+            className={cn("h-8 w-8 shrink-0", rightPanel === 'symbols' && "bg-muted")}
+            onClick={() => toggleRightPanel('symbols')}
+            title={isAr ? 'رموز إسلامية' : 'Islamic Symbols'}
+          >
+            <Sparkles className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             className={cn("h-8 w-8 shrink-0", rightPanel === 'appearance' && "bg-muted")}
             onClick={() => toggleRightPanel('appearance')}
             title={isAr ? 'المظهر' : 'Appearance'}
@@ -1150,7 +1212,10 @@ const CourseLearning = () => {
           <ScrollArea className="flex-1">
             <div
               className="max-w-3xl mx-auto p-6 lesson-content-viewer"
-              style={{ '--lesson-font-size': `${lessonFontSize}px` } as React.CSSProperties}
+              style={{
+                '--lesson-font-size': `${lessonFontSize}px`,
+                '--lesson-font-family': lessonFontFamily !== 'default' ? `'${lessonFontFamily}', var(--font-rtl)` : undefined,
+              } as React.CSSProperties}
             >
               <ContentViewer lesson={currentLesson} isAr={isAr} />
             </div>
@@ -1194,6 +1259,48 @@ const CourseLearning = () => {
             </div>
           )}
 
+          {rightPanel === 'symbols' && (
+            <div className="flex flex-col h-full w-72 animate-in slide-in-from-end duration-300">
+              <div className="flex items-center gap-2 px-4 py-3 border-b bg-muted/30 shrink-0">
+                <Sparkles className="h-4 w-4 text-primary shrink-0" />
+                <h3 className="text-sm font-bold truncate flex-1">{isAr ? 'رموز إسلامية' : 'Islamic Symbols'}</h3>
+                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setRightPanel(null)}>
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+              <ScrollArea className="flex-1">
+                <div className="p-3">
+                  <p className="text-[10px] text-muted-foreground mb-3">
+                    {isAr ? 'اضغط على أي رمز لنسخه' : 'Click any symbol to copy it'}
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {quranSymbols.map((s, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handleCopySymbol(s.char)}
+                        className={cn(
+                          "flex flex-col items-center gap-1.5 p-3 rounded-lg border border-border/50 hover:bg-muted/60 hover:border-primary/30 transition-all cursor-pointer group relative",
+                          copiedSymbol === s.char && "bg-primary/10 border-primary/50"
+                        )}
+                        title={s.label}
+                      >
+                        <span className="text-2xl leading-none" style={{ fontFamily: "'Quran Symbols', 'Indopak Nastaleeq', sans-serif" }}>
+                          {s.char}
+                        </span>
+                        <span className="text-[9px] text-muted-foreground leading-tight text-center line-clamp-1">{s.label}</span>
+                        {copiedSymbol === s.char && (
+                          <span className="absolute -top-1 -end-1 bg-primary text-primary-foreground rounded-full p-0.5">
+                            <Check className="h-2.5 w-2.5" />
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+
           {rightPanel === 'appearance' && (
             <div className="flex flex-col h-full w-72 animate-in slide-in-from-end duration-300">
               <div className="flex items-center gap-2 px-4 py-3 border-b bg-muted/30 shrink-0">
@@ -1204,6 +1311,35 @@ const CourseLearning = () => {
                 </Button>
               </div>
               <div className="p-4 space-y-6">
+                {/* Font Family */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <TypeIcon className="h-4 w-4 text-muted-foreground" />
+                    <Label className="text-sm font-medium">{isAr ? 'خط المحتوى' : 'Content Font'}</Label>
+                  </div>
+                  <Select value={lessonFontFamily} onValueChange={saveLessonFontFamily}>
+                    <SelectTrigger className="h-9 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {lessonFontOptions.map(f => (
+                        <SelectItem key={f.value} value={f.value}>
+                          <span style={f.value !== 'default' ? { fontFamily: `'${f.value}'` } : undefined}>{f.label}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {lessonFontFamily !== 'default' && (
+                    <div className="p-2.5 rounded-lg bg-muted/40 border border-border/50">
+                      <p className="text-sm leading-relaxed" style={{ fontFamily: `'${lessonFontFamily}'` }} dir="rtl">
+                        بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <Separator />
+
                 {/* Font Size — Coming Soon */}
                 <div className="space-y-3 opacity-50 pointer-events-none relative">
                   <div className="flex items-center gap-2">

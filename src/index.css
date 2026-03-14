@@ -836,12 +836,28 @@
   }
 }
 
-/* ── Lesson Content Font Size Control ── */
+/* ── Lesson Content Font Size & Font Family Control ── */
 .lesson-content-viewer {
   --lesson-font-size: 16px;
 }
 .lesson-content-viewer .prose {
   font-size: var(--lesson-font-size) !important;
+}
+.lesson-content-viewer[style*="--lesson-font-family"] .prose,
+.lesson-content-viewer[style*="--lesson-font-family"] .prose p,
+.lesson-content-viewer[style*="--lesson-font-family"] .prose li,
+.lesson-content-viewer[style*="--lesson-font-family"] .prose td,
+.lesson-content-viewer[style*="--lesson-font-family"] .prose th,
+.lesson-content-viewer[style*="--lesson-font-family"] .prose span,
+.lesson-content-viewer[style*="--lesson-font-family"] .prose blockquote,
+.lesson-content-viewer[style*="--lesson-font-family"] .prose h1,
+.lesson-content-viewer[style*="--lesson-font-family"] .prose h2,
+.lesson-content-viewer[style*="--lesson-font-family"] .prose h3,
+.lesson-content-viewer[style*="--lesson-font-family"] .prose h4,
+.lesson-content-viewer[style*="--lesson-font-family"] div,
+.lesson-content-viewer[style*="--lesson-font-family"] p,
+.lesson-content-viewer[style*="--lesson-font-family"] span {
+  font-family: var(--lesson-font-family) !important;
 }
 .lesson-content-viewer .prose p,
 .lesson-content-viewer .prose li,
