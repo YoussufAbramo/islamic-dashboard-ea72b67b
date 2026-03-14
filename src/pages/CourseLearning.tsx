@@ -1398,13 +1398,11 @@ const CourseLearning = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  {lessonFontFamily !== 'default' && (
-                    <div className="p-2.5 rounded-lg bg-muted/40 border border-border/50">
-                      <p className="text-sm leading-relaxed" style={{ fontFamily: `'${lessonFontFamily}'` }} dir="rtl">
-                        بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
-                      </p>
-                    </div>
-                  )}
+                  <div className="p-2.5 rounded-lg bg-muted/40 border border-border/50">
+                    <p className="text-sm leading-relaxed" style={{ fontFamily: lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif` }} dir="rtl">
+                      بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
+                    </p>
+                  </div>
                 </div>
 
                 <Separator />
