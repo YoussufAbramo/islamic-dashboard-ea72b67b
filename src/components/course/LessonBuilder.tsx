@@ -687,43 +687,29 @@ const BlockEditor = ({
               </div>
             </div>
             {/* Preview */}
-            <div className="flex items-center justify-center gap-3 p-3 rounded-lg bg-muted/20" style={{ width: `${block.divider_width || 100}%`, margin: '0 auto' }}>
-              <hr className="flex-1" style={{
-                borderStyle: block.divider_style || 'solid',
-                borderWidth: `${block.divider_thickness || 1}px 0 0 0`,
-                borderColor: (() => {
-                  const colorMap: Record<string, string> = {
-                    border: 'hsl(var(--border) / 0.15)',
-                    primary: 'hsl(var(--primary) / 0.15)',
-                    muted: 'hsl(var(--muted-foreground) / 0.15)',
-                    destructive: 'hsl(var(--destructive) / 0.15)',
-                    gold: 'hsl(var(--gold, 45 80% 50%) / 0.15)',
-                  };
-                  return colorMap[block.divider_color || 'border'] || 'hsl(var(--border) / 0.15)';
-                })(),
-              }} />
-              {block.divider_text && (
-                <span className="shrink-0 text-muted-foreground whitespace-nowrap" style={{
-                  fontSize: `${Math.max(10, (block.divider_thickness || 1) * 3 + 8)}px`,
-                }}>{block.divider_text}</span>
-              )}
-              {block.divider_text && (
-                <hr className="flex-1" style={{
-                  borderStyle: block.divider_style || 'solid',
-                  borderWidth: `${block.divider_thickness || 1}px 0 0 0`,
-                  borderColor: (() => {
-                    const colorMap: Record<string, string> = {
-                      border: 'hsl(var(--border) / 0.15)',
-                      primary: 'hsl(var(--primary) / 0.15)',
-                      muted: 'hsl(var(--muted-foreground) / 0.15)',
-                      destructive: 'hsl(var(--destructive) / 0.15)',
-                      gold: 'hsl(var(--gold, 45 80% 50%) / 0.15)',
-                    };
-                    return colorMap[block.divider_color || 'border'] || 'hsl(var(--border) / 0.15)';
-                  })(),
-                }} />
-              )}
-            </div>
+            {(() => {
+              const op = (block.divider_opacity || 15) / 100;
+              const colorMapFn = (opacity: number): Record<string, string> => ({
+                border: `hsl(var(--border) / ${opacity})`,
+                primary: `hsl(var(--primary) / ${opacity})`,
+                muted: `hsl(var(--muted-foreground) / ${opacity})`,
+                destructive: `hsl(var(--destructive) / ${opacity})`,
+                gold: `hsl(var(--gold, 45 80% 50%) / ${opacity})`,
+              });
+              const cm = colorMapFn(op);
+              const borderColor = cm[block.divider_color || 'border'] || cm.border;
+              return (
+                <div className="flex items-center justify-center gap-3 p-3 rounded-lg bg-muted/20" style={{ width: `${block.divider_width || 100}%`, margin: '0 auto' }}>
+                  <hr className="flex-1" style={{ borderStyle: block.divider_style || 'solid', borderWidth: `${block.divider_thickness || 1}px 0 0 0`, borderColor }} />
+                  {block.divider_text && (
+                    <span className="shrink-0 text-muted-foreground whitespace-nowrap" style={{ fontSize: `${Math.max(10, (block.divider_thickness || 1) * 3 + 8)}px` }}>{block.divider_text}</span>
+                  )}
+                  {block.divider_text && (
+                    <hr className="flex-1" style={{ borderStyle: block.divider_style || 'solid', borderWidth: `${block.divider_thickness || 1}px 0 0 0`, borderColor }} />
+                  )}
+                </div>
+              );
+            })()}
           </div>
         )}
 
