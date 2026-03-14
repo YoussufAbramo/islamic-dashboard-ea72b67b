@@ -139,6 +139,7 @@ const App = () => (
                         <Route path="webhook-log" element={<RoleGuard allowed={['admin']}><WebhookLog /></RoleGuard>} />
                         <Route path="error-log" element={<RoleGuard allowed={['admin']}><ErrorLog /></RoleGuard>} />
                         <Route path="audit-trail" element={<RoleGuard allowed={['admin']}><AuditTrail /></RoleGuard>} />
+                        <Route path="changelog" element={<RoleGuard allowed={['admin']}><ChangeLog /></RoleGuard>} />
                         <Route path="profile" element={<Profile />} />
                       </Route>
                       <Route path="/invoice/:id" element={<InvoiceView />} />
