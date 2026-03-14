@@ -295,6 +295,7 @@ const BlockEditor = ({
     if (b.toc_rows && b.toc_rows.length > 0) return true;
     if (b.split_left_html || b.split_right_html) return true;
     if (b.divider_text) return true;
+    if (b.quran_text || b.selected_symbol) return true;
     return false;
   };
 
