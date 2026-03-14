@@ -1148,11 +1148,98 @@ const CourseLearning = () => {
 
           {/* Main scrollable content */}
           <ScrollArea className="flex-1">
-            <div className="max-w-3xl mx-auto p-6">
+            <div className="max-w-3xl mx-auto p-6" style={{ fontSize: `${lessonFontSize}px` }}>
               <ContentViewer lesson={currentLesson} isAr={isAr} />
             </div>
           </ScrollArea>
 
+        </div>
+
+        {/* ── Right Panel: Notes / Appearance ── */}
+        <div className={cn(
+          "bg-card border-s flex flex-col shrink-0 transition-all duration-300 overflow-hidden",
+          rightPanel ? "w-72" : "w-0"
+        )}>
+          {rightPanel === 'notes' && activeLesson && (
+            <div className="flex flex-col h-full w-72">
+              <div className="flex items-center gap-2 px-4 py-3 border-b bg-muted/30 shrink-0">
+                <StickyNote className="h-4 w-4 text-primary shrink-0" />
+                <h3 className="text-sm font-bold truncate flex-1">{isAr ? 'ملاحظات الدرس' : 'Lesson Notes'}</h3>
+                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setRightPanel(null)}>
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+              <div className="flex-1 p-4 flex flex-col">
+                <Textarea
+                  value={noteText}
+                  onChange={(e) => {
+                    setNoteText(e.target.value);
+                    saveNote(activeLesson, e.target.value);
+                  }}
+                  placeholder={isAr ? 'اكتب ملاحظاتك هنا...' : 'Write your notes here...'}
+                  className="flex-1 min-h-[200px] text-sm resize-none"
+                  dir={isAr ? 'rtl' : 'ltr'}
+                />
+                <p className="text-[10px] text-muted-foreground mt-2">
+                  {isAr ? 'يتم حفظ الملاحظات تلقائيًا لكل درس' : 'Notes auto-save per lesson'}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {rightPanel === 'appearance' && (
+            <div className="flex flex-col h-full w-72">
+              <div className="flex items-center gap-2 px-4 py-3 border-b bg-muted/30 shrink-0">
+                <Settings2 className="h-4 w-4 text-primary shrink-0" />
+                <h3 className="text-sm font-bold truncate flex-1">{isAr ? 'إعدادات المظهر' : 'Appearance'}</h3>
+                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setRightPanel(null)}>
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+              <div className="p-4 space-y-6">
+                {/* Font Size */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <TypeIcon className="h-4 w-4 text-muted-foreground" />
+                    <Label className="text-sm font-medium">{isAr ? 'حجم الخط' : 'Font Size'}</Label>
+                    <span className="ms-auto text-xs font-mono text-muted-foreground">{lessonFontSize}px</span>
+                  </div>
+                  <Slider
+                    value={[lessonFontSize]}
+                    onValueChange={([v]) => {
+                      setLessonFontSize(v);
+                      localStorage.setItem('lesson_font_size', String(v));
+                    }}
+                    min={12}
+                    max={24}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-[10px] text-muted-foreground">
+                    <span>{isAr ? 'صغير' : 'Small'}</span>
+                    <span>{isAr ? 'كبير' : 'Large'}</span>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Dark Mode */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {darkMode ? <Moon className="h-4 w-4 text-muted-foreground" /> : <Sun className="h-4 w-4 text-muted-foreground" />}
+                    <Label className="text-sm font-medium">{isAr ? 'الوضع الداكن' : 'Dark Mode'}</Label>
+                  </div>
+                  <Switch
+                    checked={darkMode}
+                    onCheckedChange={(checked) => {
+                      document.documentElement.classList.toggle('dark', checked);
+                      setDarkMode(checked);
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

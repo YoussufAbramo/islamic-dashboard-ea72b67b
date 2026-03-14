@@ -1055,7 +1055,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
 
   const hasSplitScreen = useMemo(() => blocks.some(b => b.type === 'split_screen'), [blocks]);
-  const hasNonSplitBlocks = useMemo(() => blocks.some(b => b.type !== 'split_screen' && b.type !== 'divider'), [blocks]);
+  const hasNonSplitBlocks = useMemo(() => blocks.some(b => b.type !== 'split_screen'), [blocks]);
   const [activeSplitSide, setActiveSplitSide] = useState<'left' | 'right'>('left');
 
   const triggerAnimation = (blockId: string, type: 'up' | 'down' | 'transfer-out' | 'transfer-in') => {
