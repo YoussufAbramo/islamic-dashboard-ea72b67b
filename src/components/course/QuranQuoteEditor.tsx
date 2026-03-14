@@ -162,7 +162,8 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
   const handleSearchSelect = useCallback((match: SearchMatch) => {
     applySelection(match.text, match.surah.number, match.surah.name, match.surah.englishName, match.numberInSurah, match.numberInSurah);
     setSearchQuery('');
-    setSearchResults([]);
+    setAllSearchResults([]);
+    setVisibleCount(10);
   }, [applySelection]);
 
   const handleToggleTranslation = useCallback(async (enabled: boolean) => {
