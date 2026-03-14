@@ -86,10 +86,10 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
     }).catch(() => setAyahs([])).finally(() => setLoadingAyahs(false));
   }, [selectedSurah]);
 
-  // Debounced search
+  // Debounced search — ayat text only
   useEffect(() => {
     if (searchTimer.current) clearTimeout(searchTimer.current);
-    if (!searchQuery || searchQuery.trim().length < 2) { setSearchResults([]); return; }
+    if (!searchQuery || searchQuery.trim().length < 2) { setAllSearchResults([]); setVisibleCount(10); return; }
 
     const ref = parseAyahReference(searchQuery);
     if (ref) {
@@ -98,14 +98,15 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
         const matches = allAyahs
           .filter(a => a.numberInSurah >= ref.from && a.numberInSurah <= ref.to)
           .map(a => ({ number: a.number, text: a.text, numberInSurah: a.numberInSurah, surah: a.surah }));
-        setSearchResults(matches);
-      }).catch(() => setSearchResults([])).finally(() => setSearching(false));
+        setAllSearchResults(matches);
+        setVisibleCount(10);
+      }).catch(() => setAllSearchResults([])).finally(() => setSearching(false));
       return;
     }
 
     searchTimer.current = setTimeout(() => {
       setSearching(true);
-      searchQuran(searchQuery).then(setSearchResults).catch(() => setSearchResults([])).finally(() => setSearching(false));
+      searchQuran(searchQuery).then(r => { setAllSearchResults(r); setVisibleCount(10); }).catch(() => setAllSearchResults([])).finally(() => setSearching(false));
     }, 500);
 
     return () => { if (searchTimer.current) clearTimeout(searchTimer.current); };
