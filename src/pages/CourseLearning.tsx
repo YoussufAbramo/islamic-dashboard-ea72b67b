@@ -596,7 +596,29 @@ const CourseLearning = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true); // visible by default
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [builderOpen, setBuilderOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [noteText, setNoteText] = useState('');
   const canManage = role === 'admin' || role === 'teacher';
+
+  // Notes per lesson (localStorage)
+  const notesKey = (lessonId: string) => `lesson_notes_${user?.id}_${lessonId}`;
+
+  const loadNote = useCallback((lessonId: string) => {
+    try {
+      const saved = localStorage.getItem(notesKey(lessonId));
+      setNoteText(saved || '');
+    } catch { setNoteText(''); }
+  }, [user?.id]);
+
+  const saveNote = useCallback((lessonId: string, text: string) => {
+    try {
+      if (text.trim()) {
+        localStorage.setItem(notesKey(lessonId), text);
+      } else {
+        localStorage.removeItem(notesKey(lessonId));
+      }
+    } catch {}
+  }, [user?.id]);
 
   // Fetch everything
   useEffect(() => {
