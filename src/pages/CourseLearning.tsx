@@ -1346,9 +1346,9 @@ const CourseLearning = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {[
-                        { value: 'QPC V2', label: 'QPC V2' },
                         { value: 'Indopak Nastaleeq', label: 'Indopak Nastaleeq' },
-                        { value: 'KFGQPC Nastaleeq', label: 'KFGQPC Nastaleeq' },
+                        { value: 'QPC V2', label: 'QPC V2' },
+                        { value: 'QPC V4 Tajweed', label: 'QPC V4 Tajweed' },
                       ].map(f => (
                         <SelectItem key={f.value} value={f.value}>
                           <span style={{ fontFamily: `'${f.value}', serif` }}>{f.label}</span>
