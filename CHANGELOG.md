@@ -2,6 +2,13 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.9.4] - 2026-03-14
+
+### Added
+- **Change Log page** — new developer page under the Developer sidebar showing full version history with timeline UI, search, category-colored badges (Added/Changed/Fixed/Improved/Removed/Security), bold item parsing, and Latest/Major/Minor version badges
+
+---
+
 ## [5.9.3] - 2026-03-13
 
 ### Changed

@@ -59,6 +59,7 @@ import ActivityLog from "./pages/ActivityLog";
 import WebhookLog from "./pages/WebhookLog";
 import ErrorLog from "./pages/ErrorLog";
 import AuditTrail from "./pages/AuditTrail";
+import ChangeLog from "./pages/ChangeLog";
 import ActionsQueue from "./pages/ActionsQueue";
 import StudentReports from "./pages/StudentReports";
 import SessionReportsLog from "./pages/SessionReportsLog";
@@ -138,6 +139,7 @@ const App = () => (
                         <Route path="webhook-log" element={<RoleGuard allowed={['admin']}><WebhookLog /></RoleGuard>} />
                         <Route path="error-log" element={<RoleGuard allowed={['admin']}><ErrorLog /></RoleGuard>} />
                         <Route path="audit-trail" element={<RoleGuard allowed={['admin']}><AuditTrail /></RoleGuard>} />
+                        <Route path="changelog" element={<RoleGuard allowed={['admin']}><ChangeLog /></RoleGuard>} />
                         <Route path="profile" element={<Profile />} />
                       </Route>
                       <Route path="/invoice/:id" element={<InvoiceView />} />
