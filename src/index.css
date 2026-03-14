@@ -10,6 +10,8 @@
 @font-face { font-family: 'KFGQPC Nastaleeq'; src: url('/fonts/KFGQPC_Nastaleeq.woff2') format('woff2'); font-display: swap; }
 @font-face { font-family: 'Thuluth'; src: url('/fonts/Thuluth.ttf') format('truetype'); font-display: swap; }
 @font-face { font-family: 'Aref Ruqaa'; src: url('/fonts/Aref_Ruqaa.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Nabi'; src: url('/fonts/Nabi.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Al Qalam Quran'; src: url('/fonts/Al_Qalam_Quran.ttf') format('truetype'); font-display: swap; }
 @font-face { font-family: 'Besmellah'; src: url('/fonts/Besmellah.ttf') format('truetype'); font-display: swap; }
 
 @tailwind base;
