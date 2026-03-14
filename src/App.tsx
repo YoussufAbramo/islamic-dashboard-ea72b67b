@@ -59,6 +59,7 @@ import ActivityLog from "./pages/ActivityLog";
 import WebhookLog from "./pages/WebhookLog";
 import ErrorLog from "./pages/ErrorLog";
 import AuditTrail from "./pages/AuditTrail";
+import ChangeLog from "./pages/ChangeLog";
 import ActionsQueue from "./pages/ActionsQueue";
 import StudentReports from "./pages/StudentReports";
 import SessionReportsLog from "./pages/SessionReportsLog";
