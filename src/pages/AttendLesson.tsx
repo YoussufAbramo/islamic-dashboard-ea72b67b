@@ -11,13 +11,14 @@ import SessionReportDialog from '@/components/attend/SessionReportDialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format, differenceInMinutes, isToday, isTomorrow, addDays, startOfWeek, endOfWeek } from 'date-fns';
-import { Video, Clock, MonitorPlay, AlertCircle, CalendarDays, FileText, XCircle, FlaskConical, Timer, User, BookOpen } from 'lucide-react';
+import { Video, Clock, MonitorPlay, AlertCircle, CalendarDays, FileText, XCircle, FlaskConical, Timer, User, BookOpen, RefreshCw } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { TableSkeleton } from '@/components/PageSkeleton';
 import EmptyState from '@/components/EmptyState';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 interface LessonEntry {
   id: string;
@@ -91,6 +92,8 @@ const AttendLesson = () => {
   const [viewReportLoading, setViewReportLoading] = useState(false);
   const [cancelEntry, setCancelEntry] = useState<LessonEntry | null>(null);
   const [cancelReason, setCancelReason] = useState('');
+  const [compensateEntry, setCompensateEntry] = useState<LessonEntry | null>(null);
+  const [compensateDate, setCompensateDate] = useState('');
 
   // Update "now" every 30 seconds for live status updates
   useEffect(() => {
@@ -218,7 +221,7 @@ const AttendLesson = () => {
       return { label: isAr ? 'جلسة نشطة' : 'In Session', variant: 'default', className: 'bg-emerald-600 text-white border-emerald-600', isLive: true };
     }
     if (entry.status === 'teacher_not_attend' || entry.status === 'student_not_attend' || entry.status === 'not_attend') {
-      return { label: isAr ? 'غياب' : 'Absence', variant: 'outline', className: 'border-destructive/40 text-destructive bg-destructive/5', isLive: false };
+      return { label: isAr ? 'لم يحضر' : 'Not Attended', variant: 'outline', className: 'border-destructive/40 text-destructive bg-destructive/5', isLive: false };
     }
     if (entry.status === 'postponed') {
       return { label: isAr ? 'مؤجل' : 'Postponed', variant: 'outline', className: 'border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/5', isLive: false };
@@ -291,6 +294,26 @@ const AttendLesson = () => {
     toast.success(isAr ? 'تم إلغاء الدرس' : 'Lesson cancelled');
     setCancelEntry(null);
     setCancelReason('');
+    fetchEntries();
+  };
+
+  const handleCompensateSubmit = async () => {
+    if (!compensateEntry || !compensateDate) return;
+    const { error } = await supabase.from('timetable_entries').insert({
+      scheduled_at: new Date(compensateDate).toISOString(),
+      duration_minutes: compensateEntry.duration_minutes,
+      status: 'scheduled',
+      course_id: compensateEntry.course_id,
+      student_id: compensateEntry.student_id,
+      teacher_id: compensateEntry.teacher_id,
+    });
+    if (error) {
+      toast.error(isAr ? 'فشل إنشاء درس التعويض' : 'Failed to create compensation lesson');
+      return;
+    }
+    toast.success(isAr ? 'تم جدولة درس التعويض' : 'Compensation lesson scheduled');
+    setCompensateEntry(null);
+    setCompensateDate('');
     fetchEntries();
   };
 
@@ -550,6 +573,7 @@ const AttendLesson = () => {
                   const showNotAttend = isNotAttendVisible(entry);
                   const canNotAttend = isNotAttendEnabled(entry);
                   const isTestEntry = testMode && entry.id === testEntryId;
+                  const isNotAttended = ['teacher_not_attend', 'student_not_attend', 'not_attend'].includes(entry.status);
 
                   return (
                     <TableRow key={entry.id} className={`${isTestEntry ? 'bg-violet-500/10 border-l-4 border-l-violet-500 ring-1 ring-violet-500/20' : isActiveEntry ? 'bg-emerald-500/5' : status.isLive ? 'bg-destructive/5' : ''}`}>
@@ -603,8 +627,18 @@ const AttendLesson = () => {
                         )}
                       </TableCell>
                       <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1.5 flex-wrap">
-                          {isActiveEntry ? (
+                         <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                          {isNotAttended ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => { setCompensateEntry(entry); setCompensateDate(''); }}
+                              className="gap-1.5 border-primary/30 bg-primary/5 text-primary hover:bg-primary/10"
+                            >
+                              <RefreshCw className="h-3.5 w-3.5" />
+                              {isAr ? 'تعويض' : 'Compensate'}
+                            </Button>
+                          ) : isActiveEntry ? (
                             <Button
                               size="sm"
                               variant="outline"
@@ -807,6 +841,50 @@ const AttendLesson = () => {
                 <Button variant="destructive" onClick={handleCancelSubmit} disabled={!cancelReason.trim()}>
                   <XCircle className="h-4 w-4 me-2" />
                   {isAr ? 'تأكيد الإلغاء' : 'Confirm Cancellation'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Compensate Dialog */}
+      <Dialog open={!!compensateEntry} onOpenChange={(val) => { if (!val) { setCompensateEntry(null); setCompensateDate(''); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-primary">
+              <RefreshCw className="h-5 w-5" />
+              {isAr ? 'تعويض الدرس' : 'Compensate Lesson'}
+            </DialogTitle>
+          </DialogHeader>
+          {compensateEntry && (
+            <div className="space-y-4">
+              <div className="p-3 rounded-lg border bg-muted/30 text-sm">
+                <p className="font-medium">{compensateEntry.course_title}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {compensateEntry.student_name} — {compensateEntry.teacher_name}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {isAr ? 'الموعد الأصلي:' : 'Original:'} {format(new Date(compensateEntry.scheduled_at), 'MMM d, h:mm a')}
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-sm font-semibold">
+                  {isAr ? 'موعد الدرس الجديد' : 'New Lesson Date & Time'} <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  type="datetime-local"
+                  value={compensateDate}
+                  onChange={(e) => setCompensateDate(e.target.value)}
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => { setCompensateEntry(null); setCompensateDate(''); }}>
+                  {isAr ? 'إلغاء' : 'Cancel'}
+                </Button>
+                <Button onClick={handleCompensateSubmit} disabled={!compensateDate}>
+                  <RefreshCw className="h-4 w-4 me-2" />
+                  {isAr ? 'جدولة التعويض' : 'Schedule Compensation'}
                 </Button>
               </div>
             </div>
