@@ -90,7 +90,9 @@ const AttendLesson = () => {
   const [viewReport, setViewReport] = useState<SessionReportView | null>(null);
   const [viewReportLoading, setViewReportLoading] = useState(false);
   const [cancelEntry, setCancelEntry] = useState<LessonEntry | null>(null);
-  const [cancelReason, setCancelReason] = useState('');
+  const [cancelReason, setCancelReason] = '';
+  const [compensateEntry, setCompensateEntry] = useState<LessonEntry | null>(null);
+  const [compensateDate, setCompensateDate] = useState('');
 
   // Update "now" every 30 seconds for live status updates
   useEffect(() => {
