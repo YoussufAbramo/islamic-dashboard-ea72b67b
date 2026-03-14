@@ -372,6 +372,15 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
       {/* ─── Preview ─── */}
       {block.quran_text ? (
         <>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full text-xs h-7 text-destructive hover:text-destructive gap-1.5"
+            onClick={handleClear}
+          >
+            <Eraser className="h-3 w-3" />
+            {isAr ? 'مسح الاختيار' : 'Clear Selection'}
+          </Button>
           <div className="p-4 rounded-lg border bg-muted/10 text-center quran-quote-block" dir="rtl">
             <p className="leading-[2.5]" style={{ fontFamily: `'${quranFont}', serif`, fontSize: `${block.quran_font_size || 18}px` }}>
               {block.quran_text}
@@ -393,15 +402,6 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
               <span className="text-[10px] text-muted-foreground">{isAr ? 'جاري تحميل الترجمة...' : 'Loading translation...'}</span>
             </div>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full text-xs h-7 text-destructive hover:text-destructive gap-1.5"
-            onClick={handleClear}
-          >
-            <Eraser className="h-3 w-3" />
-            {isAr ? 'مسح الاختيار' : 'Clear Selection'}
-          </Button>
         </>
       ) : (
         <div className="py-4 text-center rounded-lg border border-dashed border-border/50">
