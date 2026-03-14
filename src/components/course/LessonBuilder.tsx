@@ -32,7 +32,7 @@ export type BlockType =
   | 'table_of_content' | 'read_listen' | 'memorization' | 'revision' | 'homework'
   | 'exercise_listen_choose' | 'exercise_text_match' | 'exercise_choose_correct'
   | 'exercise_choose_multiple' | 'exercise_rearrange' | 'exercise_missing_text' | 'exercise_true_false'
-  | 'quran_quote' | 'quran_symbol' | 'surah_nameplate' | 'surah_name';
+  | 'quran_quote' | 'quran_symbol' | 'surah_nameplate' | 'surah_name' | 'besmellah';
 
 export interface ContentBlock {
   id: string;
@@ -132,19 +132,20 @@ const blockMeta: Record<BlockType, BlockMetaItem> = {
   quran_symbol:             { icon: Sparkles, label: 'Quran Symbol', labelAr: 'رمز قرآني', color: 'text-amber-600', group: 'quran' },
   surah_nameplate:          { icon: FileStack, label: 'Surah Nameplate', labelAr: 'لوحة اسم السورة', color: 'text-teal-600', group: 'quran' },
   surah_name:               { icon: Type, label: 'Surah Name', labelAr: 'اسم السورة', color: 'text-cyan-600', group: 'quran' },
+  besmellah:                { icon: BookOpen, label: 'Besmellah', labelAr: 'بسملة', color: 'text-green-600', group: 'quran' },
 };
 
 // Reordered: Layout → Quran → Content → Media → Exercises
 const blockGroups: { key: string; label: string; labelAr: string; types: BlockType[] }[] = [
   { key: 'layout', label: '🧩 Layout', labelAr: '🧩 التخطيط', types: ['table_of_content', 'divider', 'page_break', 'split_screen'] },
-  { key: 'quran', label: '📿 Quran', labelAr: '📿 القرآن', types: ['quran_quote', 'quran_symbol', 'surah_nameplate', 'surah_name'] },
+  { key: 'quran', label: '📿 Quran', labelAr: '📿 القرآن', types: ['quran_quote', 'quran_symbol', 'surah_nameplate', 'surah_name', 'besmellah'] },
   { key: 'content', label: '📖 Content', labelAr: '📖 المحتوى', types: ['read_listen', 'memorization', 'revision', 'homework'] },
   { key: 'media', label: '📁 Media', labelAr: '📁 الوسائط', types: ['text', 'image', 'video', 'audio'] },
   { key: 'exercise', label: '✏️ Exercises', labelAr: '✏️ التمارين', types: ['exercise_listen_choose', 'exercise_text_match', 'exercise_choose_correct', 'exercise_choose_multiple', 'exercise_rearrange', 'exercise_missing_text', 'exercise_true_false'] },
 ];
 
 // BETA types (all except: page_break, split_screen, text, video, image, divider, table_of_content, quran types)
-const nonBetaTypes: BlockType[] = ['page_break', 'split_screen', 'text', 'video', 'image', 'divider', 'table_of_content', 'quran_quote', 'quran_symbol', 'surah_nameplate', 'surah_name'];
+const nonBetaTypes: BlockType[] = ['page_break', 'split_screen', 'text', 'video', 'image', 'divider', 'table_of_content', 'quran_quote', 'quran_symbol', 'surah_nameplate', 'surah_name', 'besmellah'];
 
 // ─── Exercise Option Editor ───
 const OptionsEditor = ({ block, isAr, onChange }: { block: ContentBlock; isAr: boolean; onChange: (b: ContentBlock) => void }) => {
@@ -1217,6 +1218,62 @@ const BlockEditor = ({
               {block.selected_symbol && (
                 <div className="p-4 rounded-lg border bg-muted/10 text-center">
                   <span className={previewSizeMap[currentSize]} style={{ fontFamily: `'${currentFont}', serif` }}>{block.selected_symbol}</span>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* ── Besmellah ── */}
+        {block.type === 'besmellah' && (() => {
+          // The Besmellah font maps different calligraphy styles to characters
+          const besmellahStyles = Array.from({ length: 110 }, (_, i) => {
+            // Map to printable ASCII characters starting from '!' (33)
+            const code = 33 + i;
+            return { char: String.fromCharCode(code), label: `${isAr ? 'نمط' : 'Style'} ${i + 1}` };
+          });
+          const sizeOptions = [
+            { value: 'sm' as const, label: 'S', title: isAr ? 'صغير' : 'Small' },
+            { value: 'md' as const, label: 'M', title: isAr ? 'متوسط' : 'Medium' },
+            { value: 'lg' as const, label: 'L', title: isAr ? 'كبير' : 'Large' },
+            { value: 'xl' as const, label: 'XL', title: isAr ? 'كبير جداً' : 'Very Large' },
+            { value: 'huge' as const, label: 'H', title: isAr ? 'ضخم' : 'Huge' },
+          ];
+          const currentSize = block.font_size || 'lg';
+          const sizeMap = { sm: 'text-2xl', md: 'text-3xl', lg: 'text-4xl', xl: 'text-5xl', huge: 'text-7xl' };
+          const previewSizeMap = { sm: 'text-3xl', md: 'text-4xl', lg: 'text-5xl', xl: 'text-6xl', huge: 'text-8xl' };
+          return (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Label className="text-xs font-medium">{isAr ? 'الحجم' : 'Size'}</Label>
+                <div className="flex rounded-lg border border-border overflow-hidden">
+                  {sizeOptions.map((s) => (
+                    <button key={s.value} type="button" title={s.title}
+                      onClick={() => onChange({ ...block, font_size: s.value })}
+                      className={cn("px-2.5 py-1.5 text-xs font-medium transition-colors",
+                        currentSize === s.value ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground hover:bg-muted"
+                      )}>
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <Label className="text-xs font-medium">{isAr ? 'اختر نمط البسملة' : 'Select Besmellah Style'}</Label>
+              <div className="grid grid-cols-3 gap-1.5 max-h-[300px] overflow-y-auto">
+                {besmellahStyles.map((s, i) => (
+                  <button key={i} type="button"
+                    onClick={() => onChange({ ...block, selected_symbol: s.char, symbol_font: 'Besmellah' })}
+                    className={cn("flex flex-col items-center gap-1 p-3 rounded-lg border transition-all",
+                      block.selected_symbol === s.char ? "border-primary bg-primary/10" : "border-border/50 hover:border-primary/30 hover:bg-muted/40"
+                    )}>
+                    <span className={cn(sizeMap[currentSize], "leading-none")} style={{ fontFamily: "'Besmellah', serif" }}>{s.char}</span>
+                    <span className="text-[8px] text-muted-foreground">{s.label}</span>
+                  </button>
+                ))}
+              </div>
+              {block.selected_symbol && (
+                <div className="p-4 rounded-lg border bg-muted/10 text-center">
+                  <span className={previewSizeMap[currentSize]} style={{ fontFamily: "'Besmellah', serif" }}>{block.selected_symbol}</span>
                 </div>
               )}
             </div>
