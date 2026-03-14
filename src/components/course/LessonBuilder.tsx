@@ -79,6 +79,8 @@ export interface ContentBlock {
   split_left_html?: string;
   split_right_html?: string;
   split_active_side?: 'left' | 'right';
+  // split screen sub-block side assignment
+  split_side?: 'left' | 'right';
 }
 const generateId = () => Math.random().toString(36).substring(2, 10);
 
