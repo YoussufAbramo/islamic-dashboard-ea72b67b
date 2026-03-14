@@ -159,8 +159,11 @@ const blockGroups: { key: string; label: string; labelAr: string; types: BlockTy
   { key: 'exercise', label: '✏️ Exercises', labelAr: '✏️ التمارين', types: ['exercise_listen_choose', 'exercise_text_match', 'exercise_choose_correct', 'exercise_choose_multiple', 'exercise_rearrange', 'exercise_missing_text', 'exercise_true_false'] },
 ];
 
-// Non-soon types (stable elements that don't show "Soon" badge)
-const nonBetaTypes: BlockType[] = ['page_break', 'split_screen', 'text', 'video', 'image', 'divider', 'table_of_content', 'group_start', 'group_end'];
+// Stable types (no badge, fully usable)
+const stableTypes: BlockType[] = ['page_break', 'split_screen', 'text', 'video', 'image', 'divider', 'table_of_content', 'group_start', 'group_end'];
+// Quran types (Beta badge, usable)
+const quranTypes: BlockType[] = ['quran_quote', 'quran_symbol', 'surah_nameplate', 'surah_name', 'besmellah'];
+// Everything else is "Soon" (locked, coming soon)
 
 // ─── Exercise Option Editor ───
 const OptionsEditor = ({ block, isAr, onChange }: { block: ContentBlock; isAr: boolean; onChange: (b: ContentBlock) => void }) => {
