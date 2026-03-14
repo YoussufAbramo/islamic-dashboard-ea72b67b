@@ -90,6 +90,7 @@ export interface ContentBlock {
   quran_text?: string;
   selected_symbol?: string;
   symbol_font?: string;
+  surah_name_mode?: 'name_only' | 'surat_name';
 }
 const generateId = () => Math.random().toString(36).substring(2, 10);
 
