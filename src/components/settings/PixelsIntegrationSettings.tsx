@@ -205,7 +205,14 @@ const PixelsIntegrationSettings = () => {
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
-                              <Label className="text-sm font-medium">{field.label}</Label>
+                              <div className="flex items-center gap-1.5">
+                                <Label className="text-sm font-medium">{field.label}</Label>
+                                {(field as any).link && (
+                                  <a href={(field as any).link} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                                    <ExternalLink className="h-3.5 w-3.5" />
+                                  </a>
+                                )}
+                              </div>
                               <p className="text-[11px] text-muted-foreground">{field.description}</p>
                             </div>
                             <Input
