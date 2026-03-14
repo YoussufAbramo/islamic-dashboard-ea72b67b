@@ -257,7 +257,7 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
                       {tocRows.map((row: { en: string; ar: string }, rIdx: number) => (
                         <tr key={rIdx} className={rowClass(rIdx)}>
                           <td className={cn(sz.cell, sz.text)} dir="ltr">{row.en}</td>
-                          <td className={cn(sz.cell, sz.text, "font-[var(--font-arabic)]")} dir="rtl">{row.ar}</td>
+                          <td className={cn(sz.cell, sz.text)} dir="rtl">{row.ar}</td>
                         </tr>
                       ))}
                     </tbody>
