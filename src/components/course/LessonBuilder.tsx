@@ -1291,6 +1291,8 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                           ? (isAr ? 'يجب إضافة الشاشة المقسمة قبل أي عنصر آخر. احذف العناصر الموجودة أولاً.' : 'Split Screen must be added before any other elements. Remove existing elements first.')
                           : '';
 
+                      const showBeta = !nonBetaTypes.includes(type);
+
                       const btn = (
                         <button
                           key={type}
@@ -1298,7 +1300,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                           onClick={() => !cantUse && addBlock(type)}
                           disabled={cantUse}
                           className={cn(
-                            "flex flex-col items-center gap-1.5 p-2.5 rounded-lg border border-border/50 bg-background text-center text-[10px] font-medium text-muted-foreground transition-all relative",
+                            "flex flex-col items-center gap-1 p-2.5 rounded-lg border border-border/50 bg-background text-center text-[10px] font-medium text-muted-foreground transition-all relative",
                             cantUse
                               ? "opacity-40 cursor-not-allowed"
                               : "hover:border-primary/40 hover:bg-primary/5 hover:text-foreground hover:shadow-sm"
@@ -1306,6 +1308,9 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                         >
                           {isLocked && <Lock className="h-2.5 w-2.5 absolute top-1 end-1 text-muted-foreground/60" />}
                           {isDisabled && <Ban className="h-2.5 w-2.5 absolute top-1 end-1 text-destructive/60" />}
+                          {showBeta && (
+                            <span className="absolute top-0.5 start-0.5 text-[6px] font-bold uppercase tracking-wider text-amber-500 leading-none">β</span>
+                          )}
                           <Icon className={cn("h-4 w-4 shrink-0", cantUse ? "text-muted-foreground/40" : meta.color)} />
                           <span className="truncate w-full leading-tight">{isAr ? meta.labelAr : meta.label}</span>
                         </button>
