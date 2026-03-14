@@ -229,6 +229,7 @@ const AppSidebar = () => {
         { key: 'activity-log', label: isAr ? 'سجل النشاطات' : 'Activity Log', icon: Activity, path: '/dashboard/activity-log', roles: ['admin'], comingSoon: true },
         { key: 'error-log', label: isAr ? 'سجل الأخطاء' : 'Error Log', icon: Bug, path: '/dashboard/error-log', roles: ['admin'] },
         { key: 'audit-trail', label: isAr ? 'سجل التدقيق' : 'Audit Trail', icon: ClipboardList, path: '/dashboard/audit-trail', roles: ['admin'] },
+        { key: 'changelog', label: isAr ? 'سجل التغييرات' : 'Change Log', icon: FileText, path: '/dashboard/changelog', roles: ['admin'] },
       ],
     },
   ];
