@@ -1188,19 +1188,17 @@ const BlockEditor = ({
                     </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-1">
                   <Label className="text-xs font-medium">{isAr ? 'الحجم' : 'Size'}</Label>
-                  <div className="flex rounded-lg border border-border overflow-hidden">
-                    {sizeOptions.map((s) => (
-                      <button key={s.value} type="button" title={s.title}
-                        onClick={() => onChange({ ...block, font_size: s.value })}
-                        className={cn("px-2.5 py-1.5 text-xs font-medium transition-colors",
-                          currentSize === s.value ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground hover:bg-muted"
-                        )}>
-                        {s.label}
-                      </button>
-                    ))}
-                  </div>
+                  <input
+                    type="range"
+                    min={12}
+                    max={100}
+                    value={currentSizePx}
+                    onChange={e => onChange({ ...block, font_size: parseInt(e.target.value) })}
+                    className="flex-1 h-1.5 accent-primary"
+                  />
+                  <span className="text-[10px] font-mono text-muted-foreground w-8 text-end">{currentSizePx}px</span>
                 </div>
               </div>
               <Label className="text-xs font-medium">{isAr ? 'اختر اسم السورة' : 'Select Surah Name'}</Label>
