@@ -460,10 +460,10 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
 
         // ── Besmellah ──
         case 'besmellah': {
-          const besmellahSize = { sm: 'text-3xl', md: 'text-4xl', lg: 'text-5xl', xl: 'text-6xl', huge: 'text-8xl' }[block.font_size || 'lg'] || 'text-5xl';
+          const besmellahSizePx = typeof block.font_size === 'number' ? block.font_size : ({ sm: 30, md: 40, lg: 52, xl: 64, huge: 80 }[block.font_size || 'lg'] || 52);
           return block.selected_symbol ? (
             <div key={block.id || idx} className="text-center py-4">
-              <span className={besmellahSize} style={{ fontFamily: "'Besmellah', serif" }}>
+              <span style={{ fontFamily: "'Besmellah', serif", fontSize: `${besmellahSizePx}px` }}>
                 {block.selected_symbol}
               </span>
             </div>
