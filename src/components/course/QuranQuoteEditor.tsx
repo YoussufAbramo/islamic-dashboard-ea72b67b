@@ -26,7 +26,7 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
   });
 
   useEffect(() => {
-    const sync = () => { try { setQuranFont(localStorage.getItem('quran_font') || 'QPC V2'); } catch {} };
+    const sync = () => { try { setQuranFont(localStorage.getItem('quran_font') || 'Indopak Nastaleeq'); } catch {} };
     window.addEventListener('storage', sync);
     const id = setInterval(sync, 2000);
     return () => { window.removeEventListener('storage', sync); clearInterval(id); };

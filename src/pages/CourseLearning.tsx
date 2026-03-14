@@ -1387,30 +1387,11 @@ const CourseLearning = () => {
                     </SelectContent>
                   </Select>
                   <div className="p-2.5 rounded-lg bg-muted/40 border border-border/50">
-                    <p className="text-sm leading-[2]" style={{ fontFamily: tajweedMode ? "'QPC V4 Tajweed', serif" : `'${quranFont}', serif` }} dir="rtl">
+                    <p className="text-sm leading-[2]" style={{ fontFamily: `'${quranFont}', serif` }} dir="rtl">
                       بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
                     </p>
                   </div>
                 </div>
-
-                <Separator />
-
-                {/* Tajweed Mode */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-muted-foreground" />
-                    <Label className="text-sm font-medium">{isAr ? 'وضع التجويد' : 'Tajweed Mode'}</Label>
-                  </div>
-                  <Switch
-                    checked={tajweedMode}
-                    onCheckedChange={toggleTajweedMode}
-                  />
-                </div>
-                {tajweedMode && (
-                  <p className="text-[10px] text-muted-foreground">
-                    {isAr ? 'يستخدم خط QPC V4 Tajweed لعرض علامات التجويد' : 'Uses QPC V4 Tajweed font for Tajweed marks'}
-                  </p>
-                )}
 
                 <Separator />
                 <div className="space-y-3 opacity-50 pointer-events-none relative">
