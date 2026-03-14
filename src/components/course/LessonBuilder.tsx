@@ -23,13 +23,14 @@ import {
   ListOrdered, BookOpen, Brain, RotateCcw, ClipboardList,
   Headphones, CheckCircle2, CheckSquare, ArrowUpDown, TextCursorInput, ToggleLeft, Ear,
   Minus, FileStack, Columns, Lock, Ban, ArrowLeftRight, Pencil, ChevronDown as ChevronDownIcon,
-  Sparkles,
+  Sparkles, SquareDashedBottom, SquareDashedBottomCode,
 } from 'lucide-react';
 
 // ─── Block Types ───
 export type BlockType =
   | 'text' | 'image' | 'video' | 'audio'
   | 'divider' | 'page_break' | 'split_screen'
+  | 'group_start' | 'group_end'
   | 'table_of_content' | 'read_listen' | 'memorization' | 'revision' | 'homework'
   | 'exercise_listen_choose' | 'exercise_text_match' | 'exercise_choose_correct'
   | 'exercise_choose_multiple' | 'exercise_rearrange' | 'exercise_missing_text' | 'exercise_true_false'
@@ -121,6 +122,8 @@ const blockMeta: Record<BlockType, BlockMetaItem> = {
   page_break: { icon: FileStack, label: 'New Page', labelAr: 'صفحة جديدة', color: 'text-yellow-500', group: 'layout' },
   split_screen: { icon: Columns, label: 'Split Page', labelAr: 'صفحة مقسمة', color: 'text-cyan-600', group: 'layout' },
   table_of_content: { icon: ListOrdered, label: 'Table of Content', labelAr: 'فهرس المحتويات', color: 'text-indigo-500', group: 'layout' },
+  group_start: { icon: SquareDashedBottom, label: 'Box Start', labelAr: 'بداية إطار', color: 'text-violet-500', group: 'layout' },
+  group_end: { icon: SquareDashedBottomCode, label: 'Box End', labelAr: 'نهاية إطار', color: 'text-violet-400', group: 'layout' },
   // Content Types
   read_listen:      { icon: BookOpen, label: 'Read & Listen', labelAr: 'قراءة واستماع', color: 'text-teal-500', group: 'content' },
   memorization:     { icon: Brain, label: 'Memorization', labelAr: 'حفظ', color: 'text-purple-500', group: 'content' },
@@ -144,7 +147,7 @@ const blockMeta: Record<BlockType, BlockMetaItem> = {
 
 // Reordered: Layout → Quran → Content → Media → Exercises
 const blockGroups: { key: string; label: string; labelAr: string; types: BlockType[] }[] = [
-  { key: 'layout', label: '🧩 Layout', labelAr: '🧩 التخطيط', types: ['table_of_content', 'divider', 'page_break', 'split_screen'] },
+  { key: 'layout', label: '🧩 Layout', labelAr: '🧩 التخطيط', types: ['table_of_content', 'divider', 'page_break', 'split_screen', 'group_start', 'group_end'] },
   { key: 'quran', label: '📿 Quran', labelAr: '📿 القرآن', types: ['quran_quote', 'quran_symbol', 'surah_nameplate', 'surah_name', 'besmellah'] },
   { key: 'content', label: '📖 Content', labelAr: '📖 المحتوى', types: ['read_listen', 'memorization', 'revision', 'homework'] },
   { key: 'media', label: '📁 Media', labelAr: '📁 الوسائط', types: ['text', 'image', 'video', 'audio'] },
@@ -152,7 +155,7 @@ const blockGroups: { key: string; label: string; labelAr: string; types: BlockTy
 ];
 
 // BETA types (all except: page_break, split_screen, text, video, image, divider, table_of_content, quran types)
-const nonBetaTypes: BlockType[] = ['page_break', 'split_screen', 'text', 'video', 'image', 'divider', 'table_of_content', 'quran_quote', 'quran_symbol', 'surah_nameplate', 'surah_name', 'besmellah'];
+const nonBetaTypes: BlockType[] = ['page_break', 'split_screen', 'text', 'video', 'image', 'divider', 'table_of_content', 'group_start', 'group_end', 'quran_quote', 'quran_symbol', 'surah_nameplate', 'surah_name', 'besmellah'];
 
 // ─── Exercise Option Editor ───
 const OptionsEditor = ({ block, isAr, onChange }: { block: ContentBlock; isAr: boolean; onChange: (b: ContentBlock) => void }) => {
@@ -749,6 +752,22 @@ const BlockEditor = ({
           <div className="flex items-center justify-center gap-2 py-2 border rounded-lg bg-muted/20 border-dashed">
             <FileStack className="h-4 w-4 text-yellow-500" />
             <span className="text-xs text-muted-foreground">{isAr ? 'فاصل صفحة — المحتوى التالي يظهر في صفحة جديدة' : 'Page Break — Content below appears on a new page'}</span>
+          </div>
+        )}
+
+        {/* ── Group Start ── */}
+        {block.type === 'group_start' && (
+          <div className="flex items-center justify-center gap-2 py-2 border rounded-lg bg-violet-500/5 border-dashed border-violet-500/30">
+            <SquareDashedBottom className="h-4 w-4 text-violet-500" />
+            <span className="text-xs text-muted-foreground">{isAr ? 'بداية إطار — العناصر التالية ستظهر داخل إطار مشترك' : 'Box Start — Elements below will appear inside a shared border'}</span>
+          </div>
+        )}
+
+        {/* ── Group End ── */}
+        {block.type === 'group_end' && (
+          <div className="flex items-center justify-center gap-2 py-2 border rounded-lg bg-violet-500/5 border-dashed border-violet-500/30">
+            <SquareDashedBottomCode className="h-4 w-4 text-violet-400" />
+            <span className="text-xs text-muted-foreground">{isAr ? 'نهاية إطار — ينتهي هنا الإطار المشترك' : 'Box End — Ends the shared border here'}</span>
           </div>
         )}
 
