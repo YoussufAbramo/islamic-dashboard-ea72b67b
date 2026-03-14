@@ -122,6 +122,8 @@ const blockMeta: Record<BlockType, BlockMetaItem> = {
   page_break: { icon: FileStack, label: 'New Page', labelAr: 'صفحة جديدة', color: 'text-yellow-500', group: 'layout' },
   split_screen: { icon: Columns, label: 'Split Page', labelAr: 'صفحة مقسمة', color: 'text-cyan-600', group: 'layout' },
   table_of_content: { icon: ListOrdered, label: 'Table of Content', labelAr: 'فهرس المحتويات', color: 'text-indigo-500', group: 'layout' },
+  group_start: { icon: SquareDashedBottom, label: 'Box Start', labelAr: 'بداية إطار', color: 'text-violet-500', group: 'layout' },
+  group_end: { icon: SquareDashedBottomCode, label: 'Box End', labelAr: 'نهاية إطار', color: 'text-violet-400', group: 'layout' },
   // Content Types
   read_listen:      { icon: BookOpen, label: 'Read & Listen', labelAr: 'قراءة واستماع', color: 'text-teal-500', group: 'content' },
   memorization:     { icon: Brain, label: 'Memorization', labelAr: 'حفظ', color: 'text-purple-500', group: 'content' },
