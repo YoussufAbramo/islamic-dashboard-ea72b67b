@@ -22,6 +22,7 @@ import {
   ListOrdered, BookOpen, Brain, RotateCcw, ClipboardList,
   Headphones, CheckCircle2, CheckSquare, ArrowUpDown, TextCursorInput, ToggleLeft, Ear,
   Minus, FileStack, Columns, Lock, Ban, ArrowLeftRight, Pencil, ChevronDown as ChevronDownIcon,
+  Sparkles,
 } from 'lucide-react';
 
 // ─── Block Types ───
@@ -30,7 +31,8 @@ export type BlockType =
   | 'divider' | 'page_break' | 'split_screen'
   | 'table_of_content' | 'read_listen' | 'memorization' | 'revision' | 'homework'
   | 'exercise_listen_choose' | 'exercise_text_match' | 'exercise_choose_correct'
-  | 'exercise_choose_multiple' | 'exercise_rearrange' | 'exercise_missing_text' | 'exercise_true_false';
+  | 'exercise_choose_multiple' | 'exercise_rearrange' | 'exercise_missing_text' | 'exercise_true_false'
+  | 'quran_quote' | 'quran_symbol' | 'surah_nameplate' | 'surah_name';
 
 export interface ContentBlock {
   id: string;
@@ -84,6 +86,10 @@ export interface ContentBlock {
   split_active_side?: 'left' | 'right';
   // split screen sub-block side assignment
   split_side?: 'left' | 'right';
+  // Quran elements
+  quran_text?: string;
+  selected_symbol?: string;
+  symbol_font?: string;
 }
 const generateId = () => Math.random().toString(36).substring(2, 10);
 
@@ -92,7 +98,7 @@ interface BlockMetaItem {
   label: string;
   labelAr: string;
   color: string;
-  group: 'media' | 'content' | 'exercise' | 'layout';
+  group: 'media' | 'content' | 'exercise' | 'layout' | 'quran';
 }
 
 const blockMeta: Record<BlockType, BlockMetaItem> = {
@@ -119,18 +125,24 @@ const blockMeta: Record<BlockType, BlockMetaItem> = {
   exercise_rearrange:       { icon: ArrowUpDown, label: 'Rearrange', labelAr: 'إعادة ترتيب', color: 'text-lime-500', group: 'exercise' },
   exercise_missing_text:    { icon: TextCursorInput, label: 'Missing Text', labelAr: 'نص ناقص', color: 'text-rose-500', group: 'exercise' },
   exercise_true_false:      { icon: ToggleLeft, label: 'True / False', labelAr: 'صح / خطأ', color: 'text-fuchsia-500', group: 'exercise' },
+  // Quran
+  quran_quote:              { icon: BookOpen, label: 'Quran Quote', labelAr: 'اقتباس قرآني', color: 'text-emerald-600', group: 'quran' },
+  quran_symbol:             { icon: Sparkles, label: 'Quran Symbol', labelAr: 'رمز قرآني', color: 'text-amber-600', group: 'quran' },
+  surah_nameplate:          { icon: FileStack, label: 'Surah Nameplate', labelAr: 'لوحة اسم السورة', color: 'text-teal-600', group: 'quran' },
+  surah_name:               { icon: Type, label: 'Surah Name', labelAr: 'اسم السورة', color: 'text-cyan-600', group: 'quran' },
 };
 
-// Reordered: Layout → Content → Media → Exercises
+// Reordered: Layout → Quran → Content → Media → Exercises
 const blockGroups: { key: string; label: string; labelAr: string; types: BlockType[] }[] = [
   { key: 'layout', label: '🧩 Layout', labelAr: '🧩 التخطيط', types: ['table_of_content', 'divider', 'page_break', 'split_screen'] },
+  { key: 'quran', label: '📿 Quran', labelAr: '📿 القرآن', types: ['quran_quote', 'quran_symbol', 'surah_nameplate', 'surah_name'] },
   { key: 'content', label: '📖 Content', labelAr: '📖 المحتوى', types: ['read_listen', 'memorization', 'revision', 'homework'] },
   { key: 'media', label: '📁 Media', labelAr: '📁 الوسائط', types: ['text', 'image', 'video', 'audio'] },
   { key: 'exercise', label: '✏️ Exercises', labelAr: '✏️ التمارين', types: ['exercise_listen_choose', 'exercise_text_match', 'exercise_choose_correct', 'exercise_choose_multiple', 'exercise_rearrange', 'exercise_missing_text', 'exercise_true_false'] },
 ];
 
-// BETA types (all except: page_break, split_screen, text, video, image, divider, table_of_content)
-const nonBetaTypes: BlockType[] = ['page_break', 'split_screen', 'text', 'video', 'image', 'divider', 'table_of_content'];
+// BETA types (all except: page_break, split_screen, text, video, image, divider, table_of_content, quran types)
+const nonBetaTypes: BlockType[] = ['page_break', 'split_screen', 'text', 'video', 'image', 'divider', 'table_of_content', 'quran_quote', 'quran_symbol', 'surah_nameplate', 'surah_name'];
 
 // ─── Exercise Option Editor ───
 const OptionsEditor = ({ block, isAr, onChange }: { block: ContentBlock; isAr: boolean; onChange: (b: ContentBlock) => void }) => {
@@ -283,6 +295,7 @@ const BlockEditor = ({
     if (b.toc_rows && b.toc_rows.length > 0) return true;
     if (b.split_left_html || b.split_right_html) return true;
     if (b.divider_text) return true;
+    if (b.quran_text || b.selected_symbol) return true;
     return false;
   };
 
@@ -999,6 +1012,162 @@ const BlockEditor = ({
             </div>
           </div>
         )}
+
+        {/* ── Quran Quote ── */}
+        {block.type === 'quran_quote' && (
+          <div className="space-y-3">
+            <div>
+              <Label className="text-xs">{isAr ? 'النص القرآني' : 'Quran Text'}</Label>
+              <textarea
+                value={block.quran_text || ''}
+                onChange={(e) => onChange({ ...block, quran_text: e.target.value })}
+                placeholder={isAr ? 'أدخل النص القرآني هنا...' : 'Enter Quran text here...'}
+                dir="rtl"
+                className="mt-1 w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-lg ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                style={{ fontFamily: "'QPC V2', 'Indopak Nastaleeq', serif", lineHeight: '2.2' }}
+              />
+            </div>
+            {block.quran_text && (
+              <div className="p-4 rounded-lg border bg-muted/10 text-center" dir="rtl">
+                <p className="text-xl leading-[2.5]" style={{ fontFamily: "'QPC V2', serif" }}>{block.quran_text}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Quran Symbol ── */}
+        {block.type === 'quran_symbol' && (() => {
+          const quranSymbolsFont = [
+            { char: '\u06DD', label: isAr ? 'نهاية الآية' : 'End of Ayah' },
+            { char: '\u06DE', label: isAr ? 'ربع الحزب' : 'Start of Rub El Hizb' },
+            { char: '\u06E9', label: isAr ? 'موضع السجدة' : 'Place of Sajdah' },
+            { char: '\uFDFD', label: isAr ? 'بسم الله' : 'Bismillah' },
+            { char: '\uFDFA', label: isAr ? 'صلى الله عليه وسلم' : 'SAWS' },
+            { char: '\uFDFB', label: isAr ? 'جل جلاله' : 'Jalla Jalaluhu' },
+            { char: '\u06D6', label: isAr ? 'صلى' : 'Small High Sad' },
+            { char: '\u06D7', label: isAr ? 'قلى' : 'Small High Qaf' },
+            { char: '\u06D8', label: isAr ? 'ميم' : 'Small Meem' },
+            { char: '\u06D9', label: isAr ? 'لا' : 'Small Lam Alef' },
+            { char: '\u06DA', label: isAr ? 'جيم' : 'Small Jeem' },
+            { char: '\u06DC', label: isAr ? 'سين' : 'Small Seen' },
+          ];
+          const indopakSymbols = [
+            { char: '\u0610', label: isAr ? 'صلى الله عليه' : 'Sallallahu Alayhi' },
+            { char: '\u0611', label: isAr ? 'عليه السلام' : 'Alayhi Assalam' },
+            { char: '\u0612', label: isAr ? 'رحمه الله' : 'Rahimahu Allah' },
+            { char: '\u0613', label: isAr ? 'رضي الله عنه' : 'Radi Allahu Anhu' },
+            { char: '\u0614', label: isAr ? 'تعالى' : 'Taala' },
+            { char: '\u0615', label: isAr ? 'وقف' : 'Small High Tah' },
+            { char: '\u0670', label: isAr ? 'ألف خنجرية' : 'Superscript Alef' },
+            { char: '\u065C', label: isAr ? 'نقطة تحت' : 'Vowel Below' },
+            { char: '\u06DB', label: isAr ? 'ثلاث نقاط' : 'Three Dots' },
+          ];
+          return (
+            <div className="space-y-4">
+              <Label className="text-xs font-medium">{isAr ? 'اختر رمزًا' : 'Select a symbol'}</Label>
+              {/* Quran Symbols font */}
+              <div>
+                <p className="text-[10px] text-muted-foreground mb-2 font-medium uppercase tracking-wider">Quran Symbols</p>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {quranSymbolsFont.map((s, i) => (
+                    <button key={i} type="button"
+                      onClick={() => onChange({ ...block, selected_symbol: s.char, symbol_font: 'Quran Symbols' })}
+                      className={cn("flex flex-col items-center gap-1 p-2 rounded-lg border transition-all text-center",
+                        block.selected_symbol === s.char && block.symbol_font === 'Quran Symbols'
+                          ? "border-primary bg-primary/10" : "border-border/50 hover:border-primary/30 hover:bg-muted/40"
+                      )}>
+                      <span className="text-xl leading-none" style={{ fontFamily: "'Quran Symbols', serif" }}>{s.char}</span>
+                      <span className="text-[8px] text-muted-foreground line-clamp-1">{s.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Indopak Nastaleeq font */}
+              <div>
+                <p className="text-[10px] text-muted-foreground mb-2 font-medium uppercase tracking-wider">Indopak Nastaleeq</p>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {indopakSymbols.map((s, i) => (
+                    <button key={i} type="button"
+                      onClick={() => onChange({ ...block, selected_symbol: s.char, symbol_font: 'Indopak Nastaleeq' })}
+                      className={cn("flex flex-col items-center gap-1 p-2 rounded-lg border transition-all text-center",
+                        block.selected_symbol === s.char && block.symbol_font === 'Indopak Nastaleeq'
+                          ? "border-primary bg-primary/10" : "border-border/50 hover:border-primary/30 hover:bg-muted/40"
+                      )}>
+                      <span className="text-xl leading-none" style={{ fontFamily: "'Indopak Nastaleeq', serif" }}>{s.char}</span>
+                      <span className="text-[8px] text-muted-foreground line-clamp-1">{s.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {block.selected_symbol && (
+                <div className="p-4 rounded-lg border bg-muted/10 text-center">
+                  <span className="text-4xl" style={{ fontFamily: `'${block.symbol_font || 'Quran Symbols'}', serif` }}>{block.selected_symbol}</span>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* ── Surah Nameplate ── */}
+        {block.type === 'surah_nameplate' && (() => {
+          // Generate range of characters to pick from Surah Header font
+          const surahHeaderChars = Array.from({ length: 114 }, (_, i) => ({
+            char: String.fromCodePoint(0xE000 + i),
+            label: `${isAr ? 'سورة' : 'Surah'} ${i + 1}`,
+          }));
+          return (
+            <div className="space-y-3">
+              <Label className="text-xs font-medium">{isAr ? 'اختر لوحة السورة' : 'Select Surah Nameplate'}</Label>
+              <div className="grid grid-cols-3 gap-1.5 max-h-[300px] overflow-y-auto">
+                {surahHeaderChars.map((s, i) => (
+                  <button key={i} type="button"
+                    onClick={() => onChange({ ...block, selected_symbol: s.char, symbol_font: 'Surah Header' })}
+                    className={cn("flex flex-col items-center gap-1 p-2 rounded-lg border transition-all",
+                      block.selected_symbol === s.char ? "border-primary bg-primary/10" : "border-border/50 hover:border-primary/30 hover:bg-muted/40"
+                    )}>
+                    <span className="text-3xl leading-none" style={{ fontFamily: "'Surah Header', serif" }}>{s.char}</span>
+                    <span className="text-[8px] text-muted-foreground">{s.label}</span>
+                  </button>
+                ))}
+              </div>
+              {block.selected_symbol && (
+                <div className="p-4 rounded-lg border bg-muted/10 text-center">
+                  <span className="text-5xl" style={{ fontFamily: "'Surah Header', serif" }}>{block.selected_symbol}</span>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* ── Surah Name ── */}
+        {block.type === 'surah_name' && (() => {
+          const surahNameChars = Array.from({ length: 114 }, (_, i) => ({
+            char: String.fromCodePoint(0xE000 + i),
+            label: `${isAr ? 'سورة' : 'Surah'} ${i + 1}`,
+          }));
+          return (
+            <div className="space-y-3">
+              <Label className="text-xs font-medium">{isAr ? 'اختر اسم السورة' : 'Select Surah Name'}</Label>
+              <div className="grid grid-cols-4 gap-1.5 max-h-[300px] overflow-y-auto">
+                {surahNameChars.map((s, i) => (
+                  <button key={i} type="button"
+                    onClick={() => onChange({ ...block, selected_symbol: s.char, symbol_font: 'Surah Name V4' })}
+                    className={cn("flex flex-col items-center gap-1 p-2 rounded-lg border transition-all",
+                      block.selected_symbol === s.char ? "border-primary bg-primary/10" : "border-border/50 hover:border-primary/30 hover:bg-muted/40"
+                    )}>
+                    <span className="text-2xl leading-none" style={{ fontFamily: "'Surah Name V4', serif" }}>{s.char}</span>
+                    <span className="text-[8px] text-muted-foreground">{s.label}</span>
+                  </button>
+                ))}
+              </div>
+              {block.selected_symbol && (
+                <div className="p-4 rounded-lg border bg-muted/10 text-center">
+                  <span className="text-4xl" style={{ fontFamily: "'Surah Name V4', serif" }}>{block.selected_symbol}</span>
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
       </div>
       </div>

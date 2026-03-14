@@ -409,6 +409,44 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
             </div>
           );
 
+        // ── Quran Quote ──
+        case 'quran_quote':
+          return block.quran_text ? (
+            <div key={block.id || idx} className="p-6 rounded-xl border bg-muted/5 text-center quran-quote-block" dir="rtl">
+              <p className="text-xl leading-[2.5]">{block.quran_text}</p>
+            </div>
+          ) : null;
+
+        // ── Quran Symbol ──
+        case 'quran_symbol':
+          return block.selected_symbol ? (
+            <div key={block.id || idx} className="text-center py-4">
+              <span className="text-5xl" style={{ fontFamily: `'${block.symbol_font || 'Quran Symbols'}', serif` }}>
+                {block.selected_symbol}
+              </span>
+            </div>
+          ) : null;
+
+        // ── Surah Nameplate ──
+        case 'surah_nameplate':
+          return block.selected_symbol ? (
+            <div key={block.id || idx} className="text-center py-4">
+              <span className="text-6xl" style={{ fontFamily: "'Surah Header', serif" }}>
+                {block.selected_symbol}
+              </span>
+            </div>
+          ) : null;
+
+        // ── Surah Name ──
+        case 'surah_name':
+          return block.selected_symbol ? (
+            <div key={block.id || idx} className="text-center py-3">
+              <span className="text-4xl" style={{ fontFamily: "'Surah Name V4', serif" }}>
+                {block.selected_symbol}
+              </span>
+            </div>
+          ) : null;
+
         default:
           return null;
       }
@@ -609,6 +647,12 @@ const CourseLearning = () => {
     try { return parseInt(localStorage.getItem('lesson_font_size') || '16', 10); } catch { return 16; }
   });
   const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
+  const [quranFont, setQuranFont] = useState(() => {
+    try { return localStorage.getItem('quran_font') || 'QPC V2'; } catch { return 'QPC V2'; }
+  });
+  const [tajweedMode, setTajweedMode] = useState(() => {
+    try { return localStorage.getItem('tajweed_mode') === 'true'; } catch { return false; }
+  });
   const canManage = role === 'admin' || role === 'teacher';
 
   const toggleRightPanel = (panel: 'notes' | 'appearance' | 'symbols') => {
@@ -626,6 +670,16 @@ const CourseLearning = () => {
   const saveLessonFontFamily = useCallback((font: string) => {
     setLessonFontFamily(font);
     try { localStorage.setItem('lesson_font_family', font); } catch {}
+  }, []);
+
+  const saveQuranFont = useCallback((font: string) => {
+    setQuranFont(font);
+    try { localStorage.setItem('quran_font', font); } catch {}
+  }, []);
+
+  const toggleTajweedMode = useCallback((enabled: boolean) => {
+    setTajweedMode(enabled);
+    try { localStorage.setItem('tajweed_mode', String(enabled)); } catch {}
   }, []);
 
   // Quran symbol characters (common Islamic symbols in Quran Symbols font)
@@ -1215,6 +1269,7 @@ const CourseLearning = () => {
               style={{
                 '--lesson-font-size': `${lessonFontSize}px`,
                 '--lesson-font-family': lessonFontFamily !== 'default' ? `'${lessonFontFamily}', var(--font-rtl)` : undefined,
+                '--quran-font': tajweedMode ? "'QPC V4 Tajweed', serif" : `'${quranFont}', serif`,
               } as React.CSSProperties}
             >
               <ContentViewer lesson={currentLesson} isAr={isAr} />
@@ -1340,7 +1395,49 @@ const CourseLearning = () => {
 
                 <Separator />
 
-                {/* Font Size — Coming Soon */}
+                {/* Quran Font */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4 text-muted-foreground" />
+                    <Label className="text-sm font-medium">{isAr ? 'خط القرآن' : 'Quran Font'}</Label>
+                  </div>
+                  <Select value={quranFont} onValueChange={saveQuranFont} disabled={tajweedMode}>
+                    <SelectTrigger className="h-9 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="QPC V2">
+                        <span style={{ fontFamily: "'QPC V2'" }}>QPC V2</span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <div className="p-2.5 rounded-lg bg-muted/40 border border-border/50">
+                    <p className="text-sm leading-[2]" style={{ fontFamily: tajweedMode ? "'QPC V4 Tajweed', serif" : `'${quranFont}', serif` }} dir="rtl">
+                      بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
+                    </p>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Tajweed Mode */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-muted-foreground" />
+                    <Label className="text-sm font-medium">{isAr ? 'وضع التجويد' : 'Tajweed Mode'}</Label>
+                  </div>
+                  <Switch
+                    checked={tajweedMode}
+                    onCheckedChange={toggleTajweedMode}
+                  />
+                </div>
+                {tajweedMode && (
+                  <p className="text-[10px] text-muted-foreground">
+                    {isAr ? 'يستخدم خط QPC V4 Tajweed لعرض علامات التجويد' : 'Uses QPC V4 Tajweed font for Tajweed marks'}
+                  </p>
+                )}
+
+                <Separator />
                 <div className="space-y-3 opacity-50 pointer-events-none relative">
                   <div className="flex items-center gap-2">
                     <TypeIcon className="h-4 w-4 text-muted-foreground" />
