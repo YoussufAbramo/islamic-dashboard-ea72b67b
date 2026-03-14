@@ -598,9 +598,17 @@ const CourseLearning = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true); // visible by default
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [builderOpen, setBuilderOpen] = useState(false);
-  const [notesOpen, setNotesOpen] = useState(false);
+  const [rightPanel, setRightPanel] = useState<'notes' | 'appearance' | null>(null);
   const [noteText, setNoteText] = useState('');
+  const [lessonFontSize, setLessonFontSize] = useState(() => {
+    try { return parseInt(localStorage.getItem('lesson_font_size') || '16', 10); } catch { return 16; }
+  });
+  const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
   const canManage = role === 'admin' || role === 'teacher';
+
+  const toggleRightPanel = (panel: 'notes' | 'appearance') => {
+    setRightPanel(prev => prev === panel ? null : panel);
+  };
 
   // Notes per lesson (localStorage)
   const notesKey = (lessonId: string) => `lesson_notes_${user?.id}_${lessonId}`;
