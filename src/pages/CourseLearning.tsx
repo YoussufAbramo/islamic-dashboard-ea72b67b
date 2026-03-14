@@ -1026,15 +1026,6 @@ const CourseLearning = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 shrink-0 hidden md:inline-flex"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            title={sidebarOpen ? (isAr ? 'إخفاء القائمة' : 'Hide Sidebar') : (isAr ? 'إظهار القائمة' : 'Show Sidebar')}
-          >
-            {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
             className="h-8 w-8 shrink-0"
             onClick={() => setTopBarHidden(!topBarHidden)}
             title={topBarHidden ? (isAr ? 'إظهار الشريط العلوي' : 'Show Top Bar') : (isAr ? 'إخفاء الشريط العلوي' : 'Hide Top Bar')}
