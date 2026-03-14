@@ -140,8 +140,8 @@ const blockGroups: { key: string; label: string; labelAr: string; types: BlockTy
   { key: 'exercise', label: '✏️ Exercises', labelAr: '✏️ التمارين', types: ['exercise_listen_choose', 'exercise_text_match', 'exercise_choose_correct', 'exercise_choose_multiple', 'exercise_rearrange', 'exercise_missing_text', 'exercise_true_false'] },
 ];
 
-// BETA types (all except: page_break, split_screen, text, video, image, divider, table_of_content)
-const nonBetaTypes: BlockType[] = ['page_break', 'split_screen', 'text', 'video', 'image', 'divider', 'table_of_content'];
+// BETA types (all except: page_break, split_screen, text, video, image, divider, table_of_content, quran types)
+const nonBetaTypes: BlockType[] = ['page_break', 'split_screen', 'text', 'video', 'image', 'divider', 'table_of_content', 'quran_quote', 'quran_symbol', 'surah_nameplate', 'surah_name'];
 
 // ─── Exercise Option Editor ───
 const OptionsEditor = ({ block, isAr, onChange }: { block: ContentBlock; isAr: boolean; onChange: (b: ContentBlock) => void }) => {
