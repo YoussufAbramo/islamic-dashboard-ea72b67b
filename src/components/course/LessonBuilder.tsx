@@ -4,6 +4,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { arrayMove } from '@dnd-kit/sortable';
 import SortableList from '@/components/course/SortableList';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,7 +21,7 @@ import {
   ChevronUp, ChevronDown, Loader2, Save, FileEdit, ChevronsUpDown,
   ListOrdered, BookOpen, Brain, RotateCcw, ClipboardList,
   Headphones, CheckCircle2, CheckSquare, ArrowUpDown, TextCursorInput, ToggleLeft, Ear,
-  Minus, FileStack, Columns, Lock, Ban, ArrowLeftRight,
+  Minus, FileStack, Columns, Lock, Ban, ArrowLeftRight, Pencil,
 } from 'lucide-react';
 
 // ─── Block Types ───
@@ -34,6 +35,8 @@ export type BlockType =
 export interface ContentBlock {
   id: string;
   type: BlockType;
+  // custom name override (per-block rename)
+  custom_name?: string;
   // text / rich content blocks
   html?: string;
   // image
@@ -53,13 +56,13 @@ export interface ContentBlock {
   question?: string;
   question_ar?: string;
   options?: { text: string; text_ar?: string; is_correct?: boolean }[];
-  correct_answer?: boolean; // for true/false
-  items?: { text: string; text_ar?: string }[]; // for rearrange
-  sentence?: string; // for missing_text
+  correct_answer?: boolean;
+  items?: { text: string; text_ar?: string }[];
+  sentence?: string;
   sentence_ar?: string;
   missing_word?: string;
   missing_word_ar?: string;
-  pairs?: { left: string; left_ar?: string; right: string; right_ar?: string }[]; // for text_match
+  pairs?: { left: string; left_ar?: string; right: string; right_ar?: string }[];
   // table of content
   toc_header_en?: string;
   toc_header_ar?: string;
@@ -67,12 +70,12 @@ export interface ContentBlock {
   toc_size?: 'sm' | 'md' | 'lg' | 'xl';
   toc_rows?: { en: string; ar: string }[];
   // divider
-  divider_width?: number; // percentage 25-100
+  divider_width?: number;
   divider_style?: 'solid' | 'dashed' | 'dotted' | 'double' | 'groove' | 'ridge';
-  divider_thickness?: number; // 1-6 px
+  divider_thickness?: number;
   divider_color?: string;
   divider_text?: string;
-  // page break (no extra fields needed, acts as marker)
+  // page break
   page_label?: string;
   page_label_ar?: string;
   // split screen
@@ -101,7 +104,7 @@ const blockMeta: Record<BlockType, BlockMetaItem> = {
   // Layout
   divider: { icon: Minus, label: 'Divider', labelAr: 'فاصل', color: 'text-gray-400', group: 'layout' },
   page_break: { icon: FileStack, label: 'New Page', labelAr: 'صفحة جديدة', color: 'text-yellow-500', group: 'layout' },
-  split_screen: { icon: Columns, label: 'Split Screen', labelAr: 'شاشة مقسمة', color: 'text-cyan-600', group: 'layout' },
+  split_screen: { icon: Columns, label: 'Split Page', labelAr: 'صفحة مقسمة', color: 'text-cyan-600', group: 'layout' },
   table_of_content: { icon: ListOrdered, label: 'Table of Content', labelAr: 'فهرس المحتويات', color: 'text-indigo-500', group: 'layout' },
   // Content Types
   read_listen:      { icon: BookOpen, label: 'Read & Listen', labelAr: 'قراءة واستماع', color: 'text-teal-500', group: 'content' },
@@ -118,12 +121,16 @@ const blockMeta: Record<BlockType, BlockMetaItem> = {
   exercise_true_false:      { icon: ToggleLeft, label: 'True / False', labelAr: 'صح / خطأ', color: 'text-fuchsia-500', group: 'exercise' },
 };
 
+// Reordered: Layout → Content → Media → Exercises
 const blockGroups: { key: string; label: string; labelAr: string; types: BlockType[] }[] = [
-  { key: 'media', label: '📁 Media', labelAr: '📁 الوسائط', types: ['text', 'image', 'video', 'audio'] },
-  { key: 'layout', label: '🧩 Layout', labelAr: '🧩 التخطيط', types: ['divider', 'page_break', 'split_screen', 'table_of_content'] },
+  { key: 'layout', label: '🧩 Layout', labelAr: '🧩 التخطيط', types: ['table_of_content', 'divider', 'page_break', 'split_screen'] },
   { key: 'content', label: '📖 Content', labelAr: '📖 المحتوى', types: ['read_listen', 'memorization', 'revision', 'homework'] },
+  { key: 'media', label: '📁 Media', labelAr: '📁 الوسائط', types: ['text', 'image', 'video', 'audio'] },
   { key: 'exercise', label: '✏️ Exercises', labelAr: '✏️ التمارين', types: ['exercise_listen_choose', 'exercise_text_match', 'exercise_choose_correct', 'exercise_choose_multiple', 'exercise_rearrange', 'exercise_missing_text', 'exercise_true_false'] },
 ];
+
+// BETA types (all except: page_break, split_screen, text, video, image, divider, table_of_content)
+const nonBetaTypes: BlockType[] = ['page_break', 'split_screen', 'text', 'video', 'image', 'divider', 'table_of_content'];
 
 // ─── Exercise Option Editor ───
 const OptionsEditor = ({ block, isAr, onChange }: { block: ContentBlock; isAr: boolean; onChange: (b: ContentBlock) => void }) => {
@@ -141,7 +148,6 @@ const OptionsEditor = ({ block, isAr, onChange }: { block: ContentBlock; isAr: b
   const updateOption = (idx: number, field: string, value: any) => {
     const next = [...options];
     if (field === 'is_correct' && !isMultiple) {
-      // Single correct: uncheck others
       next.forEach((o, i) => { o.is_correct = i === idx; });
     } else {
       next[idx] = { ...next[idx], [field]: value };
@@ -242,7 +248,7 @@ const ItemsEditor = ({ block, isAr, onChange }: { block: ContentBlock; isAr: boo
 
 // ─── Single Block Editor ───
 const BlockEditor = ({
-  block, isAr, onChange, onRemove, onMoveUp, onMoveDown, isFirst, isLast, pageNumber, isBeta, onTransfer,
+  block, isAr, onChange, onRemove, onMoveUp, onMoveDown, isFirst, isLast, pageNumber, isBeta, onTransfer, animating,
 }: {
   block: ContentBlock;
   isAr: boolean;
@@ -255,10 +261,14 @@ const BlockEditor = ({
   pageNumber?: number;
   isBeta?: boolean;
   onTransfer?: (toSide: 'left' | 'right') => void;
+  animating?: 'up' | 'down' | 'transfer-out' | 'transfer-in' | null;
 }) => {
   const meta = blockMeta[block.type];
   const Icon = meta.icon;
   const [collapsed, setCollapsed] = useState(true);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState('');
+  const renameRef = useRef<HTMLInputElement>(null);
 
   const {
     attributes,
@@ -269,11 +279,36 @@ const BlockEditor = ({
     isDragging,
   } = useSortable({ id: block.id });
 
+  const animationClass = animating === 'up'
+    ? 'animate-slide-up'
+    : animating === 'down'
+      ? 'animate-slide-down'
+      : animating === 'transfer-out'
+        ? 'animate-transfer-out'
+        : animating === 'transfer-in'
+          ? 'animate-transfer-in'
+          : '';
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     zIndex: isDragging ? 50 : undefined,
     opacity: isDragging ? 0.5 : 1,
+  };
+
+  const displayName = block.custom_name || (isAr ? meta.labelAr : meta.label);
+
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setRenameValue(block.custom_name || '');
+    setIsRenaming(true);
+    setTimeout(() => renameRef.current?.focus(), 50);
+  };
+
+  const commitRename = () => {
+    const trimmed = renameValue.trim();
+    onChange({ ...block, custom_name: trimmed || undefined });
+    setIsRenaming(false);
   };
 
   const renderQuestionField = () => (
@@ -290,7 +325,7 @@ const BlockEditor = ({
   );
 
   return (
-    <div ref={setNodeRef} style={style} className="rounded-lg border bg-card group relative">
+    <div ref={setNodeRef} style={style} className={cn("rounded-lg border bg-card group relative", animationClass)}>
       <div
         className="flex items-center gap-2 px-3 py-2 border-b bg-muted/30 cursor-pointer select-none"
         onClick={() => setCollapsed((c) => !c)}
@@ -305,14 +340,37 @@ const BlockEditor = ({
           <GripVertical className="h-4 w-4" />
         </button>
         <Icon className={cn("h-4 w-4 shrink-0", meta.color)} />
-        <span className="text-xs font-medium text-muted-foreground">
-          {isAr ? meta.labelAr : meta.label}
-          {block.type === 'page_break' && pageNumber != null && (
-            <span className="ms-1 text-[10px] text-muted-foreground/70">#{pageNumber}</span>
-          )}
-        </span>
+
+        {isRenaming ? (
+          <input
+            ref={renameRef}
+            value={renameValue}
+            onChange={(e) => setRenameValue(e.target.value)}
+            onBlur={commitRename}
+            onKeyDown={(e) => { if (e.key === 'Enter') commitRename(); if (e.key === 'Escape') setIsRenaming(false); }}
+            onClick={(e) => e.stopPropagation()}
+            className="text-xs font-medium bg-background border rounded px-1.5 py-0.5 w-32 outline-none focus:ring-1 focus:ring-primary"
+            placeholder={isAr ? meta.labelAr : meta.label}
+          />
+        ) : (
+          <span
+            className="text-xs font-medium text-muted-foreground cursor-text"
+            onDoubleClick={handleDoubleClick}
+            title={isAr ? 'انقر مزدوج لإعادة التسمية' : 'Double-click to rename'}
+          >
+            {displayName}
+            {block.type === 'page_break' && pageNumber != null && (
+              <span className="ms-1.5 text-[11px] font-semibold text-foreground/60">#{pageNumber}</span>
+            )}
+          </span>
+        )}
+
+        {block.custom_name && (
+          <Pencil className="h-2.5 w-2.5 text-muted-foreground/40 shrink-0" />
+        )}
+
         {isBeta && (
-          <Badge variant="outline" className="text-[8px] px-1 py-0 h-3.5 border-amber-400/50 text-amber-500 font-bold uppercase tracking-wider">
+          <Badge className="text-[9px] px-1.5 py-0 h-4 bg-amber-500/15 text-amber-600 border-amber-400/40 font-bold uppercase tracking-wider">
             Beta
           </Badge>
         )}
@@ -683,67 +741,44 @@ const BlockEditor = ({
           );
         })()}
 
-        {/* ── Table of Content (structured rows) ── */}
+        {/* ── Table of Content ── */}
         {block.type === 'table_of_content' && (() => {
           const rows = block.toc_rows || [];
-          const updateRow = (idx: number, field: 'en' | 'ar', val: string) => {
-            const updated = [...rows];
-            updated[idx] = { ...updated[idx], [field]: val };
-            onChange({ ...block, toc_rows: updated });
-          };
           const addRow = () => onChange({ ...block, toc_rows: [...rows, { en: '', ar: '' }] });
-          const removeRow = (idx: number) => onChange({ ...block, toc_rows: rows.filter((_, i) => i !== idx) });
-          const moveRow = (from: number, to: number) => {
-            if (to < 0 || to >= rows.length) return;
-            const updated = [...rows];
-            const [item] = updated.splice(from, 1);
-            updated.splice(to, 0, item);
-            onChange({ ...block, toc_rows: updated });
-          };
+          const removeRow = (idx: number) => { const next = [...rows]; next.splice(idx, 1); onChange({ ...block, toc_rows: next }); };
+          const updateRow = (idx: number, field: 'en' | 'ar', value: string) => { const next = [...rows]; next[idx] = { ...next[idx], [field]: value }; onChange({ ...block, toc_rows: next }); };
+          const moveRow = (from: number, to: number) => { const next = arrayMove(rows, from, to); onChange({ ...block, toc_rows: next }); };
+
           return (
             <div className="space-y-3">
-              {/* Style & Size selectors */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs font-medium mb-1.5 block">{isAr ? 'نمط الجدول' : 'Table Style'}</Label>
+                  <Label className="text-xs mb-1.5 block">{isAr ? 'نمط الجدول' : 'Table Style'}</Label>
                   <div className="flex flex-wrap gap-1.5">
                     {([
                       { value: 'default' as const, label: isAr ? 'افتراضي' : 'Default' },
                       { value: 'striped' as const, label: isAr ? 'مخطط' : 'Striped' },
-                      { value: 'bordered' as const, label: isAr ? 'محاط' : 'Bordered' },
+                      { value: 'bordered' as const, label: isAr ? 'محدد' : 'Bordered' },
                       { value: 'minimal' as const, label: isAr ? 'بسيط' : 'Minimal' },
                     ] as const).map((opt) => (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => onChange({ ...block, toc_style: opt.value })}
-                        className={cn(
-                          "px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
-                          (block.toc_style || 'default') === opt.value
-                            ? "bg-primary text-primary-foreground border-primary"
-                            : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
-                        )}
-                      >
-                        {opt.label}
-                      </button>
+                      <button key={opt.value} type="button" onClick={() => onChange({ ...block, toc_style: opt.value })}
+                        className={cn("px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
+                          (block.toc_style || 'default') === opt.value ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+                        )}>{opt.label}</button>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <Label className="text-xs font-medium mb-1.5 block">{isAr ? 'حجم الجدول' : 'Table Size'}</Label>
+                  <Label className="text-xs mb-1.5 block">{isAr ? 'حجم الخط' : 'Font Size'}</Label>
                   <div className="flex flex-wrap gap-1.5">
                     {([
-                      { value: 'sm' as const, label: 'S' },
-                      { value: 'md' as const, label: 'M' },
-                      { value: 'lg' as const, label: 'L' },
-                      { value: 'xl' as const, label: 'XL' },
+                      { value: 'sm' as const, label: isAr ? 'صغير' : 'Small' },
+                      { value: 'md' as const, label: isAr ? 'متوسط' : 'Medium' },
+                      { value: 'lg' as const, label: isAr ? 'كبير' : 'Large' },
+                      { value: 'xl' as const, label: isAr ? 'كبير جدًا' : 'X-Large' },
                     ] as const).map((opt) => (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => onChange({ ...block, toc_size: opt.value })}
-                        className={cn(
-                          "px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors min-w-[32px]",
+                      <button key={opt.value} type="button" onClick={() => onChange({ ...block, toc_size: opt.value })}
+                        className={cn("px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
                           (block.toc_size || 'md') === opt.value
                             ? "bg-primary text-primary-foreground border-primary"
                             : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
@@ -929,37 +964,6 @@ const BlockEditor = ({
   );
 };
 
-// ─── Add Block Buttons ───
-const AddBlockButtons = ({ isAr, onAdd, prominent }: { isAr: boolean; onAdd: (type: BlockType) => void; prominent?: boolean }) => (
-  <div className="space-y-4">
-    {blockGroups.map(group => (
-      <div key={group.key} className="space-y-2">
-        <span className="text-[11px] font-semibold text-muted-foreground">{isAr ? group.labelAr : group.label}</span>
-        <div className={cn("grid gap-2", prominent ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3 sm:grid-cols-4")}>
-          {group.types.map(type => {
-            const meta = blockMeta[type];
-            const Icon = meta.icon;
-            return (
-              <button
-                key={type}
-                type="button"
-                onClick={() => onAdd(type)}
-                className={cn(
-                  "flex flex-col items-center gap-1.5 rounded-lg border-2 border-dashed transition-all hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-foreground",
-                  prominent ? "p-4" : "p-2.5"
-                )}
-              >
-                <Icon className={cn(prominent ? "h-5 w-5" : "h-4 w-4", meta.color)} />
-                <span className={cn("font-medium text-center leading-tight", prominent ? "text-xs" : "text-[10px]")}>{isAr ? meta.labelAr : meta.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    ))}
-  </div>
-);
-
 // ─── Main LessonBuilder Dialog ───
 interface LessonBuilderProps {
   open: boolean;
@@ -973,18 +977,17 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
   const [blocks, setBlocks] = useState<ContentBlock[]>([]);
   const [saving, setSaving] = useState(false);
   const initialized = useRef<string | null>(null);
+  const [animatingBlocks, setAnimatingBlocks] = useState<Record<string, 'up' | 'down' | 'transfer-out' | 'transfer-in'>>({});
+  const [splitDeleteOpen, setSplitDeleteOpen] = useState(false);
 
-  // Build a fingerprint from lesson id + content to detect changes
   const lessonFingerprint = lesson ? `${lesson.id}:${JSON.stringify(lesson.content?.blocks?.length ?? 0)}` : null;
 
-  // Initialize blocks when lesson or its content changes
   if (lesson && initialized.current !== lessonFingerprint) {
     initialized.current = lessonFingerprint;
     const content = lesson.content || {};
     if (Array.isArray(content.blocks) && content.blocks.length > 0) {
       setBlocks(content.blocks.map((b: any) => ({ ...b, id: b.id || generateId() })));
     } else {
-      // Migrate legacy content to blocks
       const migrated: ContentBlock[] = [];
       if (content.text || content.body || content.html || content.description) {
         migrated.push({ id: generateId(), type: 'text', html: content.text || content.body || content.html || content.description || '' });
@@ -1011,8 +1014,16 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
   const hasNonSplitBlocks = useMemo(() => blocks.some(b => b.type !== 'split_screen'), [blocks]);
   const [activeSplitSide, setActiveSplitSide] = useState<'left' | 'right'>('left');
 
-  // BETA types (all except: page_break, split_screen, text, video, image, divider, table_of_content)
-  const nonBetaTypes: BlockType[] = ['page_break', 'split_screen', 'text', 'video', 'image', 'divider', 'table_of_content'];
+  const triggerAnimation = (blockId: string, type: 'up' | 'down' | 'transfer-out' | 'transfer-in') => {
+    setAnimatingBlocks(prev => ({ ...prev, [blockId]: type }));
+    setTimeout(() => {
+      setAnimatingBlocks(prev => {
+        const next = { ...prev };
+        delete next[blockId];
+        return next;
+      });
+    }, 400);
+  };
 
   const addBlock = useCallback((type: BlockType) => {
     const newBlock: ContentBlock = { id: generateId(), type };
@@ -1025,13 +1036,13 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
     if (type === 'exercise_text_match') { newBlock.pairs = []; }
     if (type === 'exercise_rearrange') { newBlock.items = []; }
 
-    // If split screen exists and this is not a split_screen block, assign to active side
     if (type !== 'split_screen') {
       setBlocks(prev => {
         const splitExists = prev.some(b => b.type === 'split_screen');
         if (splitExists) {
           newBlock.split_side = activeSplitSide;
         }
+        // Always add at bottom
         return [...prev, newBlock];
       });
     } else {
@@ -1040,7 +1051,27 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
   }, [activeSplitSide]);
 
   const transferBlock = useCallback((blockId: string, toSide: 'left' | 'right') => {
-    setBlocks(prev => prev.map(b => b.id === blockId ? { ...b, split_side: toSide } : b));
+    // Animate out
+    triggerAnimation(blockId, 'transfer-out');
+    setTimeout(() => {
+      setBlocks(prev => {
+        // Move to top of the target side: place it right after the split_screen block or at start
+        const block = prev.find(b => b.id === blockId);
+        if (!block) return prev;
+        const updated = { ...block, split_side: toSide };
+        const without = prev.filter(b => b.id !== blockId);
+        // Find target side blocks and insert at top (first position among target side blocks)
+        const targetSideFirstIdx = without.findIndex(b => b.split_side === toSide);
+        if (targetSideFirstIdx === -1) {
+          // No blocks on that side, just append
+          return [...without, updated];
+        }
+        const result = [...without];
+        result.splice(targetSideFirstIdx, 0, updated);
+        return result;
+      });
+      triggerAnimation(blockId, 'transfer-in');
+    }, 300);
   }, []);
 
   const updateBlock = useCallback((id: string, updated: ContentBlock) => {
@@ -1053,14 +1084,49 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
 
   const moveBlock = useCallback((id: string, direction: 'up' | 'down') => {
     setBlocks(prev => {
+      const hasSplit = prev.some(b => b.type === 'split_screen');
+      if (hasSplit) {
+        // Move within same side only
+        const block = prev.find(b => b.id === id);
+        if (!block || !block.split_side) return prev;
+        const side = block.split_side;
+        const sideBlocks = prev.filter(b => b.split_side === side);
+        const sideIdx = sideBlocks.findIndex(b => b.id === id);
+        const newSideIdx = direction === 'up' ? sideIdx - 1 : sideIdx + 1;
+        if (newSideIdx < 0 || newSideIdx >= sideBlocks.length) return prev;
+        // Find global indices
+        const globalIdx = prev.indexOf(sideBlocks[sideIdx]);
+        const globalNewIdx = prev.indexOf(sideBlocks[newSideIdx]);
+        const arr = [...prev];
+        [arr[globalIdx], arr[globalNewIdx]] = [arr[globalNewIdx], arr[globalIdx]];
+        triggerAnimation(id, direction === 'up' ? 'up' : 'down');
+        return arr;
+      }
       const idx = prev.findIndex(b => b.id === id);
       if (idx === -1) return prev;
       const newIdx = direction === 'up' ? idx - 1 : idx + 1;
       if (newIdx < 0 || newIdx >= prev.length) return prev;
       const arr = [...prev];
       [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+      triggerAnimation(id, direction === 'up' ? 'up' : 'down');
       return arr;
     });
+  }, []);
+
+  const handleDeleteSplitPage = useCallback((deleteAll: boolean) => {
+    setBlocks(prev => {
+      if (deleteAll) {
+        // Remove split_screen and all sub-blocks
+        return prev.filter(b => b.type !== 'split_screen' && !b.split_side);
+      } else {
+        // Remove split_screen, keep sub-blocks but remove split_side
+        return prev.filter(b => b.type !== 'split_screen').map(b => {
+          const { split_side, ...rest } = b;
+          return rest;
+        });
+      }
+    });
+    setSplitDeleteOpen(false);
   }, []);
 
   const handleSave = useCallback(async () => {
@@ -1083,14 +1149,17 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
   if (!lesson) return null;
 
   return (
+    <>
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
         <DialogHeader className="px-5 pt-5 pb-3 shrink-0">
-          <DialogTitle className="flex items-center gap-2">
-            <FileEdit className="h-5 w-5 text-primary" />
+          <DialogTitle className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <FileEdit className="h-5 w-5 text-primary" />
+            </div>
             <div className="flex-1 min-w-0">
-              <span className="truncate block">{isAr ? 'محرر الدرس' : 'Lesson Builder'}</span>
-              <span className="text-sm font-semibold text-foreground truncate block mt-0.5">
+              <span className="text-sm text-muted-foreground block">{isAr ? 'محرر الدرس' : 'Lesson Builder'}</span>
+              <span className="text-base font-bold text-foreground truncate block">
                 {isAr && lesson.title_ar ? lesson.title_ar : lesson.title}
               </span>
             </div>
@@ -1114,7 +1183,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                   </p>
                 </div>
               ) : hasSplitScreen ? (
-                /* ── Split Screen Layout: two-column view ── */
+                /* ── Split Page Layout: two-column view ── */
                 (() => {
                   const leftBlocks = blocks.filter(b => b.split_side === 'left');
                   const rightBlocks = blocks.filter(b => b.split_side === 'right');
@@ -1122,7 +1191,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                   const renderSideBlocks = (sideBlocks: ContentBlock[], side: 'left' | 'right') => (
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="outline" className="text-[10px]">
+                        <Badge variant={activeSplitSide === side ? 'default' : 'outline'} className="text-[10px]">
                           {side === 'left' ? (isAr ? 'يسار' : 'Left') : (isAr ? 'يمين' : 'Right')}
                         </Badge>
                         <span className="text-[10px] text-muted-foreground">
@@ -1149,6 +1218,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                             isLast={idx === sideBlocks.length - 1}
                             isBeta={!nonBetaTypes.includes(block.type)}
                             onTransfer={(toSide) => transferBlock(block.id, toSide)}
+                            animating={animatingBlocks[block.id] || null}
                           />
                         ))
                       )}
@@ -1157,10 +1227,10 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
 
                   return (
                     <div className="space-y-3">
-                      {/* Split screen header */}
+                      {/* Split page header */}
                       <div className="flex items-center gap-2 p-2.5 rounded-lg bg-muted/40 border">
                         <Columns className="h-4 w-4 text-cyan-600" />
-                        <span className="text-xs font-medium">{isAr ? 'وضع الشاشة المقسمة' : 'Split Screen Mode'}</span>
+                        <span className="text-xs font-medium">{isAr ? 'وضع الصفحة المقسمة' : 'Split Page Mode'}</span>
                         <Lock className="h-3 w-3 text-muted-foreground/50 ms-1" />
                         {/* Active side selector */}
                         <div className="ms-auto flex items-center gap-1.5">
@@ -1195,12 +1265,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 text-destructive/60 hover:text-destructive"
-                            onClick={() => {
-                              setBlocks(prev => prev.filter(b => b.type !== 'split_screen').map(b => {
-                                const { split_side, ...rest } = b;
-                                return rest;
-                              }));
-                            }}
+                            onClick={() => setSplitDeleteOpen(true)}
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
@@ -1216,7 +1281,6 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                 })()
               ) : (
                 (() => {
-                  // Compute page numbers for page_break blocks
                   let pageCounter = 1;
                   const pageNumbers = new Map<string, number>();
                   blocks.forEach(b => {
@@ -1251,6 +1315,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                           isLast={idx === blocks.length - 1}
                           pageNumber={pageNumbers.get(block.id)}
                           isBeta={!nonBetaTypes.includes(block.type)}
+                          animating={animatingBlocks[block.id] || null}
                         />
                       ))}
                     </SortableList>
@@ -1279,17 +1344,22 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                       const meta = blockMeta[type];
                       const Icon = meta.icon;
 
-                      // Split screen constraints
+                      // Split page constraints
                       const isSplitType = type === 'split_screen';
+                      const isPageBreakType = type === 'page_break';
                       const isLocked = isSplitType && hasSplitScreen;
-                      const isDisabled = isSplitType && !hasSplitScreen && hasNonSplitBlocks;
-                      const cantUse = isLocked || isDisabled;
+                      const isSplitDisabled = isSplitType && !hasSplitScreen && hasNonSplitBlocks;
+                      // Lock page_break when split page is active
+                      const isPageBreakLocked = isPageBreakType && hasSplitScreen;
+                      const cantUse = isLocked || isSplitDisabled || isPageBreakLocked;
 
                       const disabledMessage = isLocked
-                        ? (isAr ? 'الشاشة المقسمة مستخدمة بالفعل (مرة واحدة فقط لكل درس)' : 'Split Screen is already in use (only once per lesson)')
-                        : isDisabled
-                          ? (isAr ? 'يجب إضافة الشاشة المقسمة قبل أي عنصر آخر. احذف العناصر الموجودة أولاً.' : 'Split Screen must be added before any other elements. Remove existing elements first.')
-                          : '';
+                        ? (isAr ? 'الصفحة المقسمة مستخدمة بالفعل (مرة واحدة فقط لكل درس)' : 'Split Page is already in use (only once per lesson)')
+                        : isSplitDisabled
+                          ? (isAr ? 'يجب إضافة الصفحة المقسمة قبل أي عنصر آخر. احذف العناصر الموجودة أولاً.' : 'Split Page must be added before any other elements. Remove existing elements first.')
+                          : isPageBreakLocked
+                            ? (isAr ? 'لا يمكن استخدام صفحة جديدة أثناء وضع الصفحة المقسمة' : 'New Page cannot be used while Split Page mode is active')
+                            : '';
 
                       const showBeta = !nonBetaTypes.includes(type);
 
@@ -1306,10 +1376,12 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                               : "hover:border-primary/40 hover:bg-primary/5 hover:text-foreground hover:shadow-sm"
                           )}
                         >
-                          {isLocked && <Lock className="h-2.5 w-2.5 absolute top-1 end-1 text-muted-foreground/60" />}
-                          {isDisabled && <Ban className="h-2.5 w-2.5 absolute top-1 end-1 text-destructive/60" />}
+                          {(isLocked || isPageBreakLocked) && <Lock className="h-2.5 w-2.5 absolute top-1 end-1 text-muted-foreground/60" />}
+                          {isSplitDisabled && <Ban className="h-2.5 w-2.5 absolute top-1 end-1 text-destructive/60" />}
                           {showBeta && (
-                            <span className="absolute top-0.5 start-0.5 text-[6px] font-bold uppercase tracking-wider text-amber-500 leading-none">β</span>
+                            <Badge className="absolute -top-1.5 -start-1.5 text-[7px] px-1 py-0 h-3.5 bg-amber-500/15 text-amber-600 border-amber-400/40 font-bold uppercase tracking-wider leading-none">
+                              Beta
+                            </Badge>
                           )}
                           <Icon className={cn("h-4 w-4 shrink-0", cantUse ? "text-muted-foreground/40" : meta.color)} />
                           <span className="truncate w-full leading-tight">{isAr ? meta.labelAr : meta.label}</span>
@@ -1349,6 +1421,38 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
         </div>
       </DialogContent>
     </Dialog>
+
+    {/* Split Page Delete Confirmation */}
+    <AlertDialog open={splitDeleteOpen} onOpenChange={setSplitDeleteOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            {isAr ? 'حذف وضع الصفحة المقسمة' : 'Remove Split Page Mode'}
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            {isAr
+              ? 'ماذا تريد أن تفعل بالعناصر الموجودة داخل الصفحة المقسمة؟'
+              : 'What would you like to do with the elements inside the Split Page?'}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+          <AlertDialogCancel>{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
+          <Button
+            variant="outline"
+            onClick={() => handleDeleteSplitPage(false)}
+          >
+            {isAr ? 'إزالة التقسيم فقط وإبقاء العناصر' : 'Remove split, keep elements'}
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => handleDeleteSplitPage(true)}
+          >
+            {isAr ? 'حذف التقسيم وجميع العناصر' : 'Delete split & all elements'}
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 };
 

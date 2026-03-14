@@ -789,7 +789,42 @@
   }
 
   .animate-slide-in-editor {
-    animation: slide-in-editor 0.3s ease-out;
+  animation: slide-in-editor 0.3s ease-out;
+  }
+
+  /* Lesson Builder reorder animations */
+  @keyframes lb-slide-up {
+    0% { transform: translateY(0); opacity: 1; }
+    30% { transform: translateY(-8px); opacity: 0.7; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes lb-slide-down {
+    0% { transform: translateY(0); opacity: 1; }
+    30% { transform: translateY(8px); opacity: 0.7; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes lb-transfer-out {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0.9) translateX(20px); opacity: 0; }
+  }
+  @keyframes lb-transfer-in {
+    0% { transform: scale(0.9) translateX(-20px); opacity: 0; }
+    50% { transform: scale(1.02); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .animate-slide-up {
+    animation: lb-slide-up 0.4s ease-in-out;
+  }
+  .animate-slide-down {
+    animation: lb-slide-down 0.4s ease-in-out;
+  }
+  .animate-transfer-out {
+    animation: lb-transfer-out 0.3s ease-in forwards;
+  }
+  .animate-transfer-in {
+    animation: lb-transfer-in 0.4s ease-out;
+  }
   }
 
   @media print {
