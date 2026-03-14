@@ -1021,35 +1021,55 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
   const initialized = useRef<string | null>(null);
   const [animatingBlocks, setAnimatingBlocks] = useState<Record<string, 'up' | 'down' | 'transfer-out' | 'transfer-in'>>({});
   const [splitDeleteOpen, setSplitDeleteOpen] = useState(false);
+  const [unsavedDialogOpen, setUnsavedDialogOpen] = useState(false);
+  const savedSnapshot = useRef<string>('');
 
   const lessonFingerprint = lesson ? `${lesson.id}:${JSON.stringify(lesson.content?.blocks?.length ?? 0)}` : null;
 
   if (lesson && initialized.current !== lessonFingerprint) {
     initialized.current = lessonFingerprint;
     const content = lesson.content || {};
+    let initialBlocks: ContentBlock[] = [];
     if (Array.isArray(content.blocks) && content.blocks.length > 0) {
-      setBlocks(content.blocks.map((b: any) => ({ ...b, id: b.id || generateId() })));
+      initialBlocks = content.blocks.map((b: any) => ({ ...b, id: b.id || generateId() }));
     } else {
-      const migrated: ContentBlock[] = [];
       if (content.text || content.body || content.html || content.description) {
-        migrated.push({ id: generateId(), type: 'text', html: content.text || content.body || content.html || content.description || '' });
+        initialBlocks.push({ id: generateId(), type: 'text', html: content.text || content.body || content.html || content.description || '' });
       }
       if (content.video_url || content.videoUrl) {
-        migrated.push({ id: generateId(), type: 'video', video_url: content.video_url || content.videoUrl || '' });
+        initialBlocks.push({ id: generateId(), type: 'video', video_url: content.video_url || content.videoUrl || '' });
       }
       if (content.audio_url || content.audioUrl) {
-        migrated.push({ id: generateId(), type: 'audio', audio_url: content.audio_url || content.audioUrl || '' });
+        initialBlocks.push({ id: generateId(), type: 'audio', audio_url: content.audio_url || content.audioUrl || '' });
       }
       if (content.image_url || content.imageUrl) {
-        migrated.push({ id: generateId(), type: 'image', image_url: content.image_url || content.imageUrl || '' });
+        initialBlocks.push({ id: generateId(), type: 'image', image_url: content.image_url || content.imageUrl || '' });
       }
-      setBlocks(migrated);
     }
+    setBlocks(initialBlocks);
+    savedSnapshot.current = JSON.stringify(initialBlocks);
   }
 
+  const hasUnsavedChanges = useMemo(() => {
+    if (!savedSnapshot.current) return false;
+    return JSON.stringify(blocks) !== savedSnapshot.current;
+  }, [blocks]);
+
   const handleOpenChange = (v: boolean) => {
-    if (!v) { initialized.current = null; setBlocks([]); }
+    if (!v && hasUnsavedChanges) {
+      setUnsavedDialogOpen(true);
+      return;
+    }
+    if (!v) { initialized.current = null; setBlocks([]); savedSnapshot.current = ''; }
     onOpenChange(v);
+  };
+
+  const forceClose = () => {
+    setUnsavedDialogOpen(false);
+    initialized.current = null;
+    setBlocks([]);
+    savedSnapshot.current = '';
+    onOpenChange(false);
   };
 
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
@@ -1180,9 +1200,14 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
       const newContent = { blocks: blocks as any[] };
       const { error } = await supabase.from('lessons').update({ content: newContent as any }).eq('id', lesson.id);
       if (error) throw error;
+      savedSnapshot.current = JSON.stringify(blocks);
       toast.success(isAr ? 'تم حفظ المحتوى' : 'Content saved');
       onSaved();
-      handleOpenChange(false);
+      // Close after save
+      initialized.current = null;
+      setBlocks([]);
+      savedSnapshot.current = '';
+      onOpenChange(false);
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -1469,14 +1494,24 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
 
         <Separator />
 
-        <div className="flex items-center justify-end gap-2 px-5 py-3 shrink-0">
-          <Button variant="outline" onClick={() => handleOpenChange(false)}>
-            {isAr ? 'إلغاء' : 'Cancel'}
-          </Button>
-          <Button onClick={handleSave} disabled={saving} className="gap-1.5">
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            {isAr ? 'حفظ الدرس' : 'Save Lesson'}
-          </Button>
+        <div className="flex items-center justify-between gap-2 px-5 py-3 shrink-0">
+          <div className="flex items-center gap-2">
+            {hasUnsavedChanges && (
+              <Badge variant="outline" className="text-[10px] gap-1 border-amber-400/50 bg-amber-500/10 text-amber-600">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                {isAr ? 'تغييرات غير محفوظة' : 'Unsaved Changes'}
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => handleOpenChange(false)}>
+              {isAr ? 'إلغاء' : 'Cancel'}
+            </Button>
+            <Button onClick={handleSave} disabled={saving} className="gap-1.5">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {isAr ? 'حفظ الدرس' : 'Save Lesson'}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
@@ -1511,6 +1546,31 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
           </Button>
           <AlertDialogCancel className="w-full mt-1">{isAr ? 'إلغاء' : 'Cancel'}</AlertDialogCancel>
         </div>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    {/* Unsaved Changes Confirmation */}
+    <AlertDialog open={unsavedDialogOpen} onOpenChange={setUnsavedDialogOpen}>
+      <AlertDialogContent className="max-w-sm">
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            {isAr ? 'تغييرات غير محفوظة' : 'Unsaved Changes'}
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            {isAr
+              ? 'لديك تغييرات لم يتم حفظها. هل تريد المغادرة بدون حفظ؟'
+              : 'You have unsaved changes. Are you sure you want to leave without saving?'}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{isAr ? 'متابعة التعديل' : 'Keep Editing'}</AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            onClick={forceClose}
+          >
+            {isAr ? 'مغادرة بدون حفظ' : 'Discard & Close'}
+          </AlertDialogAction>
+        </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
     </>
