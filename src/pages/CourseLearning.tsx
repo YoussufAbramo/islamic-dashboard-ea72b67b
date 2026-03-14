@@ -1370,7 +1370,7 @@ const CourseLearning = () => {
                     <BookOpen className="h-4 w-4 text-muted-foreground" />
                     <Label className="text-sm font-medium">{isAr ? 'خط القرآن' : 'Quran Font'}</Label>
                   </div>
-                  <Select value={quranFont} onValueChange={saveQuranFont} disabled={tajweedMode}>
+                  <Select value={quranFont} onValueChange={saveQuranFont}>
                     <SelectTrigger className="h-9 text-xs">
                       <SelectValue />
                     </SelectTrigger>
