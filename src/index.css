@@ -8,6 +8,7 @@
 @font-face { font-family: 'Indopak Nastaleeq'; src: url('/fonts/Indopak_Nastaleeq.woff2') format('woff2'); font-display: swap; }
 @font-face { font-family: 'KFGQPC Nastaleeq'; src: url('/fonts/KFGQPC_Nastaleeq.woff2') format('woff2'); font-display: swap; }
 @font-face { font-family: 'QPC V4 Tajweed'; src: url('/fonts/QPC_V4_Tajweed.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Besmellah'; src: url('/fonts/Besmellah.ttf') format('truetype'); font-display: swap; }
 @font-face { font-family: 'QPC V2'; src: url('/fonts/QPC_V2.woff2') format('woff2'); font-display: swap; }
 
 @tailwind base;

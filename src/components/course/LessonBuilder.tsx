@@ -145,7 +145,7 @@ const blockGroups: { key: string; label: string; labelAr: string; types: BlockTy
 ];
 
 // BETA types (all except: page_break, split_screen, text, video, image, divider, table_of_content, quran types)
-const nonBetaTypes: BlockType[] = ['page_break', 'split_screen', 'text', 'video', 'image', 'divider', 'table_of_content', 'quran_quote', 'quran_symbol', 'surah_nameplate', 'surah_name'];
+const nonBetaTypes: BlockType[] = ['page_break', 'split_screen', 'text', 'video', 'image', 'divider', 'table_of_content', 'quran_quote', 'quran_symbol', 'surah_nameplate', 'surah_name', 'besmellah'];
 
 // ─── Exercise Option Editor ───
 const OptionsEditor = ({ block, isAr, onChange }: { block: ContentBlock; isAr: boolean; onChange: (b: ContentBlock) => void }) => {
