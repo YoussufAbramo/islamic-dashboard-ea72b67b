@@ -427,9 +427,21 @@ const BlockEditor = ({
           <Button variant="ghost" size="icon" className="h-6 w-6" disabled={isLast} onClick={(e) => { e.stopPropagation(); onMoveDown(); }}>
             <ChevronDown className="h-3 w-3" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/60 hover:text-destructive" onClick={(e) => { e.stopPropagation(); onRemove(); }}>
+          <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/60 hover:text-destructive" onClick={(e) => { e.stopPropagation(); handleDelete(); }}>
             <Trash2 className="h-3 w-3" />
           </Button>
+        </div>
+        {confirmDelete && (
+          <div className="flex items-center gap-1.5 ms-2" onClick={(e) => e.stopPropagation()}>
+            <span className="text-[10px] text-destructive font-medium">{isAr ? 'حذف؟' : 'Delete?'}</span>
+            <Button variant="destructive" size="sm" className="h-5 text-[10px] px-2" onClick={onRemove}>
+              {isAr ? 'نعم' : 'Yes'}
+            </Button>
+            <Button variant="ghost" size="sm" className="h-5 text-[10px] px-2" onClick={() => setConfirmDelete(false)}>
+              {isAr ? 'لا' : 'No'}
+            </Button>
+          </div>
+        )}
         </div>
       </div>
 
