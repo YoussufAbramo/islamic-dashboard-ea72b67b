@@ -1148,7 +1148,10 @@ const CourseLearning = () => {
 
           {/* Main scrollable content */}
           <ScrollArea className="flex-1">
-            <div className="max-w-3xl mx-auto p-6" style={{ fontSize: `${lessonFontSize}px` }}>
+            <div
+              className="max-w-3xl mx-auto p-6 lesson-content-viewer"
+              style={{ '--lesson-font-size': `${lessonFontSize}px` } as React.CSSProperties}
+            >
               <ContentViewer lesson={currentLesson} isAr={isAr} />
             </div>
           </ScrollArea>
