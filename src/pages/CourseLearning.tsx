@@ -724,12 +724,7 @@ const CourseLearning = () => {
 
   const lessonFontOptions = useMemo(() => [
     { value: 'default', label: isAr ? 'الافتراضي' : 'Default' },
-    { value: 'Indopak Nastaleeq', label: 'Indopak Nastaleeq' },
-    { value: 'KFGQPC Nastaleeq', label: 'KFGQPC Nastaleeq' },
-    { value: 'QPC V4 Tajweed', label: 'QPC V4 Tajweed' },
-    { value: 'QPC V2', label: 'QPC V2' },
-    { value: 'Noto Kufi Arabic', label: 'Noto Kufi Arabic' },
-    { value: 'Cairo', label: 'Cairo' },
+    { value: 'KFGQPC Nastaleeq', label: isAr ? 'نستعليق' : 'Nastaleeq' },
   ], [isAr]);
 
   // Notes per lesson (localStorage)
