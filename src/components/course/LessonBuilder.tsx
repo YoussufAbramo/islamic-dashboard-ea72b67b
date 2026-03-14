@@ -1265,7 +1265,14 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 text-destructive/60 hover:text-destructive"
-                            onClick={() => setSplitDeleteOpen(true)}
+                            onClick={() => {
+                              const hasSubBlocks = blocks.some(b => b.split_side);
+                              if (!hasSubBlocks) {
+                                handleDeleteSplitPage(true);
+                              } else {
+                                setSplitDeleteOpen(true);
+                              }
+                            }}
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
