@@ -1167,7 +1167,7 @@ const BlockEditor = ({
             label: `${isAr ? 'سورة' : 'Surah'} ${i + 1}`,
           }));
           const nameMode = block.surah_name_mode || 'name_only';
-          const currentFont = nameMode === 'surat_name' ? 'Surah Name Color V4' : 'Surah Name V4';
+          const currentFont = nameMode === 'surat_name' ? 'Surah Name V2' : 'Surah Name V4';
           const currentSizePx = typeof block.font_size === 'number' ? block.font_size : ({ sm: 24, md: 32, lg: 40, xl: 52, huge: 72 }[block.font_size || 'lg'] || 40);
           return (
             <div className="space-y-3">
@@ -1184,7 +1184,7 @@ const BlockEditor = ({
                       {isAr ? 'اسم فقط' : 'Name Only'}
                     </button>
                     <button type="button"
-                      onClick={() => onChange({ ...block, surah_name_mode: 'surat_name', symbol_font: 'Surah Name Color V4' })}
+                      onClick={() => onChange({ ...block, surah_name_mode: 'surat_name', symbol_font: 'Surah Name V2' })}
                       className={cn("px-3 py-1.5 text-xs font-medium transition-colors",
                         nameMode === 'surat_name' ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground hover:bg-muted"
                       )}>
