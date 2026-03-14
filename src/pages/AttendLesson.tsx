@@ -11,7 +11,7 @@ import SessionReportDialog from '@/components/attend/SessionReportDialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format, differenceInMinutes, isToday, isTomorrow, addDays, startOfWeek, endOfWeek } from 'date-fns';
-import { Video, Clock, MonitorPlay, AlertCircle, CalendarDays, FileText, XCircle, FlaskConical, Timer, User, BookOpen } from 'lucide-react';
+import { Video, Clock, MonitorPlay, AlertCircle, CalendarDays, FileText, XCircle, FlaskConical, Timer, User, BookOpen, RefreshCw } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { TableSkeleton } from '@/components/PageSkeleton';
