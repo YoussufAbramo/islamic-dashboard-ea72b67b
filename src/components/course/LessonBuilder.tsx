@@ -593,21 +593,9 @@ const BlockEditor = ({
 
         {/* ── Page Break ── */}
         {block.type === 'page_break' && (
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs">{isAr ? 'عنوان الصفحة (EN)' : 'Page Label (EN)'}</Label>
-                <Input value={block.page_label || ''} onChange={(e) => onChange({ ...block, page_label: e.target.value })} placeholder="Page 2" className="mt-1 text-xs" />
-              </div>
-              <div>
-                <Label className="text-xs">{isAr ? 'عنوان الصفحة (AR)' : 'Page Label (AR)'}</Label>
-                <Input dir="rtl" value={block.page_label_ar || ''} onChange={(e) => onChange({ ...block, page_label_ar: e.target.value })} placeholder="الصفحة ٢" className="mt-1 text-xs" />
-              </div>
-            </div>
-            <div className="flex items-center justify-center gap-2 py-2 border rounded-lg bg-muted/20 border-dashed">
-              <FileStack className="h-4 w-4 text-yellow-500" />
-              <span className="text-xs text-muted-foreground">{isAr ? 'فاصل صفحة — المحتوى التالي يظهر في صفحة جديدة' : 'Page Break — Content below appears on a new page'}</span>
-            </div>
+          <div className="flex items-center justify-center gap-2 py-2 border rounded-lg bg-muted/20 border-dashed">
+            <FileStack className="h-4 w-4 text-yellow-500" />
+            <span className="text-xs text-muted-foreground">{isAr ? 'فاصل صفحة — المحتوى التالي يظهر في صفحة جديدة' : 'Page Break — Content below appears on a new page'}</span>
           </div>
         )}
 
