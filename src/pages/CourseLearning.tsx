@@ -598,7 +598,11 @@ const CourseLearning = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true); // visible by default
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [builderOpen, setBuilderOpen] = useState(false);
-  const [rightPanel, setRightPanel] = useState<'notes' | 'appearance' | null>(null);
+  const [rightPanel, setRightPanel] = useState<'notes' | 'appearance' | 'symbols' | null>(null);
+  const [lessonFontFamily, setLessonFontFamily] = useState(() => {
+    try { return localStorage.getItem('lesson_font_family') || 'default'; } catch { return 'default'; }
+  });
+  const [copiedSymbol, setCopiedSymbol] = useState<string | null>(null);
   const [noteText, setNoteText] = useState('');
   const [lessonFontSize, setLessonFontSize] = useState(() => {
     try { return parseInt(localStorage.getItem('lesson_font_size') || '16', 10); } catch { return 16; }
