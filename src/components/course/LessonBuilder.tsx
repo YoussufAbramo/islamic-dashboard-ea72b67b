@@ -1216,7 +1216,7 @@ const BlockEditor = ({
               </div>
               {block.selected_symbol && (
                 <div className="p-4 rounded-lg border bg-muted/10 text-center">
-                  <span className={previewSizeMap[currentSize]} style={{ fontFamily: `'${currentFont}', serif` }}>{block.selected_symbol}</span>
+                  <span style={{ fontFamily: `'${currentFont}', serif`, fontSize: `${Math.min(currentSizePx * 1.25, 100)}px` }}>{block.selected_symbol}</span>
                 </div>
               )}
             </div>
