@@ -296,7 +296,7 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
             )}
           </div>
           <div className="p-4 rounded-lg border bg-muted/10 text-center quran-quote-block" dir="rtl">
-            <p className="text-lg leading-[2.5]" style={{ fontFamily: "'QPC V2', serif" }}>{block.quran_text}</p>
+            <p className="text-lg leading-[2.5]" style={{ fontFamily: `'${quranFont}', serif` }}>{block.quran_text}</p>
             {block.quran_surah_name && (
               <p className="text-xs text-muted-foreground mt-3">
                 {block.quran_surah_name} {block.quran_surah_name_en && `— ${block.quran_surah_name_en}`} {block.quran_reference && `(${block.quran_reference})`}
