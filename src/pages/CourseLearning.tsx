@@ -450,6 +450,18 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
           ) : null;
         }
 
+        // ── Besmellah ──
+        case 'besmellah': {
+          const besmellahSize = { sm: 'text-3xl', md: 'text-4xl', lg: 'text-5xl', xl: 'text-6xl', huge: 'text-8xl' }[block.font_size || 'lg'] || 'text-5xl';
+          return block.selected_symbol ? (
+            <div key={block.id || idx} className="text-center py-4">
+              <span className={besmellahSize} style={{ fontFamily: "'Besmellah', serif" }}>
+                {block.selected_symbol}
+              </span>
+            </div>
+          ) : null;
+        }
+
         default:
           return null;
       }

@@ -1223,6 +1223,62 @@ const BlockEditor = ({
             </div>
           );
         })()}
+
+        {/* ── Besmellah ── */}
+        {block.type === 'besmellah' && (() => {
+          // The Besmellah font maps different calligraphy styles to characters
+          const besmellahStyles = Array.from({ length: 110 }, (_, i) => {
+            // Map to printable ASCII characters starting from '!' (33)
+            const code = 33 + i;
+            return { char: String.fromCharCode(code), label: `${isAr ? 'نمط' : 'Style'} ${i + 1}` };
+          });
+          const sizeOptions = [
+            { value: 'sm' as const, label: 'S', title: isAr ? 'صغير' : 'Small' },
+            { value: 'md' as const, label: 'M', title: isAr ? 'متوسط' : 'Medium' },
+            { value: 'lg' as const, label: 'L', title: isAr ? 'كبير' : 'Large' },
+            { value: 'xl' as const, label: 'XL', title: isAr ? 'كبير جداً' : 'Very Large' },
+            { value: 'huge' as const, label: 'H', title: isAr ? 'ضخم' : 'Huge' },
+          ];
+          const currentSize = block.font_size || 'lg';
+          const sizeMap = { sm: 'text-2xl', md: 'text-3xl', lg: 'text-4xl', xl: 'text-5xl', huge: 'text-7xl' };
+          const previewSizeMap = { sm: 'text-3xl', md: 'text-4xl', lg: 'text-5xl', xl: 'text-6xl', huge: 'text-8xl' };
+          return (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Label className="text-xs font-medium">{isAr ? 'الحجم' : 'Size'}</Label>
+                <div className="flex rounded-lg border border-border overflow-hidden">
+                  {sizeOptions.map((s) => (
+                    <button key={s.value} type="button" title={s.title}
+                      onClick={() => onChange({ ...block, font_size: s.value })}
+                      className={cn("px-2.5 py-1.5 text-xs font-medium transition-colors",
+                        currentSize === s.value ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground hover:bg-muted"
+                      )}>
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <Label className="text-xs font-medium">{isAr ? 'اختر نمط البسملة' : 'Select Besmellah Style'}</Label>
+              <div className="grid grid-cols-3 gap-1.5 max-h-[300px] overflow-y-auto">
+                {besmellahStyles.map((s, i) => (
+                  <button key={i} type="button"
+                    onClick={() => onChange({ ...block, selected_symbol: s.char, symbol_font: 'Besmellah' })}
+                    className={cn("flex flex-col items-center gap-1 p-3 rounded-lg border transition-all",
+                      block.selected_symbol === s.char ? "border-primary bg-primary/10" : "border-border/50 hover:border-primary/30 hover:bg-muted/40"
+                    )}>
+                    <span className={cn(sizeMap[currentSize], "leading-none")} style={{ fontFamily: "'Besmellah', serif" }}>{s.char}</span>
+                    <span className="text-[8px] text-muted-foreground">{s.label}</span>
+                  </button>
+                ))}
+              </div>
+              {block.selected_symbol && (
+                <div className="p-4 rounded-lg border bg-muted/10 text-center">
+                  <span className={previewSizeMap[currentSize]} style={{ fontFamily: "'Besmellah', serif" }}>{block.selected_symbol}</span>
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
       </div>
       </div>
