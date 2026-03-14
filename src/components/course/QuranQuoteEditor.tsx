@@ -24,6 +24,16 @@ type Tab = 'search' | 'surah' | 'ayah';
 
 const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
   const [tab, setTab] = useState<Tab>('surah');
+  const [quranFont, setQuranFont] = useState(() => {
+    try { return localStorage.getItem('quran_font') || 'QPC V2'; } catch { return 'QPC V2'; }
+  });
+
+  useEffect(() => {
+    const sync = () => { try { setQuranFont(localStorage.getItem('quran_font') || 'QPC V2'); } catch {} };
+    window.addEventListener('storage', sync);
+    const id = setInterval(sync, 2000);
+    return () => { window.removeEventListener('storage', sync); clearInterval(id); };
+  }, []);
   const [surahs, setSurahs] = useState<SurahMeta[]>([]);
   const [loadingSurahs, setLoadingSurahs] = useState(false);
 
@@ -181,7 +191,7 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
                       <Badge variant="secondary" className="text-[9px] px-1.5 py-0">{m.surah.englishName}</Badge>
                       <span className="text-[10px] text-muted-foreground">{m.surah.number}:{m.numberInSurah}</span>
                     </div>
-                    <p className="text-sm leading-[2]" dir="rtl" style={{ fontFamily: "'QPC V2', serif" }}>{m.text}</p>
+                    <p className="text-sm leading-[2]" dir="rtl" style={{ fontFamily: `'${quranFont}', serif` }}>{m.text}</p>
                   </button>
                 ))}
               </div>
@@ -286,7 +296,7 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
             )}
           </div>
           <div className="p-4 rounded-lg border bg-muted/10 text-center quran-quote-block" dir="rtl">
-            <p className="text-lg leading-[2.5]" style={{ fontFamily: "'QPC V2', serif" }}>{block.quran_text}</p>
+            <p className="text-lg leading-[2.5]" style={{ fontFamily: `'${quranFont}', serif` }}>{block.quran_text}</p>
             {block.quran_surah_name && (
               <p className="text-xs text-muted-foreground mt-3">
                 {block.quran_surah_name} {block.quran_surah_name_en && `— ${block.quran_surah_name_en}`} {block.quran_reference && `(${block.quran_reference})`}
