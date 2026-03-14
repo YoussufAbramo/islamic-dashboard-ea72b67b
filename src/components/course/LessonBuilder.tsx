@@ -132,6 +132,7 @@ const blockMeta: Record<BlockType, BlockMetaItem> = {
   quran_symbol:             { icon: Sparkles, label: 'Quran Symbol', labelAr: 'رمز قرآني', color: 'text-amber-600', group: 'quran' },
   surah_nameplate:          { icon: FileStack, label: 'Surah Nameplate', labelAr: 'لوحة اسم السورة', color: 'text-teal-600', group: 'quran' },
   surah_name:               { icon: Type, label: 'Surah Name', labelAr: 'اسم السورة', color: 'text-cyan-600', group: 'quran' },
+  besmellah:                { icon: BookOpen, label: 'Besmellah', labelAr: 'بسملة', color: 'text-green-600', group: 'quran' },
 };
 
 // Reordered: Layout → Quran → Content → Media → Exercises
