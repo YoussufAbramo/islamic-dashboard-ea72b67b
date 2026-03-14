@@ -20,7 +20,7 @@ import {
   ChevronUp, ChevronDown, Loader2, Save, FileEdit, ChevronsUpDown,
   ListOrdered, BookOpen, Brain, RotateCcw, ClipboardList,
   Headphones, CheckCircle2, CheckSquare, ArrowUpDown, TextCursorInput, ToggleLeft, Ear,
-  Minus, FileStack, Columns, Lock, Ban,
+  Minus, FileStack, Columns, Lock, Ban, ArrowLeftRight,
 } from 'lucide-react';
 
 // ─── Block Types ───
