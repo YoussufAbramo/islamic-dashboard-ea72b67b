@@ -281,7 +281,7 @@ const ItemsEditor = ({ block, isAr, onChange }: { block: ContentBlock; isAr: boo
 
 // ─── Single Block Editor ───
 const BlockEditor = ({
-  block, isAr, onChange, onRemove, onMoveUp, onMoveDown, isFirst, isLast, pageNumber, isBeta, onTransfer, animating,
+  block, isAr, onChange, onRemove, onMoveUp, onMoveDown, isFirst, isLast, pageNumber, isBeta, isSoon, onTransfer, animating,
 }: {
   block: ContentBlock;
   isAr: boolean;
@@ -293,6 +293,7 @@ const BlockEditor = ({
   isLast: boolean;
   pageNumber?: number;
   isBeta?: boolean;
+  isSoon?: boolean;
   onTransfer?: (toSide: 'left' | 'right') => void;
   animating?: 'up' | 'down' | 'transfer-out' | 'transfer-in' | null;
 }) => {
