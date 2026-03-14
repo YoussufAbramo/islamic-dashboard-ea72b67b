@@ -112,7 +112,7 @@ const ContentEditor = ({ value, onChange, placeholder, minHeight = '300px' }: Co
         suppressContentEditableWarning
         className="p-4 outline-none prose prose-sm max-w-none dark:prose-invert overflow-auto"
         dir="auto"
-        style={{ minHeight, unicodeBidi: 'plaintext' }}
+        style={{ minHeight, unicodeBidi: 'plaintext', fontFamily: contentFont !== 'default' ? `'${contentFont}', var(--font-rtl)` : undefined }}
         onInput={handleInput}
         data-placeholder={placeholder}
       />
