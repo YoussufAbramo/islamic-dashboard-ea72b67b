@@ -147,7 +147,7 @@ const blockMeta: Record<BlockType, BlockMetaItem> = {
 
 // Reordered: Layout → Quran → Content → Media → Exercises
 const blockGroups: { key: string; label: string; labelAr: string; types: BlockType[] }[] = [
-  { key: 'layout', label: '🧩 Layout', labelAr: '🧩 التخطيط', types: ['table_of_content', 'divider', 'page_break', 'split_screen'] },
+  { key: 'layout', label: '🧩 Layout', labelAr: '🧩 التخطيط', types: ['table_of_content', 'divider', 'page_break', 'split_screen', 'group_start', 'group_end'] },
   { key: 'quran', label: '📿 Quran', labelAr: '📿 القرآن', types: ['quran_quote', 'quran_symbol', 'surah_nameplate', 'surah_name', 'besmellah'] },
   { key: 'content', label: '📖 Content', labelAr: '📖 المحتوى', types: ['read_listen', 'memorization', 'revision', 'homework'] },
   { key: 'media', label: '📁 Media', labelAr: '📁 الوسائط', types: ['text', 'image', 'video', 'audio'] },
