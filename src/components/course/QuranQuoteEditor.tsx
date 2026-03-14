@@ -179,7 +179,7 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
             </div>
           )}
           {!searching && searchResults.length > 0 && (
-            <ScrollArea className="max-h-48">
+            <ScrollArea className="h-48">
               <div className="space-y-1">
                 {searchResults.slice(0, 20).map((m, i) => (
                   <button
