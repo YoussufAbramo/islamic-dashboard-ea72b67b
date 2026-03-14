@@ -979,6 +979,10 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
 
   const hasSplitScreen = useMemo(() => blocks.some(b => b.type === 'split_screen'), [blocks]);
   const hasNonSplitBlocks = useMemo(() => blocks.some(b => b.type !== 'split_screen'), [blocks]);
+  const [activeSplitSide, setActiveSplitSide] = useState<'left' | 'right'>('left');
+
+  // BETA types (all except: page_break, split_screen, text, video, image, divider, table_of_content)
+  const nonBetaTypes: BlockType[] = ['page_break', 'split_screen', 'text', 'video', 'image', 'divider', 'table_of_content'];
 
   const addBlock = useCallback((type: BlockType) => {
     const newBlock: ContentBlock = { id: generateId(), type };
@@ -991,22 +995,22 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
     if (type === 'exercise_text_match') { newBlock.pairs = []; }
     if (type === 'exercise_rearrange') { newBlock.items = []; }
 
-    // If split screen exists and this is not a split_screen block, assign to a side
+    // If split screen exists and this is not a split_screen block, assign to active side
     if (type !== 'split_screen') {
       setBlocks(prev => {
         const splitExists = prev.some(b => b.type === 'split_screen');
         if (splitExists) {
-          // Count blocks on each side
-          const leftCount = prev.filter(b => b.split_side === 'left').length;
-          const rightCount = prev.filter(b => b.split_side === 'right').length;
-          // If left has content, add to right; otherwise add to left
-          newBlock.split_side = leftCount > rightCount ? 'right' : (leftCount === 0 ? 'left' : 'right');
+          newBlock.split_side = activeSplitSide;
         }
         return [...prev, newBlock];
       });
     } else {
       setBlocks(prev => [...prev, newBlock]);
     }
+  }, [activeSplitSide]);
+
+  const transferBlock = useCallback((blockId: string, toSide: 'left' | 'right') => {
+    setBlocks(prev => prev.map(b => b.id === blockId ? { ...b, split_side: toSide } : b));
   }, []);
 
   const updateBlock = useCallback((id: string, updated: ContentBlock) => {
