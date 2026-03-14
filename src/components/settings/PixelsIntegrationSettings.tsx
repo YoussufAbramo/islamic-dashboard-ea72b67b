@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Save, ChevronDown } from 'lucide-react';
+import { Save, ChevronDown, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyError } from '@/lib/notifyError';
 
@@ -109,7 +109,7 @@ const pixelGroups = [
     groupLabel: 'Analytics & Other',
     groupLabelAr: 'التحليلات وأخرى',
     fields: [
-      { key: 'gosopro_pixel' as const, label: 'GoSoPro.app Pixel', logo: GoSoProLogo, placeholder: 'GSP-XXXXXXXXXX', description: 'Pixel ID from GoSoPro.app' },
+      { key: 'gosopro_pixel' as const, label: 'GoSoPro.app Pixel', logo: GoSoProLogo, placeholder: 'GSP-XXXXXXXXXX', description: 'Pixel ID from GoSoPro.app', link: 'https://gosopro.app/' },
       { key: 'clarity_pixel' as const, label: 'Microsoft Clarity', logo: ClarityLogo, placeholder: 'XXXXXXXXXX', description: 'Project ID from Microsoft Clarity' },
     ],
   },
@@ -205,7 +205,14 @@ const PixelsIntegrationSettings = () => {
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
-                              <Label className="text-sm font-medium">{field.label}</Label>
+                              <div className="flex items-center gap-1.5">
+                                <Label className="text-sm font-medium">{field.label}</Label>
+                                {(field as any).link && (
+                                  <a href={(field as any).link} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                                    <ExternalLink className="h-3.5 w-3.5" />
+                                  </a>
+                                )}
+                              </div>
                               <p className="text-[11px] text-muted-foreground">{field.description}</p>
                             </div>
                             <Input
