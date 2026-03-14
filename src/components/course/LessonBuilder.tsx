@@ -1091,6 +1091,79 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                     {isAr ? 'اختر عنصرًا من اليمين للبدء' : 'Pick an element from the right panel to get started'}
                   </p>
                 </div>
+              ) : hasSplitScreen ? (
+                /* ── Split Screen Layout: two-column view ── */
+                (() => {
+                  const splitBlock = blocks.find(b => b.type === 'split_screen')!;
+                  const leftBlocks = blocks.filter(b => b.split_side === 'left');
+                  const rightBlocks = blocks.filter(b => b.split_side === 'right');
+
+                  const renderSideBlocks = (sideBlocks: ContentBlock[], side: 'left' | 'right') => (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="outline" className="text-[10px]">
+                          {side === 'left' ? (isAr ? 'يسار' : 'Left') : (isAr ? 'يمين' : 'Right')}
+                        </Badge>
+                        <span className="text-[10px] text-muted-foreground">
+                          {sideBlocks.length} {isAr ? 'عنصر' : sideBlocks.length === 1 ? 'block' : 'blocks'}
+                        </span>
+                      </div>
+                      {sideBlocks.length === 0 ? (
+                        <div className="text-center py-6 border-2 border-dashed rounded-lg">
+                          <p className="text-[10px] text-muted-foreground">
+                            {isAr ? 'أضف عنصرًا من اللوحة' : 'Add an element from the palette'}
+                          </p>
+                        </div>
+                      ) : (
+                        sideBlocks.map((block, idx) => (
+                          <BlockEditor
+                            key={block.id}
+                            block={block}
+                            isAr={isAr}
+                            onChange={(updated) => updateBlock(block.id, updated)}
+                            onRemove={() => removeBlock(block.id)}
+                            onMoveUp={() => moveBlock(block.id, 'up')}
+                            onMoveDown={() => moveBlock(block.id, 'down')}
+                            isFirst={idx === 0}
+                            isLast={idx === sideBlocks.length - 1}
+                          />
+                        ))
+                      )}
+                    </div>
+                  );
+
+                  return (
+                    <div className="space-y-3">
+                      {/* Split screen header */}
+                      <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 border">
+                        <Columns className="h-4 w-4 text-cyan-600" />
+                        <span className="text-xs font-medium">{isAr ? 'وضع الشاشة المقسمة' : 'Split Screen Mode'}</span>
+                        <Lock className="h-3 w-3 text-muted-foreground/50 ms-1" />
+                        <div className="ms-auto">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-destructive/60 hover:text-destructive"
+                            onClick={() => {
+                              // Remove split screen and unassign all sides
+                              setBlocks(prev => prev.filter(b => b.type !== 'split_screen').map(b => {
+                                const { split_side, ...rest } = b;
+                                return rest;
+                              }));
+                            }}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                      {/* Two columns */}
+                      <div className="grid grid-cols-2 gap-3">
+                        {renderSideBlocks(leftBlocks, 'left')}
+                        {renderSideBlocks(rightBlocks, 'right')}
+                      </div>
+                    </div>
+                  );
+                })()
               ) : (
                 <SortableList
                   items={blocks}
