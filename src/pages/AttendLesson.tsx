@@ -296,6 +296,26 @@ const AttendLesson = () => {
     fetchEntries();
   };
 
+  const handleCompensateSubmit = async () => {
+    if (!compensateEntry || !compensateDate) return;
+    const { error } = await supabase.from('timetable_entries').insert({
+      scheduled_at: new Date(compensateDate).toISOString(),
+      duration_minutes: compensateEntry.duration_minutes,
+      status: 'scheduled',
+      course_id: compensateEntry.course_id,
+      student_id: compensateEntry.student_id,
+      teacher_id: compensateEntry.teacher_id,
+    });
+    if (error) {
+      toast.error(isAr ? 'فشل إنشاء درس التعويض' : 'Failed to create compensation lesson');
+      return;
+    }
+    toast.success(isAr ? 'تم جدولة درس التعويض' : 'Compensation lesson scheduled');
+    setCompensateEntry(null);
+    setCompensateDate('');
+    fetchEntries();
+  };
+
   const handleAttendClick = (entry: LessonEntry) => {
     setSelectedEntry(entry);
     setJoinOpen(true);
