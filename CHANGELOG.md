@@ -2,6 +2,17 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.9.9] - 2026-03-14
+
+### Added
+- **Lesson Builder — Box group connector** — blocks between Box Start and Box End now show a violet left border connector and are indented to visually indicate they belong to the group
+- **Lesson Builder — Box Start/End styling** — Box Start and Box End blocks have a subtle violet tint to distinguish them as group boundaries
+
+### Fixed
+- **Lesson Builder — Badge hover** — Beta and Soon badges no longer change background color on hover
+
+---
+
 ## [5.9.8] - 2026-03-14
 
 ### Added
