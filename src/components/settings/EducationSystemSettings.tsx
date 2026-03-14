@@ -49,16 +49,16 @@ const EducationSystemSettings = () => {
   ];
 
   const platformFeatures = [
-    { icon: Globe, label: isAr ? 'متعدد اللغات' : 'Multi-Language', desc: isAr ? 'دعم لغات متعددة (تركي، أوردو، فرنسي)' : 'Support for Turkish, Urdu, French & more' },
-    { icon: Shield, label: isAr ? 'تسجيل الدخول الموحد' : 'SSO Integration', desc: isAr ? 'تسجيل دخول موحد مع Google وMicrosoft' : 'Single sign-on with Google & Microsoft' },
-    { icon: Zap, label: isAr ? 'الذكاء الاصطناعي' : 'AI Assistant', desc: isAr ? 'مساعد ذكي للإجابة على أسئلة الطلاب' : 'AI-powered assistant for student questions' },
-    { icon: HeartHandshake, label: isAr ? 'إدارة أولياء الأمور' : 'Parent Portal', desc: isAr ? 'بوابة خاصة لأولياء الأمور لمتابعة التقدم' : 'Dedicated portal for parents to track progress' },
     { icon: Palette, label: isAr ? 'التخصيص المتقدم' : 'Advanced Theming', desc: isAr ? 'تخصيص كامل للواجهة والعلامة التجارية' : 'Full UI and branding customization' },
     { icon: Lightbulb, label: isAr ? 'الإشعارات الذكية' : 'Smart Notifications', desc: isAr ? 'إشعارات ذكية عبر البريد وSMS وواتساب' : 'Smart alerts via email, SMS, and WhatsApp' },
     { icon: BarChart3, label: isAr ? 'لوحة تحكم متقدمة' : 'Advanced Analytics', desc: isAr ? 'تحليلات متقدمة مع رسوم بيانية تفاعلية' : 'Advanced analytics with interactive charts' },
-    { icon: Users, label: isAr ? 'إدارة الفروع' : 'Multi-Branch', desc: isAr ? 'إدارة فروع متعددة من لوحة واحدة' : 'Manage multiple branches from one dashboard' },
-    { icon: FileText, label: isAr ? 'إنشاء التقارير' : 'Report Builder', desc: isAr ? 'أداة مرنة لإنشاء تقارير مخصصة' : 'Flexible tool for custom report generation' },
     { icon: Calendar, label: isAr ? 'التقويم المتكامل' : 'Calendar Integration', desc: isAr ? 'تكامل مع Google Calendar وOutlook' : 'Integration with Google Calendar & Outlook' },
+    { icon: Zap, label: isAr ? 'الأتمتة والربط' : 'API & Webhooks', desc: isAr ? 'ربط مع أنظمة خارجية عبر API وWebhooks' : 'Connect with external systems via API & Webhooks' },
+    { icon: Shield, label: isAr ? 'توليد الشهادات' : 'Certificate Generator', desc: isAr ? 'إنشاء شهادات تلقائية عند إتمام الدورات' : 'Auto-generate certificates on course completion' },
+    { icon: HeartHandshake, label: isAr ? 'إدارة أولياء الأمور' : 'Parent Portal', desc: isAr ? 'بوابة خاصة لأولياء الأمور لمتابعة التقدم' : 'Dedicated portal for parents to track progress' },
+    { icon: Globe, label: isAr ? 'متعدد اللغات' : 'Multi-Language', desc: isAr ? 'دعم لغات متعددة (تركي، أوردو، فرنسي)' : 'Support for Turkish, Urdu, French & more' },
+    { icon: Users, label: isAr ? 'نظام الحضور التلقائي' : 'Attendance Automation', desc: isAr ? 'تتبع تلقائي للحضور والغياب' : 'Automated attendance tracking and reporting' },
+    { icon: FileText, label: isAr ? 'بوابة الدفع' : 'Payment Gateway', desc: isAr ? 'تكامل مع بوابات الدفع الإلكتروني' : 'Integrated online payment processing' },
   ];
 
   const FeatureList = ({ features }: { features: typeof teacherFeatures }) => (

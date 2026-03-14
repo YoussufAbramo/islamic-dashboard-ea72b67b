@@ -96,6 +96,9 @@ export interface ContentBlock {
   quran_ayah_from?: number;
   quran_ayah_to?: number;
   quran_reference?: string; // e.g. "2:255" or "2:255-260"
+  quran_translation_enabled?: boolean;
+  quran_translation_edition?: string; // e.g. "en.sahih"
+  quran_translation_text?: string;
   selected_symbol?: string;
   symbol_font?: string;
   surah_name_mode?: 'name_only' | 'surat_name';
