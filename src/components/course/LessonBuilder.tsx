@@ -1386,11 +1386,18 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
               {blockGroups.map((group, gIdx) => (
                 <div key={group.key}>
                   {gIdx > 0 && <Separator className="my-2" />}
-                  <div className="px-2 py-1.5 flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="px-2 py-1.5 flex items-center gap-2 w-full hover:bg-muted/50 rounded-md transition-colors"
+                    onClick={() => setCollapsedGroups(prev => ({ ...prev, [group.key]: !prev[group.key] }))}
+                  >
+                    <ChevronDownIcon className={cn("h-3 w-3 text-muted-foreground transition-transform duration-200", collapsedGroups[group.key] && "-rotate-90")} />
                     <span className="text-xs font-bold text-foreground/80">{isAr ? group.labelAr : group.label}</span>
                     <span className="text-[10px] text-muted-foreground/60 bg-muted rounded-full px-1.5 py-0.5 leading-none">{group.types.length}</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-1 px-1 pt-1">
+                  </button>
+                  <div className={cn("grid transition-all duration-200 ease-out", collapsedGroups[group.key] ? "grid-rows-[0fr]" : "grid-rows-[1fr]")}>
+                  <div className="overflow-hidden">
+                  <div className="grid grid-cols-2 gap-1 px-1 pt-1 pb-1">
                     {group.types.map(type => {
                       const meta = blockMeta[type];
                       const Icon = meta.icon;
