@@ -3,6 +3,7 @@ import DOMPurify from 'dompurify';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAppSettings } from '@/contexts/AppSettingsContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -627,7 +628,9 @@ const CourseLearning = () => {
   const { user, role } = useAuth();
   const { topBarHidden, setTopBarHidden } = useOutletContext<{ topBarHidden: boolean; setTopBarHidden: (v: boolean) => void }>();
   const { open: appSidebarOpen, setOpen: setAppSidebarOpen } = useSidebar();
+  const { pending: appSettings } = useAppSettings();
   const isAr = language === 'ar';
+  const appRtlFont = appSettings.rtlFont;
 
   // Auto-hide top bar & collapse app sidebar on mount, restore on unmount
   useEffect(() => {
@@ -724,9 +727,9 @@ const CourseLearning = () => {
   ], [isAr]);
 
   const lessonFontOptions = useMemo(() => [
-    { value: 'default', label: isAr ? 'الافتراضي' : 'Default' },
+    { value: 'default', label: `${isAr ? 'الافتراضي' : 'Default'} (${appRtlFont})` },
     { value: 'KFGQPC Nastaleeq', label: isAr ? 'نستعليق' : 'Nastaleeq' },
-  ], [isAr]);
+  ], [isAr, appRtlFont]);
 
   // Notes per lesson (localStorage)
   const notesKey = (lessonId: string) => `lesson_notes_${user?.id}_${lessonId}`;
@@ -1395,13 +1398,11 @@ const CourseLearning = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  {lessonFontFamily !== 'default' && (
-                    <div className="p-2.5 rounded-lg bg-muted/40 border border-border/50">
-                      <p className="text-sm leading-relaxed" style={{ fontFamily: `'${lessonFontFamily}'` }} dir="rtl">
-                        بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
-                      </p>
-                    </div>
-                  )}
+                  <div className="p-2.5 rounded-lg bg-muted/40 border border-border/50">
+                    <p className="text-sm leading-relaxed" style={{ fontFamily: lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif` }} dir="rtl">
+                      بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
+                    </p>
+                  </div>
                 </div>
 
                 <Separator />
