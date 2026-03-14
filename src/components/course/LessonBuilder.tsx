@@ -101,6 +101,7 @@ export interface ContentBlock {
   surah_name_mode?: 'name_only' | 'surat_name';
   font_size?: 'sm' | 'md' | 'lg' | 'xl' | 'huge' | number;
   quran_font_size?: number; // px, 12–100
+  group_pair_id?: string; // links group_start ↔ group_end
 }
 const generateId = () => Math.random().toString(36).substring(2, 10);
 
@@ -123,7 +124,7 @@ const blockMeta: Record<BlockType, BlockMetaItem> = {
   page_break: { icon: FileStack, label: 'New Page', labelAr: 'صفحة جديدة', color: 'text-yellow-500', group: 'layout' },
   split_screen: { icon: Columns, label: 'Split Page', labelAr: 'صفحة مقسمة', color: 'text-cyan-600', group: 'layout' },
   table_of_content: { icon: ListOrdered, label: 'Table of Content', labelAr: 'فهرس المحتويات', color: 'text-indigo-500', group: 'layout' },
-  group_start: { icon: SquareDashedBottom, label: 'Box Start', labelAr: 'بداية إطار', color: 'text-violet-500', group: 'layout' },
+  group_start: { icon: SquareDashedBottom, label: 'Box', labelAr: 'إطار', color: 'text-violet-500', group: 'layout' },
   group_end: { icon: SquareDashedBottomCode, label: 'Box End', labelAr: 'نهاية إطار', color: 'text-violet-400', group: 'layout' },
   // Content Types
   read_listen:      { icon: BookOpen, label: 'Read & Listen', labelAr: 'قراءة واستماع', color: 'text-teal-500', group: 'content' },
@@ -148,7 +149,7 @@ const blockMeta: Record<BlockType, BlockMetaItem> = {
 
 // Reordered: Layout → Quran → Content → Media → Exercises
 const blockGroups: { key: string; label: string; labelAr: string; types: BlockType[] }[] = [
-  { key: 'layout', label: '🧩 Layout', labelAr: '🧩 التخطيط', types: ['table_of_content', 'divider', 'page_break', 'split_screen', 'group_start', 'group_end'] },
+  { key: 'layout', label: '🧩 Layout', labelAr: '🧩 التخطيط', types: ['table_of_content', 'divider', 'page_break', 'split_screen', 'group_start'] },
   { key: 'quran', label: '📿 Quran', labelAr: '📿 القرآن', types: ['quran_quote', 'quran_symbol', 'surah_nameplate', 'surah_name', 'besmellah'] },
   { key: 'content', label: '📖 Content', labelAr: '📖 المحتوى', types: ['read_listen', 'memorization', 'revision', 'homework'] },
   { key: 'media', label: '📁 Media', labelAr: '📁 الوسائط', types: ['text', 'image', 'video', 'audio'] },
@@ -1359,6 +1360,22 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
   };
 
   const addBlock = useCallback((type: BlockType) => {
+    // Group box: insert paired start + end
+    if (type === 'group_start') {
+      const pairId = generateId();
+      const startBlock: ContentBlock = { id: generateId(), type: 'group_start', group_pair_id: pairId };
+      const endBlock: ContentBlock = { id: generateId(), type: 'group_end', group_pair_id: pairId };
+      setBlocks(prev => {
+        const splitExists = prev.some(b => b.type === 'split_screen');
+        if (splitExists) {
+          startBlock.split_side = activeSplitSide;
+          endBlock.split_side = activeSplitSide;
+        }
+        return [...prev, startBlock, endBlock];
+      });
+      return;
+    }
+
     const newBlock: ContentBlock = { id: generateId(), type };
     if (type === 'text' || type === 'table_of_content' || type === 'read_listen' || type === 'memorization' || type === 'revision' || type === 'homework') {
       newBlock.html = '';
@@ -1412,7 +1429,14 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
   }, []);
 
   const removeBlock = useCallback((id: string) => {
-    setBlocks(prev => prev.filter(b => b.id !== id));
+    setBlocks(prev => {
+      const target = prev.find(b => b.id === id);
+      if (target?.group_pair_id) {
+        const pairId = target.group_pair_id;
+        return prev.filter(b => !(b.id === id || (b.group_pair_id === pairId && (b.type === 'group_start' || b.type === 'group_end'))));
+      }
+      return prev.filter(b => b.id !== id);
+    });
   }, []);
 
   const moveBlock = useCallback((id: string, direction: 'up' | 'down') => {
