@@ -191,7 +191,7 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
                       <Badge variant="secondary" className="text-[9px] px-1.5 py-0">{m.surah.englishName}</Badge>
                       <span className="text-[10px] text-muted-foreground">{m.surah.number}:{m.numberInSurah}</span>
                     </div>
-                    <p className="text-sm leading-[2]" dir="rtl" style={{ fontFamily: "'QPC V2', serif" }}>{m.text}</p>
+                    <p className="text-sm leading-[2]" dir="rtl" style={{ fontFamily: `'${quranFont}', serif` }}>{m.text}</p>
                   </button>
                 ))}
               </div>
