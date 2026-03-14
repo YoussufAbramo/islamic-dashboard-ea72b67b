@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { arrayMove } from '@dnd-kit/sortable';
@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import ContentEditor from '@/components/ContentEditor';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -19,7 +20,7 @@ import {
   ChevronUp, ChevronDown, Loader2, Save, FileEdit, ChevronsUpDown,
   ListOrdered, BookOpen, Brain, RotateCcw, ClipboardList,
   Headphones, CheckCircle2, CheckSquare, ArrowUpDown, TextCursorInput, ToggleLeft, Ear,
-  Minus, FileStack, Columns,
+  Minus, FileStack, Columns, Lock, Ban,
 } from 'lucide-react';
 
 // ─── Block Types ───
@@ -78,6 +79,8 @@ export interface ContentBlock {
   split_left_html?: string;
   split_right_html?: string;
   split_active_side?: 'left' | 'right';
+  // split screen sub-block side assignment
+  split_side?: 'left' | 'right';
 }
 const generateId = () => Math.random().toString(36).substring(2, 10);
 
@@ -986,6 +989,9 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
     onOpenChange(v);
   };
 
+  const hasSplitScreen = useMemo(() => blocks.some(b => b.type === 'split_screen'), [blocks]);
+  const hasNonSplitBlocks = useMemo(() => blocks.some(b => b.type !== 'split_screen'), [blocks]);
+
   const addBlock = useCallback((type: BlockType) => {
     const newBlock: ContentBlock = { id: generateId(), type };
     if (type === 'text' || type === 'table_of_content' || type === 'read_listen' || type === 'memorization' || type === 'revision' || type === 'homework') {
@@ -996,7 +1002,23 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
     }
     if (type === 'exercise_text_match') { newBlock.pairs = []; }
     if (type === 'exercise_rearrange') { newBlock.items = []; }
-    setBlocks(prev => [...prev, newBlock]);
+
+    // If split screen exists and this is not a split_screen block, assign to a side
+    if (type !== 'split_screen') {
+      setBlocks(prev => {
+        const splitExists = prev.some(b => b.type === 'split_screen');
+        if (splitExists) {
+          // Count blocks on each side
+          const leftCount = prev.filter(b => b.split_side === 'left').length;
+          const rightCount = prev.filter(b => b.split_side === 'right').length;
+          // If left has content, add to right; otherwise add to left
+          newBlock.split_side = leftCount > rightCount ? 'right' : (leftCount === 0 ? 'left' : 'right');
+        }
+        return [...prev, newBlock];
+      });
+    } else {
+      setBlocks(prev => [...prev, newBlock]);
+    }
   }, []);
 
   const updateBlock = useCallback((id: string, updated: ContentBlock) => {
@@ -1069,6 +1091,79 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                     {isAr ? 'اختر عنصرًا من اليمين للبدء' : 'Pick an element from the right panel to get started'}
                   </p>
                 </div>
+              ) : hasSplitScreen ? (
+                /* ── Split Screen Layout: two-column view ── */
+                (() => {
+                  const splitBlock = blocks.find(b => b.type === 'split_screen')!;
+                  const leftBlocks = blocks.filter(b => b.split_side === 'left');
+                  const rightBlocks = blocks.filter(b => b.split_side === 'right');
+
+                  const renderSideBlocks = (sideBlocks: ContentBlock[], side: 'left' | 'right') => (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="outline" className="text-[10px]">
+                          {side === 'left' ? (isAr ? 'يسار' : 'Left') : (isAr ? 'يمين' : 'Right')}
+                        </Badge>
+                        <span className="text-[10px] text-muted-foreground">
+                          {sideBlocks.length} {isAr ? 'عنصر' : sideBlocks.length === 1 ? 'block' : 'blocks'}
+                        </span>
+                      </div>
+                      {sideBlocks.length === 0 ? (
+                        <div className="text-center py-6 border-2 border-dashed rounded-lg">
+                          <p className="text-[10px] text-muted-foreground">
+                            {isAr ? 'أضف عنصرًا من اللوحة' : 'Add an element from the palette'}
+                          </p>
+                        </div>
+                      ) : (
+                        sideBlocks.map((block, idx) => (
+                          <BlockEditor
+                            key={block.id}
+                            block={block}
+                            isAr={isAr}
+                            onChange={(updated) => updateBlock(block.id, updated)}
+                            onRemove={() => removeBlock(block.id)}
+                            onMoveUp={() => moveBlock(block.id, 'up')}
+                            onMoveDown={() => moveBlock(block.id, 'down')}
+                            isFirst={idx === 0}
+                            isLast={idx === sideBlocks.length - 1}
+                          />
+                        ))
+                      )}
+                    </div>
+                  );
+
+                  return (
+                    <div className="space-y-3">
+                      {/* Split screen header */}
+                      <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 border">
+                        <Columns className="h-4 w-4 text-cyan-600" />
+                        <span className="text-xs font-medium">{isAr ? 'وضع الشاشة المقسمة' : 'Split Screen Mode'}</span>
+                        <Lock className="h-3 w-3 text-muted-foreground/50 ms-1" />
+                        <div className="ms-auto">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-destructive/60 hover:text-destructive"
+                            onClick={() => {
+                              // Remove split screen and unassign all sides
+                              setBlocks(prev => prev.filter(b => b.type !== 'split_screen').map(b => {
+                                const { split_side, ...rest } = b;
+                                return rest;
+                              }));
+                            }}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                      {/* Two columns */}
+                      <div className="grid grid-cols-2 gap-3">
+                        {renderSideBlocks(leftBlocks, 'left')}
+                        {renderSideBlocks(rightBlocks, 'right')}
+                      </div>
+                    </div>
+                  );
+                })()
               ) : (
                 <SortableList
                   items={blocks}
@@ -1105,6 +1200,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
               <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-2 pb-2">
                 {isAr ? 'العناصر' : 'Elements'}
               </p>
+              <TooltipProvider delayDuration={200}>
               {blockGroups.map((group, gIdx) => (
                 <div key={group.key}>
                   {gIdx > 0 && <Separator className="my-2" />}
@@ -1116,21 +1212,55 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                     {group.types.map(type => {
                       const meta = blockMeta[type];
                       const Icon = meta.icon;
-                      return (
+
+                      // Split screen constraints
+                      const isSplitType = type === 'split_screen';
+                      const isLocked = isSplitType && hasSplitScreen;
+                      const isDisabled = isSplitType && !hasSplitScreen && hasNonSplitBlocks;
+                      const cantUse = isLocked || isDisabled;
+
+                      const disabledMessage = isLocked
+                        ? (isAr ? 'الشاشة المقسمة مستخدمة بالفعل (مرة واحدة فقط لكل درس)' : 'Split Screen is already in use (only once per lesson)')
+                        : isDisabled
+                          ? (isAr ? 'يجب إضافة الشاشة المقسمة قبل أي عنصر آخر. احذف العناصر الموجودة أولاً.' : 'Split Screen must be added before any other elements. Remove existing elements first.')
+                          : '';
+
+                      const btn = (
                         <button
                           key={type}
                           type="button"
-                          onClick={() => addBlock(type)}
-                          className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg border border-border/50 bg-background text-center text-[10px] font-medium text-muted-foreground transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-foreground hover:shadow-sm"
+                          onClick={() => !cantUse && addBlock(type)}
+                          disabled={cantUse}
+                          className={cn(
+                            "flex flex-col items-center gap-1.5 p-2.5 rounded-lg border border-border/50 bg-background text-center text-[10px] font-medium text-muted-foreground transition-all relative",
+                            cantUse
+                              ? "opacity-40 cursor-not-allowed"
+                              : "hover:border-primary/40 hover:bg-primary/5 hover:text-foreground hover:shadow-sm"
+                          )}
                         >
-                          <Icon className={cn("h-4 w-4 shrink-0", meta.color)} />
+                          {isLocked && <Lock className="h-2.5 w-2.5 absolute top-1 end-1 text-muted-foreground/60" />}
+                          {isDisabled && <Ban className="h-2.5 w-2.5 absolute top-1 end-1 text-destructive/60" />}
+                          <Icon className={cn("h-4 w-4 shrink-0", cantUse ? "text-muted-foreground/40" : meta.color)} />
                           <span className="truncate w-full leading-tight">{isAr ? meta.labelAr : meta.label}</span>
                         </button>
                       );
+
+                      if (cantUse) {
+                        return (
+                          <Tooltip key={type}>
+                            <TooltipTrigger asChild>{btn}</TooltipTrigger>
+                            <TooltipContent side="left" className="max-w-[200px] text-xs">
+                              {disabledMessage}
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      }
+                      return btn;
                     })}
                   </div>
                 </div>
               ))}
+              </TooltipProvider>
             </div>
           </div>
         </div>

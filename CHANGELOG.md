@@ -2,6 +2,14 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.9.5] - 2026-03-14
+
+### Changed
+- **Lesson Builder — Split Screen constraints** — Split Screen element is now locked to one per lesson (lock icon shown when already used); disabled with tooltip if other elements already exist; removing split screen unassigns all side assignments
+- **Lesson Builder — Split Screen sub-block routing** — when Split Screen is active, all newly added elements are automatically placed inside the split screen columns (left first, then right); content area renders in a two-column layout with side badges and block counts
+
+---
+
 ## [5.9.4] - 2026-03-14
 
 ### Added
