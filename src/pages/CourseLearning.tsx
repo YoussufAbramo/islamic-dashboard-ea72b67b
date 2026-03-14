@@ -967,7 +967,7 @@ const CourseLearning = () => {
   }
 
   return (
-    <div className={cn("flex flex-col", topBarHidden ? "h-[calc(100vh-2.5rem)]" : "h-[calc(100vh-6.5rem)]")}>
+    <div className="flex flex-col h-full">
       {/* ─── Top Header Bar ─── */}
       <div className="flex items-center gap-3 px-4 py-2 border-b bg-card shrink-0">
         <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setLeaveDialogOpen(true)}>
