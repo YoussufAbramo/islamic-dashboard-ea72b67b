@@ -825,7 +825,6 @@
   .animate-transfer-in {
     animation: lb-transfer-in 0.4s ease-out;
   }
-  }
 
   @media print {
     .no-print {
