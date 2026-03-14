@@ -2,7 +2,14 @@
 
 All notable changes to EduDash will be documented in this file.
 
-## [5.9.6] - 2026-03-14
+## [5.9.7] - 2026-03-14
+
+### Changed
+- **Change Log page — dynamic content** — changelog now reads directly from CHANGELOG.md file instead of hardcoded data, showing all versions automatically
+
+---
+
+
 
 ### Changed
 - **Lesson Builder — Lesson name visibility** — lesson title in the builder popup is now larger (`text-sm font-semibold`) and uses `text-foreground` instead of muted color
