@@ -672,6 +672,16 @@ const CourseLearning = () => {
     try { localStorage.setItem('lesson_font_family', font); } catch {}
   }, []);
 
+  const saveQuranFont = useCallback((font: string) => {
+    setQuranFont(font);
+    try { localStorage.setItem('quran_font', font); } catch {}
+  }, []);
+
+  const toggleTajweedMode = useCallback((enabled: boolean) => {
+    setTajweedMode(enabled);
+    try { localStorage.setItem('tajweed_mode', String(enabled)); } catch {}
+  }, []);
+
   // Quran symbol characters (common Islamic symbols in Quran Symbols font)
   const quranSymbols = useMemo(() => [
     { char: '\u06DD', label: isAr ? 'نهاية الآية' : 'End of Ayah' },
