@@ -1548,6 +1548,31 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
         </div>
       </AlertDialogContent>
     </AlertDialog>
+
+    {/* Unsaved Changes Confirmation */}
+    <AlertDialog open={unsavedDialogOpen} onOpenChange={setUnsavedDialogOpen}>
+      <AlertDialogContent className="max-w-sm">
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            {isAr ? 'تغييرات غير محفوظة' : 'Unsaved Changes'}
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            {isAr
+              ? 'لديك تغييرات لم يتم حفظها. هل تريد المغادرة بدون حفظ؟'
+              : 'You have unsaved changes. Are you sure you want to leave without saving?'}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{isAr ? 'متابعة التعديل' : 'Keep Editing'}</AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            onClick={forceClose}
+          >
+            {isAr ? 'مغادرة بدون حفظ' : 'Discard & Close'}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     </>
   );
 };
