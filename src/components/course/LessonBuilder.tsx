@@ -124,6 +124,11 @@ const blockMeta: Record<BlockType, BlockMetaItem> = {
   exercise_rearrange:       { icon: ArrowUpDown, label: 'Rearrange', labelAr: 'إعادة ترتيب', color: 'text-lime-500', group: 'exercise' },
   exercise_missing_text:    { icon: TextCursorInput, label: 'Missing Text', labelAr: 'نص ناقص', color: 'text-rose-500', group: 'exercise' },
   exercise_true_false:      { icon: ToggleLeft, label: 'True / False', labelAr: 'صح / خطأ', color: 'text-fuchsia-500', group: 'exercise' },
+  // Quran
+  quran_quote:              { icon: BookOpen, label: 'Quran Quote', labelAr: 'اقتباس قرآني', color: 'text-emerald-600', group: 'quran' },
+  quran_symbol:             { icon: Sparkles, label: 'Quran Symbol', labelAr: 'رمز قرآني', color: 'text-amber-600', group: 'quran' },
+  surah_nameplate:          { icon: FileStack, label: 'Surah Nameplate', labelAr: 'لوحة اسم السورة', color: 'text-teal-600', group: 'quran' },
+  surah_name:               { icon: Type, label: 'Surah Name', labelAr: 'اسم السورة', color: 'text-cyan-600', group: 'quran' },
 };
 
 // Reordered: Layout → Content → Media → Exercises
