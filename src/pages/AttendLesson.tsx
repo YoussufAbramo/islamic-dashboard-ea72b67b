@@ -672,7 +672,6 @@ const AttendLesson = () => {
                               )}
                             </>
                           )}
-                          )}
                         </div>
                       </TableCell>
                     </TableRow>
