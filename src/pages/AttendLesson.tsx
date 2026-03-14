@@ -626,8 +626,18 @@ const AttendLesson = () => {
                         )}
                       </TableCell>
                       <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-1.5 flex-wrap">
-                          {isActiveEntry ? (
+                         <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                          {isNotAttended ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => { setCompensateEntry(entry); setCompensateDate(''); }}
+                              className="gap-1.5 border-primary/30 bg-primary/5 text-primary hover:bg-primary/10"
+                            >
+                              <RefreshCw className="h-3.5 w-3.5" />
+                              {isAr ? 'تعويض' : 'Compensate'}
+                            </Button>
+                          ) : isActiveEntry ? (
                             <Button
                               size="sm"
                               variant="outline"
@@ -661,6 +671,7 @@ const AttendLesson = () => {
                                 </Button>
                               )}
                             </>
+                          )}
                           )}
                         </div>
                       </TableCell>
