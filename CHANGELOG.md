@@ -2,6 +2,18 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.9.8] - 2026-03-14
+
+### Added
+- **Quran Fonts — Nabi & Al Qalam Quran** — added two new Quran fonts (Nabi, Al Qalam Quran) to the font selector in Course Learning and registered globally in CSS
+- **Lesson Builder — Soon element lock styling** — "Soon" elements now appear grey/muted with a Lock icon instead of the previous red/ban destructive style
+
+### Changed
+- **Lesson Builder — Soon badge styling** — "Soon" badges now use muted grey theme with lock icon instead of amber, clearly distinguishing from Beta badges
+- **Quran Font list updated** — font selector now includes: Indopak Nastaleeq, Thuluth, Aref Ruqaa, Nabi, Al Qalam Quran
+
+---
+
 ## [5.9.7] - 2026-03-14
 
 ### Changed
