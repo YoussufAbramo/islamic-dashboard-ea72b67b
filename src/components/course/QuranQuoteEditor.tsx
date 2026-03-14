@@ -3,12 +3,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Search, BookOpen, Hash, X, Languages } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Loader2, Search, BookOpen, X, Languages, Type, Eraser } from 'lucide-react';
 import {
   getSurahList, getSurahAyahs, searchQuran, parseAyahReference,
   getEnglishEditions, getSurahTranslation,
@@ -22,10 +20,7 @@ interface Props {
   onChange: (block: ContentBlock) => void;
 }
 
-type Tab = 'search' | 'surah' | 'ayah';
-
 const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
-  const [tab, setTab] = useState<Tab>('surah');
   const [quranFont, setQuranFont] = useState(() => {
     try { return localStorage.getItem('quran_font') || 'QPC V2'; } catch { return 'QPC V2'; }
   });
@@ -36,10 +31,9 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
     const id = setInterval(sync, 2000);
     return () => { window.removeEventListener('storage', sync); clearInterval(id); };
   }, []);
+
   const [surahs, setSurahs] = useState<SurahMeta[]>([]);
   const [loadingSurahs, setLoadingSurahs] = useState(false);
-
-  // Surah picker
   const [selectedSurah, setSelectedSurah] = useState<number>(block.quran_surah_number || 0);
   const [ayahs, setAyahs] = useState<Ayah[]>([]);
   const [loadingAyahs, setLoadingAyahs] = useState(false);
@@ -53,19 +47,18 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
   const [searching, setSearching] = useState(false);
   const searchTimer = useRef<ReturnType<typeof setTimeout>>();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [searchFocused, setSearchFocused] = useState(false);
 
   // Translation
   const [editions, setEditions] = useState<TranslationEdition[]>([]);
   const [loadingEditions, setLoadingEditions] = useState(false);
   const [loadingTranslation, setLoadingTranslation] = useState(false);
 
-  // Load surahs on mount
   useEffect(() => {
     setLoadingSurahs(true);
     getSurahList().then(setSurahs).catch(() => {}).finally(() => setLoadingSurahs(false));
   }, []);
 
-  // Load editions when translation is enabled
   useEffect(() => {
     if (block.quran_translation_enabled && editions.length === 0) {
       setLoadingEditions(true);
@@ -73,7 +66,6 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
     }
   }, [block.quran_translation_enabled]);
 
-  // Load ayahs when surah changes
   useEffect(() => {
     if (!selectedSurah) { setAyahs([]); return; }
     setLoadingAyahs(true);
@@ -86,7 +78,7 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
     }).catch(() => setAyahs([])).finally(() => setLoadingAyahs(false));
   }, [selectedSurah]);
 
-  // Debounced search — ayat text only
+  // Debounced search
   useEffect(() => {
     if (searchTimer.current) clearTimeout(searchTimer.current);
     if (!searchQuery || searchQuery.trim().length < 2) { setAllSearchResults([]); setVisibleCount(10); return; }
@@ -114,7 +106,6 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
 
   const surahMeta = useMemo(() => surahs.find(s => s.number === selectedSurah), [surahs, selectedSurah]);
 
-  // Fetch translation when quran text is set and translation is enabled
   const fetchTranslation = useCallback(async (surahNum: number, from: number, to: number, edition: string) => {
     if (!edition) return '';
     setLoadingTranslation(true);
@@ -132,11 +123,9 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
   const applySelection = useCallback(async (text: string, surahNum: number, surahName: string, surahNameEn: string, from: number, to: number) => {
     const ref = from === to ? `${surahNum}:${from}` : `${surahNum}:${from}-${to}`;
     let translationText = block.quran_translation_text;
-    
     if (block.quran_translation_enabled && block.quran_translation_edition) {
       translationText = await fetchTranslation(surahNum, from, to, block.quran_translation_edition);
     }
-    
     onChange({
       ...block,
       quran_text: text,
@@ -160,6 +149,9 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
   }, [surahMeta, ayahs, ayahFrom, ayahTo, applySelection]);
 
   const handleSearchSelect = useCallback((match: SearchMatch) => {
+    setSelectedSurah(match.surah.number);
+    setAyahFrom(match.numberInSurah);
+    setAyahTo(match.numberInSurah);
     applySelection(match.text, match.surah.number, match.surah.name, match.surah.englishName, match.numberInSurah, match.numberInSurah);
     setSearchQuery('');
     setAllSearchResults([]);
@@ -167,9 +159,7 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
   }, [applySelection]);
 
   const handleToggleTranslation = useCallback(async (enabled: boolean) => {
-    const updated: Partial<ContentBlock> = {
-      quran_translation_enabled: enabled,
-    };
+    const updated: Partial<ContentBlock> = { quran_translation_enabled: enabled };
     if (!enabled) {
       updated.quran_translation_text = undefined;
     } else if (enabled && block.quran_surah_number && block.quran_ayah_from && block.quran_translation_edition) {
@@ -180,9 +170,7 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
   }, [block, onChange, fetchTranslation]);
 
   const handleEditionChange = useCallback(async (edition: string) => {
-    const updated: Partial<ContentBlock> = {
-      quran_translation_edition: edition,
-    };
+    const updated: Partial<ContentBlock> = { quran_translation_edition: edition };
     if (block.quran_surah_number && block.quran_ayah_from) {
       const text = await fetchTranslation(block.quran_surah_number, block.quran_ayah_from, block.quran_ayah_to || block.quran_ayah_from, edition);
       updated.quran_translation_text = text;
@@ -190,61 +178,47 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
     onChange({ ...block, ...updated });
   }, [block, onChange, fetchTranslation]);
 
-  const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
-    { key: 'search', label: isAr ? 'بحث' : 'Search', icon: Search },
-    { key: 'surah', label: isAr ? 'السورة' : 'Surah', icon: BookOpen },
-    { key: 'ayah', label: isAr ? 'الآية' : 'Ayah', icon: Hash },
-  ];
+  const handleClear = () => {
+    onChange({ ...block, quran_text: undefined, quran_surah_number: undefined, quran_surah_name: undefined, quran_surah_name_en: undefined, quran_ayah_from: undefined, quran_ayah_to: undefined, quran_reference: undefined, quran_translation_text: undefined });
+    setSelectedSurah(0);
+    setAyahFrom(1);
+    setAyahTo(1);
+  };
+
+  const showSearchResults = searchQuery.length >= 2 && (searching || allSearchResults.length > 0 || searchFocused);
 
   return (
     <div className="space-y-3">
-      {/* Tab selector */}
-      <div className="flex gap-1 p-0.5 rounded-lg bg-muted/50">
-        {tabs.map(t => {
-          const Icon = t.icon;
-          return (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={cn(
-                "flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-all",
-                tab === t.key ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Icon className="h-3 w-3" />
-              {t.label}
-            </button>
-          );
-        })}
+      {/* ─── Search ─── */}
+      <div className="relative">
+        <Search className="absolute start-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+        <Input
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          onFocus={() => setSearchFocused(true)}
+          onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
+          placeholder={isAr ? 'ابحث في الآيات بالنص أو المرجع (2:255)...' : 'Search ayat by text or reference (2:255)...'}
+          className="ps-8 h-9 text-xs"
+          dir="auto"
+        />
+        {searchQuery && (
+          <Button variant="ghost" size="icon" className="absolute end-1 top-1 h-7 w-7" onClick={() => { setSearchQuery(''); setAllSearchResults([]); setVisibleCount(10); }}>
+            <X className="h-3 w-3" />
+          </Button>
+        )}
       </div>
 
-      {/* ─── Search Tab ─── */}
-      {tab === 'search' && (
-        <div className="space-y-2">
-          <div className="relative">
-            <Search className="absolute start-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder={isAr ? 'ابحث في الآيات بالنص أو المرجع (مثل 2:255)...' : 'Search ayat by text or reference (e.g. 2:255)...'}
-              className="ps-8 h-9 text-xs"
-              dir="auto"
-            />
-            {searchQuery && (
-              <Button variant="ghost" size="icon" className="absolute end-1 top-1 h-7 w-7" onClick={() => { setSearchQuery(''); setAllSearchResults([]); setVisibleCount(10); }}>
-                <X className="h-3 w-3" />
-              </Button>
-            )}
-          </div>
-          {searching && (
-            <div className="flex items-center justify-center py-4">
+      {/* Search results dropdown */}
+      {showSearchResults && (
+        <div className="relative">
+          {searching ? (
+            <div className="flex items-center justify-center py-3">
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
             </div>
-          )}
-          {!searching && allSearchResults.length > 0 && (
+          ) : allSearchResults.length > 0 ? (
             <div
               ref={scrollRef}
-              className="max-h-64 overflow-y-auto space-y-1 rounded-md"
+              className="max-h-52 overflow-y-auto space-y-1 rounded-lg border bg-background p-1"
               onScroll={(e) => {
                 const el = e.currentTarget;
                 if (el.scrollTop + el.clientHeight >= el.scrollHeight - 20) {
@@ -256,112 +230,104 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
                 <button
                   key={i}
                   onClick={() => handleSearchSelect(m)}
-                  className="w-full text-start p-2.5 rounded-md border border-border/50 hover:bg-muted/50 transition-colors"
+                  className="w-full text-start p-2 rounded-md hover:bg-muted/60 transition-colors"
                 >
-                  <div className="flex items-center gap-2 mb-1">
-                    <Badge variant="secondary" className="text-[9px] px-1.5 py-0">{m.surah.englishName}</Badge>
-                    <span className="text-[10px] text-muted-foreground">{m.surah.number}:{m.numberInSurah}</span>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4">{m.surah.englishName}</Badge>
+                    <span className="text-[10px] text-muted-foreground font-mono">{m.surah.number}:{m.numberInSurah}</span>
                   </div>
                   <p className="text-sm leading-[2]" dir="rtl" style={{ fontFamily: `'${quranFont}', serif` }}>{m.text}</p>
                 </button>
               ))}
               {visibleCount < allSearchResults.length && (
-                <div className="flex items-center justify-center py-2">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-                  <span className="text-[10px] text-muted-foreground ms-1.5">
-                    {visibleCount} / {allSearchResults.length}
-                  </span>
+                <div className="flex items-center justify-center py-1.5 gap-1.5">
+                  <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                  <span className="text-[10px] text-muted-foreground">{visibleCount} / {allSearchResults.length}</span>
                 </div>
               )}
             </div>
-          )}
-          {!searching && searchQuery.length >= 2 && allSearchResults.length === 0 && (
-            <p className="text-xs text-muted-foreground text-center py-3">{isAr ? 'لم يتم العثور على نتائج' : 'No results found'}</p>
+          ) : (
+            <p className="text-xs text-muted-foreground text-center py-2">{isAr ? 'لم يتم العثور على نتائج' : 'No results found'}</p>
           )}
         </div>
       )}
 
-      {/* ─── Surah Tab ─── */}
-      {tab === 'surah' && (
-        <div className="space-y-2">
-          <Label className="text-xs">{isAr ? 'اختر السورة' : 'Select Surah'}</Label>
-          {loadingSurahs ? (
-            <div className="flex items-center justify-center py-4"><Loader2 className="h-4 w-4 animate-spin" /></div>
-          ) : (
-            <Select value={selectedSurah ? String(selectedSurah) : ''} onValueChange={v => setSelectedSurah(Number(v))}>
-              <SelectTrigger className="h-9 text-xs">
-                <SelectValue placeholder={isAr ? 'اختر سورة...' : 'Pick a Surah...'} />
-              </SelectTrigger>
-              <SelectContent className="max-h-60 overflow-y-auto">
-                {surahs.map(s => (
-                  <SelectItem key={s.number} value={String(s.number)}>
-                    <span className="flex items-center gap-2">
-                      <span className="text-muted-foreground text-[10px] w-5 text-end">{s.number}</span>
-                      <span>{s.name}</span>
-                      <span className="text-muted-foreground text-[10px]">({s.englishName})</span>
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          {selectedSurah > 0 && surahMeta && (
-            <div className="flex items-center gap-2 flex-wrap">
+      {/* ─── Surah + Ayah Selection ─── */}
+      <div className="space-y-2">
+        <Label className="text-xs font-medium flex items-center gap-1.5">
+          <BookOpen className="h-3 w-3 text-muted-foreground" />
+          {isAr ? 'السورة والآيات' : 'Surah & Ayah'}
+        </Label>
+
+        {loadingSurahs ? (
+          <div className="flex items-center justify-center py-3"><Loader2 className="h-4 w-4 animate-spin" /></div>
+        ) : (
+          <Select value={selectedSurah ? String(selectedSurah) : ''} onValueChange={v => setSelectedSurah(Number(v))}>
+            <SelectTrigger className="h-9 text-xs">
+              <SelectValue placeholder={isAr ? 'اختر سورة...' : 'Pick a Surah...'} />
+            </SelectTrigger>
+            <SelectContent className="max-h-60 overflow-y-auto">
+              {surahs.map(s => (
+                <SelectItem key={s.number} value={String(s.number)}>
+                  <span className="flex items-center gap-2">
+                    <span className="text-muted-foreground text-[10px] w-5 text-end">{s.number}</span>
+                    <span>{s.name}</span>
+                    <span className="text-muted-foreground text-[10px]">({s.englishName})</span>
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+
+        {selectedSurah > 0 && surahMeta && (
+          <>
+            <div className="flex items-center gap-1.5 flex-wrap">
               <Badge variant="outline" className="text-[10px]">{surahMeta.numberOfAyahs} {isAr ? 'آية' : 'Ayahs'}</Badge>
               <Badge variant="outline" className="text-[10px]">{surahMeta.revelationType === 'Meccan' ? (isAr ? 'مكية' : 'Meccan') : (isAr ? 'مدنية' : 'Medinan')}</Badge>
             </div>
-          )}
-        </div>
-      )}
 
-      {/* ─── Ayah Tab ─── */}
-      {tab === 'ayah' && (
-        <div className="space-y-3">
-          {!selectedSurah ? (
-            <p className="text-xs text-muted-foreground text-center py-3">
-              {isAr ? 'يرجى اختيار السورة أولاً من تبويب "السورة"' : 'Please select a Surah first from the "Surah" tab'}
-            </p>
-          ) : loadingAyahs ? (
-            <div className="flex items-center justify-center py-4"><Loader2 className="h-4 w-4 animate-spin" /></div>
-          ) : (
-            <>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label className="text-xs">{isAr ? 'من آية' : 'From Ayah'}</Label>
+            {loadingAyahs ? (
+              <div className="flex items-center justify-center py-2"><Loader2 className="h-3.5 w-3.5 animate-spin" /></div>
+            ) : (
+              <div className="flex items-end gap-2">
+                <div className="flex-1">
+                  <Label className="text-[10px] text-muted-foreground">{isAr ? 'من' : 'From'}</Label>
                   <Input
                     type="number"
                     min={1}
-                    max={surahMeta?.numberOfAyahs || 1}
+                    max={surahMeta.numberOfAyahs}
                     value={ayahFrom}
                     onChange={e => setAyahFrom(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="h-8 text-xs mt-1"
+                    className="h-8 text-xs mt-0.5"
                   />
                 </div>
-                <div>
-                  <Label className="text-xs">{isAr ? 'إلى آية' : 'To Ayah'}</Label>
+                <div className="flex-1">
+                  <Label className="text-[10px] text-muted-foreground">{isAr ? 'إلى' : 'To'}</Label>
                   <Input
                     type="number"
                     min={ayahFrom}
-                    max={surahMeta?.numberOfAyahs || 1}
+                    max={surahMeta.numberOfAyahs}
                     value={ayahTo}
                     onChange={e => setAyahTo(Math.max(ayahFrom, parseInt(e.target.value) || ayahFrom))}
-                    className="h-8 text-xs mt-1"
+                    className="h-8 text-xs mt-0.5"
                   />
                 </div>
+                <Button size="sm" className="h-8 px-3 text-xs shrink-0" onClick={handleLoadAyahs}>
+                  <BookOpen className="h-3 w-3 me-1" />
+                  {isAr ? 'تحميل' : 'Load'}
+                </Button>
               </div>
-              <Button size="sm" className="w-full text-xs h-8" onClick={handleLoadAyahs} disabled={!selectedSurah}>
-                <BookOpen className="h-3 w-3 me-1.5" />
-                {isAr ? 'تحميل الآيات' : 'Load Ayahs'}
-              </Button>
-            </>
-          )}
-        </div>
-      )}
+            )}
+          </>
+        )}
+      </div>
 
       <Separator />
 
-      {/* ─── English Translation ─── */}
-      <div className="space-y-2">
+      {/* ─── Options Row: Translation + Font ─── */}
+      <div className="space-y-2.5">
+        {/* Translation toggle */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <Languages className="h-3.5 w-3.5 text-muted-foreground" />
@@ -372,39 +338,30 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
             onCheckedChange={handleToggleTranslation}
           />
         </div>
+
         {block.quran_translation_enabled && (
-          <div className="space-y-1.5">
-            <Label className="text-[11px] text-muted-foreground">{isAr ? 'اختر المترجم' : 'Select Translator'}</Label>
-            {loadingEditions ? (
-              <div className="flex items-center justify-center py-2"><Loader2 className="h-3.5 w-3.5 animate-spin" /></div>
-            ) : (
-              <Select value={block.quran_translation_edition || ''} onValueChange={handleEditionChange}>
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue placeholder={isAr ? 'اختر المترجم...' : 'Pick a translator...'} />
-                </SelectTrigger>
-                <SelectContent className="max-h-60 overflow-y-auto">
-                    {editions.map(e => (
-                      <SelectItem key={e.identifier} value={e.identifier}>
-                        <span className="text-xs">{e.englishName}</span>
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            )}
-          </div>
+          loadingEditions ? (
+            <div className="flex items-center justify-center py-1.5"><Loader2 className="h-3.5 w-3.5 animate-spin" /></div>
+          ) : (
+            <Select value={block.quran_translation_edition || ''} onValueChange={handleEditionChange}>
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue placeholder={isAr ? 'اختر المترجم...' : 'Pick a translator...'} />
+              </SelectTrigger>
+              <SelectContent className="max-h-60 overflow-y-auto">
+                {editions.map(e => (
+                  <SelectItem key={e.identifier} value={e.identifier}>
+                    <span className="text-xs">{e.englishName}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )
         )}
-      </div>
 
-      <Separator />
-
-      {/* ─── Font Size ─── */}
-      {block.quran_text && (
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <Label className="text-xs">{isAr ? 'حجم الخط' : 'Font Size'}</Label>
-            <span className="text-[10px] font-mono text-muted-foreground">{block.quran_font_size || 18}px</span>
-          </div>
+        {/* Font size */}
+        {block.quran_text && (
           <div className="flex items-center gap-2">
+            <Type className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             <input
               type="range"
               min={12}
@@ -413,25 +370,18 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
               onChange={e => onChange({ ...block, quran_font_size: parseInt(e.target.value) })}
               className="flex-1 h-1.5 accent-primary"
             />
+            <span className="text-[10px] font-mono text-muted-foreground w-8 text-end">{block.quran_font_size || 18}px</span>
           </div>
-        </div>
-      )}
-
-      <Separator />
+        )}
+      </div>
 
       {/* ─── Preview ─── */}
       {block.quran_text ? (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label className="text-xs">{isAr ? 'معاينة' : 'Preview'}</Label>
-            {block.quran_reference && (
-              <Badge variant="secondary" className="text-[9px]">
-                {block.quran_surah_name_en} ({block.quran_reference})
-              </Badge>
-            )}
-          </div>
+        <>
           <div className="p-4 rounded-lg border bg-muted/10 text-center quran-quote-block" dir="rtl">
-            <p className="leading-[2.5]" style={{ fontFamily: `'${quranFont}', serif`, fontSize: `${block.quran_font_size || 18}px` }}>{block.quran_text}</p>
+            <p className="leading-[2.5]" style={{ fontFamily: `'${quranFont}', serif`, fontSize: `${block.quran_font_size || 18}px` }}>
+              {block.quran_text}
+            </p>
             {block.quran_translation_enabled && block.quran_translation_text && (
               <div className="mt-3 pt-3 border-t border-border/30" dir="ltr">
                 <p className="text-sm leading-relaxed text-muted-foreground italic">{block.quran_translation_text}</p>
@@ -452,16 +402,20 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
           <Button
             variant="ghost"
             size="sm"
-            className="w-full text-xs h-7 text-destructive hover:text-destructive"
-            onClick={() => onChange({ ...block, quran_text: undefined, quran_surah_number: undefined, quran_surah_name: undefined, quran_surah_name_en: undefined, quran_ayah_from: undefined, quran_ayah_to: undefined, quran_reference: undefined, quran_translation_text: undefined })}
+            className="w-full text-xs h-7 text-destructive hover:text-destructive gap-1.5"
+            onClick={handleClear}
           >
+            <Eraser className="h-3 w-3" />
             {isAr ? 'مسح الاختيار' : 'Clear Selection'}
           </Button>
-        </div>
+        </>
       ) : (
-        <p className="text-xs text-muted-foreground text-center py-2 italic">
-          {isAr ? 'اختر آية باستخدام أحد التبويبات أعلاه' : 'Select a verse using the tabs above'}
-        </p>
+        <div className="py-4 text-center rounded-lg border border-dashed border-border/50">
+          <BookOpen className="h-5 w-5 text-muted-foreground/40 mx-auto mb-1" />
+          <p className="text-xs text-muted-foreground">
+            {isAr ? 'ابحث عن آية أو اختر سورة ثم حدد الآيات' : 'Search for a verse or pick a surah then select ayahs'}
+          </p>
+        </div>
       )}
     </div>
   );
