@@ -1696,7 +1696,8 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                           isFirst={idx === 0}
                           isLast={idx === blocks.length - 1}
                           pageNumber={pageNumbers.get(block.id)}
-                          isBeta={!nonBetaTypes.includes(block.type)}
+                          isBeta={quranTypes.includes(block.type)}
+                          isSoon={!stableTypes.includes(block.type) && !quranTypes.includes(block.type)}
                           animating={animatingBlocks[block.id] || null}
                         />
                       ))}
