@@ -610,9 +610,57 @@ const CourseLearning = () => {
   const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
   const canManage = role === 'admin' || role === 'teacher';
 
-  const toggleRightPanel = (panel: 'notes' | 'appearance') => {
+  const toggleRightPanel = (panel: 'notes' | 'appearance' | 'symbols') => {
     setRightPanel(prev => prev === panel ? null : panel);
   };
+
+  const handleCopySymbol = useCallback((symbol: string) => {
+    navigator.clipboard.writeText(symbol).then(() => {
+      setCopiedSymbol(symbol);
+      toast.success(isAr ? 'تم النسخ!' : 'Copied!');
+      setTimeout(() => setCopiedSymbol(null), 1500);
+    });
+  }, [isAr]);
+
+  const saveLessonFontFamily = useCallback((font: string) => {
+    setLessonFontFamily(font);
+    try { localStorage.setItem('lesson_font_family', font); } catch {}
+  }, []);
+
+  // Quran symbol characters (common Islamic symbols in Quran Symbols font)
+  const quranSymbols = useMemo(() => [
+    { char: '\u06DD', label: isAr ? 'نهاية الآية' : 'End of Ayah' },
+    { char: '\u06DE', label: isAr ? 'ربع الحزب' : 'Start of Rub El Hizb' },
+    { char: '\u06E9', label: isAr ? 'موضع السجدة' : 'Place of Sajdah' },
+    { char: '\uFDFD', label: isAr ? 'بسم الله الرحمن الرحيم' : 'Bismillah' },
+    { char: '\uFDFA', label: isAr ? 'صلى الله عليه وسلم' : 'Sallallahu Alayhi Wasallam' },
+    { char: '\uFDFB', label: isAr ? 'جل جلاله' : 'Jalla Jalaluhu' },
+    { char: '\u0610', label: isAr ? 'صلى الله عليه' : 'Sallallahu Alayhi' },
+    { char: '\u0611', label: isAr ? 'عليه السلام' : 'Alayhi Assalam' },
+    { char: '\u0612', label: isAr ? 'رحمه الله' : 'Rahimahu Allah' },
+    { char: '\u0613', label: isAr ? 'رضي الله عنه' : 'Radi Allahu Anhu' },
+    { char: '\u0614', label: isAr ? 'تعالى' : 'Taala' },
+    { char: '\u0615', label: isAr ? 'وقف صلى' : 'Small High Tah' },
+    { char: '\u065C', label: isAr ? 'نقطة تحت' : 'Vowel Below' },
+    { char: '\u0670', label: isAr ? 'ألف خنجرية' : 'Superscript Alef' },
+    { char: '\u06D6', label: isAr ? 'صلى' : 'Small High Sad' },
+    { char: '\u06D7', label: isAr ? 'قلى' : 'Small High Qaf' },
+    { char: '\u06D8', label: isAr ? 'علامة ميم' : 'Small High Meem Initial' },
+    { char: '\u06D9', label: isAr ? 'لا' : 'Small High Lam Alef' },
+    { char: '\u06DA', label: isAr ? 'جيم' : 'Small High Jeem' },
+    { char: '\u06DB', label: isAr ? 'ثلاث نقاط' : 'Three Dots Above' },
+    { char: '\u06DC', label: isAr ? 'سين صغيرة' : 'Small High Seen' },
+  ], [isAr]);
+
+  const lessonFontOptions = useMemo(() => [
+    { value: 'default', label: isAr ? 'الافتراضي' : 'Default' },
+    { value: 'Indopak Nastaleeq', label: 'Indopak Nastaleeq' },
+    { value: 'KFGQPC Nastaleeq', label: 'KFGQPC Nastaleeq' },
+    { value: 'QPC V4 Tajweed', label: 'QPC V4 Tajweed' },
+    { value: 'QPC V2', label: 'QPC V2' },
+    { value: 'Noto Kufi Arabic', label: 'Noto Kufi Arabic' },
+    { value: 'Cairo', label: 'Cairo' },
+  ], [isAr]);
 
   // Notes per lesson (localStorage)
   const notesKey = (lessonId: string) => `lesson_notes_${user?.id}_${lessonId}`;
