@@ -1360,6 +1360,22 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
   };
 
   const addBlock = useCallback((type: BlockType) => {
+    // Group box: insert paired start + end
+    if (type === 'group_start') {
+      const pairId = generateId();
+      const startBlock: ContentBlock = { id: generateId(), type: 'group_start', group_pair_id: pairId };
+      const endBlock: ContentBlock = { id: generateId(), type: 'group_end', group_pair_id: pairId };
+      setBlocks(prev => {
+        const splitExists = prev.some(b => b.type === 'split_screen');
+        if (splitExists) {
+          startBlock.split_side = activeSplitSide;
+          endBlock.split_side = activeSplitSide;
+        }
+        return [...prev, startBlock, endBlock];
+      });
+      return;
+    }
+
     const newBlock: ContentBlock = { id: generateId(), type };
     if (type === 'text' || type === 'table_of_content' || type === 'read_listen' || type === 'memorization' || type === 'revision' || type === 'homework') {
       newBlock.html = '';
