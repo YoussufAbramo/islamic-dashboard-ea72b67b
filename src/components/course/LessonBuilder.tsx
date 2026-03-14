@@ -1415,15 +1415,12 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                           disabled={cantUse}
                           className={cn(
                             "flex flex-col items-center gap-1 p-2.5 rounded-lg border text-center text-[10px] font-medium transition-all relative",
-                            isSplitDisabled
+                            cantUse
                               ? "opacity-60 cursor-not-allowed border-destructive/40 bg-destructive/5 text-destructive/70"
-                              : cantUse
-                                ? "opacity-40 cursor-not-allowed border-border/50 bg-background text-muted-foreground"
-                                : "border-border/50 bg-background text-muted-foreground hover:border-primary/40 hover:bg-primary/5 hover:text-foreground hover:shadow-sm"
+                              : "border-border/50 bg-background text-muted-foreground hover:border-primary/40 hover:bg-primary/5 hover:text-foreground hover:shadow-sm"
                           )}
                         >
-                          {(isLocked || isPageBreakLocked) && <Lock className="h-2.5 w-2.5 absolute top-1 end-1 text-muted-foreground/60" />}
-                          {isSplitDisabled && <Ban className="h-2.5 w-2.5 absolute top-1 end-1 text-destructive/60" />}
+                          {cantUse && <Ban className="h-2.5 w-2.5 absolute top-1 end-1 text-destructive/60" />}
                           {showBeta && (
                             <Badge className="absolute -top-1.5 -start-1.5 text-[7px] px-1 py-0 h-3.5 bg-amber-500/15 text-amber-600 border-amber-400/40 font-bold uppercase tracking-wider leading-none">
                               Beta
