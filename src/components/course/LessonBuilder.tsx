@@ -1209,7 +1209,7 @@ const BlockEditor = ({
                     className={cn("flex flex-col items-center gap-1 p-2 rounded-lg border transition-all",
                       block.selected_symbol === s.char ? "border-primary bg-primary/10" : "border-border/50 hover:border-primary/30 hover:bg-muted/40"
                     )}>
-                    <span className={cn(sizeMap[currentSize], "leading-none")} style={{ fontFamily: `'${currentFont}', serif` }}>{s.char}</span>
+                    <span className="leading-none" style={{ fontFamily: `'${currentFont}', serif`, fontSize: `${currentSizePx}px` }}>{s.char}</span>
                     <span className="text-[8px] text-muted-foreground">{s.label}</span>
                   </button>
                 ))}
