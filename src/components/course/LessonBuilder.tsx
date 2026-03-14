@@ -1431,9 +1431,9 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
   const removeBlock = useCallback((id: string) => {
     setBlocks(prev => {
       const target = prev.find(b => b.id === id);
-      // Cascade-delete paired group block
       if (target?.group_pair_id) {
-        return prev.filter(b => b.id !== id && b.group_pair_id !== target.group_pair_id || (b.group_pair_id === target.group_pair_id && b.id !== id && b.type !== 'group_start' && b.type !== 'group_end') ? true : b.id !== id && !(b.group_pair_id === target.group_pair_id && (b.type === 'group_start' || b.type === 'group_end')));
+        const pairId = target.group_pair_id;
+        return prev.filter(b => !(b.id === id || (b.group_pair_id === pairId && (b.type === 'group_start' || b.type === 'group_end'))));
       }
       return prev.filter(b => b.id !== id);
     });
