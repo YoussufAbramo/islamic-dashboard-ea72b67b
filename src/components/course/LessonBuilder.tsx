@@ -1068,7 +1068,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
             <FileEdit className="h-5 w-5 text-primary" />
             <div className="flex-1 min-w-0">
               <span className="truncate block">{isAr ? 'محرر الدرس' : 'Lesson Builder'}</span>
-              <span className="text-xs font-normal text-muted-foreground truncate block">
+              <span className="text-sm font-semibold text-foreground truncate block mt-0.5">
                 {isAr && lesson.title_ar ? lesson.title_ar : lesson.title}
               </span>
             </div>
