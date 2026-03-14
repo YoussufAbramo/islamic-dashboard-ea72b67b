@@ -301,9 +301,15 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
                     className="h-8 text-xs mt-0.5"
                   />
                 </div>
-                <Button size="sm" className="h-8 px-2.5 text-xs shrink-0" onClick={handleLoadAyahs}>
+                <Button size="sm" className="h-8 px-2.5 text-xs shrink-0 gap-1" onClick={handleLoadAyahs}>
                   <BookOpen className="h-3 w-3" />
+                  {isAr ? 'تحميل' : 'Load'}
                 </Button>
+                {block.quran_text && (
+                  <Button size="sm" variant="ghost" className="h-8 px-2 text-xs shrink-0 gap-1 text-destructive hover:text-destructive" onClick={handleClear}>
+                    <Eraser className="h-3 w-3" />
+                  </Button>
+                )}
               </>
             )}
           </div>
