@@ -675,6 +675,17 @@ const BlockEditor = ({
                 className="mt-1"
               />
             </div>
+            <div>
+              <Label className="text-xs mb-1.5 block">{isAr ? 'الشفافية' : 'Opacity'}</Label>
+              <div className="flex flex-wrap gap-1.5">
+                {[15, 20, 25, 30].map((o) => (
+                  <button key={o} type="button" onClick={() => onChange({ ...block, divider_opacity: o })}
+                    className={cn("px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
+                      (block.divider_opacity || 15) === o ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+                    )}>{o}%</button>
+                ))}
+              </div>
+            </div>
             {/* Preview */}
             <div className="flex items-center justify-center gap-3 p-3 rounded-lg bg-muted/20" style={{ width: `${block.divider_width || 100}%`, margin: '0 auto' }}>
               <hr className="flex-1" style={{
