@@ -159,8 +159,8 @@ const blockGroups: { key: string; label: string; labelAr: string; types: BlockTy
   { key: 'exercise', label: '✏️ Exercises', labelAr: '✏️ التمارين', types: ['exercise_listen_choose', 'exercise_text_match', 'exercise_choose_correct', 'exercise_choose_multiple', 'exercise_rearrange', 'exercise_missing_text', 'exercise_true_false'] },
 ];
 
-// BETA types (all except: page_break, split_screen, text, video, image, divider, table_of_content, quran types)
-const nonBetaTypes: BlockType[] = ['page_break', 'split_screen', 'text', 'video', 'image', 'divider', 'table_of_content', 'group_start', 'group_end', 'quran_quote', 'quran_symbol', 'surah_nameplate', 'surah_name', 'besmellah'];
+// Non-soon types (stable elements that don't show "Soon" badge)
+const nonBetaTypes: BlockType[] = ['page_break', 'split_screen', 'text', 'video', 'image', 'divider', 'table_of_content', 'group_start', 'group_end'];
 
 // ─── Exercise Option Editor ───
 const OptionsEditor = ({ block, isAr, onChange }: { block: ContentBlock; isAr: boolean; onChange: (b: ContentBlock) => void }) => {
@@ -426,7 +426,7 @@ const BlockEditor = ({
 
         {isBeta && (
           <Badge className="text-[9px] px-1.5 py-0 h-4 bg-amber-500/15 text-amber-600 border-amber-400/40 font-bold uppercase tracking-wider">
-            Beta
+            Soon
           </Badge>
         )}
         <div className="ms-auto flex items-center gap-0.5">
@@ -1758,7 +1758,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                           {cantUse && <Ban className="h-2.5 w-2.5 absolute top-1 end-1 text-destructive/60" />}
                           {showBeta && (
                             <Badge className="absolute -top-1.5 -start-1.5 text-[7px] px-1 py-0 h-3.5 bg-amber-500/15 text-amber-600 border-amber-400/40 font-bold uppercase tracking-wider leading-none">
-                              Beta
+                              Soon
                             </Badge>
                           )}
                           <Icon className={cn("h-4 w-4 shrink-0", cantUse ? "text-muted-foreground/40" : meta.color)} />
