@@ -99,7 +99,7 @@ export interface ContentBlock {
   selected_symbol?: string;
   symbol_font?: string;
   surah_name_mode?: 'name_only' | 'surat_name';
-  font_size?: 'sm' | 'md' | 'lg' | 'xl' | 'huge';
+  font_size?: 'sm' | 'md' | 'lg' | 'xl' | 'huge' | number;
   quran_font_size?: number; // px, 12–100
 }
 const generateId = () => Math.random().toString(36).substring(2, 10);
