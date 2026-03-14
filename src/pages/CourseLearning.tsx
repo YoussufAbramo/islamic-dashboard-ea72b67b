@@ -409,6 +409,44 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
             </div>
           );
 
+        // ── Quran Quote ──
+        case 'quran_quote':
+          return block.quran_text ? (
+            <div key={block.id || idx} className="p-6 rounded-xl border bg-muted/5 text-center quran-quote-block" dir="rtl">
+              <p className="text-xl leading-[2.5]">{block.quran_text}</p>
+            </div>
+          ) : null;
+
+        // ── Quran Symbol ──
+        case 'quran_symbol':
+          return block.selected_symbol ? (
+            <div key={block.id || idx} className="text-center py-4">
+              <span className="text-5xl" style={{ fontFamily: `'${block.symbol_font || 'Quran Symbols'}', serif` }}>
+                {block.selected_symbol}
+              </span>
+            </div>
+          ) : null;
+
+        // ── Surah Nameplate ──
+        case 'surah_nameplate':
+          return block.selected_symbol ? (
+            <div key={block.id || idx} className="text-center py-4">
+              <span className="text-6xl" style={{ fontFamily: "'Surah Header', serif" }}>
+                {block.selected_symbol}
+              </span>
+            </div>
+          ) : null;
+
+        // ── Surah Name ──
+        case 'surah_name':
+          return block.selected_symbol ? (
+            <div key={block.id || idx} className="text-center py-3">
+              <span className="text-4xl" style={{ fontFamily: "'Surah Name V4', serif" }}>
+                {block.selected_symbol}
+              </span>
+            </div>
+          ) : null;
+
         default:
           return null;
       }
