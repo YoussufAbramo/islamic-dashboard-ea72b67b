@@ -5,6 +5,28 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-backup-secret',
 }
 
+// ── Rate Limiter (30 req/min per IP) ──
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
+const RATE_LIMIT = 30
+const RATE_WINDOW_MS = 60_000
+
+function checkRateLimit(id: string): boolean {
+  const now = Date.now()
+  const entry = rateLimitMap.get(id)
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(id, { count: 1, resetAt: now + RATE_WINDOW_MS })
+    return true
+  }
+  if (++entry.count > RATE_LIMIT) return false
+  return true
+}
+
+function rateLimited() {
+  return new Response(JSON.stringify({ error: 'Too many requests' }), {
+    status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '60' },
+  })
+}
+
 const ALL_TABLES = [
   'courses', 'course_sections', 'course_categories', 'course_levels', 'course_tracks',
   'lessons', 'lesson_sections', 'students', 'teachers', 'teacher_courses', 'profiles',
