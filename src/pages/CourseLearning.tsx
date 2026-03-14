@@ -1160,11 +1160,11 @@ const CourseLearning = () => {
 
         {/* ── Right Panel: Notes / Appearance ── */}
         <div className={cn(
-          "bg-card border-s flex flex-col shrink-0 transition-all duration-300 overflow-hidden",
-          rightPanel ? "w-72 animate-in slide-in-from-end-4 duration-300" : "w-0"
+          "bg-card border-s flex flex-col shrink-0 overflow-hidden transition-[width] duration-300 ease-out",
+          rightPanel ? "w-72" : "w-0"
         )}>
           {rightPanel === 'notes' && activeLesson && (
-            <div className="flex flex-col h-full w-72 animate-in fade-in-0 duration-200">
+            <div className="flex flex-col h-full w-72 animate-in slide-in-from-end duration-300">
               <div className="flex items-center gap-2 px-4 py-3 border-b bg-muted/30 shrink-0">
                 <StickyNote className="h-4 w-4 text-primary shrink-0" />
                 <h3 className="text-sm font-bold truncate flex-1">{isAr ? 'ملاحظات الدرس' : 'Lesson Notes'}</h3>
@@ -1195,7 +1195,7 @@ const CourseLearning = () => {
           )}
 
           {rightPanel === 'appearance' && (
-            <div className="flex flex-col h-full w-72 animate-in fade-in-0 duration-200">
+            <div className="flex flex-col h-full w-72 animate-in slide-in-from-end duration-300">
               <div className="flex items-center gap-2 px-4 py-3 border-b bg-muted/30 shrink-0">
                 <Settings2 className="h-4 w-4 text-primary shrink-0" />
                 <h3 className="text-sm font-bold truncate flex-1">{isAr ? 'إعدادات المظهر' : 'Appearance'}</h3>
@@ -1204,23 +1204,22 @@ const CourseLearning = () => {
                 </Button>
               </div>
               <div className="p-4 space-y-6">
-                {/* Font Size */}
-                <div className="space-y-3">
+                {/* Font Size — Coming Soon */}
+                <div className="space-y-3 opacity-50 pointer-events-none relative">
                   <div className="flex items-center gap-2">
                     <TypeIcon className="h-4 w-4 text-muted-foreground" />
                     <Label className="text-sm font-medium">{isAr ? 'حجم الخط' : 'Font Size'}</Label>
-                    <span className="ms-auto text-xs font-mono text-muted-foreground">{lessonFontSize}px</span>
+                    <Badge className="text-[8px] px-1.5 py-0 h-4 bg-amber-500/15 text-amber-600 border-amber-400/40 font-bold uppercase tracking-wider ms-auto">
+                      {isAr ? 'قريبًا' : 'Soon'}
+                    </Badge>
                   </div>
                   <Slider
-                    value={[lessonFontSize]}
-                    onValueChange={([v]) => {
-                      setLessonFontSize(v);
-                      localStorage.setItem('lesson_font_size', String(v));
-                    }}
+                    value={[16]}
                     min={12}
                     max={24}
                     step={1}
                     className="w-full"
+                    disabled
                   />
                   <div className="flex justify-between text-[10px] text-muted-foreground">
                     <span>{isAr ? 'صغير' : 'Small'}</span>
