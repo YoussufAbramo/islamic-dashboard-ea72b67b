@@ -284,6 +284,28 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
 
       <Separator />
 
+      {/* ─── Font Size ─── */}
+      {block.quran_text && (
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs">{isAr ? 'حجم الخط' : 'Font Size'}</Label>
+            <span className="text-[10px] font-mono text-muted-foreground">{block.quran_font_size || 18}px</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="range"
+              min={12}
+              max={100}
+              value={block.quran_font_size || 18}
+              onChange={e => onChange({ ...block, quran_font_size: parseInt(e.target.value) })}
+              className="flex-1 h-1.5 accent-primary"
+            />
+          </div>
+        </div>
+      )}
+
+      <Separator />
+
       {/* ─── Preview ─── */}
       {block.quran_text ? (
         <div className="space-y-2">
@@ -296,7 +318,7 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
             )}
           </div>
           <div className="p-4 rounded-lg border bg-muted/10 text-center quran-quote-block" dir="rtl">
-            <p className="text-lg leading-[2.5]" style={{ fontFamily: `'${quranFont}', serif` }}>{block.quran_text}</p>
+            <p className="leading-[2.5]" style={{ fontFamily: `'${quranFont}', serif`, fontSize: `${block.quran_font_size || 18}px` }}>{block.quran_text}</p>
             {block.quran_surah_name && (
               <p className="text-xs text-muted-foreground mt-3">
                 {block.quran_surah_name} {block.quran_surah_name_en && `— ${block.quran_surah_name_en}`} {block.quran_reference && `(${block.quran_reference})`}
