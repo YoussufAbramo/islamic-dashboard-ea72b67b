@@ -15,8 +15,10 @@ import {
   ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Circle,
   BookOpen, Play, FileText, Headphones, ExternalLink, FileDown,
   Menu, X, GraduationCap, Loader2, PanelTop, PanelTopClose, AlertTriangle, Settings2,
-  ChevronDown, FolderTree, Layers,
+  ChevronDown, FolderTree, Layers, StickyNote,
 } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import LessonBuilder from '@/components/course/LessonBuilder';
@@ -594,7 +596,29 @@ const CourseLearning = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true); // visible by default
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
   const [builderOpen, setBuilderOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [noteText, setNoteText] = useState('');
   const canManage = role === 'admin' || role === 'teacher';
+
+  // Notes per lesson (localStorage)
+  const notesKey = (lessonId: string) => `lesson_notes_${user?.id}_${lessonId}`;
+
+  const loadNote = useCallback((lessonId: string) => {
+    try {
+      const saved = localStorage.getItem(notesKey(lessonId));
+      setNoteText(saved || '');
+    } catch { setNoteText(''); }
+  }, [user?.id]);
+
+  const saveNote = useCallback((lessonId: string, text: string) => {
+    try {
+      if (text.trim()) {
+        localStorage.setItem(notesKey(lessonId), text);
+      } else {
+        localStorage.removeItem(notesKey(lessonId));
+      }
+    } catch {}
+  }, [user?.id]);
 
   // Fetch everything
   useEffect(() => {
@@ -701,6 +725,11 @@ const CourseLearning = () => {
       setActiveLesson(orderedLessons[0].id);
     }
   }, [orderedLessons, progress, activeLesson]);
+
+  // Load notes when active lesson changes
+  useEffect(() => {
+    if (activeLesson) loadNote(activeLesson);
+  }, [activeLesson, loadNote]);
 
   const currentLesson = orderedLessons.find(l => l.id === activeLesson) || null;
   const currentIndex = orderedLessons.findIndex(l => l.id === activeLesson);
@@ -830,6 +859,44 @@ const CourseLearning = () => {
             <GraduationCap className="h-3 w-3" />
             {completedSet.size}/{orderedLessons.length}
           </Badge>
+          {activeLesson && (
+            <Popover open={notesOpen} onOpenChange={setNotesOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn("h-8 w-8 shrink-0 relative", noteText.trim() && "text-primary")}
+                  title={isAr ? 'ملاحظات' : 'Notes'}
+                >
+                  <StickyNote className="h-4 w-4" />
+                  {noteText.trim() && (
+                    <span className="absolute top-1 end-1 h-1.5 w-1.5 rounded-full bg-primary" />
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-3" align="end">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <StickyNote className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-semibold">{isAr ? 'ملاحظات الدرس' : 'Lesson Notes'}</span>
+                  </div>
+                  <Textarea
+                    value={noteText}
+                    onChange={(e) => {
+                      setNoteText(e.target.value);
+                      saveNote(activeLesson, e.target.value);
+                    }}
+                    placeholder={isAr ? 'اكتب ملاحظاتك هنا...' : 'Write your notes here...'}
+                    className="min-h-[150px] text-sm resize-none"
+                    dir={isAr ? 'rtl' : 'ltr'}
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    {isAr ? 'يتم حفظ الملاحظات تلقائيًا لكل درس على حدة' : 'Notes are auto-saved per lesson individually'}
+                  </p>
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
           <Button
             variant="ghost"
             size="icon"

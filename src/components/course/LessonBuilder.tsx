@@ -21,7 +21,7 @@ import {
   ChevronUp, ChevronDown, Loader2, Save, FileEdit, ChevronsUpDown,
   ListOrdered, BookOpen, Brain, RotateCcw, ClipboardList,
   Headphones, CheckCircle2, CheckSquare, ArrowUpDown, TextCursorInput, ToggleLeft, Ear,
-  Minus, FileStack, Columns, Lock, Ban, ArrowLeftRight, Pencil,
+  Minus, FileStack, Columns, Lock, Ban, ArrowLeftRight, Pencil, ChevronDown as ChevronDownIcon,
 } from 'lucide-react';
 
 // ─── Block Types ───
@@ -75,7 +75,7 @@ export interface ContentBlock {
   divider_thickness?: number;
   divider_color?: string;
   divider_text?: string;
-  // page break
+  divider_opacity?: number; // 15, 20, 25, 30
   page_label?: string;
   page_label_ar?: string;
   // split screen
@@ -433,14 +433,22 @@ const BlockEditor = ({
         </div>
       </div>
       {confirmDelete && (
-        <div className="flex items-center gap-1.5 px-3 py-1.5 border-b bg-destructive/5" onClick={(e) => e.stopPropagation()}>
-          <span className="text-[10px] text-destructive font-medium">{isAr ? 'هل تريد حذف هذا العنصر؟' : 'Delete this element?'}</span>
-          <div className="ms-auto flex gap-1">
-            <Button variant="destructive" size="sm" className="h-5 text-[10px] px-2" onClick={onRemove}>
-              {isAr ? 'نعم' : 'Yes'}
+        <div className="px-3 py-2.5 border-b bg-destructive/5 space-y-2" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+              <Trash2 className="h-3 w-3 text-destructive" />
+            </div>
+            <p className="text-xs font-medium text-destructive">
+              {isAr ? 'هذا العنصر يحتوي على محتوى. هل أنت متأكد من الحذف؟' : 'This element has content. Are you sure you want to delete it?'}
+            </p>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button variant="ghost" size="sm" className="h-7 text-xs px-3" onClick={() => setConfirmDelete(false)}>
+              {isAr ? 'إلغاء' : 'Cancel'}
             </Button>
-            <Button variant="ghost" size="sm" className="h-5 text-[10px] px-2" onClick={() => setConfirmDelete(false)}>
-              {isAr ? 'لا' : 'No'}
+            <Button variant="destructive" size="sm" className="h-7 text-xs px-3 gap-1" onClick={onRemove}>
+              <Trash2 className="h-3 w-3" />
+              {isAr ? 'حذف' : 'Delete'}
             </Button>
           </div>
         </div>
@@ -675,44 +683,41 @@ const BlockEditor = ({
                 className="mt-1"
               />
             </div>
-            {/* Preview */}
-            <div className="flex items-center justify-center gap-3 p-3 rounded-lg bg-muted/20" style={{ width: `${block.divider_width || 100}%`, margin: '0 auto' }}>
-              <hr className="flex-1" style={{
-                borderStyle: block.divider_style || 'solid',
-                borderWidth: `${block.divider_thickness || 1}px 0 0 0`,
-                borderColor: (() => {
-                  const colorMap: Record<string, string> = {
-                    border: 'hsl(var(--border) / 0.15)',
-                    primary: 'hsl(var(--primary) / 0.15)',
-                    muted: 'hsl(var(--muted-foreground) / 0.15)',
-                    destructive: 'hsl(var(--destructive) / 0.15)',
-                    gold: 'hsl(var(--gold, 45 80% 50%) / 0.15)',
-                  };
-                  return colorMap[block.divider_color || 'border'] || 'hsl(var(--border) / 0.15)';
-                })(),
-              }} />
-              {block.divider_text && (
-                <span className="shrink-0 text-muted-foreground whitespace-nowrap" style={{
-                  fontSize: `${Math.max(10, (block.divider_thickness || 1) * 3 + 8)}px`,
-                }}>{block.divider_text}</span>
-              )}
-              {block.divider_text && (
-                <hr className="flex-1" style={{
-                  borderStyle: block.divider_style || 'solid',
-                  borderWidth: `${block.divider_thickness || 1}px 0 0 0`,
-                  borderColor: (() => {
-                    const colorMap: Record<string, string> = {
-                      border: 'hsl(var(--border) / 0.15)',
-                      primary: 'hsl(var(--primary) / 0.15)',
-                      muted: 'hsl(var(--muted-foreground) / 0.15)',
-                      destructive: 'hsl(var(--destructive) / 0.15)',
-                      gold: 'hsl(var(--gold, 45 80% 50%) / 0.15)',
-                    };
-                    return colorMap[block.divider_color || 'border'] || 'hsl(var(--border) / 0.15)';
-                  })(),
-                }} />
-              )}
+            <div>
+              <Label className="text-xs mb-1.5 block">{isAr ? 'الشفافية' : 'Opacity'}</Label>
+              <div className="flex flex-wrap gap-1.5">
+                {[15, 20, 25, 30].map((o) => (
+                  <button key={o} type="button" onClick={() => onChange({ ...block, divider_opacity: o })}
+                    className={cn("px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
+                      (block.divider_opacity || 15) === o ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+                    )}>{o}%</button>
+                ))}
+              </div>
             </div>
+            {/* Preview */}
+            {(() => {
+              const op = (block.divider_opacity || 15) / 100;
+              const colorMapFn = (opacity: number): Record<string, string> => ({
+                border: `hsl(var(--border) / ${opacity})`,
+                primary: `hsl(var(--primary) / ${opacity})`,
+                muted: `hsl(var(--muted-foreground) / ${opacity})`,
+                destructive: `hsl(var(--destructive) / ${opacity})`,
+                gold: `hsl(var(--gold, 45 80% 50%) / ${opacity})`,
+              });
+              const cm = colorMapFn(op);
+              const borderColor = cm[block.divider_color || 'border'] || cm.border;
+              return (
+                <div className="flex items-center justify-center gap-3 p-3 rounded-lg bg-muted/20" style={{ width: `${block.divider_width || 100}%`, margin: '0 auto' }}>
+                  <hr className="flex-1" style={{ borderStyle: block.divider_style || 'solid', borderWidth: `${block.divider_thickness || 1}px 0 0 0`, borderColor }} />
+                  {block.divider_text && (
+                    <span className="shrink-0 text-muted-foreground whitespace-nowrap" style={{ fontSize: `${Math.max(10, (block.divider_thickness || 1) * 3 + 8)}px` }}>{block.divider_text}</span>
+                  )}
+                  {block.divider_text && (
+                    <hr className="flex-1" style={{ borderStyle: block.divider_style || 'solid', borderWidth: `${block.divider_thickness || 1}px 0 0 0`, borderColor }} />
+                  )}
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -1047,8 +1052,10 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
     onOpenChange(v);
   };
 
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+
   const hasSplitScreen = useMemo(() => blocks.some(b => b.type === 'split_screen'), [blocks]);
-  const hasNonSplitBlocks = useMemo(() => blocks.some(b => b.type !== 'split_screen'), [blocks]);
+  const hasNonSplitBlocks = useMemo(() => blocks.some(b => b.type !== 'split_screen' && b.type !== 'divider'), [blocks]);
   const [activeSplitSide, setActiveSplitSide] = useState<'left' | 'right'>('left');
 
   const triggerAnimation = (blockId: string, type: 'up' | 'down' | 'transfer-out' | 'transfer-in') => {
@@ -1379,11 +1386,18 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
               {blockGroups.map((group, gIdx) => (
                 <div key={group.key}>
                   {gIdx > 0 && <Separator className="my-2" />}
-                  <div className="px-2 py-1.5 flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="px-2 py-1.5 flex items-center gap-2 w-full hover:bg-muted/50 rounded-md transition-colors"
+                    onClick={() => setCollapsedGroups(prev => ({ ...prev, [group.key]: !prev[group.key] }))}
+                  >
+                    <ChevronDownIcon className={cn("h-3 w-3 text-muted-foreground transition-transform duration-200", collapsedGroups[group.key] && "-rotate-90")} />
                     <span className="text-xs font-bold text-foreground/80">{isAr ? group.labelAr : group.label}</span>
                     <span className="text-[10px] text-muted-foreground/60 bg-muted rounded-full px-1.5 py-0.5 leading-none">{group.types.length}</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-1 px-1 pt-1">
+                  </button>
+                  <div className={cn("grid transition-all duration-200 ease-out", collapsedGroups[group.key] ? "grid-rows-[0fr]" : "grid-rows-[1fr]")}>
+                  <div className="overflow-hidden">
+                  <div className="grid grid-cols-2 gap-1 px-1 pt-1 pb-1">
                     {group.types.map(type => {
                       const meta = blockMeta[type];
                       const Icon = meta.icon;
@@ -1443,6 +1457,8 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                       }
                       return btn;
                     })}
+                  </div>
+                  </div>
                   </div>
                 </div>
               ))}
