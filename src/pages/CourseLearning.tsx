@@ -727,9 +727,9 @@ const CourseLearning = () => {
   ], [isAr]);
 
   const lessonFontOptions = useMemo(() => [
-    { value: 'default', label: isAr ? 'الافتراضي' : 'Default' },
+    { value: 'default', label: `${isAr ? 'الافتراضي' : 'Default'} (${appRtlFont})` },
     { value: 'KFGQPC Nastaleeq', label: isAr ? 'نستعليق' : 'Nastaleeq' },
-  ], [isAr]);
+  ], [isAr, appRtlFont]);
 
   // Notes per lesson (localStorage)
   const notesKey = (lessonId: string) => `lesson_notes_${user?.id}_${lessonId}`;
