@@ -382,14 +382,12 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
                 <SelectTrigger className="h-8 text-xs">
                   <SelectValue placeholder={isAr ? 'اختر المترجم...' : 'Pick a translator...'} />
                 </SelectTrigger>
-                <SelectContent>
-                  <ScrollArea className="max-h-60">
+                <SelectContent className="max-h-60 overflow-y-auto">
                     {editions.map(e => (
                       <SelectItem key={e.identifier} value={e.identifier}>
                         <span className="text-xs">{e.englishName}</span>
                       </SelectItem>
                     ))}
-                  </ScrollArea>
                 </SelectContent>
               </Select>
             )}
