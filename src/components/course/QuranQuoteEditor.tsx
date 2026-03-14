@@ -301,9 +301,15 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
                     className="h-8 text-xs mt-0.5"
                   />
                 </div>
-                <Button size="sm" className="h-8 px-2.5 text-xs shrink-0" onClick={handleLoadAyahs}>
+                <Button size="sm" className="h-8 px-2.5 text-xs shrink-0 gap-1" onClick={handleLoadAyahs}>
                   <BookOpen className="h-3 w-3" />
+                  {isAr ? 'تحميل' : 'Load'}
                 </Button>
+                {block.quran_text && (
+                  <Button size="sm" variant="ghost" className="h-8 px-2 text-xs shrink-0 gap-1 text-destructive hover:text-destructive" onClick={handleClear}>
+                    <Eraser className="h-3 w-3" />
+                  </Button>
+                )}
               </>
             )}
           </div>
@@ -372,15 +378,6 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
       {/* ─── Preview ─── */}
       {block.quran_text ? (
         <>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full text-xs h-7 text-destructive hover:text-destructive gap-1.5"
-            onClick={handleClear}
-          >
-            <Eraser className="h-3 w-3" />
-            {isAr ? 'مسح الاختيار' : 'Clear Selection'}
-          </Button>
           <div className="p-4 rounded-lg border bg-muted/10 text-center quran-quote-block" dir="rtl">
             <p className="leading-[2.5]" style={{ fontFamily: `'${quranFont}', serif`, fontSize: `${block.quran_font_size || 18}px` }}>
               {block.quran_text}
