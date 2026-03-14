@@ -242,7 +242,7 @@ const ItemsEditor = ({ block, isAr, onChange }: { block: ContentBlock; isAr: boo
 
 // ─── Single Block Editor ───
 const BlockEditor = ({
-  block, isAr, onChange, onRemove, onMoveUp, onMoveDown, isFirst, isLast,
+  block, isAr, onChange, onRemove, onMoveUp, onMoveDown, isFirst, isLast, pageNumber, isBeta, onTransfer,
 }: {
   block: ContentBlock;
   isAr: boolean;
@@ -252,6 +252,9 @@ const BlockEditor = ({
   onMoveDown: () => void;
   isFirst: boolean;
   isLast: boolean;
+  pageNumber?: number;
+  isBeta?: boolean;
+  onTransfer?: (toSide: 'left' | 'right') => void;
 }) => {
   const meta = blockMeta[block.type];
   const Icon = meta.icon;
@@ -304,8 +307,35 @@ const BlockEditor = ({
         <Icon className={cn("h-4 w-4 shrink-0", meta.color)} />
         <span className="text-xs font-medium text-muted-foreground">
           {isAr ? meta.labelAr : meta.label}
+          {block.type === 'page_break' && pageNumber != null && (
+            <span className="ms-1 text-[10px] text-muted-foreground/70">#{pageNumber}</span>
+          )}
         </span>
+        {isBeta && (
+          <Badge variant="outline" className="text-[8px] px-1 py-0 h-3.5 border-amber-400/50 text-amber-500 font-bold uppercase tracking-wider">
+            Beta
+          </Badge>
+        )}
         <div className="ms-auto flex items-center gap-0.5">
+          {onTransfer && (
+            <TooltipProvider delayDuration={200}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => {
+                    e.stopPropagation();
+                    onTransfer(block.split_side === 'left' ? 'right' : 'left');
+                  }}>
+                    <ArrowLeftRight className="h-3 w-3" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  {isAr
+                    ? `نقل إلى ${block.split_side === 'left' ? 'اليمين' : 'اليسار'}`
+                    : `Move to ${block.split_side === 'left' ? 'Right' : 'Left'}`}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); setCollapsed((c) => !c); }}>
             <ChevronsUpDown className={cn("h-3 w-3 transition-transform", collapsed && "rotate-180")} />
           </Button>
