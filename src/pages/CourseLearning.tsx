@@ -478,7 +478,41 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
     return (
       <div className={cn("space-y-4", hasPages && "pb-16")}>
         <div className="space-y-6">
-          {visibleBlocks.map((block: any, idx: number) => renderBlock(block, idx))}
+          {(() => {
+            // Group blocks between group_start and group_end into bordered containers
+            const elements: React.ReactNode[] = [];
+            let i = 0;
+            while (i < visibleBlocks.length) {
+              const block = visibleBlocks[i];
+              if (block.type === 'group_start') {
+                // Collect blocks until group_end
+                const grouped: any[] = [];
+                i++;
+                while (i < visibleBlocks.length && visibleBlocks[i].type !== 'group_end') {
+                  if (visibleBlocks[i].type !== 'group_start') {
+                    grouped.push(visibleBlocks[i]);
+                  }
+                  i++;
+                }
+                // Skip the group_end block
+                if (i < visibleBlocks.length && visibleBlocks[i].type === 'group_end') i++;
+                if (grouped.length > 0) {
+                  elements.push(
+                    <div key={`group-${block.id}`} className="rounded-lg border border-border p-4 space-y-6 bg-card/50">
+                      {grouped.map((gb: any, gi: number) => renderBlock(gb, gi))}
+                    </div>
+                  );
+                }
+              } else if (block.type === 'group_end') {
+                // Orphan group_end, skip
+                i++;
+              } else {
+                elements.push(renderBlock(block, i));
+                i++;
+              }
+            }
+            return elements;
+          })()}
         </div>
 
         {/* Fixed bottom page navigation */}
