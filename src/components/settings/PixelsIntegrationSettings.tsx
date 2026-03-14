@@ -109,7 +109,7 @@ const pixelGroups = [
     groupLabel: 'Analytics & Other',
     groupLabelAr: 'التحليلات وأخرى',
     fields: [
-      { key: 'gosopro_pixel' as const, label: 'GoSoPro.app Pixel', logo: GoSoProLogo, placeholder: 'GSP-XXXXXXXXXX', description: 'Pixel ID from GoSoPro.app' },
+      { key: 'gosopro_pixel' as const, label: 'GoSoPro.app Pixel', logo: GoSoProLogo, placeholder: 'GSP-XXXXXXXXXX', description: 'Pixel ID from GoSoPro.app', link: 'https://gosopro.app/' },
       { key: 'clarity_pixel' as const, label: 'Microsoft Clarity', logo: ClarityLogo, placeholder: 'XXXXXXXXXX', description: 'Project ID from Microsoft Clarity' },
     ],
   },

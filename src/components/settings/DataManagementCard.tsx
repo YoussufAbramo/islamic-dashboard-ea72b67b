@@ -420,10 +420,10 @@ const DataManagementCard = ({ isAr }: DataManagementCardProps) => {
                   </div>
                   <div>
                     <span className="text-sm font-semibold text-destructive block">
-                      {isAr ? 'منطقة الخطر' : 'Danger Zone'}
+                      {isAr ? 'إعادة تعيين النظام' : 'System Reset'}
                     </span>
                     <span className="text-[11px] text-muted-foreground">
-                      {isAr ? 'إعادة تعيين النظام بالكامل' : 'Full system reset'}
+                      {isAr ? 'استعادة حالة التثبيت الأصلية — يمسح جميع البيانات نهائيًا' : 'Restore to fresh install state — permanently erases all data'}
                     </span>
                   </div>
                 </div>
