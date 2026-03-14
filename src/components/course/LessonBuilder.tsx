@@ -1758,7 +1758,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                           {cantUse && <Ban className="h-2.5 w-2.5 absolute top-1 end-1 text-destructive/60" />}
                           {showBeta && (
                             <Badge className="absolute -top-1.5 -start-1.5 text-[7px] px-1 py-0 h-3.5 bg-amber-500/15 text-amber-600 border-amber-400/40 font-bold uppercase tracking-wider leading-none">
-                              Beta
+                              Soon
                             </Badge>
                           )}
                           <Icon className={cn("h-4 w-4 shrink-0", cantUse ? "text-muted-foreground/40" : meta.color)} />
