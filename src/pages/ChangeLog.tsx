@@ -114,7 +114,7 @@ const ChangeLog = () => {
             return (
               <div key={entry.version} className="relative md:ps-12">
                 {/* Timeline dot */}
-                <div className={`absolute start-2.5 top-5 h-3 w-3 rounded-full border-2 hidden md:block ${
+                <div className={`absolute start-[14px] top-1/2 -translate-y-1/2 h-3 w-3 rounded-full border-2 hidden md:block ${
                   isLatest ? 'bg-primary border-primary' : 'bg-background border-muted-foreground/30'
                 }`} />
 
