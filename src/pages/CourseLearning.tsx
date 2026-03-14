@@ -726,6 +726,11 @@ const CourseLearning = () => {
     }
   }, [orderedLessons, progress, activeLesson]);
 
+  // Load notes when active lesson changes
+  useEffect(() => {
+    if (activeLesson) loadNote(activeLesson);
+  }, [activeLesson, loadNote]);
+
   const currentLesson = orderedLessons.find(l => l.id === activeLesson) || null;
   const currentIndex = orderedLessons.findIndex(l => l.id === activeLesson);
   const hasPrev = currentIndex > 0;
