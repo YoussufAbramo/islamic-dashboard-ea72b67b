@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { arrayMove } from '@dnd-kit/sortable';
@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import ContentEditor from '@/components/ContentEditor';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -19,7 +20,7 @@ import {
   ChevronUp, ChevronDown, Loader2, Save, FileEdit, ChevronsUpDown,
   ListOrdered, BookOpen, Brain, RotateCcw, ClipboardList,
   Headphones, CheckCircle2, CheckSquare, ArrowUpDown, TextCursorInput, ToggleLeft, Ear,
-  Minus, FileStack, Columns,
+  Minus, FileStack, Columns, Lock, Ban,
 } from 'lucide-react';
 
 // ─── Block Types ───
