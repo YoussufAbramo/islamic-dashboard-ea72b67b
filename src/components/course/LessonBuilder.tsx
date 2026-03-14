@@ -1200,9 +1200,14 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
       const newContent = { blocks: blocks as any[] };
       const { error } = await supabase.from('lessons').update({ content: newContent as any }).eq('id', lesson.id);
       if (error) throw error;
+      savedSnapshot.current = JSON.stringify(blocks);
       toast.success(isAr ? 'تم حفظ المحتوى' : 'Content saved');
       onSaved();
-      handleOpenChange(false);
+      // Close after save
+      initialized.current = null;
+      setBlocks([]);
+      savedSnapshot.current = '';
+      onOpenChange(false);
     } catch (err: any) {
       toast.error(err.message);
     } finally {
