@@ -1786,12 +1786,12 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                         </button>
                       );
 
-                      if (cantUse) {
+                      if (isDisabled) {
                         return (
                           <Tooltip key={type}>
                             <TooltipTrigger asChild>{btn}</TooltipTrigger>
                             <TooltipContent side="left" className="max-w-[200px] text-xs">
-                              {disabledMessage}
+                              {isSoon ? soonMessage : disabledMessage}
                             </TooltipContent>
                           </Tooltip>
                         );
