@@ -90,7 +90,7 @@ const AttendLesson = () => {
   const [viewReport, setViewReport] = useState<SessionReportView | null>(null);
   const [viewReportLoading, setViewReportLoading] = useState(false);
   const [cancelEntry, setCancelEntry] = useState<LessonEntry | null>(null);
-  const [cancelReason, setCancelReason] = '';
+  const [cancelReason, setCancelReason] = useState('');
   const [compensateEntry, setCompensateEntry] = useState<LessonEntry | null>(null);
   const [compensateDate, setCompensateDate] = useState('');
 
