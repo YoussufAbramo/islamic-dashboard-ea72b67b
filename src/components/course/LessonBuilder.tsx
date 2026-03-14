@@ -1021,35 +1021,55 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
   const initialized = useRef<string | null>(null);
   const [animatingBlocks, setAnimatingBlocks] = useState<Record<string, 'up' | 'down' | 'transfer-out' | 'transfer-in'>>({});
   const [splitDeleteOpen, setSplitDeleteOpen] = useState(false);
+  const [unsavedDialogOpen, setUnsavedDialogOpen] = useState(false);
+  const savedSnapshot = useRef<string>('');
 
   const lessonFingerprint = lesson ? `${lesson.id}:${JSON.stringify(lesson.content?.blocks?.length ?? 0)}` : null;
 
   if (lesson && initialized.current !== lessonFingerprint) {
     initialized.current = lessonFingerprint;
     const content = lesson.content || {};
+    let initialBlocks: ContentBlock[] = [];
     if (Array.isArray(content.blocks) && content.blocks.length > 0) {
-      setBlocks(content.blocks.map((b: any) => ({ ...b, id: b.id || generateId() })));
+      initialBlocks = content.blocks.map((b: any) => ({ ...b, id: b.id || generateId() }));
     } else {
-      const migrated: ContentBlock[] = [];
       if (content.text || content.body || content.html || content.description) {
-        migrated.push({ id: generateId(), type: 'text', html: content.text || content.body || content.html || content.description || '' });
+        initialBlocks.push({ id: generateId(), type: 'text', html: content.text || content.body || content.html || content.description || '' });
       }
       if (content.video_url || content.videoUrl) {
-        migrated.push({ id: generateId(), type: 'video', video_url: content.video_url || content.videoUrl || '' });
+        initialBlocks.push({ id: generateId(), type: 'video', video_url: content.video_url || content.videoUrl || '' });
       }
       if (content.audio_url || content.audioUrl) {
-        migrated.push({ id: generateId(), type: 'audio', audio_url: content.audio_url || content.audioUrl || '' });
+        initialBlocks.push({ id: generateId(), type: 'audio', audio_url: content.audio_url || content.audioUrl || '' });
       }
       if (content.image_url || content.imageUrl) {
-        migrated.push({ id: generateId(), type: 'image', image_url: content.image_url || content.imageUrl || '' });
+        initialBlocks.push({ id: generateId(), type: 'image', image_url: content.image_url || content.imageUrl || '' });
       }
-      setBlocks(migrated);
     }
+    setBlocks(initialBlocks);
+    savedSnapshot.current = JSON.stringify(initialBlocks);
   }
 
+  const hasUnsavedChanges = useMemo(() => {
+    if (!savedSnapshot.current) return false;
+    return JSON.stringify(blocks) !== savedSnapshot.current;
+  }, [blocks]);
+
   const handleOpenChange = (v: boolean) => {
-    if (!v) { initialized.current = null; setBlocks([]); }
+    if (!v && hasUnsavedChanges) {
+      setUnsavedDialogOpen(true);
+      return;
+    }
+    if (!v) { initialized.current = null; setBlocks([]); savedSnapshot.current = ''; }
     onOpenChange(v);
+  };
+
+  const forceClose = () => {
+    setUnsavedDialogOpen(false);
+    initialized.current = null;
+    setBlocks([]);
+    savedSnapshot.current = '';
+    onOpenChange(false);
   };
 
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
