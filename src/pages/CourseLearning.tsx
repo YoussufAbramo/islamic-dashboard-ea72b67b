@@ -870,43 +870,28 @@ const CourseLearning = () => {
             {completedSet.size}/{orderedLessons.length}
           </Badge>
           {activeLesson && (
-            <Popover open={notesOpen} onOpenChange={setNotesOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn("h-8 w-8 shrink-0 relative", noteText.trim() && "text-primary")}
-                  title={isAr ? 'ملاحظات' : 'Notes'}
-                >
-                  <StickyNote className="h-4 w-4" />
-                  {noteText.trim() && (
-                    <span className="absolute top-1 end-1 h-1.5 w-1.5 rounded-full bg-primary" />
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80 p-3" align="end">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <StickyNote className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-semibold">{isAr ? 'ملاحظات الدرس' : 'Lesson Notes'}</span>
-                  </div>
-                  <Textarea
-                    value={noteText}
-                    onChange={(e) => {
-                      setNoteText(e.target.value);
-                      saveNote(activeLesson, e.target.value);
-                    }}
-                    placeholder={isAr ? 'اكتب ملاحظاتك هنا...' : 'Write your notes here...'}
-                    className="min-h-[150px] text-sm resize-none"
-                    dir={isAr ? 'rtl' : 'ltr'}
-                  />
-                  <p className="text-[10px] text-muted-foreground">
-                    {isAr ? 'يتم حفظ الملاحظات تلقائيًا لكل درس على حدة' : 'Notes are auto-saved per lesson individually'}
-                  </p>
-                </div>
-              </PopoverContent>
-            </Popover>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn("h-8 w-8 shrink-0 relative", rightPanel === 'notes' && "bg-muted", noteText.trim() && "text-primary")}
+              onClick={() => toggleRightPanel('notes')}
+              title={isAr ? 'ملاحظات' : 'Notes'}
+            >
+              <StickyNote className="h-4 w-4" />
+              {noteText.trim() && (
+                <span className="absolute top-1 end-1 h-1.5 w-1.5 rounded-full bg-primary" />
+              )}
+            </Button>
           )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn("h-8 w-8 shrink-0", rightPanel === 'appearance' && "bg-muted")}
+            onClick={() => toggleRightPanel('appearance')}
+            title={isAr ? 'المظهر' : 'Appearance'}
+          >
+            <Settings2 className="h-4 w-4" />
+          </Button>
           <Button
             variant="ghost"
             size="icon"
