@@ -433,14 +433,22 @@ const BlockEditor = ({
         </div>
       </div>
       {confirmDelete && (
-        <div className="flex items-center gap-1.5 px-3 py-1.5 border-b bg-destructive/5" onClick={(e) => e.stopPropagation()}>
-          <span className="text-[10px] text-destructive font-medium">{isAr ? 'هل تريد حذف هذا العنصر؟' : 'Delete this element?'}</span>
-          <div className="ms-auto flex gap-1">
-            <Button variant="destructive" size="sm" className="h-5 text-[10px] px-2" onClick={onRemove}>
-              {isAr ? 'نعم' : 'Yes'}
+        <div className="px-3 py-2.5 border-b bg-destructive/5 space-y-2" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+              <Trash2 className="h-3 w-3 text-destructive" />
+            </div>
+            <p className="text-xs font-medium text-destructive">
+              {isAr ? 'هذا العنصر يحتوي على محتوى. هل أنت متأكد من الحذف؟' : 'This element has content. Are you sure you want to delete it?'}
+            </p>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button variant="ghost" size="sm" className="h-7 text-xs px-3" onClick={() => setConfirmDelete(false)}>
+              {isAr ? 'إلغاء' : 'Cancel'}
             </Button>
-            <Button variant="ghost" size="sm" className="h-5 text-[10px] px-2" onClick={() => setConfirmDelete(false)}>
-              {isAr ? 'لا' : 'No'}
+            <Button variant="destructive" size="sm" className="h-7 text-xs px-3 gap-1" onClick={onRemove}>
+              <Trash2 className="h-3 w-3" />
+              {isAr ? 'حذف' : 'Delete'}
             </Button>
           </div>
         </div>
