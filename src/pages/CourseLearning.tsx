@@ -647,6 +647,12 @@ const CourseLearning = () => {
     try { return parseInt(localStorage.getItem('lesson_font_size') || '16', 10); } catch { return 16; }
   });
   const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
+  const [quranFont, setQuranFont] = useState(() => {
+    try { return localStorage.getItem('quran_font') || 'QPC V2'; } catch { return 'QPC V2'; }
+  });
+  const [tajweedMode, setTajweedMode] = useState(() => {
+    try { return localStorage.getItem('tajweed_mode') === 'true'; } catch { return false; }
+  });
   const canManage = role === 'admin' || role === 'teacher';
 
   const toggleRightPanel = (panel: 'notes' | 'appearance' | 'symbols') => {
