@@ -1781,7 +1781,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                             </Badge>
                           )}
                           {isSoon && (
-                            <Badge className="absolute -top-1.5 -start-1.5 text-[7px] px-1 py-0 h-3.5 bg-muted text-muted-foreground border-border font-bold uppercase tracking-wider leading-none">
+                            <Badge variant="outline" className="absolute -top-1.5 -start-1.5 text-[7px] px-1 py-0 h-3.5 bg-muted text-muted-foreground border-border hover:bg-muted font-bold uppercase tracking-wider leading-none">
                               Soon
                             </Badge>
                           )}
