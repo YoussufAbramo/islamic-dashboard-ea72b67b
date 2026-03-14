@@ -572,6 +572,7 @@ const AttendLesson = () => {
                   const showNotAttend = isNotAttendVisible(entry);
                   const canNotAttend = isNotAttendEnabled(entry);
                   const isTestEntry = testMode && entry.id === testEntryId;
+                  const isNotAttended = ['teacher_not_attend', 'student_not_attend', 'not_attend'].includes(entry.status);
 
                   return (
                     <TableRow key={entry.id} className={`${isTestEntry ? 'bg-violet-500/10 border-l-4 border-l-violet-500 ring-1 ring-violet-500/20' : isActiveEntry ? 'bg-emerald-500/5' : status.isLive ? 'bg-destructive/5' : ''}`}>
