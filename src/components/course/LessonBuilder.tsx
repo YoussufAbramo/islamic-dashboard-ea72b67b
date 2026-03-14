@@ -159,8 +159,11 @@ const blockGroups: { key: string; label: string; labelAr: string; types: BlockTy
   { key: 'exercise', label: '✏️ Exercises', labelAr: '✏️ التمارين', types: ['exercise_listen_choose', 'exercise_text_match', 'exercise_choose_correct', 'exercise_choose_multiple', 'exercise_rearrange', 'exercise_missing_text', 'exercise_true_false'] },
 ];
 
-// Non-soon types (stable elements that don't show "Soon" badge)
-const nonBetaTypes: BlockType[] = ['page_break', 'split_screen', 'text', 'video', 'image', 'divider', 'table_of_content', 'group_start', 'group_end'];
+// Stable types (no badge, fully usable)
+const stableTypes: BlockType[] = ['page_break', 'split_screen', 'text', 'video', 'image', 'divider', 'table_of_content', 'group_start', 'group_end'];
+// Quran types (Beta badge, usable)
+const quranTypes: BlockType[] = ['quran_quote', 'quran_symbol', 'surah_nameplate', 'surah_name', 'besmellah'];
+// Everything else is "Soon" (locked, coming soon)
 
 // ─── Exercise Option Editor ───
 const OptionsEditor = ({ block, isAr, onChange }: { block: ContentBlock; isAr: boolean; onChange: (b: ContentBlock) => void }) => {
@@ -278,7 +281,7 @@ const ItemsEditor = ({ block, isAr, onChange }: { block: ContentBlock; isAr: boo
 
 // ─── Single Block Editor ───
 const BlockEditor = ({
-  block, isAr, onChange, onRemove, onMoveUp, onMoveDown, isFirst, isLast, pageNumber, isBeta, onTransfer, animating,
+  block, isAr, onChange, onRemove, onMoveUp, onMoveDown, isFirst, isLast, pageNumber, isBeta, isSoon, onTransfer, animating,
 }: {
   block: ContentBlock;
   isAr: boolean;
@@ -290,6 +293,7 @@ const BlockEditor = ({
   isLast: boolean;
   pageNumber?: number;
   isBeta?: boolean;
+  isSoon?: boolean;
   onTransfer?: (toSide: 'left' | 'right') => void;
   animating?: 'up' | 'down' | 'transfer-out' | 'transfer-in' | null;
 }) => {
@@ -425,6 +429,11 @@ const BlockEditor = ({
         )}
 
         {isBeta && (
+          <Badge className="text-[9px] px-1.5 py-0 h-4 bg-amber-500/15 text-amber-600 border-amber-400/40 font-bold uppercase tracking-wider">
+            Beta
+          </Badge>
+        )}
+        {isSoon && (
           <Badge className="text-[9px] px-1.5 py-0 h-4 bg-amber-500/15 text-amber-600 border-amber-400/40 font-bold uppercase tracking-wider">
             Soon
           </Badge>
@@ -1581,7 +1590,8 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                             onMoveDown={() => moveBlock(block.id, 'down')}
                             isFirst={idx === 0}
                             isLast={idx === sideBlocks.length - 1}
-                            isBeta={!nonBetaTypes.includes(block.type)}
+                            isBeta={quranTypes.includes(block.type)}
+                            isSoon={!stableTypes.includes(block.type) && !quranTypes.includes(block.type)}
                             onTransfer={(toSide) => transferBlock(block.id, toSide)}
                             animating={animatingBlocks[block.id] || null}
                           />
@@ -1686,7 +1696,8 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                           isFirst={idx === 0}
                           isLast={idx === blocks.length - 1}
                           pageNumber={pageNumbers.get(block.id)}
-                          isBeta={!nonBetaTypes.includes(block.type)}
+                          isBeta={quranTypes.includes(block.type)}
+                          isSoon={!stableTypes.includes(block.type) && !quranTypes.includes(block.type)}
                           animating={animatingBlocks[block.id] || null}
                         />
                       ))}
@@ -1740,38 +1751,47 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                             ? (isAr ? 'لا يمكن استخدام صفحة جديدة أثناء وضع الصفحة المقسمة' : 'New Page cannot be used while Split Page mode is active')
                             : '';
 
-                      const showBeta = !nonBetaTypes.includes(type);
+                      const isQuranBeta = quranTypes.includes(type);
+                      const isSoon = !stableTypes.includes(type) && !quranTypes.includes(type);
+                      const isDisabled = cantUse || isSoon;
+
+                      const soonMessage = isAr ? 'هذه الميزة قادمة قريباً' : 'This feature is coming soon';
 
                       const btn = (
                         <button
                           key={type}
                           type="button"
-                          onClick={() => !cantUse && addBlock(type)}
-                          disabled={cantUse}
+                          onClick={() => !isDisabled && addBlock(type)}
+                          disabled={isDisabled}
                           className={cn(
                             "flex flex-col items-center gap-1 p-2.5 rounded-lg border text-center text-[10px] font-medium transition-all relative",
-                            cantUse
+                            isDisabled
                               ? "opacity-60 cursor-not-allowed border-destructive/40 bg-destructive/5 text-destructive/70"
                               : "border-border/50 bg-background text-muted-foreground hover:border-primary/40 hover:bg-primary/5 hover:text-foreground hover:shadow-sm"
                           )}
                         >
-                          {cantUse && <Ban className="h-2.5 w-2.5 absolute top-1 end-1 text-destructive/60" />}
-                          {showBeta && (
+                          {isDisabled && <Ban className="h-2.5 w-2.5 absolute top-1 end-1 text-destructive/60" />}
+                          {isQuranBeta && (
+                            <Badge className="absolute -top-1.5 -start-1.5 text-[7px] px-1 py-0 h-3.5 bg-amber-500/15 text-amber-600 border-amber-400/40 font-bold uppercase tracking-wider leading-none">
+                              Beta
+                            </Badge>
+                          )}
+                          {isSoon && (
                             <Badge className="absolute -top-1.5 -start-1.5 text-[7px] px-1 py-0 h-3.5 bg-amber-500/15 text-amber-600 border-amber-400/40 font-bold uppercase tracking-wider leading-none">
                               Soon
                             </Badge>
                           )}
-                          <Icon className={cn("h-4 w-4 shrink-0", cantUse ? "text-muted-foreground/40" : meta.color)} />
+                          <Icon className={cn("h-4 w-4 shrink-0", isDisabled ? "text-muted-foreground/40" : meta.color)} />
                           <span className="truncate w-full leading-tight">{isAr ? meta.labelAr : meta.label}</span>
                         </button>
                       );
 
-                      if (cantUse) {
+                      if (isDisabled) {
                         return (
                           <Tooltip key={type}>
                             <TooltipTrigger asChild>{btn}</TooltipTrigger>
                             <TooltipContent side="left" className="max-w-[200px] text-xs">
-                              {disabledMessage}
+                              {isSoon ? soonMessage : disabledMessage}
                             </TooltipContent>
                           </Tooltip>
                         );
