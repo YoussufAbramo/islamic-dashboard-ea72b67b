@@ -610,116 +610,116 @@ const BlockEditor = ({
         )}
 
         {/* ── Divider ── */}
-        {block.type === 'divider' && (
-          <div className="space-y-3">
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <Label className="text-xs mb-1.5 block">{isAr ? 'العرض' : 'Width'}</Label>
-                <div className="flex flex-wrap gap-1.5">
-                  {[25, 50, 75, 100].map((w) => (
-                    <button key={w} type="button" onClick={() => onChange({ ...block, divider_width: w })}
-                      className={cn("px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
-                        (block.divider_width || 100) === w ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
-                      )}>{w}%</button>
-                  ))}
+        {block.type === 'divider' && (() => {
+          const op = (block.divider_opacity || 15) / 100;
+          const colorMapFn = (opacity: number): Record<string, string> => ({
+            border: `hsl(var(--border) / ${opacity})`,
+            primary: `hsl(var(--primary) / ${opacity})`,
+            muted: `hsl(var(--muted-foreground) / ${opacity})`,
+            destructive: `hsl(var(--destructive) / ${opacity})`,
+            gold: `hsl(var(--gold, 45 80% 50%) / ${opacity})`,
+          });
+          const cm = colorMapFn(op);
+          const borderColor = cm[block.divider_color || 'border'] || cm.border;
+
+          const chipBtn = (active: boolean) => cn(
+            "px-2 py-1 rounded-md text-[10px] font-medium border transition-colors",
+            active ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+          );
+
+          return (
+            <div className="space-y-4">
+              {/* Live Preview */}
+              <div className="flex items-center justify-center gap-3 p-4 rounded-lg border border-dashed bg-muted/10" style={{ width: `${block.divider_width || 100}%`, margin: '0 auto' }}>
+                <hr className="flex-1" style={{ borderStyle: block.divider_style || 'solid', borderWidth: `${block.divider_thickness || 1}px 0 0 0`, borderColor }} />
+                {block.divider_text && (
+                  <span className="shrink-0 text-muted-foreground whitespace-nowrap text-xs">{block.divider_text}</span>
+                )}
+                {block.divider_text && (
+                  <hr className="flex-1" style={{ borderStyle: block.divider_style || 'solid', borderWidth: `${block.divider_thickness || 1}px 0 0 0`, borderColor }} />
+                )}
+              </div>
+
+              {/* Controls Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Style */}
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">{isAr ? 'النمط' : 'Style'}</Label>
+                  <div className="flex flex-wrap gap-1">
+                    {(['solid', 'dashed', 'dotted', 'double'] as const).map((s) => (
+                      <button key={s} type="button" onClick={() => onChange({ ...block, divider_style: s })}
+                        className={chipBtn((block.divider_style || 'solid') === s)}>{s}</button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Width */}
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">{isAr ? 'العرض' : 'Width'}</Label>
+                  <div className="flex flex-wrap gap-1">
+                    {[25, 50, 75, 100].map((w) => (
+                      <button key={w} type="button" onClick={() => onChange({ ...block, divider_width: w })}
+                        className={chipBtn((block.divider_width || 100) === w)}>{w}%</button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Thickness */}
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">{isAr ? 'السُمك' : 'Thickness'}</Label>
+                  <div className="flex flex-wrap gap-1">
+                    {[1, 2, 3, 4].map((t) => (
+                      <button key={t} type="button" onClick={() => onChange({ ...block, divider_thickness: t })}
+                        className={chipBtn((block.divider_thickness || 1) === t)}>{t}px</button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Opacity */}
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">{isAr ? 'الشفافية' : 'Opacity'}</Label>
+                  <div className="flex flex-wrap gap-1">
+                    {[15, 20, 25, 30].map((o) => (
+                      <button key={o} type="button" onClick={() => onChange({ ...block, divider_opacity: o })}
+                        className={chipBtn((block.divider_opacity || 15) === o)}>{o}%</button>
+                    ))}
+                  </div>
                 </div>
               </div>
-              <div>
-                <Label className="text-xs mb-1.5 block">{isAr ? 'النمط' : 'Style'}</Label>
+
+              {/* Color */}
+              <div className="space-y-1.5">
+                <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">{isAr ? 'اللون' : 'Color'}</Label>
                 <div className="flex flex-wrap gap-1.5">
                   {([
-                    { value: 'solid' as const, label: isAr ? 'متصل' : 'Solid' },
-                    { value: 'dashed' as const, label: isAr ? 'متقطع' : 'Dashed' },
-                    { value: 'dotted' as const, label: isAr ? 'منقط' : 'Dotted' },
-                    { value: 'double' as const, label: isAr ? 'مزدوج' : 'Double' },
-                    { value: 'groove' as const, label: isAr ? 'محفور' : 'Groove' },
-                    { value: 'ridge' as const, label: isAr ? 'بارز' : 'Ridge' },
-                  ] as const).map((s) => (
-                    <button key={s.value} type="button" onClick={() => onChange({ ...block, divider_style: s.value })}
-                      className={cn("px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
-                        (block.divider_style || 'solid') === s.value ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
-                      )}>{s.label}</button>
+                    { value: 'border', label: isAr ? 'افتراضي' : 'Default', css: 'hsl(var(--border))' },
+                    { value: 'primary', label: isAr ? 'رئيسي' : 'Primary', css: 'hsl(var(--primary))' },
+                    { value: 'muted', label: isAr ? 'باهت' : 'Muted', css: 'hsl(var(--muted-foreground))' },
+                    { value: 'destructive', label: isAr ? 'أحمر' : 'Red', css: 'hsl(var(--destructive))' },
+                    { value: 'gold', label: isAr ? 'ذهبي' : 'Gold', css: 'hsl(45 80% 50%)' },
+                  ] as const).map((c) => (
+                    <button key={c.value} type="button" onClick={() => onChange({ ...block, divider_color: c.value })}
+                      className={cn("flex items-center gap-1.5", chipBtn((block.divider_color || 'border') === c.value))}>
+                      <span className="h-2.5 w-2.5 rounded-full shrink-0 border" style={{ background: c.css }} />
+                      {c.label}
+                    </button>
                   ))}
                 </div>
               </div>
-              <div>
-                <Label className="text-xs mb-1.5 block">{isAr ? 'السُمك' : 'Thickness'}</Label>
-                <div className="flex flex-wrap gap-1.5">
-                  {[1, 2, 3, 4, 6, 8].map((t) => (
-                    <button key={t} type="button" onClick={() => onChange({ ...block, divider_thickness: t })}
-                      className={cn("px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors min-w-[28px]",
-                        (block.divider_thickness || 1) === t ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
-                      )}>{t}px</button>
-                  ))}
-                </div>
+
+              {/* Divider Text */}
+              <div className="space-y-1.5">
+                <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">{isAr ? 'نص الفاصل' : 'Divider Text'}</Label>
+                <Input
+                  placeholder={isAr ? 'اختياري — مثال: القسم الأول' : 'Optional — e.g. Section One'}
+                  value={block.divider_text || ''}
+                  onChange={(e) => onChange({ ...block, divider_text: e.target.value })}
+                  className="h-8 text-xs"
+                />
               </div>
             </div>
-            <div>
-              <Label className="text-xs mb-1.5 block">{isAr ? 'اللون' : 'Color'}</Label>
-              <div className="flex flex-wrap gap-1.5">
-                {([
-                  { value: 'border', label: isAr ? 'افتراضي' : 'Default', css: 'hsl(var(--border) / 0.15)' },
-                  { value: 'primary', label: isAr ? 'رئيسي' : 'Primary', css: 'hsl(var(--primary) / 0.15)' },
-                  { value: 'muted', label: isAr ? 'باهت' : 'Muted', css: 'hsl(var(--muted-foreground) / 0.15)' },
-                  { value: 'destructive', label: isAr ? 'أحمر' : 'Red', css: 'hsl(var(--destructive) / 0.15)' },
-                  { value: 'gold', label: isAr ? 'ذهبي' : 'Gold', css: 'hsl(var(--gold, 45 80% 50%) / 0.15)' },
-                ] as const).map((c) => (
-                  <button key={c.value} type="button" onClick={() => onChange({ ...block, divider_color: c.value })}
-                    className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
-                      (block.divider_color || 'border') === c.value ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
-                    )}>
-                    <span className="h-2.5 w-2.5 rounded-sm shrink-0" style={{ background: c.css }} />
-                    {c.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <Label className="text-xs mb-1.5 block">{isAr ? 'نص الفاصل' : 'Divider Text'}</Label>
-              <Input
-                placeholder={isAr ? 'اختياري — مثال: القسم الأول' : 'Optional — e.g. Section One'}
-                value={block.divider_text || ''}
-                onChange={(e) => onChange({ ...block, divider_text: e.target.value })}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label className="text-xs mb-1.5 block">{isAr ? 'الشفافية' : 'Opacity'}</Label>
-              <div className="flex flex-wrap gap-1.5">
-                {[15, 20, 25, 30].map((o) => (
-                  <button key={o} type="button" onClick={() => onChange({ ...block, divider_opacity: o })}
-                    className={cn("px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
-                      (block.divider_opacity || 15) === o ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
-                    )}>{o}%</button>
-                ))}
-              </div>
-            </div>
-            {/* Preview */}
-            {(() => {
-              const op = (block.divider_opacity || 15) / 100;
-              const colorMapFn = (opacity: number): Record<string, string> => ({
-                border: `hsl(var(--border) / ${opacity})`,
-                primary: `hsl(var(--primary) / ${opacity})`,
-                muted: `hsl(var(--muted-foreground) / ${opacity})`,
-                destructive: `hsl(var(--destructive) / ${opacity})`,
-                gold: `hsl(var(--gold, 45 80% 50%) / ${opacity})`,
-              });
-              const cm = colorMapFn(op);
-              const borderColor = cm[block.divider_color || 'border'] || cm.border;
-              return (
-                <div className="flex items-center justify-center gap-3 p-3 rounded-lg bg-muted/20" style={{ width: `${block.divider_width || 100}%`, margin: '0 auto' }}>
-                  <hr className="flex-1" style={{ borderStyle: block.divider_style || 'solid', borderWidth: `${block.divider_thickness || 1}px 0 0 0`, borderColor }} />
-                  {block.divider_text && (
-                    <span className="shrink-0 text-muted-foreground whitespace-nowrap" style={{ fontSize: `${Math.max(10, (block.divider_thickness || 1) * 3 + 8)}px` }}>{block.divider_text}</span>
-                  )}
-                  {block.divider_text && (
-                    <hr className="flex-1" style={{ borderStyle: block.divider_style || 'solid', borderWidth: `${block.divider_thickness || 1}px 0 0 0`, borderColor }} />
-                  )}
-                </div>
-              );
-            })()}
-          </div>
-        )}
+          );
+        })()}
 
         {/* ── Page Break ── */}
         {block.type === 'page_break' && (
@@ -1055,7 +1055,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
 
   const hasSplitScreen = useMemo(() => blocks.some(b => b.type === 'split_screen'), [blocks]);
-  const hasNonSplitBlocks = useMemo(() => blocks.some(b => b.type !== 'split_screen' && b.type !== 'divider'), [blocks]);
+  const hasNonSplitBlocks = useMemo(() => blocks.some(b => b.type !== 'split_screen'), [blocks]);
   const [activeSplitSide, setActiveSplitSide] = useState<'left' | 'right'>('left');
 
   const triggerAnimation = (blockId: string, type: 'up' | 'down' | 'transfer-out' | 'transfer-in') => {
