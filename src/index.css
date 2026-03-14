@@ -856,10 +856,23 @@
 .lesson-content-viewer[style*="--lesson-font-family"] .prose h2,
 .lesson-content-viewer[style*="--lesson-font-family"] .prose h3,
 .lesson-content-viewer[style*="--lesson-font-family"] .prose h4,
-.lesson-content-viewer[style*="--lesson-font-family"] div,
+.lesson-content-viewer[style*="--lesson-font-family"] div:not(.quran-quote-block):not([style*="Besmellah"]):not([style*="Surah"]):not([style*="Quran Symbols"]),
 .lesson-content-viewer[style*="--lesson-font-family"] p,
-.lesson-content-viewer[style*="--lesson-font-family"] span {
+.lesson-content-viewer[style*="--lesson-font-family"] span:not([style*="Besmellah"]):not([style*="Surah"]):not([style*="Quran Symbols"]) {
   font-family: var(--lesson-font-family) !important;
+}
+/* Ensure Quran category elements keep their own inline fonts */
+.lesson-content-viewer .quran-quote-block p {
+  font-family: var(--quran-font, 'QPC V2', serif) !important;
+}
+.lesson-content-viewer [style*="Besmellah"] {
+  font-family: 'Besmellah', serif !important;
+}
+.lesson-content-viewer [style*="Surah Header"] {
+  font-family: 'Surah Header', serif !important;
+}
+.lesson-content-viewer [style*="Surah Name"] {
+  font-family: inherit !important;
 }
 .lesson-content-viewer .prose p,
 .lesson-content-viewer .prose li,
@@ -872,8 +885,3 @@
 .lesson-content-viewer .prose h1 { font-size: calc(var(--lesson-font-size) * 1.75) !important; }
 .lesson-content-viewer .prose h2 { font-size: calc(var(--lesson-font-size) * 1.5) !important; }
 .lesson-content-viewer .prose h3 { font-size: calc(var(--lesson-font-size) * 1.25) !important; }
-
-/* Quran Quote block uses the --quran-font CSS variable */
-.lesson-content-viewer .quran-quote-block p {
-  font-family: var(--quran-font, 'QPC V2', serif) !important;
-}
