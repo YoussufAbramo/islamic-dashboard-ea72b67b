@@ -15,9 +15,10 @@ import {
   ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Circle,
   BookOpen, Play, FileText, Headphones, ExternalLink, FileDown,
   Menu, X, GraduationCap, Loader2, PanelTop, PanelTopClose, AlertTriangle, Settings2,
-  ChevronDown, FolderTree, Layers, StickyNote, Sun, Moon, Type as TypeIcon,
+  ChevronDown, FolderTree, Layers, StickyNote, Sun, Moon, Type as TypeIcon, Sparkles, Copy, Check,
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
