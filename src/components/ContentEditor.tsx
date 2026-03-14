@@ -17,6 +17,20 @@ const ContentEditor = ({ value, onChange, placeholder, minHeight = '300px' }: Co
   const editorRef = useRef<HTMLDivElement>(null);
   const isInternalChange = useRef(false);
 
+  const [contentFont, setContentFont] = useState(() => {
+    try { return localStorage.getItem('lesson_font_family') || 'default'; } catch { return 'default'; }
+  });
+
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'lesson_font_family') setContentFont(e.newValue || 'default');
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+  const editorRef = useRef<HTMLDivElement>(null);
+  const isInternalChange = useRef(false);
+
   // Only update innerHTML when value changes externally (not from typing)
   useEffect(() => {
     if (isInternalChange.current) {
