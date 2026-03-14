@@ -1751,28 +1751,37 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                             ? (isAr ? 'لا يمكن استخدام صفحة جديدة أثناء وضع الصفحة المقسمة' : 'New Page cannot be used while Split Page mode is active')
                             : '';
 
-                      const showBeta = !nonBetaTypes.includes(type);
+                      const isQuranBeta = quranTypes.includes(type);
+                      const isSoon = !stableTypes.includes(type) && !quranTypes.includes(type);
+                      const isDisabled = cantUse || isSoon;
+
+                      const soonMessage = isAr ? 'هذه الميزة قادمة قريباً' : 'This feature is coming soon';
 
                       const btn = (
                         <button
                           key={type}
                           type="button"
-                          onClick={() => !cantUse && addBlock(type)}
-                          disabled={cantUse}
+                          onClick={() => !isDisabled && addBlock(type)}
+                          disabled={isDisabled}
                           className={cn(
                             "flex flex-col items-center gap-1 p-2.5 rounded-lg border text-center text-[10px] font-medium transition-all relative",
-                            cantUse
+                            isDisabled
                               ? "opacity-60 cursor-not-allowed border-destructive/40 bg-destructive/5 text-destructive/70"
                               : "border-border/50 bg-background text-muted-foreground hover:border-primary/40 hover:bg-primary/5 hover:text-foreground hover:shadow-sm"
                           )}
                         >
-                          {cantUse && <Ban className="h-2.5 w-2.5 absolute top-1 end-1 text-destructive/60" />}
-                          {showBeta && (
+                          {isDisabled && <Ban className="h-2.5 w-2.5 absolute top-1 end-1 text-destructive/60" />}
+                          {isQuranBeta && (
+                            <Badge className="absolute -top-1.5 -start-1.5 text-[7px] px-1 py-0 h-3.5 bg-amber-500/15 text-amber-600 border-amber-400/40 font-bold uppercase tracking-wider leading-none">
+                              Beta
+                            </Badge>
+                          )}
+                          {isSoon && (
                             <Badge className="absolute -top-1.5 -start-1.5 text-[7px] px-1 py-0 h-3.5 bg-amber-500/15 text-amber-600 border-amber-400/40 font-bold uppercase tracking-wider leading-none">
                               Soon
                             </Badge>
                           )}
-                          <Icon className={cn("h-4 w-4 shrink-0", cantUse ? "text-muted-foreground/40" : meta.color)} />
+                          <Icon className={cn("h-4 w-4 shrink-0", isDisabled ? "text-muted-foreground/40" : meta.color)} />
                           <span className="truncate w-full leading-tight">{isAr ? meta.labelAr : meta.label}</span>
                         </button>
                       );
