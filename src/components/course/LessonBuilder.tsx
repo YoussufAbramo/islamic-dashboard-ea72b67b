@@ -99,7 +99,7 @@ export interface ContentBlock {
   selected_symbol?: string;
   symbol_font?: string;
   surah_name_mode?: 'name_only' | 'surat_name';
-  font_size?: 'sm' | 'md' | 'lg' | 'xl' | 'huge';
+  font_size?: 'sm' | 'md' | 'lg' | 'xl' | 'huge' | number;
   quran_font_size?: number; // px, 12–100
 }
 const generateId = () => Math.random().toString(36).substring(2, 10);
@@ -1164,16 +1164,7 @@ const BlockEditor = ({
           }));
           const nameMode = block.surah_name_mode || 'name_only';
           const currentFont = nameMode === 'surat_name' ? 'Surah Name Color V4' : 'Surah Name V4';
-          const sizeOptions = [
-            { value: 'sm' as const, label: 'S', title: isAr ? 'صغير' : 'Small' },
-            { value: 'md' as const, label: 'M', title: isAr ? 'متوسط' : 'Medium' },
-            { value: 'lg' as const, label: 'L', title: isAr ? 'كبير' : 'Large' },
-            { value: 'xl' as const, label: 'XL', title: isAr ? 'كبير جداً' : 'Very Large' },
-            { value: 'huge' as const, label: 'H', title: isAr ? 'ضخم' : 'Huge' },
-          ];
-          const currentSize = block.font_size || 'lg';
-          const sizeMap = { sm: 'text-xl', md: 'text-2xl', lg: 'text-3xl', xl: 'text-4xl', huge: 'text-6xl' };
-          const previewSizeMap = { sm: 'text-2xl', md: 'text-3xl', lg: 'text-4xl', xl: 'text-5xl', huge: 'text-7xl' };
+          const currentSizePx = typeof block.font_size === 'number' ? block.font_size : ({ sm: 24, md: 32, lg: 40, xl: 52, huge: 72 }[block.font_size || 'lg'] || 40);
           return (
             <div className="space-y-3">
               {/* Mode & Size Controls */}
@@ -1197,19 +1188,17 @@ const BlockEditor = ({
                     </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-1">
                   <Label className="text-xs font-medium">{isAr ? 'الحجم' : 'Size'}</Label>
-                  <div className="flex rounded-lg border border-border overflow-hidden">
-                    {sizeOptions.map((s) => (
-                      <button key={s.value} type="button" title={s.title}
-                        onClick={() => onChange({ ...block, font_size: s.value })}
-                        className={cn("px-2.5 py-1.5 text-xs font-medium transition-colors",
-                          currentSize === s.value ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground hover:bg-muted"
-                        )}>
-                        {s.label}
-                      </button>
-                    ))}
-                  </div>
+                  <input
+                    type="range"
+                    min={12}
+                    max={100}
+                    value={currentSizePx}
+                    onChange={e => onChange({ ...block, font_size: parseInt(e.target.value) })}
+                    className="flex-1 h-1.5 accent-primary"
+                  />
+                  <span className="text-[10px] font-mono text-muted-foreground w-8 text-end">{currentSizePx}px</span>
                 </div>
               </div>
               <Label className="text-xs font-medium">{isAr ? 'اختر اسم السورة' : 'Select Surah Name'}</Label>
@@ -1220,14 +1209,14 @@ const BlockEditor = ({
                     className={cn("flex flex-col items-center gap-1 p-2 rounded-lg border transition-all",
                       block.selected_symbol === s.char ? "border-primary bg-primary/10" : "border-border/50 hover:border-primary/30 hover:bg-muted/40"
                     )}>
-                    <span className={cn(sizeMap[currentSize], "leading-none")} style={{ fontFamily: `'${currentFont}', serif` }}>{s.char}</span>
+                    <span className="leading-none" style={{ fontFamily: `'${currentFont}', serif`, fontSize: `${currentSizePx}px` }}>{s.char}</span>
                     <span className="text-[8px] text-muted-foreground">{s.label}</span>
                   </button>
                 ))}
               </div>
               {block.selected_symbol && (
                 <div className="p-4 rounded-lg border bg-muted/10 text-center">
-                  <span className={previewSizeMap[currentSize]} style={{ fontFamily: `'${currentFont}', serif` }}>{block.selected_symbol}</span>
+                  <span style={{ fontFamily: `'${currentFont}', serif`, fontSize: `${Math.min(currentSizePx * 1.25, 100)}px` }}>{block.selected_symbol}</span>
                 </div>
               )}
             </div>
@@ -1242,31 +1231,20 @@ const BlockEditor = ({
             const code = 33 + i;
             return { char: String.fromCharCode(code), label: `${isAr ? 'نمط' : 'Style'} ${i + 1}` };
           });
-          const sizeOptions = [
-            { value: 'sm' as const, label: 'S', title: isAr ? 'صغير' : 'Small' },
-            { value: 'md' as const, label: 'M', title: isAr ? 'متوسط' : 'Medium' },
-            { value: 'lg' as const, label: 'L', title: isAr ? 'كبير' : 'Large' },
-            { value: 'xl' as const, label: 'XL', title: isAr ? 'كبير جداً' : 'Very Large' },
-            { value: 'huge' as const, label: 'H', title: isAr ? 'ضخم' : 'Huge' },
-          ];
-          const currentSize = block.font_size || 'lg';
-          const sizeMap = { sm: 'text-2xl', md: 'text-3xl', lg: 'text-4xl', xl: 'text-5xl', huge: 'text-7xl' };
-          const previewSizeMap = { sm: 'text-3xl', md: 'text-4xl', lg: 'text-5xl', xl: 'text-6xl', huge: 'text-8xl' };
+          const currentSizePx = typeof block.font_size === 'number' ? block.font_size : ({ sm: 30, md: 40, lg: 52, xl: 64, huge: 80 }[block.font_size || 'lg'] || 52);
           return (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Label className="text-xs font-medium">{isAr ? 'الحجم' : 'Size'}</Label>
-                <div className="flex rounded-lg border border-border overflow-hidden">
-                  {sizeOptions.map((s) => (
-                    <button key={s.value} type="button" title={s.title}
-                      onClick={() => onChange({ ...block, font_size: s.value })}
-                      className={cn("px-2.5 py-1.5 text-xs font-medium transition-colors",
-                        currentSize === s.value ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground hover:bg-muted"
-                      )}>
-                      {s.label}
-                    </button>
-                  ))}
-                </div>
+                <input
+                  type="range"
+                  min={12}
+                  max={100}
+                  value={currentSizePx}
+                  onChange={e => onChange({ ...block, font_size: parseInt(e.target.value) })}
+                  className="flex-1 h-1.5 accent-primary"
+                />
+                <span className="text-[10px] font-mono text-muted-foreground w-8 text-end">{currentSizePx}px</span>
               </div>
               <Label className="text-xs font-medium">{isAr ? 'اختر نمط البسملة' : 'Select Besmellah Style'}</Label>
               <div className="grid grid-cols-3 gap-1.5 max-h-[300px] overflow-y-auto">
@@ -1276,14 +1254,14 @@ const BlockEditor = ({
                     className={cn("flex flex-col items-center gap-1 p-3 rounded-lg border transition-all",
                       block.selected_symbol === s.char ? "border-primary bg-primary/10" : "border-border/50 hover:border-primary/30 hover:bg-muted/40"
                     )}>
-                    <span className={cn(sizeMap[currentSize], "leading-none")} style={{ fontFamily: "'Besmellah', serif" }}>{s.char}</span>
+                    <span className="leading-none" style={{ fontFamily: "'Besmellah', serif", fontSize: `${currentSizePx}px` }}>{s.char}</span>
                     <span className="text-[8px] text-muted-foreground">{s.label}</span>
                   </button>
                 ))}
               </div>
               {block.selected_symbol && (
                 <div className="p-4 rounded-lg border bg-muted/10 text-center">
-                  <span className={previewSizeMap[currentSize]} style={{ fontFamily: "'Besmellah', serif" }}>{block.selected_symbol}</span>
+                  <span style={{ fontFamily: "'Besmellah', serif", fontSize: `${Math.min(currentSizePx * 1.25, 100)}px` }}>{block.selected_symbol}</span>
                 </div>
               )}
             </div>
