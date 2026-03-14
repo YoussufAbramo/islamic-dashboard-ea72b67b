@@ -1315,6 +1315,7 @@ const CourseLearning = () => {
                   }}
                   placeholder={isAr ? 'اكتب ملاحظاتك هنا...' : 'Write your notes here...'}
                   className="flex-1 min-h-[200px] text-sm resize-none"
+                  style={{ fontFamily: lessonFontFamily !== 'default' ? `'${lessonFontFamily}', var(--font-rtl)` : `'${appRtlFont}', sans-serif` }}
                   dir={isAr ? 'rtl' : 'ltr'}
                 />
                 <div className="mt-3 p-2.5 rounded-lg bg-muted/40 border border-border/50">
