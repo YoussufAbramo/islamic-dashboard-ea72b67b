@@ -17,6 +17,25 @@ const ContentEditor = ({ value, onChange, placeholder, minHeight = '300px' }: Co
   const editorRef = useRef<HTMLDivElement>(null);
   const isInternalChange = useRef(false);
 
+  const [contentFont, setContentFont] = useState(() => {
+    try { return localStorage.getItem('lesson_font_family') || 'default'; } catch { return 'default'; }
+  });
+
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'lesson_font_family') setContentFont(e.newValue || 'default');
+    };
+    const onCustom = (e: Event) => {
+      setContentFont((e as CustomEvent).detail || 'default');
+    };
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('lesson-font-change', onCustom);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('lesson-font-change', onCustom);
+    };
+  }, []);
+
   // Only update innerHTML when value changes externally (not from typing)
   useEffect(() => {
     if (isInternalChange.current) {
@@ -98,7 +117,7 @@ const ContentEditor = ({ value, onChange, placeholder, minHeight = '300px' }: Co
         suppressContentEditableWarning
         className="p-4 outline-none prose prose-sm max-w-none dark:prose-invert overflow-auto"
         dir="auto"
-        style={{ minHeight, unicodeBidi: 'plaintext' }}
+        style={{ minHeight, unicodeBidi: 'plaintext', fontFamily: contentFont !== 'default' ? `'${contentFont}', var(--font-rtl)` : undefined }}
         onInput={handleInput}
         data-placeholder={placeholder}
       />

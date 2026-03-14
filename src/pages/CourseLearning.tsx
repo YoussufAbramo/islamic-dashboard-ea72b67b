@@ -685,6 +685,7 @@ const CourseLearning = () => {
   const saveLessonFontFamily = useCallback((font: string) => {
     setLessonFontFamily(font);
     try { localStorage.setItem('lesson_font_family', font); } catch {}
+    window.dispatchEvent(new CustomEvent('lesson-font-change', { detail: font }));
   }, []);
 
   const saveQuranFont = useCallback((font: string) => {
