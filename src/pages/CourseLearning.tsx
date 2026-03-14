@@ -1377,8 +1377,8 @@ const CourseLearning = () => {
                     <SelectContent>
                       {[
                         { value: 'Indopak Nastaleeq', label: 'Indopak Nastaleeq' },
-                        { value: 'QPC V2', label: 'QPC V2' },
-                        { value: 'QPC V4 Tajweed', label: 'QPC V4 Tajweed' },
+                        { value: 'Thuluth', label: 'Thuluth' },
+                        { value: 'Aref Ruqaa', label: 'Aref Ruqaa' },
                       ].map(f => (
                         <SelectItem key={f.value} value={f.value}>
                           <span style={{ fontFamily: `'${f.value}', serif` }}>{f.label}</span>
