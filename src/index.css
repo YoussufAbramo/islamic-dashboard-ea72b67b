@@ -7,9 +7,9 @@
 @font-face { font-family: 'Surah Name Color V4'; src: url('/fonts/Surah_Name_Color_V4.woff2') format('woff2'); font-display: swap; }
 @font-face { font-family: 'Indopak Nastaleeq'; src: url('/fonts/Indopak_Nastaleeq.woff2') format('woff2'); font-display: swap; }
 @font-face { font-family: 'KFGQPC Nastaleeq'; src: url('/fonts/KFGQPC_Nastaleeq.woff2') format('woff2'); font-display: swap; }
-@font-face { font-family: 'QPC V4 Tajweed'; src: url('/fonts/QPC_V4_Tajweed.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Thuluth'; src: url('/fonts/Thuluth.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Aref Ruqaa'; src: url('/fonts/Aref_Ruqaa.ttf') format('truetype'); font-display: swap; }
 @font-face { font-family: 'Besmellah'; src: url('/fonts/Besmellah.ttf') format('truetype'); font-display: swap; }
-@font-face { font-family: 'QPC V2'; src: url('/fonts/QPC_V2.woff2') format('woff2'); font-display: swap; }
 
 @tailwind base;
 @tailwind components;
@@ -866,7 +866,7 @@
 /* Ensure Quran category elements keep their own inline fonts */
 .lesson-content-viewer .quran-quote-block p,
 .lesson-content-viewer[style*="--lesson-font-family"] .quran-quote-block p {
-  font-family: var(--quran-font, 'QPC V2', serif) !important;
+  font-family: var(--quran-font, 'Indopak Nastaleeq', serif) !important;
 }
 .lesson-content-viewer [style*="Besmellah"] {
   font-family: 'Besmellah', serif !important;

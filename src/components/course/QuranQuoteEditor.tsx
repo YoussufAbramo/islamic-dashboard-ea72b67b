@@ -22,11 +22,11 @@ interface Props {
 
 const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
   const [quranFont, setQuranFont] = useState(() => {
-    try { return localStorage.getItem('quran_font') || 'QPC V2'; } catch { return 'QPC V2'; }
+    try { return localStorage.getItem('quran_font') || 'Indopak Nastaleeq'; } catch { return 'Indopak Nastaleeq'; }
   });
 
   useEffect(() => {
-    const sync = () => { try { setQuranFont(localStorage.getItem('quran_font') || 'QPC V2'); } catch {} };
+    const sync = () => { try { setQuranFont(localStorage.getItem('quran_font') || 'Indopak Nastaleeq'); } catch {} };
     window.addEventListener('storage', sync);
     const id = setInterval(sync, 2000);
     return () => { window.removeEventListener('storage', sync); clearInterval(id); };

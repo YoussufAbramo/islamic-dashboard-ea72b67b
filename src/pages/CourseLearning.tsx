@@ -16,7 +16,7 @@ import {
   ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Circle,
   BookOpen, Play, FileText, Headphones, ExternalLink, FileDown,
   Menu, X, GraduationCap, Loader2, PanelTop, PanelTopClose, AlertTriangle, Settings2,
-  ChevronDown, FolderTree, Layers, StickyNote, Sun, Moon, Type as TypeIcon, Sparkles, Check,
+  ChevronDown, FolderTree, Layers, StickyNote, Sun, Moon, Type as TypeIcon, Check,
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -712,7 +712,7 @@ const CourseLearning = () => {
   });
   const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
   const [quranFont, setQuranFont] = useState(() => {
-    try { return localStorage.getItem('quran_font') || 'QPC V2'; } catch { return 'QPC V2'; }
+    try { return localStorage.getItem('quran_font') || 'Indopak Nastaleeq'; } catch { return 'Indopak Nastaleeq'; }
   });
   const [tajweedMode, setTajweedMode] = useState(() => {
     try { return localStorage.getItem('tajweed_mode') === 'true'; } catch { return false; }
@@ -1280,7 +1280,7 @@ const CourseLearning = () => {
               style={{
                 '--lesson-font-size': `${lessonFontSize}px`,
                 '--lesson-font-family': lessonFontFamily !== 'default' ? `'${lessonFontFamily}', var(--font-rtl)` : undefined,
-                '--quran-font': tajweedMode ? "'QPC V4 Tajweed', serif" : `'${quranFont}', serif`,
+                '--quran-font': `'${quranFont}', serif`,
               } as React.CSSProperties}
             >
               <ContentViewer lesson={currentLesson} isAr={isAr} />
@@ -1370,15 +1370,15 @@ const CourseLearning = () => {
                     <BookOpen className="h-4 w-4 text-muted-foreground" />
                     <Label className="text-sm font-medium">{isAr ? 'خط القرآن' : 'Quran Font'}</Label>
                   </div>
-                  <Select value={quranFont} onValueChange={saveQuranFont} disabled={tajweedMode}>
+                  <Select value={quranFont} onValueChange={saveQuranFont}>
                     <SelectTrigger className="h-9 text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {[
                         { value: 'Indopak Nastaleeq', label: 'Indopak Nastaleeq' },
-                        { value: 'QPC V2', label: 'QPC V2' },
-                        { value: 'QPC V4 Tajweed', label: 'QPC V4 Tajweed' },
+                        { value: 'Thuluth', label: 'Thuluth' },
+                        { value: 'Aref Ruqaa', label: 'Aref Ruqaa' },
                       ].map(f => (
                         <SelectItem key={f.value} value={f.value}>
                           <span style={{ fontFamily: `'${f.value}', serif` }}>{f.label}</span>
@@ -1387,30 +1387,11 @@ const CourseLearning = () => {
                     </SelectContent>
                   </Select>
                   <div className="p-2.5 rounded-lg bg-muted/40 border border-border/50">
-                    <p className="text-sm leading-[2]" style={{ fontFamily: tajweedMode ? "'QPC V4 Tajweed', serif" : `'${quranFont}', serif` }} dir="rtl">
+                    <p className="text-sm leading-[2]" style={{ fontFamily: `'${quranFont}', serif` }} dir="rtl">
                       بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
                     </p>
                   </div>
                 </div>
-
-                <Separator />
-
-                {/* Tajweed Mode */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-muted-foreground" />
-                    <Label className="text-sm font-medium">{isAr ? 'وضع التجويد' : 'Tajweed Mode'}</Label>
-                  </div>
-                  <Switch
-                    checked={tajweedMode}
-                    onCheckedChange={toggleTajweedMode}
-                  />
-                </div>
-                {tajweedMode && (
-                  <p className="text-[10px] text-muted-foreground">
-                    {isAr ? 'يستخدم خط QPC V4 Tajweed لعرض علامات التجويد' : 'Uses QPC V4 Tajweed font for Tajweed marks'}
-                  </p>
-                )}
 
                 <Separator />
                 <div className="space-y-3 opacity-50 pointer-events-none relative">
