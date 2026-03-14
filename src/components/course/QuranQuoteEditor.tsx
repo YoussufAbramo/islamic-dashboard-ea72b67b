@@ -5,12 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Search, BookOpen, Hash, X } from 'lucide-react';
+import { Loader2, Search, BookOpen, Hash, X, Languages } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   getSurahList, getSurahAyahs, searchQuran, parseAyahReference,
-  type SurahMeta, type Ayah, type SearchMatch,
+  getEnglishEditions, getSurahTranslation,
+  type SurahMeta, type Ayah, type SearchMatch, type TranslationEdition,
 } from '@/lib/quranApi';
 import type { ContentBlock } from '@/components/course/LessonBuilder';
 
@@ -50,11 +52,24 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
   const [searching, setSearching] = useState(false);
   const searchTimer = useRef<ReturnType<typeof setTimeout>>();
 
+  // Translation
+  const [editions, setEditions] = useState<TranslationEdition[]>([]);
+  const [loadingEditions, setLoadingEditions] = useState(false);
+  const [loadingTranslation, setLoadingTranslation] = useState(false);
+
   // Load surahs on mount
   useEffect(() => {
     setLoadingSurahs(true);
     getSurahList().then(setSurahs).catch(() => {}).finally(() => setLoadingSurahs(false));
   }, []);
+
+  // Load editions when translation is enabled
+  useEffect(() => {
+    if (block.quran_translation_enabled && editions.length === 0) {
+      setLoadingEditions(true);
+      getEnglishEditions().then(setEditions).catch(() => {}).finally(() => setLoadingEditions(false));
+    }
+  }, [block.quran_translation_enabled]);
 
   // Load ayahs when surah changes
   useEffect(() => {
@@ -62,7 +77,6 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
     setLoadingAyahs(true);
     getSurahAyahs(selectedSurah).then((data) => {
       setAyahs(data);
-      // Reset range when surah changes (unless it's initial load with existing data)
       if (selectedSurah !== block.quran_surah_number) {
         setAyahFrom(1);
         setAyahTo(1);
@@ -75,7 +89,6 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
     if (searchTimer.current) clearTimeout(searchTimer.current);
     if (!searchQuery || searchQuery.trim().length < 2) { setSearchResults([]); return; }
 
-    // Check if it's a reference like "2:255"
     const ref = parseAyahReference(searchQuery);
     if (ref) {
       setSearching(true);
@@ -98,8 +111,29 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
 
   const surahMeta = useMemo(() => surahs.find(s => s.number === selectedSurah), [surahs, selectedSurah]);
 
-  const applySelection = useCallback((text: string, surahNum: number, surahName: string, surahNameEn: string, from: number, to: number) => {
+  // Fetch translation when quran text is set and translation is enabled
+  const fetchTranslation = useCallback(async (surahNum: number, from: number, to: number, edition: string) => {
+    if (!edition) return '';
+    setLoadingTranslation(true);
+    try {
+      const translationAyahs = await getSurahTranslation(surahNum, edition);
+      const selected = translationAyahs.filter(a => a.numberInSurah >= from && a.numberInSurah <= to);
+      return selected.map(a => a.text).join(' ');
+    } catch {
+      return '';
+    } finally {
+      setLoadingTranslation(false);
+    }
+  }, []);
+
+  const applySelection = useCallback(async (text: string, surahNum: number, surahName: string, surahNameEn: string, from: number, to: number) => {
     const ref = from === to ? `${surahNum}:${from}` : `${surahNum}:${from}-${to}`;
+    let translationText = block.quran_translation_text;
+    
+    if (block.quran_translation_enabled && block.quran_translation_edition) {
+      translationText = await fetchTranslation(surahNum, from, to, block.quran_translation_edition);
+    }
+    
     onChange({
       ...block,
       quran_text: text,
@@ -109,8 +143,9 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
       quran_ayah_from: from,
       quran_ayah_to: to,
       quran_reference: ref,
+      quran_translation_text: translationText,
     });
-  }, [block, onChange]);
+  }, [block, onChange, fetchTranslation]);
 
   const handleLoadAyahs = useCallback(() => {
     if (!surahMeta || ayahs.length === 0) return;
@@ -126,6 +161,30 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
     setSearchQuery('');
     setSearchResults([]);
   }, [applySelection]);
+
+  const handleToggleTranslation = useCallback(async (enabled: boolean) => {
+    const updated: Partial<ContentBlock> = {
+      quran_translation_enabled: enabled,
+    };
+    if (!enabled) {
+      updated.quran_translation_text = undefined;
+    } else if (enabled && block.quran_surah_number && block.quran_ayah_from && block.quran_translation_edition) {
+      const text = await fetchTranslation(block.quran_surah_number, block.quran_ayah_from, block.quran_ayah_to || block.quran_ayah_from, block.quran_translation_edition);
+      updated.quran_translation_text = text;
+    }
+    onChange({ ...block, ...updated });
+  }, [block, onChange, fetchTranslation]);
+
+  const handleEditionChange = useCallback(async (edition: string) => {
+    const updated: Partial<ContentBlock> = {
+      quran_translation_edition: edition,
+    };
+    if (block.quran_surah_number && block.quran_ayah_from) {
+      const text = await fetchTranslation(block.quran_surah_number, block.quran_ayah_from, block.quran_ayah_to || block.quran_ayah_from, edition);
+      updated.quran_translation_text = text;
+    }
+    onChange({ ...block, ...updated });
+  }, [block, onChange, fetchTranslation]);
 
   const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
     { key: 'search', label: isAr ? 'بحث' : 'Search', icon: Search },
@@ -284,6 +343,45 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
 
       <Separator />
 
+      {/* ─── English Translation ─── */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <Languages className="h-3.5 w-3.5 text-muted-foreground" />
+            <Label className="text-xs">{isAr ? 'الترجمة الإنجليزية' : 'English Translation'}</Label>
+          </div>
+          <Switch
+            checked={!!block.quran_translation_enabled}
+            onCheckedChange={handleToggleTranslation}
+          />
+        </div>
+        {block.quran_translation_enabled && (
+          <div className="space-y-1.5">
+            <Label className="text-[11px] text-muted-foreground">{isAr ? 'اختر المترجم' : 'Select Translator'}</Label>
+            {loadingEditions ? (
+              <div className="flex items-center justify-center py-2"><Loader2 className="h-3.5 w-3.5 animate-spin" /></div>
+            ) : (
+              <Select value={block.quran_translation_edition || ''} onValueChange={handleEditionChange}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder={isAr ? 'اختر المترجم...' : 'Pick a translator...'} />
+                </SelectTrigger>
+                <SelectContent>
+                  <ScrollArea className="max-h-60">
+                    {editions.map(e => (
+                      <SelectItem key={e.identifier} value={e.identifier}>
+                        <span className="text-xs">{e.englishName}</span>
+                      </SelectItem>
+                    ))}
+                  </ScrollArea>
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+        )}
+      </div>
+
+      <Separator />
+
       {/* ─── Font Size ─── */}
       {block.quran_text && (
         <div className="space-y-1.5">
@@ -319,17 +417,28 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
           </div>
           <div className="p-4 rounded-lg border bg-muted/10 text-center quran-quote-block" dir="rtl">
             <p className="leading-[2.5]" style={{ fontFamily: `'${quranFont}', serif`, fontSize: `${block.quran_font_size || 18}px` }}>{block.quran_text}</p>
+            {block.quran_translation_enabled && block.quran_translation_text && (
+              <div className="mt-3 pt-3 border-t border-border/30" dir="ltr">
+                <p className="text-sm leading-relaxed text-muted-foreground italic">{block.quran_translation_text}</p>
+              </div>
+            )}
             {block.quran_surah_name && (
               <p className="text-xs text-muted-foreground mt-3">
                 {block.quran_surah_name} {block.quran_surah_name_en && `— ${block.quran_surah_name_en}`} {block.quran_reference && `(${block.quran_reference})`}
               </p>
             )}
           </div>
+          {loadingTranslation && (
+            <div className="flex items-center justify-center gap-1.5 py-1">
+              <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+              <span className="text-[10px] text-muted-foreground">{isAr ? 'جاري تحميل الترجمة...' : 'Loading translation...'}</span>
+            </div>
+          )}
           <Button
             variant="ghost"
             size="sm"
             className="w-full text-xs h-7 text-destructive hover:text-destructive"
-            onClick={() => onChange({ ...block, quran_text: undefined, quran_surah_number: undefined, quran_surah_name: undefined, quran_surah_name_en: undefined, quran_ayah_from: undefined, quran_ayah_to: undefined, quran_reference: undefined })}
+            onClick={() => onChange({ ...block, quran_text: undefined, quran_surah_number: undefined, quran_surah_name: undefined, quran_surah_name_en: undefined, quran_ayah_from: undefined, quran_ayah_to: undefined, quran_reference: undefined, quran_translation_text: undefined })}
           >
             {isAr ? 'مسح الاختيار' : 'Clear Selection'}
           </Button>
