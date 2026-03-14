@@ -23,7 +23,7 @@ import {
   ListOrdered, BookOpen, Brain, RotateCcw, ClipboardList,
   Headphones, CheckCircle2, CheckSquare, ArrowUpDown, TextCursorInput, ToggleLeft, Ear,
   Minus, FileStack, Columns, Lock, Ban, ArrowLeftRight, Pencil, ChevronDown as ChevronDownIcon,
-  Sparkles,
+  Sparkles, SquareDashedBottom, SquareDashedBottomCode,
 } from 'lucide-react';
 
 // ─── Block Types ───
