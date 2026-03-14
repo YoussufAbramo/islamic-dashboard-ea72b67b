@@ -835,3 +835,22 @@
     }
   }
 }
+
+/* ── Lesson Content Font Size Control ── */
+.lesson-content-viewer {
+  --lesson-font-size: 16px;
+}
+.lesson-content-viewer .prose {
+  font-size: var(--lesson-font-size) !important;
+}
+.lesson-content-viewer .prose p,
+.lesson-content-viewer .prose li,
+.lesson-content-viewer .prose td,
+.lesson-content-viewer .prose th,
+.lesson-content-viewer .prose span,
+.lesson-content-viewer .prose blockquote {
+  font-size: var(--lesson-font-size) !important;
+}
+.lesson-content-viewer .prose h1 { font-size: calc(var(--lesson-font-size) * 1.75) !important; }
+.lesson-content-viewer .prose h2 { font-size: calc(var(--lesson-font-size) * 1.5) !important; }
+.lesson-content-viewer .prose h3 { font-size: calc(var(--lesson-font-size) * 1.25) !important; }
