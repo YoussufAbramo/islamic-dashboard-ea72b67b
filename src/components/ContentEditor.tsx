@@ -28,8 +28,6 @@ const ContentEditor = ({ value, onChange, placeholder, minHeight = '300px' }: Co
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
   }, []);
-  const editorRef = useRef<HTMLDivElement>(null);
-  const isInternalChange = useRef(false);
 
   // Only update innerHTML when value changes externally (not from typing)
   useEffect(() => {
