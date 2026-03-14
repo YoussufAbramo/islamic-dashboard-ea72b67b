@@ -989,6 +989,9 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
     onOpenChange(v);
   };
 
+  const hasSplitScreen = useMemo(() => blocks.some(b => b.type === 'split_screen'), [blocks]);
+  const hasNonSplitBlocks = useMemo(() => blocks.some(b => b.type !== 'split_screen'), [blocks]);
+
   const addBlock = useCallback((type: BlockType) => {
     const newBlock: ContentBlock = { id: generateId(), type };
     if (type === 'text' || type === 'table_of_content' || type === 'read_listen' || type === 'memorization' || type === 'revision' || type === 'homework') {
@@ -999,7 +1002,23 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
     }
     if (type === 'exercise_text_match') { newBlock.pairs = []; }
     if (type === 'exercise_rearrange') { newBlock.items = []; }
-    setBlocks(prev => [...prev, newBlock]);
+
+    // If split screen exists and this is not a split_screen block, assign to a side
+    if (type !== 'split_screen') {
+      setBlocks(prev => {
+        const splitExists = prev.some(b => b.type === 'split_screen');
+        if (splitExists) {
+          // Count blocks on each side
+          const leftCount = prev.filter(b => b.split_side === 'left').length;
+          const rightCount = prev.filter(b => b.split_side === 'right').length;
+          // If left has content, add to right; otherwise add to left
+          newBlock.split_side = leftCount > rightCount ? 'right' : (leftCount === 0 ? 'left' : 'right');
+        }
+        return [...prev, newBlock];
+      });
+    } else {
+      setBlocks(prev => [...prev, newBlock]);
+    }
   }, []);
 
   const updateBlock = useCallback((id: string, updated: ContentBlock) => {
