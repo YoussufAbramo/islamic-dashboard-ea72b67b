@@ -292,18 +292,16 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
               <SelectTrigger className="h-9 text-xs">
                 <SelectValue placeholder={isAr ? 'اختر سورة...' : 'Pick a Surah...'} />
               </SelectTrigger>
-              <SelectContent>
-                <ScrollArea className="max-h-60">
-                  {surahs.map(s => (
-                    <SelectItem key={s.number} value={String(s.number)}>
-                      <span className="flex items-center gap-2">
-                        <span className="text-muted-foreground text-[10px] w-5 text-end">{s.number}</span>
-                        <span>{s.name}</span>
-                        <span className="text-muted-foreground text-[10px]">({s.englishName})</span>
-                      </span>
-                    </SelectItem>
-                  ))}
-                </ScrollArea>
+              <SelectContent className="max-h-60 overflow-y-auto">
+                {surahs.map(s => (
+                  <SelectItem key={s.number} value={String(s.number)}>
+                    <span className="flex items-center gap-2">
+                      <span className="text-muted-foreground text-[10px] w-5 text-end">{s.number}</span>
+                      <span>{s.name}</span>
+                      <span className="text-muted-foreground text-[10px]">({s.englishName})</span>
+                    </span>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           )}
