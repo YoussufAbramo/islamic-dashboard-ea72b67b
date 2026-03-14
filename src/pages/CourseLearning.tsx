@@ -677,13 +677,6 @@ const CourseLearning = () => {
     setRightPanel(prev => prev === panel ? null : panel);
   };
 
-  const handleCopySymbol = useCallback((symbol: string) => {
-    navigator.clipboard.writeText(symbol).then(() => {
-      setCopiedSymbol(symbol);
-      toast.success(isAr ? 'تم النسخ!' : 'Copied!');
-      setTimeout(() => setCopiedSymbol(null), 1500);
-    });
-  }, [isAr]);
 
   const saveLessonFontFamily = useCallback((font: string) => {
     setLessonFontFamily(font);
