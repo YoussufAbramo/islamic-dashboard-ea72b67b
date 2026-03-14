@@ -429,7 +429,7 @@ const BlockEditor = ({
         )}
 
         {isBeta && (
-          <Badge className="text-[9px] px-1.5 py-0 h-4 bg-amber-500/15 text-amber-600 border-amber-400/40 font-bold uppercase tracking-wider">
+          <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 bg-amber-500/15 text-amber-600 border-amber-400/40 hover:bg-amber-500/15 font-bold uppercase tracking-wider">
             Beta
           </Badge>
         )}
@@ -1776,12 +1776,12 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
                           {cantUse && !isSoon && <Ban className="h-2.5 w-2.5 absolute top-1 end-1 text-destructive/60" />}
                           {isSoon && <Lock className="h-2.5 w-2.5 absolute top-1 end-1 text-muted-foreground/60" />}
                           {isQuranBeta && (
-                            <Badge className="absolute -top-1.5 -start-1.5 text-[7px] px-1 py-0 h-3.5 bg-amber-500/15 text-amber-600 border-amber-400/40 font-bold uppercase tracking-wider leading-none">
+                            <Badge variant="outline" className="absolute -top-1.5 -start-1.5 text-[7px] px-1 py-0 h-3.5 bg-amber-500/15 text-amber-600 border-amber-400/40 hover:bg-amber-500/15 font-bold uppercase tracking-wider leading-none">
                               Beta
                             </Badge>
                           )}
                           {isSoon && (
-                            <Badge className="absolute -top-1.5 -start-1.5 text-[7px] px-1 py-0 h-3.5 bg-muted text-muted-foreground border-border font-bold uppercase tracking-wider leading-none">
+                            <Badge variant="outline" className="absolute -top-1.5 -start-1.5 text-[7px] px-1 py-0 h-3.5 bg-muted text-muted-foreground border-border hover:bg-muted font-bold uppercase tracking-wider leading-none">
                               Soon
                             </Badge>
                           )}
