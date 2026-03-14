@@ -659,7 +659,7 @@ const CourseLearning = () => {
   const [lessonFontFamily, setLessonFontFamily] = useState(() => {
     try { return localStorage.getItem('lesson_font_family') || 'default'; } catch { return 'default'; }
   });
-  const [copiedSymbol, setCopiedSymbol] = useState<string | null>(null);
+  
   const [noteText, setNoteText] = useState('');
   const [lessonFontSize, setLessonFontSize] = useState(() => {
     try { return parseInt(localStorage.getItem('lesson_font_size') || '16', 10); } catch { return 16; }
