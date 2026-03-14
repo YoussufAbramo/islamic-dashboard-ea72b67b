@@ -673,7 +673,7 @@ const CourseLearning = () => {
   });
   const canManage = role === 'admin' || role === 'teacher';
 
-  const toggleRightPanel = (panel: 'notes' | 'appearance' | 'symbols') => {
+  const toggleRightPanel = (panel: 'notes' | 'appearance') => {
     setRightPanel(prev => prev === panel ? null : panel);
   };
 
