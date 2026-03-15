@@ -1314,7 +1314,7 @@ const LessonBuilder = ({ open, onOpenChange, lesson, isAr, onSaved }: LessonBuil
   const [unsavedDialogOpen, setUnsavedDialogOpen] = useState(false);
   const savedSnapshot = useRef<string>('');
 
-  const lessonFingerprint = lesson ? `${lesson.id}:${JSON.stringify(lesson.content?.blocks?.length ?? 0)}` : null;
+  const lessonFingerprint = lesson ? `${lesson.id}:${JSON.stringify(lesson.content)}` : null;
 
   if (lesson && initialized.current !== lessonFingerprint) {
     initialized.current = lessonFingerprint;
