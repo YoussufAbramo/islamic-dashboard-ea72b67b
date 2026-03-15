@@ -240,25 +240,51 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
   const besmellahMode = block.quran_besmellah_mode || (block.quran_besmellah_enabled === false ? 'none' : 'inline');
   const surahNameMode = block.quran_surah_name_mode || 'surat_name';
 
+  // Nameplate glyph lookup (1-indexed, index 0 unused)
+  const nameplateGlyphs = [
+    '', // 0 — unused
+    "ﱅ","ﱆ","ﱇ","ﱊ","ﱋ","ﱎ","ﱏ","ﱑ","ﱒ","ﱓ",
+    "ﱕ","ﱖ","ﱘ","ﱚ","ﱛ","ﱜ","ﱝ","ﱞ","ﱡ","ﱢ",
+    "ﱤ","ﭑ","ﭒ","ﭔ","ﭕ","ﭗ","ﭘ","ﭚ","ﭛ","ﭝ",
+    "ﭞ","ﭠ","ﭡ","ﭣ","ﭤ","ﭦ","ﭧ","ﭩ","ﭪ","ﭬ",
+    "ﭭ","ﭯ","ﭰ","ﭲ","ﭳ","ﭵ","ﭶ","ﭸ","ﭹ","ﭻ",
+    "ﭼ","ﭾ","ﭿ","ﮁ","ﮂ","ﮄ","ﮅ","ﮇ","ﮈ","ﮊ",
+    "ﮋ","ﮍ","ﮎ","ﮐ","ﮑ","ﮓ","ﮔ","ﮖ","ﮗ","ﮙ",
+    "ﮚ","ﮜ","ﮝ","ﮟ","ﮠ","ﮢ","ﮣ","ﮥ","ﮦ","ﮨ",
+    "ﮩ","ﮫ","ﮬ","ﮮ","ﮯ","ﮱ","﮲","﮴","﮵","﮷",
+    "﮸","﮺","﮻","﮽","﮾","﯀","﯁","ﯓ","ﯔ","ﯖ",
+    "ﯗ","ﯙ","ﯚ","ﯜ","ﯝ","ﯟ","ﯠ","ﯢ","ﯣ","ﯥ",
+    "ﯦ","ﯨ","ﯩ","ﯫ",
+  ];
+
+  const getNameplateGlyph = (surahNum: number) => nameplateGlyphs[surahNum] || `surah-${surahNum}`;
+
   return (
     <div className="space-y-3">
       {/* ─── Search (ayat only) ─── */}
       <div className="relative">
-        <Search className="absolute start-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-        <Input
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          onFocus={() => setSearchFocused(true)}
-          onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
-          placeholder={isAr ? 'ابحث في الآيات بالنص أو المرجع (2:255)...' : 'Search ayat by text or reference (2:255)...'}
-          className="ps-8 h-9 text-xs"
-          dir="auto"
-        />
-        {searchQuery && (
-          <Button variant="ghost" size="icon" className="absolute end-1 top-1 h-7 w-7" onClick={() => { setSearchQuery(''); setAllSearchResults([]); setVisibleCount(10); }}>
-            <X className="h-3 w-3" />
-          </Button>
-        )}
+        <div className="flex items-center gap-1.5 mb-1">
+          <Search className="h-3.5 w-3.5 text-muted-foreground" />
+          <Label className="text-xs">{isAr ? 'بحث في الآيات' : 'Search Ayat'}</Label>
+          <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 bg-amber-500/10 text-amber-600 border-amber-300">Beta</Badge>
+        </div>
+        <div className="relative">
+          <Search className="absolute start-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+          <Input
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
+            placeholder={isAr ? 'ابحث في الآيات بالنص أو المرجع (2:255)...' : 'Search ayat by text or reference (2:255)...'}
+            className="ps-8 h-9 text-xs"
+            dir="auto"
+          />
+          {searchQuery && (
+            <Button variant="ghost" size="icon" className="absolute end-1 top-1 h-7 w-7" onClick={() => { setSearchQuery(''); setAllSearchResults([]); setVisibleCount(10); }}>
+              <X className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Search results dropdown */}
@@ -504,14 +530,31 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
             </button>
           ))}
         </div>
+        {surahNameMode !== 'none' && block.quran_text && (
+          <div className="flex items-center gap-2">
+            <Type className="h-3 w-3 text-muted-foreground shrink-0" />
+            <Slider
+              min={12}
+              max={100}
+              step={1}
+              value={[block.quran_surah_name_font_size || (surahNameMode === 'nameplate' ? 30 : 22)]}
+              onValueChange={([v]) => onChange({ ...block, quran_surah_name_font_size: v })}
+              className="flex-1"
+            />
+            <span className="text-[10px] font-mono text-muted-foreground w-8 text-end">{block.quran_surah_name_font_size || (surahNameMode === 'nameplate' ? 30 : 22)}px</span>
+          </div>
+        )}
       </div>
 
       <Separator />
 
-      {/* ─── Tashkeel & Ayah Numbers ─── */}
+      {/* ─── Tashkeel ─── */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label className="text-xs">{isAr ? 'التشكيل' : 'Tashkeel'}</Label>
+          <div className="flex items-center gap-1.5">
+            <Label className="text-xs">{isAr ? 'التشكيل' : 'Tashkeel'}</Label>
+            <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 bg-amber-500/10 text-amber-600 border-amber-300">Beta</Badge>
+          </div>
           <Switch
             checked={block.quran_tashkeel_enabled !== false}
             onCheckedChange={(v) => {
@@ -579,18 +622,18 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
           <div className="p-4 rounded-lg border bg-muted/10 text-center quran-quote-block" dir="rtl">
             {/* Surah Name before ayat */}
             {surahNameMode === 'name' && block.quran_surah_number && (
-              <p className="mb-3" style={{ fontFamily: "'Surah Name V4', serif", fontSize: `${(block.quran_font_size || 18) + 4}px` }}>
+              <p className="mb-3" style={{ fontFamily: "'Surah Name V4', serif", fontSize: `${block.quran_surah_name_font_size || 22}px` }}>
                 {block.quran_surah_name_display || `surah${String(block.quran_surah_number).padStart(3, '0')}`}
               </p>
             )}
             {surahNameMode === 'surat_name' && block.quran_surah_number && (
-              <p className="mb-3" style={{ fontFamily: "'Surah Name V2', serif", fontSize: `${(block.quran_font_size || 18) + 4}px` }}>
+              <p className="mb-3" style={{ fontFamily: "'Surah Name V2', serif", fontSize: `${block.quran_surah_name_font_size || 22}px` }}>
                 {block.quran_surah_name_display || `surah${String(block.quran_surah_number).padStart(3, '0')}`}
               </p>
             )}
             {surahNameMode === 'nameplate' && block.quran_surah_number && (
-              <p className="mb-3" style={{ fontFamily: "'Surah Header', serif", fontSize: `${(block.quran_font_size || 18) + 12}px` }}>
-                {block.quran_surah_name_display || `surah-${block.quran_surah_number}`}
+              <p className="mb-3" style={{ fontFamily: "'Surah Header', serif", fontSize: `${block.quran_surah_name_font_size || 30}px` }}>
+                {getNameplateGlyph(block.quran_surah_number)}
               </p>
             )}
             {/* Besmellah */}

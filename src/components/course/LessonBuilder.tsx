@@ -105,6 +105,7 @@ export interface ContentBlock {
   surah_name_mode?: 'name_only' | 'surat_name';
   font_size?: 'sm' | 'md' | 'lg' | 'xl' | 'huge' | number;
   quran_font_size?: number; // px, 12–100
+  quran_surah_name_font_size?: number; // px, 12–100, independent of ayat font size
   quran_besmellah_enabled?: boolean;
   quran_besmellah_mode?: 'none' | 'inline' | 'single_line';
   quran_besmellah_font_size?: number; // px, for single_line mode
