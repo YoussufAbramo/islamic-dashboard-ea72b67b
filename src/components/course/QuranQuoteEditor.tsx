@@ -546,24 +546,6 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
         )}
       </div>
 
-      <Separator />
-
-      {/* ─── Tashkeel ─── */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Label className="text-xs">{isAr ? 'التشكيل' : 'Tashkeel'}</Label>
-            <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 bg-amber-500/10 text-amber-600 border-amber-300">Beta</Badge>
-          </div>
-          <Switch
-            checked={block.quran_tashkeel_enabled !== false}
-            onCheckedChange={(v) => {
-              onChange({ ...block, quran_tashkeel_enabled: v });
-              setTimeout(() => rebuildText(), 50);
-            }}
-          />
-        </div>
-      </div>
 
       <Separator />
 
