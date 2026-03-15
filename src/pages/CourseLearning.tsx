@@ -1289,7 +1289,7 @@ const CourseLearning = () => {
             <div
               className="max-w-3xl mx-auto p-6 lesson-content-viewer"
               style={{
-                '--lesson-font-size': `${lessonFontSize}px`,
+                '--lesson-font-size': lessonFontSize,
                 '--lesson-font-family': lessonFontFamily !== 'default' ? `'${lessonFontFamily}', var(--font-rtl)` : undefined,
                 '--quran-font': `'${quranFont}', serif`,
               } as React.CSSProperties}
