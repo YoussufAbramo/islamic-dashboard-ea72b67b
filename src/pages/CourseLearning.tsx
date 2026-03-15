@@ -1457,22 +1457,23 @@ const CourseLearning = () => {
                   <div className="flex items-center gap-2">
                     <TypeIcon className="h-4 w-4 text-muted-foreground" />
                     <Label className="text-sm font-medium">{isAr ? 'حجم الخط' : 'Font Size'}</Label>
+                    <span className="text-xs text-muted-foreground font-mono ms-auto">{lessonFontSize}</span>
                   </div>
-                  <Select value={lessonFontSize} onValueChange={(val) => {
-                    setLessonFontSize(val);
-                    try { localStorage.setItem('lesson_font_size', val); } catch {}
-                  }}>
-                    <SelectTrigger className="h-9 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {fontSizeOptions.map(f => (
-                        <SelectItem key={f.value} value={f.value}>
-                          {f.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Slider
+                    min={0}
+                    max={fontSizeOptions.length - 1}
+                    step={1}
+                    value={[fontSizeOptions.findIndex(f => f.value === lessonFontSize) || 0]}
+                    onValueChange={([idx]) => {
+                      const val = fontSizeOptions[idx]?.value || '1em';
+                      setLessonFontSize(val);
+                      try { localStorage.setItem('lesson_font_size', val); } catch {}
+                    }}
+                  />
+                  <div className="flex justify-between text-[10px] text-muted-foreground">
+                    <span>{fontSizeOptions[0].label}</span>
+                    <span>{fontSizeOptions[fontSizeOptions.length - 1].label}</span>
+                  </div>
                 </div>
 
                 <Separator />
