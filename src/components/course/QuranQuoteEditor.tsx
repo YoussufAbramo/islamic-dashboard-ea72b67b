@@ -422,7 +422,11 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
             <button
               key={opt.value}
               type="button"
-              onClick={() => onChange({ ...block, quran_besmellah_mode: opt.value, quran_besmellah_enabled: opt.value !== 'none' })}
+              onClick={() => {
+                onChange({ ...block, quran_besmellah_mode: opt.value, quran_besmellah_enabled: opt.value !== 'none' });
+                // Trigger rebuild after state settles
+                setTimeout(() => rebuildText(), 50);
+              }}
               className={cn(
                 "px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
                 besmellahMode === opt.value
@@ -434,7 +438,6 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
             </button>
           ))}
         </div>
-        {/* Besmellah font size for single_line mode */}
         {besmellahMode === 'single_line' && (
           <div className="flex items-center gap-2">
             <Type className="h-3 w-3 text-muted-foreground shrink-0" />
@@ -464,6 +467,7 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
             { value: 'none' as const, label: isAr ? 'بدون' : 'None' },
             { value: 'name' as const, label: isAr ? 'الاسم فقط' : '{Name}' },
             { value: 'surat_name' as const, label: isAr ? 'سورة + الاسم' : 'Surah {Name}' },
+            { value: 'nameplate' as const, label: isAr ? 'لوحة' : 'Nameplate' },
           ] as const).map((opt) => (
             <button
               key={opt.value}
@@ -479,6 +483,32 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
               {opt.label}
             </button>
           ))}
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* ─── Tashkeel & Ayah Numbers ─── */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs">{isAr ? 'التشكيل' : 'Tashkeel'}</Label>
+          <Switch
+            checked={block.quran_tashkeel_enabled !== false}
+            onCheckedChange={(v) => {
+              onChange({ ...block, quran_tashkeel_enabled: v });
+              setTimeout(() => rebuildText(), 50);
+            }}
+          />
+        </div>
+        <div className="flex items-center justify-between">
+          <Label className="text-xs">{isAr ? 'أرقام الآيات' : 'Ayah Numbers'}</Label>
+          <Switch
+            checked={block.quran_show_ayah_numbers !== false}
+            onCheckedChange={(v) => {
+              onChange({ ...block, quran_show_ayah_numbers: v });
+              setTimeout(() => rebuildText(), 50);
+            }}
+          />
         </div>
       </div>
 
@@ -538,14 +568,19 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
         <>
           <div className="p-4 rounded-lg border bg-muted/10 text-center quran-quote-block" dir="rtl">
             {/* Surah Name before ayat */}
-            {surahNameMode === 'name' && block.quran_surah_name && (
+            {surahNameMode === 'name' && block.quran_surah_number && (
               <p className="mb-3" style={{ fontFamily: "'Surah Name V4', serif", fontSize: `${(block.quran_font_size || 18) + 4}px` }}>
-                {block.quran_surah_name}
+                {`surah${String(block.quran_surah_number).padStart(3, '0')}`}
               </p>
             )}
-            {surahNameMode === 'surat_name' && block.quran_surah_name && (
+            {surahNameMode === 'surat_name' && block.quran_surah_number && (
               <p className="mb-3" style={{ fontFamily: "'Surah Name V2', serif", fontSize: `${(block.quran_font_size || 18) + 4}px` }}>
-                {block.quran_surah_name}
+                {`surah${String(block.quran_surah_number).padStart(3, '0')}`}
+              </p>
+            )}
+            {surahNameMode === 'nameplate' && block.quran_surah_number && (
+              <p className="mb-3" style={{ fontFamily: "'Surah Header', serif", fontSize: `${(block.quran_font_size || 18) + 12}px` }}>
+                {String(block.quran_surah_number).padStart(3, '0')}
               </p>
             )}
             {/* Besmellah */}
@@ -563,7 +598,7 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
             {/* Reference line */}
             {block.quran_reference && (
               <p className="text-xs text-muted-foreground mt-3">
-                {surahNameMode !== 'none' && block.quran_surah_name_en && (
+                {surahNameMode !== 'none' && surahNameMode !== 'nameplate' && block.quran_surah_name_en && (
                   <span className="mx-1">{surahNameMode === 'surat_name' ? `Surah ${block.quran_surah_name_en}` : block.quran_surah_name_en}</span>
                 )}
                 <span>({block.quran_reference})</span>
