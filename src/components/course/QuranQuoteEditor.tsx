@@ -484,6 +484,18 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
             </button>
           ))}
         </div>
+        {surahNameMode !== 'none' && (
+          <div className="mt-1.5">
+            <Label className="text-[10px] text-muted-foreground">{isAr ? 'نص اسم السورة' : 'Surah Name Text'}</Label>
+            <Input
+              value={block.quran_surah_name_display || ''}
+              onChange={e => onChange({ ...block, quran_surah_name_display: e.target.value })}
+              placeholder={isAr ? 'اتركه فارغاً للافتراضي' : 'Leave empty for default'}
+              className="h-7 text-xs mt-0.5"
+              dir="auto"
+            />
+          </div>
+        )}
       </div>
 
       <Separator />
