@@ -128,8 +128,34 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
     }
   }, []);
 
-  const applySelection = useCallback(async (text: string, surahNum: number, surahName: string, surahNameEn: string, from: number, to: number) => {
+  // Build display text from selected ayahs
+  const buildQuranText = useCallback((selectedAyahs: Ayah[], bMode: string, fromAyah: number, showNumbers: boolean, tashkeelEnabled: boolean) => {
+    let processedAyahs = selectedAyahs.map(a => {
+      let text = a.text;
+      // Strip besmellah from ayah 1 if besmellah mode is not 'inline'
+      if (a.numberInSurah === 1 && fromAyah === 1 && bMode !== 'inline' && hasBesmellah(text)) {
+        text = stripBesmellah(text);
+      }
+      // Strip tashkeel if disabled
+      if (!tashkeelEnabled) {
+        text = stripTashkeel(text);
+      }
+      // Add ayah number marker
+      if (showNumbers) {
+        text = `${text} ﴿${toArabicNumber(a.numberInSurah)}﴾`;
+      }
+      return text;
+    });
+    return processedAyahs.join(' ');
+  }, []);
+
+  const applySelection = useCallback(async (selectedAyahs: Ayah[], surahNum: number, surahName: string, surahNameEn: string, from: number, to: number) => {
     const ref = from === to ? `${surahNum}:${from}` : `${surahNum}:${from}-${to}`;
+    const bMode = block.quran_besmellah_mode || (block.quran_besmellah_enabled === false ? 'none' : 'inline');
+    const showNumbers = block.quran_show_ayah_numbers !== false; // default true
+    const tashkeelEnabled = block.quran_tashkeel_enabled !== false; // default true
+    const text = buildQuranText(selectedAyahs, bMode, from, showNumbers, tashkeelEnabled);
+
     let translationText = block.quran_translation_text;
     if (block.quran_translation_enabled && block.quran_translation_edition) {
       translationText = await fetchTranslation(surahNum, from, to, block.quran_translation_edition);
@@ -137,6 +163,7 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
     onChange({
       ...block,
       quran_text: text,
+      quran_raw_ayahs: selectedAyahs.map(a => ({ numberInSurah: a.numberInSurah, text: a.text })),
       quran_surah_number: surahNum,
       quran_surah_name: surahName,
       quran_surah_name_en: surahNameEn,
@@ -145,15 +172,28 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
       quran_reference: ref,
       quran_translation_text: translationText,
     });
-  }, [block, onChange, fetchTranslation]);
+  }, [block, onChange, fetchTranslation, buildQuranText]);
+
+  // Rebuild text when tashkeel/numbers/besmellah settings change
+  const rebuildText = useCallback(() => {
+    const rawAyahs = block.quran_raw_ayahs;
+    if (!rawAyahs || rawAyahs.length === 0) return;
+    const bMode = block.quran_besmellah_mode || (block.quran_besmellah_enabled === false ? 'none' : 'inline');
+    const showNumbers = block.quran_show_ayah_numbers !== false;
+    const tashkeelEnabled = block.quran_tashkeel_enabled !== false;
+    const text = buildQuranText(
+      rawAyahs.map((a: any) => ({ ...a, number: 0, surah: {} as any, juz: 0, page: 0 })),
+      bMode, block.quran_ayah_from || 1, showNumbers, tashkeelEnabled
+    );
+    onChange({ ...block, quran_text: text });
+  }, [block, onChange, buildQuranText]);
 
   const handleLoadAyahs = useCallback(() => {
     if (!surahMeta || ayahs.length === 0) return;
     const from = Math.max(1, ayahFrom);
     const to = Math.min(surahMeta.numberOfAyahs, Math.max(from, ayahTo));
     const selected = ayahs.filter(a => a.numberInSurah >= from && a.numberInSurah <= to);
-    const text = selected.map(a => a.text).join(' ');
-    applySelection(text, surahMeta.number, surahMeta.name, surahMeta.englishName, from, to);
+    applySelection(selected, surahMeta.number, surahMeta.name, surahMeta.englishName, from, to);
   }, [surahMeta, ayahs, ayahFrom, ayahTo, applySelection]);
 
   const handleSearchSelect = useCallback((match: SearchMatch) => {
