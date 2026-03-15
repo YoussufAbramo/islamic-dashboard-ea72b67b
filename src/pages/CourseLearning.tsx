@@ -1347,7 +1347,7 @@ const CourseLearning = () => {
               style={{
                 '--lesson-font-size': lessonFontSize,
                 '--lesson-font-family': lessonFontFamily !== 'default' ? `'${lessonFontFamily}', var(--font-rtl)` : undefined,
-                '--quran-font': `'${quranFont}', serif`,
+                '--quran-font': `'${quranFont === '__content_font__' ? (lessonFontFamily !== 'default' ? lessonFontFamily : appRtlFont) : quranFont}', serif`,
               } as React.CSSProperties}
             >
               <ContentViewer lesson={currentLesson} isAr={isAr} />
