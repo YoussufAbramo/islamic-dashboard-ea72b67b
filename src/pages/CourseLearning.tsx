@@ -417,29 +417,38 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
           const bMode = block.quran_besmellah_mode || (block.quran_besmellah_enabled === false ? 'none' : 'inline');
           const snMode = block.quran_surah_name_mode || 'surat_name';
           const surahNumPadded = block.quran_surah_number ? String(block.quran_surah_number).padStart(3, '0') : '';
+          // Apply global tashkeel setting
+          const displayText = (() => {
+            let t = block.quran_text || '';
+            try {
+              const globalTashkeel = localStorage.getItem('global_tashkeel_enabled');
+              if (globalTashkeel === 'false') t = stripTashkeel(t);
+            } catch {}
+            return t;
+          })();
           return block.quran_text ? (
             <div key={block.id || idx} className="p-6 rounded-xl border bg-muted/5 text-center quran-quote-block" dir="rtl">
               {/* Surah Name before ayat */}
               {snMode === 'name' && surahNumPadded && (
                 <p className="mb-4" style={{ fontFamily: "'Surah Name V4', serif", fontSize: `${(block.quran_font_size || 18) + 4}px` }}>
-                  {`surah${surahNumPadded}`}
+                  {block.quran_surah_name_display || `surah${surahNumPadded}`}
                 </p>
               )}
               {snMode === 'surat_name' && surahNumPadded && (
                 <p className="mb-4" style={{ fontFamily: "'Surah Name V2', serif", fontSize: `${(block.quran_font_size || 18) + 4}px` }}>
-                  {`surah${surahNumPadded}`}
+                  {block.quran_surah_name_display || `surah${surahNumPadded}`}
                 </p>
               )}
-              {snMode === 'nameplate' && surahNumPadded && (
+              {snMode === 'nameplate' && block.quran_surah_number && (
                 <p className="mb-4" style={{ fontFamily: "'Surah Header', serif", fontSize: `${(block.quran_font_size || 18) + 12}px` }}>
-                  {surahNumPadded}
+                  {block.quran_surah_name_display || `surah-${block.quran_surah_number}`}
                 </p>
               )}
               {/* Besmellah */}
               {bMode === 'single_line' && (
                 <p className="mb-4" style={{ fontFamily: "'Besmellah', serif", fontSize: `${block.quran_besmellah_font_size || 24}px` }}>﷽</p>
               )}
-              <p className="leading-[2.5]" style={{ fontSize: `${block.quran_font_size || 18}px` }}>{block.quran_text}</p>
+              <p className="leading-[2.5]" style={{ fontSize: `${block.quran_font_size || 18}px` }}>{displayText}</p>
               {block.quran_translation_enabled && block.quran_translation_text && (
                 <div className="mt-4 pt-3 border-t border-border/30" dir="ltr">
                   <p className="text-sm leading-relaxed text-muted-foreground italic">{block.quran_translation_text}</p>
