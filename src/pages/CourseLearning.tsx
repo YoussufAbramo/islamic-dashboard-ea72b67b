@@ -1348,6 +1348,7 @@ const CourseLearning = () => {
                   <X className="h-3.5 w-3.5" />
                 </Button>
               </div>
+              <TooltipProvider delayDuration={200}>
               <div className="p-4 space-y-6">
                 {/* Font Family */}
                 <div className="space-y-3">
