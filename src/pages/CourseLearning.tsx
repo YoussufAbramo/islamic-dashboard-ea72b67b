@@ -1411,10 +1411,22 @@ const CourseLearning = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  <div className="p-2.5 rounded-lg bg-muted/40 border border-border/50">
-                    <p className="text-sm leading-[2]" style={{ fontFamily: `'${quranFont}', serif` }} dir="rtl">
+                  <div className="p-3 rounded-lg bg-muted/40 border border-border/50 relative">
+                    <p className="text-lg leading-[2]" style={{ fontFamily: `'${quranFont}', serif` }} dir="rtl">
                       بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
                     </p>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="absolute top-2 end-2 h-6 w-6 rounded-md bg-muted/60 flex items-center justify-center cursor-default">
+                          <ZoomIn className="h-3.5 w-3.5 text-muted-foreground" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs">
+                        <p className="text-xl leading-[2]" style={{ fontFamily: `'${quranFont}', serif` }} dir="rtl">
+                          بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
 
