@@ -1432,26 +1432,26 @@ const CourseLearning = () => {
                 </div>
 
                 <Separator />
-                <div className="space-y-3 opacity-50 pointer-events-none relative">
+                <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <TypeIcon className="h-4 w-4 text-muted-foreground" />
                     <Label className="text-sm font-medium">{isAr ? 'حجم الخط' : 'Font Size'}</Label>
-                    <Badge className="text-[8px] px-1.5 py-0 h-4 bg-amber-500/15 text-amber-600 border-amber-400/40 font-bold uppercase tracking-wider ms-auto">
-                      {isAr ? 'قريبًا' : 'Soon'}
-                    </Badge>
                   </div>
-                  <Slider
-                    value={[16]}
-                    min={12}
-                    max={24}
-                    step={1}
-                    className="w-full"
-                    disabled
-                  />
-                  <div className="flex justify-between text-[10px] text-muted-foreground">
-                    <span>{isAr ? 'صغير' : 'Small'}</span>
-                    <span>{isAr ? 'كبير' : 'Large'}</span>
-                  </div>
+                  <Select value={lessonFontSize} onValueChange={(val) => {
+                    setLessonFontSize(val);
+                    try { localStorage.setItem('lesson_font_size', val); } catch {}
+                  }}>
+                    <SelectTrigger className="h-9 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {fontSizeOptions.map(f => (
+                        <SelectItem key={f.value} value={f.value}>
+                          {f.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <Separator />
