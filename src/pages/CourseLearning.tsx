@@ -707,8 +707,19 @@ const CourseLearning = () => {
   });
   
   const [noteText, setNoteText] = useState('');
+  const fontSizeOptions = [
+    { value: '1em', label: '1×' },
+    { value: '1.15em', label: '1.15×' },
+    { value: '1.25em', label: '1.25×' },
+    { value: '1.5em', label: '1.5×' },
+    { value: '1.75em', label: '1.75×' },
+    { value: '2em', label: '2×' },
+    { value: '2.25em', label: '2.25×' },
+    { value: '2.5em', label: '2.5×' },
+    { value: '3em', label: '3×' },
+  ];
   const [lessonFontSize, setLessonFontSize] = useState(() => {
-    try { return parseInt(localStorage.getItem('lesson_font_size') || '16', 10); } catch { return 16; }
+    try { return localStorage.getItem('lesson_font_size') || '1em'; } catch { return '1em'; }
   });
   const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
   const [quranFont, setQuranFont] = useState(() => {
