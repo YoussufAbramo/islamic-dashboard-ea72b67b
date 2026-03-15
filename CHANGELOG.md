@@ -2,6 +2,13 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.10.2] - 2026-03-15
+
+### Fixed
+- **Quran Search API** — switched search edition from generic `ar` to `quran-uthmani` to return only Quran ayat, excluding Tafsir and other Arabic texts
+
+---
+
 ## [5.10.1] - 2026-03-15
 
 ### Added
