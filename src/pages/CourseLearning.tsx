@@ -1464,7 +1464,7 @@ const CourseLearning = () => {
                         { value: 'Al Qalam Quran', label: 'Al Qalam Quran' },
                       ].map(f => (
                         <SelectItem key={f.value} value={f.value}>
-                          <span style={{ fontFamily: `'${f.value}', serif` }}>{f.label}</span>
+                          <span style={f.value === '__content_font__' ? { fontFamily: lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif` } : { fontFamily: `'${f.value}', serif` }}>{f.label}</span>
                         </SelectItem>
                       ))}
                     </SelectContent>
