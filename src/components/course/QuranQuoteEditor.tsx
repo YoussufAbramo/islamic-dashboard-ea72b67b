@@ -142,7 +142,7 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
       }
       // Add ayah number marker
       if (showNumbers) {
-        text = `${text} ﴿${toArabicNumber(a.numberInSurah)}﴾`;
+        text = `${text} [${a.numberInSurah}]`;
       }
       return text;
     });
