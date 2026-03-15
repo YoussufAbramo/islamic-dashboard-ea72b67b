@@ -152,9 +152,9 @@ const blockMeta: Record<BlockType, BlockMetaItem> = {
 
 // Reordered: Layout → Quran → Content → Media → Exercises
 const blockGroups: { key: string; label: string; labelAr: string; types: BlockType[] }[] = [
-  { key: 'layout', label: '🧩 Layout', labelAr: '🧩 التخطيط', types: ['table_of_content', 'divider', 'page_break', 'split_screen', 'group_start'] },
+  { key: 'layout', label: '🧩 Layout', labelAr: '🧩 التخطيط', types: ['group_start', 'divider', 'page_break', 'split_screen'] },
   { key: 'quran', label: '📿 Quran', labelAr: '📿 القرآن', types: ['quran_quote', 'quran_symbol', 'surah_nameplate', 'surah_name', 'besmellah'] },
-  { key: 'content', label: '📖 Content', labelAr: '📖 المحتوى', types: ['read_listen', 'memorization', 'revision', 'homework'] },
+  { key: 'content', label: '📖 Content', labelAr: '📖 المحتوى', types: ['table_of_content', 'read_listen', 'memorization', 'revision', 'homework'] },
   { key: 'media', label: '📁 Media', labelAr: '📁 الوسائط', types: ['text', 'image', 'video', 'audio'] },
   { key: 'exercise', label: '✏️ Exercises', labelAr: '✏️ التمارين', types: ['exercise_listen_choose', 'exercise_text_match', 'exercise_choose_correct', 'exercise_choose_multiple', 'exercise_rearrange', 'exercise_missing_text', 'exercise_true_false'] },
 ];
