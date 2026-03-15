@@ -200,7 +200,8 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
     setSelectedSurah(match.surah.number);
     setAyahFrom(match.numberInSurah);
     setAyahTo(match.numberInSurah);
-    applySelection(match.text, match.surah.number, match.surah.name, match.surah.englishName, match.numberInSurah, match.numberInSurah);
+    const fakeAyah = [{ number: match.number, numberInSurah: match.numberInSurah, text: match.text, surah: match.surah, juz: 0, page: 0 }];
+    applySelection(fakeAyah, match.surah.number, match.surah.name, match.surah.englishName, match.numberInSurah, match.numberInSurah);
     setSearchQuery('');
     setAllSearchResults([]);
     setVisibleCount(10);
