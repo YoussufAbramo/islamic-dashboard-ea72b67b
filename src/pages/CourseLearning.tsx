@@ -1459,30 +1459,32 @@ const CourseLearning = () => {
                         { value: 'Aref Ruqaa', label: 'Aref Ruqaa' },
                         { value: 'Nabi', label: 'Nabi' },
                         { value: 'Al Qalam Quran', label: 'Al Qalam Quran' },
-                      ].map(f => (
+                      ].map(f => {
+                        const resolvedFont = f.value === '__content_font__'
+                          ? (lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif`)
+                          : `'${f.value}', serif`;
+                        return (
                         <SelectItem key={f.value} value={f.value}>
-                          <span style={f.value === '__content_font__' ? { fontFamily: lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif` } : { fontFamily: `'${f.value}', serif` }}>{f.label}</span>
+                          <div className="flex items-center gap-2 w-full">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="h-5 w-5 rounded bg-muted/60 flex items-center justify-center shrink-0 cursor-default">
+                                  <ZoomIn className="h-3 w-3 text-muted-foreground" />
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent side="left" className="max-w-sm p-3">
+                                <p className="leading-[2]" style={{ fontSize: '3.4rem', fontFamily: resolvedFont }} dir="rtl">
+                                  بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <span style={{ fontFamily: resolvedFont }}>{f.label}</span>
+                          </div>
                         </SelectItem>
-                      ))}
+                        );
+                      })}
                     </SelectContent>
                   </Select>
-                  <div className="p-3 rounded-lg bg-muted/40 border border-border/50 relative">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="absolute top-2 start-2 h-6 w-6 rounded-md bg-muted/60 flex items-center justify-center cursor-default">
-                          <ZoomIn className="h-3.5 w-3.5 text-muted-foreground" />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-sm p-3">
-                        <p className="leading-[2]" style={{ fontSize: '3.4rem', fontFamily: quranFont === '__content_font__' ? (lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif`) : `'${quranFont}', serif` }} dir="rtl">
-                          بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                    <p className="text-lg leading-[2]" style={{ fontFamily: quranFont === '__content_font__' ? (lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif`) : `'${quranFont}', serif` }} dir="rtl">
-                      بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
-                    </p>
-                  </div>
                 </div>
 
                 <Separator />
