@@ -2,6 +2,20 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.10.0] - 2026-03-15
+
+### Added
+- **Lesson Builder — Table of Content moved** — moved Table of Content block from Layout to Content category
+- **Lesson Builder — Layout reorder** — Box element is now the first element in the Layout palette
+- **Course Learning — Font Size selector** — replaced locked "Soon" slider with a working dropdown offering 9 em-based scale options (1× to 3×)
+- **Course Learning — Font preview magnify** — Content Font and Quran Font previews show bigger text with a magnify icon tooltip for even larger preview
+- **Course Learning — Bigger font previews** — font preview text upgraded from text-sm to text-lg
+
+### Changed
+- **CSS — Font size system** — switched lesson content font sizing from px-based to em-based scale
+
+---
+
 ## [5.9.9] - 2026-03-14
 
 ### Added
