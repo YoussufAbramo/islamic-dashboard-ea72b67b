@@ -1414,8 +1414,8 @@ const CourseLearning = () => {
                           <ZoomIn className="h-3.5 w-3.5 text-muted-foreground" />
                         </div>
                       </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-sm p-3">
-                        <p className="text-3xl leading-relaxed" style={{ fontFamily: lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif` }} dir="rtl">
+                       <TooltipContent side="top" className="max-w-sm p-3">
+                        <p className="leading-relaxed" style={{ fontSize: '3.4rem', fontFamily: lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif` }} dir="rtl">
                           بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
                         </p>
                       </TooltipContent>
