@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Search, BookOpen, X, Languages, Type, Eraser } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import {
   getSurahList, getSurahAyahs, searchQuran, parseAyahReference,
   getEnglishEditions, getSurahTranslation,
