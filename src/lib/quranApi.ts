@@ -82,7 +82,7 @@ export async function searchQuran(keyword: string, surahNumber?: number): Promis
   const surahPart = surahNumber ? `${surahNumber}` : 'all';
   try {
     const data = await apiFetch<{ count: number; matches: SearchMatch[] }>(
-      `/search/${encodeURIComponent(keyword.trim())}/${surahPart}/ar`
+      `/search/${encodeURIComponent(keyword.trim())}/${surahPart}/quran-uthmani`
     );
     return data.matches || [];
   } catch {
