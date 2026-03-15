@@ -2,6 +2,29 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.11.0] - 2026-03-15
+
+### Added
+- **Quran Quote — Separate Surah Name font size** — added an independent font size slider (12–100px) for the Surah Name display, decoupled from the Ayat font size
+- **Quran Quote — Nameplate glyphs** — replaced `surah-X` text format with proper Unicode glyphs for all 114 surahs in both editor and learning view
+- **Quran Quote — Current Content Font option** — added "Current Content Font" as a Quran Font choice, matching the active lesson content font
+- **Quran Quote — Font-styled mode buttons** — each Surah Name mode button now renders in its respective font (V4, V2, Surah Header)
+- **Quran Quote — Beta badges** — added Beta badge to Search Ayat and Tashkeel controls
+- **Course Learning — Magnify in dropdown** — moved font preview magnify icon from preview box into each font option in both Content Font and Quran Font dropdowns
+
+### Changed
+- **Font preloading** — removed Quran-specific font preloads (QPC_V2, QPC_V4_Tajweed, Indopak_Nastaleeq) from index.html; fonts now load on-demand via @font-face
+- **PWA meta tag** — replaced deprecated `apple-mobile-web-app-capable` with `mobile-web-app-capable`
+
+### Fixed
+- **Service Worker** — added protocol check to skip non-HTTP(S) requests (e.g. chrome-extension://) preventing Cache API errors
+
+### Removed
+- **Quran Quote — Ayah Numbers toggle** — removed the user-facing toggle; ayah numbering is now automatic
+- **Quran Quote — Tashkeel toggle** — removed per-block Tashkeel control from the editor (global control in learning view still available)
+
+---
+
 ## [5.10.2] - 2026-03-15
 
 ### Fixed
