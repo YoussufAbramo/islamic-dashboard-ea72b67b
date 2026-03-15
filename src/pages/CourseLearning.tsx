@@ -1472,6 +1472,7 @@ const CourseLearning = () => {
                   />
                 </div>
               </div>
+              </TooltipProvider>
             </div>
           )}
         </div>
