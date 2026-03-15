@@ -1366,10 +1366,22 @@ const CourseLearning = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  <div className="p-2.5 rounded-lg bg-muted/40 border border-border/50">
-                    <p className="text-sm leading-relaxed" style={{ fontFamily: lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif` }} dir="rtl">
+                  <div className="p-3 rounded-lg bg-muted/40 border border-border/50 relative">
+                    <p className="text-lg leading-relaxed" style={{ fontFamily: lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif` }} dir="rtl">
                       بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
                     </p>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="absolute top-2 end-2 h-6 w-6 rounded-md bg-muted/60 flex items-center justify-center cursor-default">
+                          <ZoomIn className="h-3.5 w-3.5 text-muted-foreground" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs">
+                        <p className="text-xl leading-relaxed" style={{ fontFamily: lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif` }} dir="rtl">
+                          بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
 
