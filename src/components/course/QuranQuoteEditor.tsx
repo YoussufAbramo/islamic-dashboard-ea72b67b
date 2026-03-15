@@ -142,7 +142,7 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
       }
       // Add ayah number marker
       if (showNumbers) {
-        text = `${text} ﴿${toArabicNumber(a.numberInSurah)}﴾`;
+        text = `${text} [${a.numberInSurah}]`;
       }
       return text;
     });
@@ -484,6 +484,18 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
             </button>
           ))}
         </div>
+        {surahNameMode !== 'none' && (
+          <div className="mt-1.5">
+            <Label className="text-[10px] text-muted-foreground">{isAr ? 'نص اسم السورة' : 'Surah Name Text'}</Label>
+            <Input
+              value={block.quran_surah_name_display || ''}
+              onChange={e => onChange({ ...block, quran_surah_name_display: e.target.value })}
+              placeholder={isAr ? 'اتركه فارغاً للافتراضي' : 'Leave empty for default'}
+              className="h-7 text-xs mt-0.5"
+              dir="auto"
+            />
+          </div>
+        )}
       </div>
 
       <Separator />
@@ -570,17 +582,17 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
             {/* Surah Name before ayat */}
             {surahNameMode === 'name' && block.quran_surah_number && (
               <p className="mb-3" style={{ fontFamily: "'Surah Name V4', serif", fontSize: `${(block.quran_font_size || 18) + 4}px` }}>
-                {`surah${String(block.quran_surah_number).padStart(3, '0')}`}
+                {block.quran_surah_name_display || `surah${String(block.quran_surah_number).padStart(3, '0')}`}
               </p>
             )}
             {surahNameMode === 'surat_name' && block.quran_surah_number && (
               <p className="mb-3" style={{ fontFamily: "'Surah Name V2', serif", fontSize: `${(block.quran_font_size || 18) + 4}px` }}>
-                {`surah${String(block.quran_surah_number).padStart(3, '0')}`}
+                {block.quran_surah_name_display || `surah${String(block.quran_surah_number).padStart(3, '0')}`}
               </p>
             )}
             {surahNameMode === 'nameplate' && block.quran_surah_number && (
               <p className="mb-3" style={{ fontFamily: "'Surah Header', serif", fontSize: `${(block.quran_font_size || 18) + 12}px` }}>
-                {String(block.quran_surah_number).padStart(3, '0')}
+                {block.quran_surah_name_display || `surah-${block.quran_surah_number}`}
               </p>
             )}
             {/* Besmellah */}

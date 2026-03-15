@@ -93,6 +93,7 @@ export interface ContentBlock {
   quran_surah_number?: number;
   quran_surah_name?: string;
   quran_surah_name_en?: string;
+  quran_surah_name_display?: string;
   quran_ayah_from?: number;
   quran_ayah_to?: number;
   quran_reference?: string; // e.g. "2:255" or "2:255-260"

@@ -26,6 +26,7 @@ import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { stripTashkeel } from '@/lib/quranApi';
 import LessonBuilder from '@/components/course/LessonBuilder';
 import { useSidebar } from '@/components/ui/sidebar';
 
@@ -416,29 +417,38 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
           const bMode = block.quran_besmellah_mode || (block.quran_besmellah_enabled === false ? 'none' : 'inline');
           const snMode = block.quran_surah_name_mode || 'surat_name';
           const surahNumPadded = block.quran_surah_number ? String(block.quran_surah_number).padStart(3, '0') : '';
+          // Apply global tashkeel setting
+          const displayText = (() => {
+            let t = block.quran_text || '';
+            try {
+              const globalTashkeel = localStorage.getItem('global_tashkeel_enabled');
+              if (globalTashkeel === 'false') t = stripTashkeel(t);
+            } catch {}
+            return t;
+          })();
           return block.quran_text ? (
             <div key={block.id || idx} className="p-6 rounded-xl border bg-muted/5 text-center quran-quote-block" dir="rtl">
               {/* Surah Name before ayat */}
               {snMode === 'name' && surahNumPadded && (
                 <p className="mb-4" style={{ fontFamily: "'Surah Name V4', serif", fontSize: `${(block.quran_font_size || 18) + 4}px` }}>
-                  {`surah${surahNumPadded}`}
+                  {block.quran_surah_name_display || `surah${surahNumPadded}`}
                 </p>
               )}
               {snMode === 'surat_name' && surahNumPadded && (
                 <p className="mb-4" style={{ fontFamily: "'Surah Name V2', serif", fontSize: `${(block.quran_font_size || 18) + 4}px` }}>
-                  {`surah${surahNumPadded}`}
+                  {block.quran_surah_name_display || `surah${surahNumPadded}`}
                 </p>
               )}
-              {snMode === 'nameplate' && surahNumPadded && (
+              {snMode === 'nameplate' && block.quran_surah_number && (
                 <p className="mb-4" style={{ fontFamily: "'Surah Header', serif", fontSize: `${(block.quran_font_size || 18) + 12}px` }}>
-                  {surahNumPadded}
+                  {block.quran_surah_name_display || `surah-${block.quran_surah_number}`}
                 </p>
               )}
               {/* Besmellah */}
               {bMode === 'single_line' && (
                 <p className="mb-4" style={{ fontFamily: "'Besmellah', serif", fontSize: `${block.quran_besmellah_font_size || 24}px` }}>﷽</p>
               )}
-              <p className="leading-[2.5]" style={{ fontSize: `${block.quran_font_size || 18}px` }}>{block.quran_text}</p>
+              <p className="leading-[2.5]" style={{ fontSize: `${block.quran_font_size || 18}px` }}>{displayText}</p>
               {block.quran_translation_enabled && block.quran_translation_text && (
                 <div className="mt-4 pt-3 border-t border-border/30" dir="ltr">
                   <p className="text-sm leading-relaxed text-muted-foreground italic">{block.quran_translation_text}</p>
@@ -754,6 +764,9 @@ const CourseLearning = () => {
   });
   const [tajweedMode, setTajweedMode] = useState(() => {
     try { return localStorage.getItem('tajweed_mode') === 'true'; } catch { return false; }
+  });
+  const [globalTashkeel, setGlobalTashkeel] = useState(() => {
+    try { return localStorage.getItem('global_tashkeel_enabled') !== 'false'; } catch { return true; }
   });
   const canManage = role === 'admin' || role === 'teacher';
 
@@ -1401,8 +1414,8 @@ const CourseLearning = () => {
                           <ZoomIn className="h-3.5 w-3.5 text-muted-foreground" />
                         </div>
                       </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-sm p-3">
-                        <p className="text-3xl leading-relaxed" style={{ fontFamily: lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif` }} dir="rtl">
+                       <TooltipContent side="top" className="max-w-sm p-3">
+                        <p className="leading-relaxed" style={{ fontSize: '3.4rem', fontFamily: lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif` }} dir="rtl">
                           بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
                         </p>
                       </TooltipContent>
@@ -1447,7 +1460,7 @@ const CourseLearning = () => {
                         </div>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="max-w-sm p-3">
-                        <p className="text-3xl leading-[2]" style={{ fontFamily: `'${quranFont}', serif` }} dir="rtl">
+                        <p className="leading-[2]" style={{ fontSize: '3.4rem', fontFamily: `'${quranFont}', serif` }} dir="rtl">
                           بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
                         </p>
                       </TooltipContent>
@@ -1480,6 +1493,23 @@ const CourseLearning = () => {
                     <span>{fontSizeOptions[0].label}</span>
                     <span>{fontSizeOptions[fontSizeOptions.length - 1].label}</span>
                   </div>
+                </div>
+
+                <Separator />
+
+                {/* Tashkeel */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TypeIcon className="h-4 w-4 text-muted-foreground" />
+                    <Label className="text-sm font-medium">{isAr ? 'التشكيل' : 'Tashkeel'}</Label>
+                  </div>
+                  <Switch
+                    checked={globalTashkeel}
+                    onCheckedChange={(checked) => {
+                      setGlobalTashkeel(checked);
+                      try { localStorage.setItem('global_tashkeel_enabled', String(checked)); } catch {}
+                    }}
+                  />
                 </div>
 
                 <Separator />
