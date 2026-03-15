@@ -415,17 +415,23 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
         case 'quran_quote': {
           const bMode = block.quran_besmellah_mode || (block.quran_besmellah_enabled === false ? 'none' : 'inline');
           const snMode = block.quran_surah_name_mode || 'surat_name';
+          const surahNumPadded = block.quran_surah_number ? String(block.quran_surah_number).padStart(3, '0') : '';
           return block.quran_text ? (
             <div key={block.id || idx} className="p-6 rounded-xl border bg-muted/5 text-center quran-quote-block" dir="rtl">
               {/* Surah Name before ayat */}
-              {snMode === 'name' && block.quran_surah_name && (
+              {snMode === 'name' && surahNumPadded && (
                 <p className="mb-4" style={{ fontFamily: "'Surah Name V4', serif", fontSize: `${(block.quran_font_size || 18) + 4}px` }}>
-                  {block.quran_surah_name}
+                  {`surah${surahNumPadded}`}
                 </p>
               )}
-              {snMode === 'surat_name' && block.quran_surah_name && (
+              {snMode === 'surat_name' && surahNumPadded && (
                 <p className="mb-4" style={{ fontFamily: "'Surah Name V2', serif", fontSize: `${(block.quran_font_size || 18) + 4}px` }}>
-                  {block.quran_surah_name}
+                  {`surah${surahNumPadded}`}
+                </p>
+              )}
+              {snMode === 'nameplate' && surahNumPadded && (
+                <p className="mb-4" style={{ fontFamily: "'Surah Header', serif", fontSize: `${(block.quran_font_size || 18) + 12}px` }}>
+                  {surahNumPadded}
                 </p>
               )}
               {/* Besmellah */}
@@ -441,7 +447,7 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
               {/* Reference line */}
               {block.quran_reference && (
                 <p className="text-xs text-muted-foreground mt-4">
-                  {snMode !== 'none' && block.quran_surah_name_en && (
+                  {snMode !== 'none' && snMode !== 'nameplate' && block.quran_surah_name_en && (
                     <span className="mx-1">{snMode === 'surat_name' ? `Surah ${block.quran_surah_name_en}` : block.quran_surah_name_en}</span>
                   )}
                   <span>({block.quran_reference})</span>

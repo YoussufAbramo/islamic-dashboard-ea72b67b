@@ -105,9 +105,12 @@ export interface ContentBlock {
   font_size?: 'sm' | 'md' | 'lg' | 'xl' | 'huge' | number;
   quran_font_size?: number; // px, 12–100
   quran_besmellah_enabled?: boolean;
-  quran_besmellah_mode?: 'none' | 'inline' | 'single_line'; // none=hidden, inline=inside ayat text, single_line=separate line
+  quran_besmellah_mode?: 'none' | 'inline' | 'single_line';
   quran_besmellah_font_size?: number; // px, for single_line mode
-  quran_surah_name_mode?: 'none' | 'name' | 'surat_name';
+  quran_surah_name_mode?: 'none' | 'name' | 'surat_name' | 'nameplate';
+  quran_tashkeel_enabled?: boolean; // default true
+  quran_show_ayah_numbers?: boolean; // default true
+  quran_raw_ayahs?: { numberInSurah: number; text: string }[]; // raw ayah data for rebuilding
   group_pair_id?: string; // links group_start ↔ group_end
 }
 const generateId = () => Math.random().toString(36).substring(2, 10);

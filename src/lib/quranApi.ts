@@ -42,6 +42,27 @@ const ayahCache = new Map<number, Ayah[]>();
 const translationCache = new Map<string, Ayah[]>();
 let editionsCache: TranslationEdition[] | null = null;
 
+// ─── Strip tashkeel (diacritics) from Arabic text ───
+const TASHKEEL_REGEX = /[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06DC\u06DF-\u06E8\u06EA-\u06ED]/g;
+export function stripTashkeel(text: string): string {
+  return text.replace(TASHKEEL_REGEX, '');
+}
+
+// ─── Arabic numeral conversion for ayah markers ───
+const ARABIC_DIGITS = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+export function toArabicNumber(n: number): string {
+  return String(n).split('').map(d => ARABIC_DIGITS[parseInt(d)] || d).join('');
+}
+
+// ─── Besmellah detection / stripping ───
+const BESMELLAH_PATTERN = /^بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ\s*/;
+export function stripBesmellah(text: string): string {
+  return text.replace(BESMELLAH_PATTERN, '').trim();
+}
+export function hasBesmellah(text: string): boolean {
+  return BESMELLAH_PATTERN.test(text);
+}
+
 // ─── Helpers ───
 async function apiFetch<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`);
@@ -76,15 +97,38 @@ export async function getAyahRange(surahNumber: number, fromAyah: number, toAyah
   return allAyahs.filter(a => a.numberInSurah >= fromAyah && a.numberInSurah <= toAyah);
 }
 
-// ─── Search Quran text ───
+// ─── Search Quran text (supports tashkeel-free search via quran-simple) ───
 export async function searchQuran(keyword: string, surahNumber?: number): Promise<SearchMatch[]> {
   if (!keyword || keyword.trim().length < 2) return [];
   const surahPart = surahNumber ? `${surahNumber}` : 'all';
+  const cleanKeyword = stripTashkeel(keyword.trim());
   try {
+    // Search in simple (no tashkeel) edition for broader matching
     const data = await apiFetch<{ count: number; matches: SearchMatch[] }>(
-      `/search/${encodeURIComponent(keyword.trim())}/${surahPart}/quran-uthmani`
+      `/search/${encodeURIComponent(cleanKeyword)}/${surahPart}/quran-simple`
     );
-    return data.matches || [];
+    const simpleMatches = data.matches || [];
+
+    // Now fetch the uthmani text for each match (for proper display)
+    // We'll batch by surah to minimize API calls
+    const surahNumbers = [...new Set(simpleMatches.map(m => m.surah.number))];
+    const uthmaniCache = new Map<number, Ayah[]>();
+    await Promise.all(surahNumbers.map(async (sn) => {
+      try {
+        const ayahs = await getSurahAyahs(sn);
+        uthmaniCache.set(sn, ayahs);
+      } catch {}
+    }));
+
+    // Replace simple text with uthmani text
+    return simpleMatches.map(m => {
+      const uthmaniAyahs = uthmaniCache.get(m.surah.number);
+      const uthmaniAyah = uthmaniAyahs?.find(a => a.numberInSurah === m.numberInSurah);
+      return {
+        ...m,
+        text: uthmaniAyah?.text || m.text,
+      };
+    });
   } catch {
     return [];
   }
