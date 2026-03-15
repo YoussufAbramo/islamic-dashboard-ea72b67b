@@ -5,8 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Search, BookOpen, X, Languages, Type, Eraser } from 'lucide-react';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Loader2, Search, BookOpen, X, Languages, Type, Eraser, Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   getSurahList, getSurahAyahs, searchQuran, parseAyahReference,
@@ -41,7 +44,10 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
   const [ayahFrom, setAyahFrom] = useState<number>(block.quran_ayah_from || 1);
   const [ayahTo, setAyahTo] = useState<number>(block.quran_ayah_to || 1);
 
-  // Search
+  // Surah combobox
+  const [surahPopoverOpen, setSurahPopoverOpen] = useState(false);
+
+  // Search (ayat only)
   const [searchQuery, setSearchQuery] = useState('');
   const [allSearchResults, setAllSearchResults] = useState<SearchMatch[]>([]);
   const [visibleCount, setVisibleCount] = useState(10);
@@ -79,7 +85,7 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
     }).catch(() => setAyahs([])).finally(() => setLoadingAyahs(false));
   }, [selectedSurah]);
 
-  // Debounced search
+  // Debounced search — ayat only (reference parsing + text search)
   useEffect(() => {
     if (searchTimer.current) clearTimeout(searchTimer.current);
     if (!searchQuery || searchQuery.trim().length < 2) { setAllSearchResults([]); setVisibleCount(10); return; }
@@ -188,9 +194,13 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
 
   const showSearchResults = searchQuery.length >= 2 && (searching || allSearchResults.length > 0 || searchFocused);
 
+  // Besmellah mode (migrate old boolean to new mode)
+  const besmellahMode = block.quran_besmellah_mode || (block.quran_besmellah_enabled === false ? 'none' : 'inline');
+  const surahNameMode = block.quran_surah_name_mode || 'surat_name';
+
   return (
     <div className="space-y-3">
-      {/* ─── Search ─── */}
+      {/* ─── Search (ayat only) ─── */}
       <div className="relative">
         <Search className="absolute start-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
         <Input
@@ -253,30 +263,59 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
         </div>
       )}
 
-      {/* ─── Surah + Ayah Selection — single row ─── */}
+      {/* ─── Surah + Ayah Selection ─── */}
       <div className="space-y-2">
         {loadingSurahs ? (
           <div className="flex items-center justify-center py-3"><Loader2 className="h-4 w-4 animate-spin" /></div>
         ) : (
           <div className="flex items-end gap-1.5">
+            {/* Searchable Surah Combobox */}
             <div className="flex-1 min-w-0">
               <Label className="text-[10px] text-muted-foreground">{isAr ? 'السورة' : 'Surah'}</Label>
-              <Select value={selectedSurah ? String(selectedSurah) : ''} onValueChange={v => setSelectedSurah(Number(v))}>
-                <SelectTrigger className="h-8 text-xs mt-0.5">
-                  <SelectValue placeholder={isAr ? 'اختر...' : 'Pick...'} />
-                </SelectTrigger>
-                <SelectContent className="max-h-60 overflow-y-auto">
-                  {surahs.map(s => (
-                    <SelectItem key={s.number} value={String(s.number)}>
-                      <span className="flex items-center gap-2">
-                        <span className="text-muted-foreground text-[10px] w-5 text-end">{s.number}</span>
-                        <span>{s.name}</span>
-                        <span className="text-muted-foreground text-[10px]">({s.englishName})</span>
+              <Popover open={surahPopoverOpen} onOpenChange={setSurahPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={surahPopoverOpen}
+                    className="w-full h-8 text-xs mt-0.5 justify-between font-normal"
+                  >
+                    {selectedSurah ? (
+                      <span className="truncate">
+                        <span className="text-muted-foreground">{selectedSurah}.</span>{' '}
+                        {surahs.find(s => s.number === selectedSurah)?.name}{' '}
+                        <span className="text-muted-foreground text-[10px]">({surahs.find(s => s.number === selectedSurah)?.englishName})</span>
                       </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                    ) : (
+                      <span className="text-muted-foreground">{isAr ? 'اختر سورة...' : 'Pick a surah...'}</span>
+                    )}
+                    <ChevronsUpDown className="ms-1 h-3 w-3 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[280px] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder={isAr ? 'ابحث بالاسم...' : 'Search surah name...'} className="h-8 text-xs" />
+                    <CommandList className="max-h-60">
+                      <CommandEmpty className="text-xs py-3 text-center">{isAr ? 'لا نتائج' : 'No surah found'}</CommandEmpty>
+                      <CommandGroup>
+                        {surahs.map(s => (
+                          <CommandItem
+                            key={s.number}
+                            value={`${s.number} ${s.name} ${s.englishName}`}
+                            onSelect={() => { setSelectedSurah(s.number); setSurahPopoverOpen(false); }}
+                            className="text-xs"
+                          >
+                            <Check className={cn("me-1.5 h-3 w-3", selectedSurah === s.number ? "opacity-100" : "opacity-0")} />
+                            <span className="text-muted-foreground w-5 text-end me-1.5">{s.number}</span>
+                            <span>{s.name}</span>
+                            <span className="text-muted-foreground text-[10px] ms-1">({s.englishName})</span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             {selectedSurah > 0 && surahMeta && !loadingAyahs && (
               <>
@@ -326,52 +365,85 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
 
       <Separator />
 
-      {/* ─── Options Row: Besmellah + Surah Name + Translation + Font ─── */}
+      {/* ─── Besmellah Mode ─── */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-1.5">
+          <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
+          <Label className="text-xs">{isAr ? 'البسملة' : 'Besmellah'}</Label>
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {([
+            { value: 'none' as const, label: isAr ? 'بدون' : 'None' },
+            { value: 'inline' as const, label: isAr ? 'مدمجة' : 'Inline' },
+            { value: 'single_line' as const, label: isAr ? 'سطر منفصل' : 'Single Line' },
+          ] as const).map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => onChange({ ...block, quran_besmellah_mode: opt.value, quran_besmellah_enabled: opt.value !== 'none' })}
+              className={cn(
+                "px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
+                besmellahMode === opt.value
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+        {/* Besmellah font size for single_line mode */}
+        {besmellahMode === 'single_line' && (
+          <div className="flex items-center gap-2">
+            <Type className="h-3 w-3 text-muted-foreground shrink-0" />
+            <Slider
+              min={12}
+              max={60}
+              step={1}
+              value={[block.quran_besmellah_font_size || 24]}
+              onValueChange={([v]) => onChange({ ...block, quran_besmellah_font_size: v })}
+              className="flex-1"
+            />
+            <span className="text-[10px] font-mono text-muted-foreground w-8 text-end">{block.quran_besmellah_font_size || 24}px</span>
+          </div>
+        )}
+      </div>
+
+      <Separator />
+
+      {/* ─── Surah Name Mode ─── */}
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-1.5">
+          <Type className="h-3.5 w-3.5 text-muted-foreground" />
+          <Label className="text-xs">{isAr ? 'اسم السورة' : 'Surah Name'}</Label>
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {([
+            { value: 'none' as const, label: isAr ? 'بدون' : 'None' },
+            { value: 'name' as const, label: isAr ? 'الاسم فقط' : '{Name}' },
+            { value: 'surat_name' as const, label: isAr ? 'سورة + الاسم' : 'Surah {Name}' },
+          ] as const).map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => onChange({ ...block, quran_surah_name_mode: opt.value })}
+              className={cn(
+                "px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
+                surahNameMode === opt.value
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* ─── Translation toggle ─── */}
       <div className="space-y-2.5">
-        {/* Besmellah toggle */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
-            <Label className="text-xs">{isAr ? 'البسملة' : 'Besmellah'}</Label>
-          </div>
-          <Switch
-            checked={block.quran_besmellah_enabled !== false}
-            onCheckedChange={(checked) => onChange({ ...block, quran_besmellah_enabled: checked })}
-          />
-        </div>
-
-        {/* Surah Name Mode */}
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-1.5">
-            <Type className="h-3.5 w-3.5 text-muted-foreground" />
-            <Label className="text-xs">{isAr ? 'اسم السورة' : 'Surah Name'}</Label>
-          </div>
-          <div className="flex flex-wrap gap-1">
-            {([
-              { value: 'none' as const, label: isAr ? 'بدون' : 'None' },
-              { value: 'name' as const, label: isAr ? 'الاسم فقط' : '{Name}' },
-              { value: 'surat_name' as const, label: isAr ? 'سورة + الاسم' : 'Surah {Name}' },
-            ] as const).map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => onChange({ ...block, quran_surah_name_mode: opt.value })}
-                className={cn(
-                  "px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
-                  (block.quran_surah_name_mode || 'surat_name') === opt.value
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
-                )}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <Separator />
-
-        {/* Translation toggle */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <Languages className="h-3.5 w-3.5 text-muted-foreground" />
@@ -402,17 +474,17 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
           )
         )}
 
-        {/* Font size */}
+        {/* Font size slider */}
         {block.quran_text && (
           <div className="flex items-center gap-2">
             <Type className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <input
-              type="range"
+            <Slider
               min={12}
               max={100}
-              value={block.quran_font_size || 18}
-              onChange={e => onChange({ ...block, quran_font_size: parseInt(e.target.value) })}
-              className="flex-1 h-1.5 accent-primary"
+              step={1}
+              value={[block.quran_font_size || 18]}
+              onValueChange={([v]) => onChange({ ...block, quran_font_size: v })}
+              className="flex-1"
             />
             <span className="text-[10px] font-mono text-muted-foreground w-8 text-end">{block.quran_font_size || 18}px</span>
           </div>
@@ -423,8 +495,20 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
       {block.quran_text ? (
         <>
           <div className="p-4 rounded-lg border bg-muted/10 text-center quran-quote-block" dir="rtl">
-            {block.quran_besmellah_enabled !== false && (
-              <p className="text-lg mb-3" style={{ fontFamily: "'Besmellah', serif" }}>﷽</p>
+            {/* Surah Name before ayat */}
+            {surahNameMode === 'name' && block.quran_surah_name && (
+              <p className="mb-3" style={{ fontFamily: "'Surah Name V4', serif", fontSize: `${(block.quran_font_size || 18) + 4}px` }}>
+                {block.quran_surah_name}
+              </p>
+            )}
+            {surahNameMode === 'surat_name' && block.quran_surah_name && (
+              <p className="mb-3" style={{ fontFamily: "'Surah Name V2', serif", fontSize: `${(block.quran_font_size || 18) + 4}px` }}>
+                {block.quran_surah_name}
+              </p>
+            )}
+            {/* Besmellah */}
+            {besmellahMode === 'single_line' && (
+              <p className="mb-3" style={{ fontFamily: "'Besmellah', serif", fontSize: `${block.quran_besmellah_font_size || 24}px` }}>﷽</p>
             )}
             <p className="leading-[2.5]" style={{ fontFamily: `'${quranFont}', serif`, fontSize: `${block.quran_font_size || 18}px` }}>
               {block.quran_text}
@@ -434,15 +518,13 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
                 <p className="text-sm leading-relaxed text-muted-foreground italic">{block.quran_translation_text}</p>
               </div>
             )}
-            {(block.quran_surah_name_mode || 'surat_name') !== 'none' && block.quran_surah_name && (
+            {/* Reference line */}
+            {block.quran_reference && (
               <p className="text-xs text-muted-foreground mt-3">
-                {(block.quran_surah_name_mode || 'surat_name') === 'surat_name' && (
-                  <>{block.quran_surah_name} {block.quran_surah_name_en && `— ${block.quran_surah_name_en}`}</>
+                {surahNameMode !== 'none' && block.quran_surah_name_en && (
+                  <span className="mx-1">{surahNameMode === 'surat_name' ? `Surah ${block.quran_surah_name_en}` : block.quran_surah_name_en}</span>
                 )}
-                {block.quran_surah_name_mode === 'name' && (
-                  <>{block.quran_surah_name_en || block.quran_surah_name}</>
-                )}
-                {block.quran_reference && <span className="mx-1">({block.quran_reference})</span>}
+                <span>({block.quran_reference})</span>
               </p>
             )}
           </div>
