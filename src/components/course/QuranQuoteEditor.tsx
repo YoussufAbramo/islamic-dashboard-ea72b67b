@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Search, BookOpen, X, Languages, Type, Eraser } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import {
   getSurahList, getSurahAyahs, searchQuran, parseAyahReference,
   getEnglishEditions, getSurahTranslation,
@@ -325,8 +326,51 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
 
       <Separator />
 
-      {/* ─── Options Row: Translation + Font ─── */}
+      {/* ─── Options Row: Besmellah + Surah Name + Translation + Font ─── */}
       <div className="space-y-2.5">
+        {/* Besmellah toggle */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
+            <Label className="text-xs">{isAr ? 'البسملة' : 'Besmellah'}</Label>
+          </div>
+          <Switch
+            checked={block.quran_besmellah_enabled !== false}
+            onCheckedChange={(checked) => onChange({ ...block, quran_besmellah_enabled: checked })}
+          />
+        </div>
+
+        {/* Surah Name Mode */}
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5">
+            <Type className="h-3.5 w-3.5 text-muted-foreground" />
+            <Label className="text-xs">{isAr ? 'اسم السورة' : 'Surah Name'}</Label>
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {([
+              { value: 'none' as const, label: isAr ? 'بدون' : 'None' },
+              { value: 'name' as const, label: isAr ? 'الاسم فقط' : '{Name}' },
+              { value: 'surat_name' as const, label: isAr ? 'سورة + الاسم' : 'Surah {Name}' },
+            ] as const).map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => onChange({ ...block, quran_surah_name_mode: opt.value })}
+                className={cn(
+                  "px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
+                  (block.quran_surah_name_mode || 'surat_name') === opt.value
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <Separator />
+
         {/* Translation toggle */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
@@ -379,6 +423,9 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
       {block.quran_text ? (
         <>
           <div className="p-4 rounded-lg border bg-muted/10 text-center quran-quote-block" dir="rtl">
+            {block.quran_besmellah_enabled !== false && (
+              <p className="text-lg mb-3" style={{ fontFamily: "'Besmellah', serif" }}>﷽</p>
+            )}
             <p className="leading-[2.5]" style={{ fontFamily: `'${quranFont}', serif`, fontSize: `${block.quran_font_size || 18}px` }}>
               {block.quran_text}
             </p>
@@ -387,9 +434,15 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
                 <p className="text-sm leading-relaxed text-muted-foreground italic">{block.quran_translation_text}</p>
               </div>
             )}
-            {block.quran_surah_name && (
+            {(block.quran_surah_name_mode || 'surat_name') !== 'none' && block.quran_surah_name && (
               <p className="text-xs text-muted-foreground mt-3">
-                {block.quran_surah_name} {block.quran_surah_name_en && `— ${block.quran_surah_name_en}`} {block.quran_reference && `(${block.quran_reference})`}
+                {(block.quran_surah_name_mode || 'surat_name') === 'surat_name' && (
+                  <>{block.quran_surah_name} {block.quran_surah_name_en && `— ${block.quran_surah_name_en}`}</>
+                )}
+                {block.quran_surah_name_mode === 'name' && (
+                  <>{block.quran_surah_name_en || block.quran_surah_name}</>
+                )}
+                {block.quran_reference && <span className="mx-1">({block.quran_reference})</span>}
               </p>
             )}
           </div>
