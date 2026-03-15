@@ -2,6 +2,14 @@
 
 All notable changes to EduDash will be documented in this file.
 
+## [5.10.1] - 2026-03-15
+
+### Added
+- **Quran Quote — Besmellah toggle** — users can enable/disable Besmellah (﷽) display above the Quran text (enabled by default)
+- **Quran Quote — Surah Name Mode** — choose between None, {Name} (English name only), or Surah {Name} (Arabic + English) for the reference footer
+
+---
+
 ## [5.10.0] - 2026-03-15
 
 ### Added
