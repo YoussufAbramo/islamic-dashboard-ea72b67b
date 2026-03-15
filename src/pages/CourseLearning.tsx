@@ -412,11 +412,25 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
           );
 
         // ── Quran Quote ──
-        case 'quran_quote':
+        case 'quran_quote': {
+          const bMode = block.quran_besmellah_mode || (block.quran_besmellah_enabled === false ? 'none' : 'inline');
+          const snMode = block.quran_surah_name_mode || 'surat_name';
           return block.quran_text ? (
             <div key={block.id || idx} className="p-6 rounded-xl border bg-muted/5 text-center quran-quote-block" dir="rtl">
-              {block.quran_besmellah_enabled !== false && (
-                <p className="text-2xl mb-4" style={{ fontFamily: "'Besmellah', serif" }}>﷽</p>
+              {/* Surah Name before ayat */}
+              {snMode === 'name' && block.quran_surah_name && (
+                <p className="mb-4" style={{ fontFamily: "'Surah Name V4', serif", fontSize: `${(block.quran_font_size || 18) + 4}px` }}>
+                  {block.quran_surah_name}
+                </p>
+              )}
+              {snMode === 'surat_name' && block.quran_surah_name && (
+                <p className="mb-4" style={{ fontFamily: "'Surah Name V2', serif", fontSize: `${(block.quran_font_size || 18) + 4}px` }}>
+                  {block.quran_surah_name}
+                </p>
+              )}
+              {/* Besmellah */}
+              {bMode === 'single_line' && (
+                <p className="mb-4" style={{ fontFamily: "'Besmellah', serif", fontSize: `${block.quran_besmellah_font_size || 24}px` }}>﷽</p>
               )}
               <p className="leading-[2.5]" style={{ fontSize: `${block.quran_font_size || 18}px` }}>{block.quran_text}</p>
               {block.quran_translation_enabled && block.quran_translation_text && (
@@ -424,19 +438,18 @@ const ContentViewer = ({ lesson, isAr }: { lesson: Lesson | null; isAr: boolean 
                   <p className="text-sm leading-relaxed text-muted-foreground italic">{block.quran_translation_text}</p>
                 </div>
               )}
-              {(block.quran_surah_name_mode || 'surat_name') !== 'none' && (block.quran_surah_name || block.quran_reference) && (
+              {/* Reference line */}
+              {block.quran_reference && (
                 <p className="text-xs text-muted-foreground mt-4">
-                  {(block.quran_surah_name_mode || 'surat_name') === 'surat_name' && block.quran_surah_name && (
-                    <><span>{block.quran_surah_name}</span>{block.quran_surah_name_en && <span className="mx-1">— {block.quran_surah_name_en}</span>}</>
+                  {snMode !== 'none' && block.quran_surah_name_en && (
+                    <span className="mx-1">{snMode === 'surat_name' ? `Surah ${block.quran_surah_name_en}` : block.quran_surah_name_en}</span>
                   )}
-                  {block.quran_surah_name_mode === 'name' && block.quran_surah_name && (
-                    <span>{block.quran_surah_name_en || block.quran_surah_name}</span>
-                  )}
-                  {block.quran_reference && <span className="mx-1">({block.quran_reference})</span>}
+                  <span>({block.quran_reference})</span>
                 </p>
               )}
             </div>
           ) : null;
+        }
 
         // ── Quran Symbol ──
         case 'quran_symbol':
