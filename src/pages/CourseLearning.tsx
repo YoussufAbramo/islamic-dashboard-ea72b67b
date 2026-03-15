@@ -1456,6 +1456,7 @@ const CourseLearning = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {[
+                        { value: '__content_font__', label: isAr ? 'خط المحتوى الحالي' : 'Current Content Font' },
                         { value: 'Indopak Nastaleeq', label: 'Indopak Nastaleeq' },
                         { value: 'Thuluth', label: 'Thuluth' },
                         { value: 'Aref Ruqaa', label: 'Aref Ruqaa' },
