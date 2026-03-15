@@ -423,6 +423,9 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
       {block.quran_text ? (
         <>
           <div className="p-4 rounded-lg border bg-muted/10 text-center quran-quote-block" dir="rtl">
+            {block.quran_besmellah_enabled !== false && (
+              <p className="text-lg mb-3" style={{ fontFamily: "'Besmellah', serif" }}>﷽</p>
+            )}
             <p className="leading-[2.5]" style={{ fontFamily: `'${quranFont}', serif`, fontSize: `${block.quran_font_size || 18}px` }}>
               {block.quran_text}
             </p>
@@ -431,9 +434,15 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
                 <p className="text-sm leading-relaxed text-muted-foreground italic">{block.quran_translation_text}</p>
               </div>
             )}
-            {block.quran_surah_name && (
+            {(block.quran_surah_name_mode || 'surat_name') !== 'none' && block.quran_surah_name && (
               <p className="text-xs text-muted-foreground mt-3">
-                {block.quran_surah_name} {block.quran_surah_name_en && `— ${block.quran_surah_name_en}`} {block.quran_reference && `(${block.quran_reference})`}
+                {(block.quran_surah_name_mode || 'surat_name') === 'surat_name' && (
+                  <>{block.quran_surah_name} {block.quran_surah_name_en && `— ${block.quran_surah_name_en}`}</>
+                )}
+                {block.quran_surah_name_mode === 'name' && (
+                  <>{block.quran_surah_name_en || block.quran_surah_name}</>
+                )}
+                {block.quran_reference && <span className="mx-1">({block.quran_reference})</span>}
               </p>
             )}
           </div>
