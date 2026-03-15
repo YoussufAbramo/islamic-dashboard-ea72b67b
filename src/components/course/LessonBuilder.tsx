@@ -104,6 +104,8 @@ export interface ContentBlock {
   surah_name_mode?: 'name_only' | 'surat_name';
   font_size?: 'sm' | 'md' | 'lg' | 'xl' | 'huge' | number;
   quran_font_size?: number; // px, 12–100
+  quran_besmellah_enabled?: boolean;
+  quran_surah_name_mode?: 'none' | 'name' | 'surat_name';
   group_pair_id?: string; // links group_start ↔ group_end
 }
 const generateId = () => Math.random().toString(36).substring(2, 10);
