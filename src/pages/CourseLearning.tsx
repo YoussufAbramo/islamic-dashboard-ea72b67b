@@ -765,6 +765,9 @@ const CourseLearning = () => {
   const [tajweedMode, setTajweedMode] = useState(() => {
     try { return localStorage.getItem('tajweed_mode') === 'true'; } catch { return false; }
   });
+  const [globalTashkeel, setGlobalTashkeel] = useState(() => {
+    try { return localStorage.getItem('global_tashkeel_enabled') !== 'false'; } catch { return true; }
+  });
   const canManage = role === 'admin' || role === 'teacher';
 
   const toggleRightPanel = (panel: 'notes' | 'appearance') => {
