@@ -13,7 +13,8 @@ import { Loader2, Search, BookOpen, X, Languages, Type, Eraser, Check, ChevronsU
 import { cn } from '@/lib/utils';
 import {
   getSurahList, getSurahAyahs, searchQuran, parseAyahReference,
-  getEnglishEditions, getSurahTranslation,
+  getEnglishEditions, getSurahTranslation, stripTashkeel, toArabicNumber,
+  stripBesmellah, hasBesmellah,
   type SurahMeta, type Ayah, type SearchMatch, type TranslationEdition,
 } from '@/lib/quranApi';
 import type { ContentBlock } from '@/components/course/LessonBuilder';
