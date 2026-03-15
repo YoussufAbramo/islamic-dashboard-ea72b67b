@@ -1477,12 +1477,12 @@ const CourseLearning = () => {
                         </div>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="max-w-sm p-3">
-                        <p className="leading-[2]" style={{ fontSize: '3.4rem', fontFamily: `'${quranFont}', serif` }} dir="rtl">
+                        <p className="leading-[2]" style={{ fontSize: '3.4rem', fontFamily: quranFont === '__content_font__' ? (lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif`) : `'${quranFont}', serif` }} dir="rtl">
                           بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
                         </p>
                       </TooltipContent>
                     </Tooltip>
-                    <p className="text-lg leading-[2]" style={{ fontFamily: `'${quranFont}', serif` }} dir="rtl">
+                    <p className="text-lg leading-[2]" style={{ fontFamily: quranFont === '__content_font__' ? (lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif`) : `'${quranFont}', serif` }} dir="rtl">
                       بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
                     </p>
                   </div>
