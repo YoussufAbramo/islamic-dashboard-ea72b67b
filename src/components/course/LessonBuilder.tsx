@@ -110,6 +110,7 @@ export interface ContentBlock {
   quran_surah_name_mode?: 'none' | 'name' | 'surat_name' | 'nameplate';
   quran_tashkeel_enabled?: boolean; // default true
   quran_show_ayah_numbers?: boolean; // default true
+  quran_raw_ayahs?: { numberInSurah: number; text: string }[]; // raw ayah data for rebuilding
   group_pair_id?: string; // links group_start ↔ group_end
 }
 const generateId = () => Math.random().toString(36).substring(2, 10);
