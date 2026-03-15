@@ -423,9 +423,29 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
               key={opt.value}
               type="button"
               onClick={() => {
-                onChange({ ...block, quran_besmellah_mode: opt.value, quran_besmellah_enabled: opt.value !== 'none' });
-                // Trigger rebuild after state settles
-                setTimeout(() => rebuildText(), 50);
+                const nextBlock: ContentBlock = {
+                  ...block,
+                  quran_besmellah_mode: opt.value,
+                  quran_besmellah_enabled: opt.value !== 'none',
+                };
+
+                const rawAyahs = nextBlock.quran_raw_ayahs;
+                if (!rawAyahs || rawAyahs.length === 0) {
+                  onChange(nextBlock);
+                  return;
+                }
+
+                const showNumbers = nextBlock.quran_show_ayah_numbers !== false;
+                const tashkeelEnabled = nextBlock.quran_tashkeel_enabled !== false;
+                const text = buildQuranText(
+                  rawAyahs.map((a: any) => ({ ...a, number: 0, surah: {} as any, juz: 0, page: 0 })),
+                  nextBlock.quran_besmellah_mode || 'inline',
+                  nextBlock.quran_ayah_from || 1,
+                  showNumbers,
+                  tashkeelEnabled
+                );
+
+                onChange({ ...nextBlock, quran_text: text });
               }}
               className={cn(
                 "px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors",
