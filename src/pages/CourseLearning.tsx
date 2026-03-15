@@ -26,6 +26,7 @@ import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { stripTashkeel } from '@/lib/quranApi';
 import LessonBuilder from '@/components/course/LessonBuilder';
 import { useSidebar } from '@/components/ui/sidebar';
 
