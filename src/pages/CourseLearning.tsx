@@ -1497,6 +1497,23 @@ const CourseLearning = () => {
 
                 <Separator />
 
+                {/* Tashkeel */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TypeIcon className="h-4 w-4 text-muted-foreground" />
+                    <Label className="text-sm font-medium">{isAr ? 'التشكيل' : 'Tashkeel'}</Label>
+                  </div>
+                  <Switch
+                    checked={globalTashkeel}
+                    onCheckedChange={(checked) => {
+                      setGlobalTashkeel(checked);
+                      try { localStorage.setItem('global_tashkeel_enabled', String(checked)); } catch {}
+                    }}
+                  />
+                </div>
+
+                <Separator />
+
                 {/* Dark Mode */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">

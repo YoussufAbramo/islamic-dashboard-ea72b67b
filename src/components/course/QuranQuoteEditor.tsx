@@ -582,17 +582,17 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
             {/* Surah Name before ayat */}
             {surahNameMode === 'name' && block.quran_surah_number && (
               <p className="mb-3" style={{ fontFamily: "'Surah Name V4', serif", fontSize: `${(block.quran_font_size || 18) + 4}px` }}>
-                {`surah${String(block.quran_surah_number).padStart(3, '0')}`}
+                {block.quran_surah_name_display || `surah${String(block.quran_surah_number).padStart(3, '0')}`}
               </p>
             )}
             {surahNameMode === 'surat_name' && block.quran_surah_number && (
               <p className="mb-3" style={{ fontFamily: "'Surah Name V2', serif", fontSize: `${(block.quran_font_size || 18) + 4}px` }}>
-                {`surah${String(block.quran_surah_number).padStart(3, '0')}`}
+                {block.quran_surah_name_display || `surah${String(block.quran_surah_number).padStart(3, '0')}`}
               </p>
             )}
             {surahNameMode === 'nameplate' && block.quran_surah_number && (
               <p className="mb-3" style={{ fontFamily: "'Surah Header', serif", fontSize: `${(block.quran_font_size || 18) + 12}px` }}>
-                {String(block.quran_surah_number).padStart(3, '0')}
+                {block.quran_surah_name_display || `surah-${block.quran_surah_number}`}
               </p>
             )}
             {/* Besmellah */}
