@@ -843,7 +843,7 @@
 
 /* ── Lesson Content Font Size & Font Family Control ── */
 .lesson-content-viewer {
-  --lesson-font-size: 16px;
+  --lesson-font-size: 1em;
 }
 .lesson-content-viewer .prose {
   font-size: var(--lesson-font-size) !important;

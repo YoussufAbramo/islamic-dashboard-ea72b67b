@@ -16,13 +16,14 @@ import {
   ArrowLeft, ChevronLeft, ChevronRight, CheckCircle2, Circle,
   BookOpen, Play, FileText, Headphones, ExternalLink, FileDown,
   Menu, X, GraduationCap, Loader2, PanelTop, PanelTopClose, AlertTriangle, Settings2,
-  ChevronDown, FolderTree, Layers, StickyNote, Sun, Moon, Type as TypeIcon, Check,
+  ChevronDown, FolderTree, Layers, StickyNote, Sun, Moon, Type as TypeIcon, Check, ZoomIn,
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import LessonBuilder from '@/components/course/LessonBuilder';
@@ -707,8 +708,19 @@ const CourseLearning = () => {
   });
   
   const [noteText, setNoteText] = useState('');
+  const fontSizeOptions = [
+    { value: '1em', label: '1×' },
+    { value: '1.15em', label: '1.15×' },
+    { value: '1.25em', label: '1.25×' },
+    { value: '1.5em', label: '1.5×' },
+    { value: '1.75em', label: '1.75×' },
+    { value: '2em', label: '2×' },
+    { value: '2.25em', label: '2.25×' },
+    { value: '2.5em', label: '2.5×' },
+    { value: '3em', label: '3×' },
+  ];
   const [lessonFontSize, setLessonFontSize] = useState(() => {
-    try { return parseInt(localStorage.getItem('lesson_font_size') || '16', 10); } catch { return 16; }
+    try { return localStorage.getItem('lesson_font_size') || '1em'; } catch { return '1em'; }
   });
   const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
   const [quranFont, setQuranFont] = useState(() => {
@@ -1278,7 +1290,7 @@ const CourseLearning = () => {
             <div
               className="max-w-3xl mx-auto p-6 lesson-content-viewer"
               style={{
-                '--lesson-font-size': `${lessonFontSize}px`,
+                '--lesson-font-size': lessonFontSize,
                 '--lesson-font-family': lessonFontFamily !== 'default' ? `'${lessonFontFamily}', var(--font-rtl)` : undefined,
                 '--quran-font': `'${quranFont}', serif`,
               } as React.CSSProperties}
@@ -1336,6 +1348,7 @@ const CourseLearning = () => {
                   <X className="h-3.5 w-3.5" />
                 </Button>
               </div>
+              <TooltipProvider delayDuration={200}>
               <div className="p-4 space-y-6">
                 {/* Font Family */}
                 <div className="space-y-3">
@@ -1355,10 +1368,22 @@ const CourseLearning = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  <div className="p-2.5 rounded-lg bg-muted/40 border border-border/50">
-                    <p className="text-sm leading-relaxed" style={{ fontFamily: lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif` }} dir="rtl">
+                  <div className="p-3 rounded-lg bg-muted/40 border border-border/50 relative">
+                    <p className="text-lg leading-relaxed" style={{ fontFamily: lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif` }} dir="rtl">
                       بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
                     </p>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="absolute top-2 end-2 h-6 w-6 rounded-md bg-muted/60 flex items-center justify-center cursor-default">
+                          <ZoomIn className="h-3.5 w-3.5 text-muted-foreground" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs">
+                        <p className="text-xl leading-relaxed" style={{ fontFamily: lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif` }} dir="rtl">
+                          بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
 
@@ -1388,34 +1413,46 @@ const CourseLearning = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  <div className="p-2.5 rounded-lg bg-muted/40 border border-border/50">
-                    <p className="text-sm leading-[2]" style={{ fontFamily: `'${quranFont}', serif` }} dir="rtl">
+                  <div className="p-3 rounded-lg bg-muted/40 border border-border/50 relative">
+                    <p className="text-lg leading-[2]" style={{ fontFamily: `'${quranFont}', serif` }} dir="rtl">
                       بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
                     </p>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="absolute top-2 end-2 h-6 w-6 rounded-md bg-muted/60 flex items-center justify-center cursor-default">
+                          <ZoomIn className="h-3.5 w-3.5 text-muted-foreground" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs">
+                        <p className="text-xl leading-[2]" style={{ fontFamily: `'${quranFont}', serif` }} dir="rtl">
+                          بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
 
                 <Separator />
-                <div className="space-y-3 opacity-50 pointer-events-none relative">
+                <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <TypeIcon className="h-4 w-4 text-muted-foreground" />
                     <Label className="text-sm font-medium">{isAr ? 'حجم الخط' : 'Font Size'}</Label>
-                    <Badge className="text-[8px] px-1.5 py-0 h-4 bg-amber-500/15 text-amber-600 border-amber-400/40 font-bold uppercase tracking-wider ms-auto">
-                      {isAr ? 'قريبًا' : 'Soon'}
-                    </Badge>
                   </div>
-                  <Slider
-                    value={[16]}
-                    min={12}
-                    max={24}
-                    step={1}
-                    className="w-full"
-                    disabled
-                  />
-                  <div className="flex justify-between text-[10px] text-muted-foreground">
-                    <span>{isAr ? 'صغير' : 'Small'}</span>
-                    <span>{isAr ? 'كبير' : 'Large'}</span>
-                  </div>
+                  <Select value={lessonFontSize} onValueChange={(val) => {
+                    setLessonFontSize(val);
+                    try { localStorage.setItem('lesson_font_size', val); } catch {}
+                  }}>
+                    <SelectTrigger className="h-9 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {fontSizeOptions.map(f => (
+                        <SelectItem key={f.value} value={f.value}>
+                          {f.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <Separator />
@@ -1435,6 +1472,7 @@ const CourseLearning = () => {
                   />
                 </div>
               </div>
+              </TooltipProvider>
             </div>
           )}
         </div>
