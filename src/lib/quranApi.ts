@@ -42,6 +42,27 @@ const ayahCache = new Map<number, Ayah[]>();
 const translationCache = new Map<string, Ayah[]>();
 let editionsCache: TranslationEdition[] | null = null;
 
+// ─── Strip tashkeel (diacritics) from Arabic text ───
+const TASHKEEL_REGEX = /[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06DC\u06DF-\u06E8\u06EA-\u06ED]/g;
+export function stripTashkeel(text: string): string {
+  return text.replace(TASHKEEL_REGEX, '');
+}
+
+// ─── Arabic numeral conversion for ayah markers ───
+const ARABIC_DIGITS = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+export function toArabicNumber(n: number): string {
+  return String(n).split('').map(d => ARABIC_DIGITS[parseInt(d)] || d).join('');
+}
+
+// ─── Besmellah detection / stripping ───
+const BESMELLAH_PATTERN = /^بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ\s*/;
+export function stripBesmellah(text: string): string {
+  return text.replace(BESMELLAH_PATTERN, '').trim();
+}
+export function hasBesmellah(text: string): boolean {
+  return BESMELLAH_PATTERN.test(text);
+}
+
 // ─── Helpers ───
 async function apiFetch<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`);
