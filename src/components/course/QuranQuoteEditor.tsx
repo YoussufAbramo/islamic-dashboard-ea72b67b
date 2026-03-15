@@ -520,16 +520,6 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
             }}
           />
         </div>
-        <div className="flex items-center justify-between">
-          <Label className="text-xs">{isAr ? 'أرقام الآيات' : 'Ayah Numbers'}</Label>
-          <Switch
-            checked={block.quran_show_ayah_numbers !== false}
-            onCheckedChange={(v) => {
-              onChange({ ...block, quran_show_ayah_numbers: v });
-              setTimeout(() => rebuildText(), 50);
-            }}
-          />
-        </div>
       </div>
 
       <Separator />
