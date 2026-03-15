@@ -1347,7 +1347,7 @@ const CourseLearning = () => {
               style={{
                 '--lesson-font-size': lessonFontSize,
                 '--lesson-font-family': lessonFontFamily !== 'default' ? `'${lessonFontFamily}', var(--font-rtl)` : undefined,
-                '--quran-font': `'${quranFont}', serif`,
+                '--quran-font': `'${quranFont === '__content_font__' ? (lessonFontFamily !== 'default' ? lessonFontFamily : appRtlFont) : quranFont}', serif`,
               } as React.CSSProperties}
             >
               <ContentViewer lesson={currentLesson} isAr={isAr} />
@@ -1456,6 +1456,7 @@ const CourseLearning = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {[
+                        { value: '__content_font__', label: isAr ? 'خط المحتوى الحالي' : 'Current Content Font' },
                         { value: 'Indopak Nastaleeq', label: 'Indopak Nastaleeq' },
                         { value: 'Thuluth', label: 'Thuluth' },
                         { value: 'Aref Ruqaa', label: 'Aref Ruqaa' },
@@ -1463,7 +1464,7 @@ const CourseLearning = () => {
                         { value: 'Al Qalam Quran', label: 'Al Qalam Quran' },
                       ].map(f => (
                         <SelectItem key={f.value} value={f.value}>
-                          <span style={{ fontFamily: `'${f.value}', serif` }}>{f.label}</span>
+                          <span style={f.value === '__content_font__' ? { fontFamily: lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif` } : { fontFamily: `'${f.value}', serif` }}>{f.label}</span>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -1476,12 +1477,12 @@ const CourseLearning = () => {
                         </div>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="max-w-sm p-3">
-                        <p className="leading-[2]" style={{ fontSize: '3.4rem', fontFamily: `'${quranFont}', serif` }} dir="rtl">
+                        <p className="leading-[2]" style={{ fontSize: '3.4rem', fontFamily: quranFont === '__content_font__' ? (lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif`) : `'${quranFont}', serif` }} dir="rtl">
                           بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
                         </p>
                       </TooltipContent>
                     </Tooltip>
-                    <p className="text-lg leading-[2]" style={{ fontFamily: `'${quranFont}', serif` }} dir="rtl">
+                    <p className="text-lg leading-[2]" style={{ fontFamily: quranFont === '__content_font__' ? (lessonFontFamily !== 'default' ? `'${lessonFontFamily}'` : `'${appRtlFont}', sans-serif`) : `'${quranFont}', serif` }} dir="rtl">
                       بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
                     </p>
                   </div>
