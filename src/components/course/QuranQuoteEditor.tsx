@@ -530,6 +530,20 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
             </button>
           ))}
         </div>
+        {surahNameMode !== 'none' && block.quran_text && (
+          <div className="flex items-center gap-2">
+            <Type className="h-3 w-3 text-muted-foreground shrink-0" />
+            <Slider
+              min={12}
+              max={100}
+              step={1}
+              value={[block.quran_surah_name_font_size || (surahNameMode === 'nameplate' ? 30 : 22)]}
+              onValueChange={([v]) => onChange({ ...block, quran_surah_name_font_size: v })}
+              className="flex-1"
+            />
+            <span className="text-[10px] font-mono text-muted-foreground w-8 text-end">{block.quran_surah_name_font_size || (surahNameMode === 'nameplate' ? 30 : 22)}px</span>
+          </div>
+        )}
       </div>
 
       <Separator />
