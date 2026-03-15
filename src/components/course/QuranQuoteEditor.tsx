@@ -510,10 +510,10 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
         </div>
         <div className="flex flex-wrap gap-1">
           {([
-            { value: 'none' as const, label: isAr ? 'بدون' : 'None' },
-            { value: 'name' as const, label: isAr ? 'الاسم فقط' : '{Name}' },
-            { value: 'surat_name' as const, label: isAr ? 'سورة + الاسم' : 'Surah {Name}' },
-            { value: 'nameplate' as const, label: isAr ? 'لوحة' : 'Nameplate' },
+            { value: 'none' as const, label: isAr ? 'بدون' : 'None', font: undefined },
+            { value: 'name' as const, label: isAr ? 'الاسم فقط' : '{Name}', font: "'Surah Name V4', serif" },
+            { value: 'surat_name' as const, label: isAr ? 'سورة + الاسم' : 'Surah {Name}', font: "'Surah Name V2', serif" },
+            { value: 'nameplate' as const, label: isAr ? 'لوحة' : 'Nameplate', font: "'Surah Header', serif" },
           ] as const).map((opt) => (
             <button
               key={opt.value}
@@ -525,6 +525,7 @@ const QuranQuoteEditor = ({ block, isAr, onChange }: Props) => {
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
               )}
+              style={opt.font ? { fontFamily: opt.font } : undefined}
             >
               {opt.label}
             </button>
